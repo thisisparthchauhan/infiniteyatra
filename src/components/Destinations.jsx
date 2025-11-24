@@ -45,7 +45,7 @@ const Destinations = () => {
             <div className="container mx-auto px-6">
                 <div className="flex items-end justify-between mb-12">
                     <div>
-                        <h2 className="text-4xl font-bold text-slate-900 mb-4">Explore With Infinite Yatra</h2>
+                        <h2 className="text-4xl font-bold text-slate-900 mb-4">Explore With Infinite</h2>
                         <p className="text-slate-500 text-lg max-w-xl">
                             Discover our most loved travel experiences, curated just for you.
                         </p>
