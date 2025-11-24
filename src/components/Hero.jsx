@@ -40,7 +40,7 @@ const Hero = () => {
                     transition={{ duration: 0.8, delay: 0.4 }}
                     className="text-3xl md:text-5xl text-white font-bold mb-10 max-w-2xl mx-auto tracking-wide"
                 >
-                    Explore Infinite
+                    Explore Infinite Yatra
                 </motion.p>
 
                 {/* Search Bar */}
