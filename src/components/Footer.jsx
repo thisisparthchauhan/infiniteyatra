@@ -55,7 +55,7 @@ const Footer = () => {
                             Company
                         </h4>
                         <ul className="space-y-4">
-                            {['About Us', 'Careers', 'Blog', 'Press'].map((item) => (
+                            {['About Us', 'Careers'].map((item) => (
                                 <li key={item}>
                                     <a
                                         href="#"

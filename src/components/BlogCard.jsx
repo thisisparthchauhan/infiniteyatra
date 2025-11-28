@@ -16,29 +16,29 @@ const BlogCard = ({ blog }) => {
                 </div>
             </div>
 
-            <div className="p-6 flex flex-col flex-grow">
-                <div className="flex items-center gap-4 text-slate-500 text-xs mb-3">
-                    <span className="flex items-center gap-1">
-                        <Calendar size={14} />
+            <div className="p-8 flex flex-col flex-grow">
+                <div className="flex items-center gap-4 text-slate-600 text-base mb-5">
+                    <span className="flex items-center gap-2 font-semibold">
+                        <Calendar size={18} />
                         {blog.date}
                     </span>
-                    <span className="flex items-center gap-1">
-                        <User size={14} />
+                    <span className="flex items-center gap-2 font-semibold">
+                        <User size={18} />
                         {blog.author}
                     </span>
                 </div>
 
-                <h3 className="text-xl font-bold text-slate-900 mb-3 group-hover:text-blue-600 transition-colors line-clamp-2">
+                <h3 className="text-3xl font-bold text-slate-900 mb-5 group-hover:text-blue-600 transition-colors line-clamp-2 leading-tight">
                     {blog.title}
                 </h3>
 
-                <p className="text-slate-600 text-sm mb-4 line-clamp-3 flex-grow">
+                <p className="text-slate-700 text-lg leading-relaxed mb-6 line-clamp-3 flex-grow font-normal">
                     {blog.excerpt}
                 </p>
 
-                <div className="flex items-center text-blue-600 font-semibold text-sm mt-auto group/btn">
+                <div className="flex items-center text-blue-600 font-bold text-lg mt-auto group/btn">
                     Read Article
-                    <ArrowRight size={16} className="ml-2 transition-transform group-hover/btn:translate-x-1" />
+                    <ArrowRight size={20} className="ml-2 transition-transform group-hover/btn:translate-x-1" />
                 </div>
             </div>
         </Link>
