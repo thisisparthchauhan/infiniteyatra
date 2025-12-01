@@ -1,20 +1,21 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
+import { getAnalytics } from "firebase/analytics";
 
-// TODO: Replace the following with your app's Firebase project configuration
-// You can find this in the Firebase Console -> Project Settings -> General -> Your Apps
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY_HERE",
-    authDomain: "YOUR_AUTH_DOMAIN_HERE",
-    projectId: "YOUR_PROJECT_ID_HERE",
-    storageBucket: "YOUR_STORAGE_BUCKET_HERE",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID_HERE",
-    appId: "YOUR_APP_ID_HERE"
+    apiKey: "AIzaSyB2R4R8u8WUaRDslaqYwFOfF5ArmNyhP5U",
+    authDomain: "infiniteyatra-iy.firebaseapp.com",
+    projectId: "infiniteyatra-iy",
+    storageBucket: "infiniteyatra-iy.firebasestorage.app",
+    messagingSenderId: "438226177676",
+    appId: "1:438226177676:web:f9ccfe91e3220d1d3675a9",
+    measurementId: "G-WJVGGTN2FB"
 };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 
 // Initialize Services
 export const auth = getAuth(app);
