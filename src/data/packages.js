@@ -95,48 +95,7 @@ export const packages = [
             { id: 5, url: '/images/gallery/kedarkantha-5.png', alt: 'Beautiful pine forest trail with snow and wooden bridge' },
             { id: 6, url: '/images/gallery/kedarkantha-6.png', alt: 'Traditional Uttarakhand village with Himalayan peaks in background' }
         ],
-        reviews: [
-            {
-                id: 1,
-                name: 'Priya Sharma',
-                rating: 5,
-                date: '2024-02-15',
-                comment: 'Absolutely incredible experience! The trek was well-organized, and our guide was knowledgeable and supportive. The summit views were breathtaking. Highly recommend for anyone looking for a winter trek adventure!',
-                verified: true
-            },
-            {
-                id: 2,
-                name: 'Rahul Verma',
-                rating: 5,
-                date: '2024-01-28',
-                comment: 'Best trek of my life! The snow-covered trails, camping under stars, and the final summit push were unforgettable. The team ensured our safety and comfort throughout. Worth every penny!',
-                verified: true
-            },
-            {
-                id: 3,
-                name: 'Anjali Patel',
-                rating: 4,
-                date: '2024-03-10',
-                comment: 'Great trek with stunning views. The itinerary was perfect, and the food was surprisingly good for a trek. Only minor issue was the weather, but that\'s nature! Would definitely trek with them again.',
-                verified: true
-            },
-            {
-                id: 4,
-                name: 'Vikram Singh',
-                rating: 5,
-                date: '2023-12-20',
-                comment: 'Perfect winter wonderland experience! The guides were professional, equipment was top-notch, and the entire journey was magical. The sunrise from the summit is something I\'ll never forget.',
-                verified: true
-            },
-            {
-                id: 5,
-                name: 'Neha Gupta',
-                rating: 5,
-                date: '2024-02-05',
-                comment: 'As a first-time trekker, I was nervous, but the team made me feel comfortable and confident. The pace was perfect, and they took great care of everyone. Kedarkantha is now my favorite place on Earth!',
-                verified: true
-            }
-        ],
+
         faqs: [
             {
                 id: 1,

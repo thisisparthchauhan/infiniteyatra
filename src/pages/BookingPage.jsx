@@ -3,17 +3,24 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Calendar, Users, User, Mail, Phone, CheckCircle, ArrowRight, ArrowLeft, Loader } from 'lucide-react';
 import { getPackageById } from '../data/packages';
 import { motion, AnimatePresence } from 'framer-motion';
+import { db } from '../firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { useAuth } from '../context/AuthContext';
 
 const BookingPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { currentUser } = useAuth();
     const [pkg, setPkg] = useState(null);
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(true);
+    const [submitting, setSubmitting] = useState(false);
+    const [confirmedBookingId, setConfirmedBookingId] = useState(null);
+    const [error, setError] = useState('');
 
     const [bookingData, setBookingData] = useState({
         date: '',
-        slot: 'Morning', // Default slot
+
         travelers: 2,
         name: '',
         email: '',
@@ -26,10 +33,18 @@ const BookingPage = () => {
         if (packageData) {
             setPkg(packageData);
             setLoading(false);
+            // Pre-fill user data if available
+            if (currentUser) {
+                setBookingData(prev => ({
+                    ...prev,
+                    email: currentUser.email || '',
+                    name: currentUser.displayName || ''
+                }));
+            }
         } else {
             navigate('/');
         }
-    }, [id, navigate]);
+    }, [id, navigate, currentUser]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -42,19 +57,51 @@ const BookingPage = () => {
     const nextStep = () => setStep(prev => prev + 1);
     const prevStep = () => setStep(prev => prev - 1);
 
-    const generateBookingId = () => {
-        return 'BKG-' + Math.random().toString(36).substr(2, 9).toUpperCase();
-    };
+    const handleConfirm = async () => {
+        if (!currentUser) return;
 
-    const handleConfirm = () => {
-        // Here you would typically send data to a backend
-        // For now, we'll just move to the confirmation step
-        nextStep();
+        setSubmitting(true);
+        try {
+            const bookingRef = await addDoc(collection(db, 'bookings'), {
+                userId: currentUser.uid,
+                packageId: pkg.id,
+                packageTitle: pkg.title,
+                bookingDate: bookingData.date,
+
+                travelers: Number(bookingData.travelers),
+                contactName: bookingData.name,
+                contactEmail: bookingData.email,
+                contactPhone: bookingData.phone,
+                specialRequests: bookingData.specialRequests,
+                totalPrice: pkg.price * Number(bookingData.travelers),
+                status: 'pending',
+                createdAt: serverTimestamp()
+            });
+
+            setConfirmedBookingId(bookingRef.id);
+
+            // Redirect to WhatsApp
+            const message = `*Booking Confirmation*\n\n*Booking ID:* ${bookingRef.id}\n*Package:* ${pkg.title}\n*Date:* ${bookingData.date}\n*Travelers:* ${bookingData.travelers}\n*Name:* ${bookingData.name}\n\n--------------------------------\nSent via Infinite Yatra Website`;
+            const whatsappUrl = `https://wa.me/919265799325?text=${encodeURIComponent(message)}`;
+
+            // Try to open in new tab, if blocked, the user can click the button in the next step
+            const newWindow = window.open(whatsappUrl, '_blank');
+            if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+                console.log("Popup blocked, user needs to click manually");
+            }
+
+            nextStep();
+        } catch (error) {
+            console.error("Error saving booking:", error);
+            setError("Failed to save booking. Please try again or contact support.");
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     const handleWhatsAppShare = () => {
-        const message = `*Booking Confirmation*\n\n*Booking ID:* ${generateBookingId()}\n*Package:* ${pkg.title}\n*Date:* ${bookingData.date}\n*Travelers:* ${bookingData.travelers}\n*Name:* ${bookingData.name}\n\n--------------------------------\nSent via Infinite Yatra Website`;
-        const whatsappUrl = `https://api.whatsapp.com/send?phone=919265799325&text=${encodeURIComponent(message)}`;
+        const message = `*Booking Confirmation*\n\n*Booking ID:* ${confirmedBookingId}\n*Package:* ${pkg.title}\n*Date:* ${bookingData.date}\n*Travelers:* ${bookingData.travelers}\n*Name:* ${bookingData.name}\n\n--------------------------------\nSent via Infinite Yatra Website`;
+        const whatsappUrl = `https://wa.me/919265799325?text=${encodeURIComponent(message)}`;
         window.open(whatsappUrl, '_blank');
     };
 
@@ -181,20 +228,7 @@ const BookingPage = () => {
                                         </div>
                                     </div>
 
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-2">Preferred Slot (Optional)</label>
-                                        <div className="flex gap-4">
-                                            {['Morning', 'Afternoon', 'Evening'].map((slot) => (
-                                                <button
-                                                    key={slot}
-                                                    onClick={() => setBookingData({ ...bookingData, slot })}
-                                                    className={`px-6 py-3 rounded-xl border transition-all ${bookingData.slot === slot ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-600 border-slate-200 hover:border-blue-400'}`}
-                                                >
-                                                    {slot}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
+
 
                                     <div className="flex justify-end pt-6">
                                         <button
@@ -261,6 +295,12 @@ const BookingPage = () => {
                                         </div>
                                     </div>
 
+                                    {error && (
+                                        <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm mb-4">
+                                            {error}
+                                        </div>
+                                    )}
+
                                     <div className="flex justify-between pt-6">
                                         <button
                                             onClick={prevStep}
@@ -270,10 +310,16 @@ const BookingPage = () => {
                                         </button>
                                         <button
                                             onClick={handleConfirm}
-                                            disabled={!bookingData.name || !bookingData.email || !bookingData.phone}
-                                            className="bg-blue-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                            disabled={!bookingData.name || !bookingData.email || !bookingData.phone || submitting}
+                                            className="bg-blue-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                                         >
-                                            Confirm Booking
+                                            {submitting ? (
+                                                <>
+                                                    <Loader className="animate-spin" size={20} /> Processing...
+                                                </>
+                                            ) : (
+                                                'Confirm Booking'
+                                            )}
                                         </button>
                                     </div>
                                 </motion.div>
@@ -290,12 +336,12 @@ const BookingPage = () => {
                                         <CheckCircle className="text-green-600" size={40} />
                                     </div>
                                     <h2 className="text-3xl font-bold text-slate-900 mb-2">Booking Confirmed!</h2>
-                                    <p className="text-slate-500 mb-8">Your trip to {pkg.title} has been tentatively booked.</p>
+                                    <p className="text-slate-500 mb-8">Your trip to {pkg.title} has been successfully booked.</p>
 
                                     <div className="bg-slate-50 rounded-xl p-6 mb-8 text-left max-w-md mx-auto border border-slate-200">
                                         <div className="flex justify-between mb-2">
                                             <span className="text-slate-500">Booking ID</span>
-                                            <span className="font-mono font-bold text-slate-900">{generateBookingId()}</span>
+                                            <span className="font-mono font-bold text-slate-900">{confirmedBookingId}</span>
                                         </div>
                                         <div className="flex justify-between mb-2">
                                             <span className="text-slate-500">Date</span>
@@ -307,7 +353,7 @@ const BookingPage = () => {
                                         </div>
                                         <div className="flex justify-between">
                                             <span className="text-slate-500">Amount Due</span>
-                                            <span className="font-bold text-blue-600">{pkg.priceDisplay}</span>
+                                            <span className="font-bold text-blue-600">₹{(pkg.price * Number(bookingData.travelers)).toLocaleString()}</span>
                                         </div>
                                     </div>
 

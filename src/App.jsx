@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
+import ProtectedRoute from './components/ProtectedRoute';
+import AdminRoute from './components/AdminRoute';
 
 // Pages
 import Home from './pages/Home';
@@ -17,6 +19,10 @@ import Careers from './pages/Careers';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import BookingPage from './pages/BookingPage';
+import MyBookings from './pages/MyBookings';
+
+// Lazy load AdminDashboard to avoid potential circular dependencies or build issues
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 
 function App() {
   return (
@@ -37,7 +43,32 @@ function App() {
                 <Route path="/blog" element={<BlogPage />} />
                 <Route path="/blog/:id" element={<BlogPost />} />
                 <Route path="/careers" element={<Careers />} />
-                <Route path="/book/:id" element={<BookingPage />} />
+                <Route
+                  path="/booking/:id"
+                  element={
+                    <ProtectedRoute>
+                      <BookingPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/my-bookings"
+                  element={
+                    <ProtectedRoute>
+                      <MyBookings />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin"
+                  element={
+                    <AdminRoute>
+                      <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+                        <AdminDashboard />
+                      </Suspense>
+                    </AdminRoute>
+                  }
+                />
               </Routes>
             </main>
             <Footer />

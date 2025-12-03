@@ -7,7 +7,7 @@ import {
     updateProfile
 } from 'firebase/auth';
 import { auth, db } from '../firebase';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
 
 const AuthContext = createContext();
 
@@ -51,8 +51,27 @@ export const AuthProvider = ({ children }) => {
     };
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-            setCurrentUser(user);
+        const unsubscribe = onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                // User is signed in, fetch their profile from Firestore
+                try {
+                    const userDocRef = doc(db, "users", user.uid);
+                    const userDocSnap = await import('firebase/firestore').then(module => module.getDoc(userDocRef));
+
+                    if (userDocSnap.exists()) {
+                        const userData = userDocSnap.data();
+                        // Merge auth user with firestore data
+                        setCurrentUser({ ...user, ...userData });
+                    } else {
+                        setCurrentUser(user);
+                    }
+                } catch (error) {
+                    console.error("Error fetching user profile:", error);
+                    setCurrentUser(user);
+                }
+            } else {
+                setCurrentUser(null);
+            }
             setLoading(false);
         });
 
@@ -61,6 +80,7 @@ export const AuthProvider = ({ children }) => {
 
     const value = {
         currentUser,
+        loading,
         signup,
         login,
         logout

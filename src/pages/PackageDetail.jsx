@@ -290,7 +290,7 @@ const PackageDetail = () => {
 
                                 <div className="p-6 space-y-4">
                                     <button
-                                        onClick={() => navigate(`/book/${id}`)}
+                                        onClick={() => navigate(`/booking/${id}`)}
                                         className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 
                                                  text-white px-6 py-4 rounded-xl font-semibold transition-all duration-300
                                                  shadow-lg shadow-blue-600/30 hover:shadow-xl hover:shadow-blue-600/40
