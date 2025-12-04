@@ -1,29 +1,19 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import OpenAI from "openai";
 
-// Initialize the API with the key from environment variables
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+const API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
 
-let genAI = null;
+let openai = null;
 if (API_KEY) {
-    genAI = new GoogleGenerativeAI(API_KEY);
+    openai = new OpenAI({
+        apiKey: API_KEY,
+        dangerouslyAllowBrowser: true // Required for client-side usage
+    });
 }
 
 export const generateItinerary = async (formData) => {
-    if (!genAI) {
-        throw new Error("Gemini API Key is missing. Please add VITE_GEMINI_API_KEY to your .env file.");
+    if (!openai) {
+        throw new Error("OpenAI API Key is missing. Please add VITE_OPENAI_API_KEY to your .env file.");
     }
-
-    // We use gemini-1.5-flash as it is the fastest and most cost-effective model for this use case.
-    // If this fails, it is likely an API key permission issue.
-    const model = genAI.getGenerativeModel({
-        model: "gemini-1.5-flash",
-        safetySettings: [
-            { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
-            { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
-            { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
-            { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
-        ]
-    });
 
     const prompt = `
     Act as an expert travel planner. Create a detailed ${formData.days}-day itinerary for a trip to ${formData.destination}.
@@ -83,22 +73,22 @@ export const generateItinerary = async (formData) => {
     `;
 
     try {
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        const text = response.text();
+        const completion = await openai.chat.completions.create({
+            messages: [{ role: "system", content: "You are a helpful travel assistant." }, { role: "user", content: prompt }],
+            model: "gpt-4o", // Using the latest model for best results
+            response_format: { type: "json_object" }
+        });
 
-        // Clean up the response if it contains markdown code blocks
-        const jsonString = text.replace(/```json/g, '').replace(/```/g, '').trim();
-
+        const jsonString = completion.choices[0].message.content;
         return JSON.parse(jsonString);
+
     } catch (error) {
         console.error("Error generating itinerary:", error);
 
-        // Provide specific, actionable error messages
-        if (error.message.includes("404")) {
-            throw new Error("Google API Error: Model not found. Please ensure the 'Google Generative AI API' is enabled in your Google Cloud Console.");
-        } else if (error.message.includes("403") || error.message.includes("API key")) {
-            throw new Error("Google API Error: Invalid API Key. Please check your key permissions.");
+        if (error.status === 401) {
+            throw new Error("OpenAI Error: Invalid API Key. Please check your key.");
+        } else if (error.status === 429) {
+            throw new Error("OpenAI Error: Rate limit exceeded or insufficient quota.");
         } else {
             throw new Error(`AI Generation Failed: ${error.message}`);
         }
