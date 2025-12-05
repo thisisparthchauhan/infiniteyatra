@@ -7,6 +7,7 @@ import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
+import EnquiryPopup from './components/EnquiryPopup';
 
 // Pages
 import Home from './pages/Home';
@@ -20,6 +21,8 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import BookingPage from './pages/BookingPage';
 import MyBookings from './pages/MyBookings';
+import MyTrips from './pages/MyTrips';
+import TripDetails from './pages/TripDetails';
 
 // Lazy load AdminDashboard to avoid potential circular dependencies or build issues
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
@@ -32,6 +35,7 @@ function App() {
           <ScrollToTop />
           <div className="flex flex-col min-h-screen">
             <Navbar />
+            <EnquiryPopup />
             <main className="flex-grow">
               <Routes>
                 <Route path="/" element={<Home />} />
@@ -59,6 +63,15 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
+                <Route
+                  path="/my-trips"
+                  element={
+                    <ProtectedRoute>
+                      <MyTrips />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route path="/trip/:tripId" element={<TripDetails />} />
                 <Route
                   path="/admin"
                   element={

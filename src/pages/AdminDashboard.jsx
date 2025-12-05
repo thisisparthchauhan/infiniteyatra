@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { db } from '../firebase';
 import { collection, query, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { Loader, CheckCircle, XCircle, Trash2, Search, Calendar, DollarSign, Users, Eye, X, Clock } from 'lucide-react';
+import { Loader, CheckCircle, XCircle, Trash2, Search, Calendar, DollarSign, Users, Eye, X, Clock, TrendingUp } from 'lucide-react';
 import SEO from '../components/SEO';
 
 const AdminDashboard = () => {
@@ -13,8 +13,25 @@ const AdminDashboard = () => {
     const [stats, setStats] = useState({
         total: 0,
         revenue: 0,
+        profit: 0,
         pending: 0
     });
+
+    const calculateProfit = (totalPrice, travelers) => {
+        if (!travelers || travelers === 0) return 0;
+        const pricePerPerson = totalPrice / travelers;
+        let profitPerPerson = 0;
+
+        if (pricePerPerson < 10000) {
+            profitPerPerson = 2000;
+        } else if (pricePerPerson <= 20000) {
+            profitPerPerson = 5000;
+        } else {
+            profitPerPerson = 8000;
+        }
+
+        return profitPerPerson * travelers;
+    };
 
     const fetchBookings = async () => {
         setLoading(true);
@@ -42,9 +59,16 @@ const AdminDashboard = () => {
                 const price = parseFloat(curr.totalPrice) || 0;
                 return acc + price;
             }, 0);
+
+            const profit = bookingsData.reduce((acc, curr) => {
+                const price = parseFloat(curr.totalPrice) || 0;
+                const travelers = parseInt(curr.travelers) || 1;
+                return acc + calculateProfit(price, travelers);
+            }, 0);
+
             const pending = bookingsData.filter(b => b.status === 'pending').length;
 
-            setStats({ total, revenue, pending });
+            setStats({ total, revenue, profit, pending });
 
         } catch (err) {
             console.error("Error fetching bookings:", err);
@@ -132,7 +156,7 @@ const AdminDashboard = () => {
                 )}
 
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                     <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                         <div className="flex items-center gap-4">
                             <div className="p-3 bg-blue-100 text-blue-600 rounded-lg">
@@ -152,6 +176,17 @@ const AdminDashboard = () => {
                             <div>
                                 <p className="text-sm text-slate-500">Total Revenue (Est.)</p>
                                 <p className="text-2xl font-bold text-slate-900">₹{stats.revenue.toLocaleString()}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 bg-purple-100 text-purple-600 rounded-lg">
+                                <TrendingUp size={24} />
+                            </div>
+                            <div>
+                                <p className="text-sm text-slate-500">Total Profit (Est.)</p>
+                                <p className="text-2xl font-bold text-slate-900">₹{stats.profit.toLocaleString()}</p>
                             </div>
                         </div>
                     </div>
@@ -287,8 +322,8 @@ const AdminDashboard = () => {
                         <div className="p-6 space-y-8">
                             {/* Status Banner */}
                             <div className={`p-4 rounded-xl flex items-center gap-3 ${selectedBooking.status === 'confirmed' ? 'bg-green-50 text-green-700 border border-green-200' :
-                                    selectedBooking.status === 'pending' ? 'bg-yellow-50 text-yellow-700 border border-yellow-200' :
-                                        'bg-red-50 text-red-700 border border-red-200'
+                                selectedBooking.status === 'pending' ? 'bg-yellow-50 text-yellow-700 border border-yellow-200' :
+                                    'bg-red-50 text-red-700 border border-red-200'
                                 }`}>
                                 {selectedBooking.status === 'confirmed' ? <CheckCircle size={24} /> :
                                     selectedBooking.status === 'pending' ? <Clock size={24} /> : <XCircle size={24} />}
@@ -321,77 +356,113 @@ const AdminDashboard = () => {
                                     </div>
                                 </div>
 
-                                {/* Trip Info */}
-                                <div>
-                                    <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">Trip Details</h3>
-                                    <div className="space-y-3">
-                                        <div>
-                                            <p className="text-xs text-slate-500">Package</p>
-                                            <p className="font-medium text-slate-900 text-lg">{selectedBooking.packageTitle}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-xs text-slate-500">Travel Date</p>
-                                            <p className="font-medium text-slate-900">{selectedBooking.bookingDate}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-xs text-slate-500">Travelers</p>
-                                            <p className="font-medium text-slate-900">{selectedBooking.travelers} Person(s)</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Financials */}
-                            <div className="bg-slate-50 p-6 rounded-xl border border-slate-200">
-                                <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">Payment Details</h3>
-                                <div className="flex justify-between items-center">
+                                <div className="space-y-3">
                                     <div>
-                                        <p className="text-slate-500 text-sm">Total Amount</p>
-                                        <p className="text-3xl font-bold text-slate-900">₹{selectedBooking.totalPrice?.toLocaleString()}</p>
+                                        <p className="text-xs text-slate-500">Package</p>
+                                        <p className="font-medium text-slate-900 text-lg">{selectedBooking.packageTitle}</p>
                                     </div>
-                                    <div className="text-right">
-                                        <p className="text-slate-500 text-sm">Payment Status</p>
-                                        <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold uppercase mt-1 ${selectedBooking.status === 'confirmed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
-                                            }`}>
-                                            {selectedBooking.status === 'confirmed' ? 'Paid' : 'Pending'}
-                                        </span>
+                                    <div>
+                                        <p className="text-xs text-slate-500">Travel Date</p>
+                                        <p className="font-medium text-slate-900">{selectedBooking.bookingDate}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-slate-500">Travelers</p>
+                                        <p className="font-medium text-slate-900">{selectedBooking.travelers} Person(s)</p>
                                     </div>
                                 </div>
                             </div>
+                        </div>
 
-                            {/* Special Requests */}
-                            {selectedBooking.specialRequests && (
+                        {/* Detailed Traveler List */}
+                        {selectedBooking.travelersList && selectedBooking.travelersList.length > 0 && (
+                            <div className="bg-slate-50 p-6 rounded-xl border border-slate-200">
+                                <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">Traveler Details</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {selectedBooking.travelersList.map((traveler, index) => (
+                                        <div key={index} className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm relative">
+                                            <div className="absolute top-2 right-2 bg-blue-100 text-blue-600 text-xs font-bold px-2 py-1 rounded-full">
+                                                #{index + 1}
+                                            </div>
+                                            <p className="font-semibold text-slate-800">{traveler.name}</p>
+                                            <div className="text-sm text-slate-500 mt-1 space-y-1">
+                                                <p>Age: {traveler.age} • Gender: {traveler.gender}</p>
+                                                <p>Mobile: {traveler.mobile}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Financials */}
+                        <div className="bg-slate-50 p-6 rounded-xl border border-slate-200">
+                            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">Payment Details</h3>
+                            <div className="flex justify-between items-center">
                                 <div>
-                                    <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Special Requests</h3>
-                                    <div className="bg-blue-50 p-4 rounded-xl text-blue-800 text-sm border border-blue-100">
-                                        "{selectedBooking.specialRequests}"
-                                    </div>
+                                    <p className="text-slate-500 text-sm">Total Amount</p>
+                                    <p className="text-3xl font-bold text-slate-900">₹{selectedBooking.totalPrice?.toLocaleString()}</p>
                                 </div>
-                            )}
-
-                            {/* Meta Info */}
-                            <div className="pt-6 border-t border-slate-100 flex justify-between text-xs text-slate-400">
-                                <p>Booking ID: {selectedBooking.id}</p>
-                                <p>Booked On: {formatDate(selectedBooking.createdAt)}</p>
+                                <div className="text-right">
+                                    <p className="text-slate-500 text-sm">Payment Status</p>
+                                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold uppercase mt-1 ${selectedBooking.status === 'confirmed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                                        }`}>
+                                        {selectedBooking.status === 'confirmed' ? 'Paid' : 'Pending'}
+                                    </span>
+                                </div>
                             </div>
                         </div>
 
-                        <div className="p-6 border-t border-slate-100 bg-slate-50 rounded-b-2xl flex justify-end gap-3">
-                            <button
-                                onClick={() => setSelectedBooking(null)}
-                                className="px-6 py-2 bg-white border border-slate-200 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-colors"
-                            >
-                                Close
-                            </button>
-                            {selectedBooking.status === 'pending' && (
-                                <button
-                                    onClick={() => handleStatusUpdate(selectedBooking.id, 'confirmed')}
-                                    className="px-6 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors"
-                                >
-                                    Confirm Booking
-                                </button>
-                            )}
+                        {/* Profit Info (Admin Only) */}
+                        <div className="bg-purple-50 p-6 rounded-xl border border-purple-200">
+                            <h3 className="text-sm font-bold text-purple-800 uppercase tracking-wider mb-4">Profit Analysis</h3>
+                            <div className="flex justify-between items-center">
+                                <div>
+                                    <p className="text-purple-600 text-sm">Estimated Profit</p>
+                                    <p className="text-3xl font-bold text-purple-900">
+                                        ₹{calculateProfit(selectedBooking.totalPrice, selectedBooking.travelers).toLocaleString()}
+                                    </p>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-purple-600 text-sm">Margin</p>
+                                    <p className="font-bold text-purple-900">
+                                        {Math.round((calculateProfit(selectedBooking.totalPrice, selectedBooking.travelers) / selectedBooking.totalPrice) * 100)}%
+                                    </p>
+                                </div>
+                            </div>
                         </div>
+
+                        {/* Special Requests */}
+                        {selectedBooking.specialRequests && (
+                            <div>
+                                <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Special Requests</h3>
+                                <div className="bg-blue-50 p-4 rounded-xl text-blue-800 text-sm border border-blue-100">
+                                    "{selectedBooking.specialRequests}"
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Meta Info */}
+                        <div className="pt-6 border-t border-slate-100 flex justify-between text-xs text-slate-400">
+                            <p>Booking ID: {selectedBooking.id}</p>
+                            <p>Booked On: {formatDate(selectedBooking.createdAt)}</p>
+                        </div>
+                    </div>
+
+                    <div className="p-6 border-t border-slate-100 bg-slate-50 rounded-b-2xl flex justify-end gap-3">
+                        <button
+                            onClick={() => setSelectedBooking(null)}
+                            className="px-6 py-2 bg-white border border-slate-200 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-colors"
+                        >
+                            Close
+                        </button>
+                        {selectedBooking.status === 'pending' && (
+                            <button
+                                onClick={() => handleStatusUpdate(selectedBooking.id, 'confirmed')}
+                                className="px-6 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors"
+                            >
+                                Confirm Booking
+                            </button>
+                        )}
                     </div>
                 </div>
             )}

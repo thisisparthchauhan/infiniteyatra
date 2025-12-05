@@ -4,8 +4,9 @@ import { Calendar, Users, User, Mail, Phone, CheckCircle, ArrowRight, ArrowLeft,
 import { getPackageById } from '../data/packages';
 import { motion, AnimatePresence } from 'framer-motion';
 import { db } from '../firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
+import { sendBookingEmails } from '../services/email';
 
 const BookingPage = () => {
     const { id } = useParams();
@@ -25,8 +26,25 @@ const BookingPage = () => {
         name: '',
         email: '',
         phone: '',
-        specialRequests: ''
+        specialRequests: '',
+        travelersList: []
     });
+
+    useEffect(() => {
+        setBookingData(prev => {
+            const count = Number(prev.travelers) || 1;
+            const currentList = prev.travelersList || [];
+
+            if (currentList.length === count) return prev;
+
+            // Resize array while preserving existing data
+            const newList = Array(count).fill(null).map((_, i) =>
+                currentList[i] || { name: '', age: '', gender: '', mobile: '' }
+            );
+
+            return { ...prev, travelersList: newList };
+        });
+    }, [bookingData.travelers]);
 
     useEffect(() => {
         const packageData = getPackageById(id);
@@ -54,24 +72,79 @@ const BookingPage = () => {
         }));
     };
 
+    const handleTravelerChange = (index, field, value) => {
+        setBookingData(prev => {
+            const newList = [...prev.travelersList];
+            newList[index] = { ...newList[index], [field]: value };
+            return { ...prev, travelersList: newList };
+        });
+    };
+
     const nextStep = () => setStep(prev => prev + 1);
     const prevStep = () => setStep(prev => prev - 1);
+
+    const checkAvailability = async (packageId, date, requestedSlots) => {
+        try {
+            const q = query(
+                collection(db, 'bookings'),
+                where('packageId', '==', packageId),
+                where('bookingDate', '==', date)
+            );
+            const querySnapshot = await getDocs(q);
+            let totalBooked = 0;
+            querySnapshot.docs
+                .filter(doc => doc.data().status !== 'cancelled')
+                .forEach((doc) => {
+                    totalBooked += doc.data().travelers || 0;
+                });
+
+            const maxSlots = pkg.maxGroupSize || 12; // Default to 12 if not set
+            const remainingSlots = maxSlots - totalBooked;
+
+            if (requestedSlots > remainingSlots) {
+                return {
+                    available: false,
+                    remaining: remainingSlots,
+                    message: remainingSlots <= 0
+                        ? "Sorry, this date is fully booked."
+                        : `Only ${remainingSlots} slot${remainingSlots === 1 ? '' : 's'} left for this date.`
+                };
+            }
+            return { available: true };
+        } catch (error) {
+            console.error("Error checking availability:", error);
+            // In case of error, you might want to allow or block. 
+            // Blocking is safer to prevent overbooking.
+            return { available: false, message: "Unable to verify availability. Please try again." };
+        }
+    };
 
     const handleConfirm = async () => {
         if (!currentUser) return;
 
         setSubmitting(true);
+        setError(''); // Clear previous errors
+
         try {
+            // Check availability first
+            const availability = await checkAvailability(pkg.id, bookingData.date, Number(bookingData.travelers));
+
+            if (!availability.available) {
+                setError(availability.message);
+                setSubmitting(false);
+                return;
+            }
+
             const bookingRef = await addDoc(collection(db, 'bookings'), {
                 userId: currentUser.uid,
                 packageId: pkg.id,
                 packageTitle: pkg.title,
                 bookingDate: bookingData.date,
-
                 travelers: Number(bookingData.travelers),
                 contactName: bookingData.name,
                 contactEmail: bookingData.email,
                 contactPhone: bookingData.phone,
+                travelersList: bookingData.travelersList,
                 specialRequests: bookingData.specialRequests,
                 totalPrice: pkg.price * Number(bookingData.travelers),
                 status: 'pending',
@@ -80,8 +153,26 @@ const BookingPage = () => {
 
             setConfirmedBookingId(bookingRef.id);
 
+            // Send Emails (Non-blocking)
+            sendBookingEmails({
+                id: bookingRef.id,
+                contactName: bookingData.name,
+                contactEmail: bookingData.email,
+                contactPhone: bookingData.phone,
+                travelersList: bookingData.travelersList,
+                packageTitle: pkg.title,
+                bookingDate: bookingData.date,
+                travelers: Number(bookingData.travelers),
+                totalPrice: pkg.price * Number(bookingData.travelers),
+                specialRequests: bookingData.specialRequests
+            });
+
             // Redirect to WhatsApp
-            const message = `*Booking Confirmation*\n\n*Booking ID:* ${bookingRef.id}\n*Package:* ${pkg.title}\n*Date:* ${bookingData.date}\n*Travelers:* ${bookingData.travelers}\n*Name:* ${bookingData.name}\n\n--------------------------------\nSent via Infinite Yatra Website`;
+            let travelerDetails = bookingData.travelersList.map((t, i) =>
+                `Traveler ${i + 1}: ${t.name} (${t.age}, ${t.gender})`
+            ).join('\n');
+
+            const message = `*Booking Confirmation*\n\n*Booking ID:* ${bookingRef.id}\n*Package:* ${pkg.title}\n*Date:* ${bookingData.date}\n*Travelers:* ${bookingData.travelers}\n\n*Primary Contact:*\nName: ${bookingData.name}\nPhone: ${bookingData.phone}\n\n*Traveler Details:*\n${travelerDetails}\n\n--------------------------------\nSent via Infinite Yatra Website`;
             const whatsappUrl = `https://wa.me/919265799325?text=${encodeURIComponent(message)}`;
 
             // Try to open in new tab, if blocked, the user can click the button in the next step
@@ -100,9 +191,21 @@ const BookingPage = () => {
     };
 
     const handleWhatsAppShare = () => {
-        const message = `*Booking Confirmation*\n\n*Booking ID:* ${confirmedBookingId}\n*Package:* ${pkg.title}\n*Date:* ${bookingData.date}\n*Travelers:* ${bookingData.travelers}\n*Name:* ${bookingData.name}\n\n--------------------------------\nSent via Infinite Yatra Website`;
+        let travelerDetails = bookingData.travelersList.map((t, i) =>
+            `Traveler ${i + 1}: ${t.name} (${t.age}, ${t.gender})`
+        ).join('\n');
+
+        const message = `*Booking Confirmation*\n\n*Booking ID:* ${confirmedBookingId}\n*Package:* ${pkg.title}\n*Date:* ${bookingData.date}\n*Travelers:* ${bookingData.travelers}\n\n*Primary Contact:*\nName: ${bookingData.name}\nPhone: ${bookingData.phone}\n\n*Traveler Details:*\n${travelerDetails}\n\n--------------------------------\nSent via Infinite Yatra Website`;
         const whatsappUrl = `https://wa.me/919265799325?text=${encodeURIComponent(message)}`;
         window.open(whatsappUrl, '_blank');
+    };
+
+    const isFormValid = () => {
+        const contactValid = bookingData.name && bookingData.email && bookingData.phone;
+        const travelersValid = bookingData.travelersList.every(t =>
+            t.name && t.age && t.gender && t.mobile
+        );
+        return contactValid && travelersValid;
     };
 
     if (loading) {
@@ -187,6 +290,8 @@ const BookingPage = () => {
                                                             name="date"
                                                             value={bookingData.date}
                                                             onChange={handleInputChange}
+                                                            min={pkg.validDateRange?.start}
+                                                            max={pkg.validDateRange?.end}
                                                             className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
                                                             placeholder="Choose Custom Date"
                                                         />
@@ -197,6 +302,8 @@ const BookingPage = () => {
                                                         name="date"
                                                         value={bookingData.date}
                                                         onChange={handleInputChange}
+                                                        min={pkg.validDateRange?.start}
+                                                        max={pkg.validDateRange?.end}
                                                         className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
                                                     />
                                                 )}
@@ -250,47 +357,106 @@ const BookingPage = () => {
                                     exit={{ opacity: 0, x: -20 }}
                                     className="space-y-6"
                                 >
-                                    <div className="space-y-4">
-                                        <div className="relative">
-                                            <User className="absolute left-3 top-3 text-slate-400" size={18} />
-                                            <input
-                                                type="text"
-                                                name="name"
-                                                placeholder="Full Name"
-                                                value={bookingData.name}
-                                                onChange={handleInputChange}
-                                                className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
-                                            />
+                                    <div className="space-y-8">
+                                        {/* Primary Contact */}
+                                        <div className="bg-slate-50 p-6 rounded-xl border border-slate-200">
+                                            <h3 className="flex items-center gap-2 font-bold text-slate-800 mb-4 border-b border-slate-200 pb-2">
+                                                <User size={20} className="text-blue-600" /> Primary Contact
+                                            </h3>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div className="relative">
+                                                    <User className="absolute left-3 top-3 text-slate-400" size={18} />
+                                                    <input
+                                                        type="text"
+                                                        name="name"
+                                                        placeholder="Full Name"
+                                                        value={bookingData.name}
+                                                        onChange={handleInputChange}
+                                                        className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                                    />
+                                                </div>
+                                                <div className="relative">
+                                                    <Mail className="absolute left-3 top-3 text-slate-400" size={18} />
+                                                    <input
+                                                        type="email"
+                                                        name="email"
+                                                        placeholder="Email Address"
+                                                        value={bookingData.email}
+                                                        onChange={handleInputChange}
+                                                        className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                                    />
+                                                </div>
+                                                <div className="relative md:col-span-2">
+                                                    <Phone className="absolute left-3 top-3 text-slate-400" size={18} />
+                                                    <input
+                                                        type="tel"
+                                                        name="phone"
+                                                        placeholder="Phone Number"
+                                                        value={bookingData.phone}
+                                                        onChange={handleInputChange}
+                                                        className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                                    />
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div className="relative">
-                                            <Mail className="absolute left-3 top-3 text-slate-400" size={18} />
-                                            <input
-                                                type="email"
-                                                name="email"
-                                                placeholder="Email Address"
-                                                value={bookingData.email}
-                                                onChange={handleInputChange}
-                                                className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
-                                            />
+
+                                        {/* Travelers Details */}
+                                        <div className="space-y-4">
+                                            <h3 className="flex items-center gap-2 font-bold text-slate-800">
+                                                <Users size={20} className="text-blue-600" /> Traveler Details
+                                            </h3>
+                                            {bookingData.travelersList.map((traveler, index) => (
+                                                <div key={index} className="bg-slate-50 p-6 rounded-xl border border-slate-200 relative">
+                                                    <div className="absolute -left-3 top-6 bg-blue-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shadow-md">
+                                                        {index + 1}
+                                                    </div>
+                                                    <h4 className="font-semibold text-slate-700 mb-4 pl-4">Traveler {index + 1}</h4>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        <input
+                                                            type="text"
+                                                            placeholder="Full Name"
+                                                            value={traveler.name}
+                                                            onChange={(e) => handleTravelerChange(index, 'name', e.target.value)}
+                                                            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                                        />
+                                                        <div className="flex gap-4">
+                                                            <input
+                                                                type="number"
+                                                                placeholder="Age"
+                                                                value={traveler.age}
+                                                                onChange={(e) => handleTravelerChange(index, 'age', e.target.value)}
+                                                                className="w-1/2 px-4 py-3 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                                            />
+                                                            <select
+                                                                value={traveler.gender}
+                                                                onChange={(e) => handleTravelerChange(index, 'gender', e.target.value)}
+                                                                className="w-1/2 px-4 py-3 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none appearance-none"
+                                                            >
+                                                                <option value="">Gender</option>
+                                                                <option value="Male">Male</option>
+                                                                <option value="Female">Female</option>
+                                                                <option value="Other">Other</option>
+                                                            </select>
+                                                        </div>
+                                                        <input
+                                                            type="tel"
+                                                            placeholder="Mobile Number"
+                                                            value={traveler.mobile}
+                                                            onChange={(e) => handleTravelerChange(index, 'mobile', e.target.value)}
+                                                            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none md:col-span-2"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            ))}
                                         </div>
-                                        <div className="relative">
-                                            <Phone className="absolute left-3 top-3 text-slate-400" size={18} />
-                                            <input
-                                                type="tel"
-                                                name="phone"
-                                                placeholder="Phone Number"
-                                                value={bookingData.phone}
-                                                onChange={handleInputChange}
-                                                className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
-                                            />
-                                        </div>
+
                                         <div>
                                             <textarea
                                                 name="specialRequests"
                                                 placeholder="Any special requests? (Dietary, accessibility, etc.)"
                                                 value={bookingData.specialRequests}
                                                 onChange={handleInputChange}
-                                                className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none h-32 resize-none"
+                                                className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none h-24 resize-none"
                                             ></textarea>
                                         </div>
                                     </div>
@@ -310,7 +476,7 @@ const BookingPage = () => {
                                         </button>
                                         <button
                                             onClick={handleConfirm}
-                                            disabled={!bookingData.name || !bookingData.email || !bookingData.phone || submitting}
+                                            disabled={!isFormValid() || submitting}
                                             className="bg-blue-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                                         >
                                             {submitting ? (

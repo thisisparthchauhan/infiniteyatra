@@ -8,6 +8,42 @@ import {
 } from 'lucide-react';
 import SEO from '../components/SEO';
 import { generateItinerary as generateItineraryAPI } from '../services/groq';
+import { db, auth } from '../firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { onAuthStateChanged } from 'firebase/auth';
+
+
+const budgetOptions = [
+    { value: 'comfort', label: 'Comfort', icon: '🛋️', description: 'Standard' },
+    { value: 'premium', label: 'Premium', icon: '💎', description: 'High End' },
+    { value: 'luxury', label: 'Luxury', icon: '👑', description: 'Top Tier' }
+];
+
+const travelStyles = [
+    { value: 'cultural', label: 'Cultural', icon: Camera },
+    { value: 'classic', label: 'Classic', icon: Compass },
+    { value: 'nature', label: 'Nature', icon: Leaf },
+    { value: 'cityscape', label: 'Cityscape', icon: Hotel },
+    { value: 'historical', label: 'Historical', icon: MapPin }
+];
+
+const months = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+];
+
+const groupTypes = [
+    { value: 'solo', label: 'Solo', icon: Users },
+    { value: 'family', label: 'Family', icon: Users },
+    { value: 'couple', label: 'Couple', icon: Heart },
+    { value: 'friends', label: 'Friends', icon: Users },
+    { value: 'elderly', label: 'Elderly', icon: Users }
+];
+
+const paceOptions = [
+    { value: 'ambitious', label: 'Ambitious', icon: TrendingUp },
+    { value: 'relaxed', label: 'Relaxed', icon: Coffee }
+];
 
 const TripPlanner = () => {
     const [formData, setFormData] = useState({
@@ -29,43 +65,56 @@ const TripPlanner = () => {
     const [isGenerating, setIsGenerating] = useState(false);
     const [generatedItinerary, setGeneratedItinerary] = useState(null);
     const [showDatePicker, setShowDatePicker] = useState(false);
+    const [user, setUser] = useState(null);
+    const [isSaving, setIsSaving] = useState(false);
+    const [savedTripId, setSavedTripId] = useState(null);
+
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+            setUser(currentUser);
+        });
+        return () => unsubscribe();
+    }, []);
+
+    const saveTrip = async (dataToSave = null, silent = false) => {
+        if (!user) {
+            if (!silent) alert("Please login to save your trip!");
+            return null;
+        }
+
+        const tripData = dataToSave || generatedItinerary;
+        if (!tripData) return null;
+
+        setIsSaving(true);
+        try {
+            const docRef = await addDoc(collection(db, 'savedTrips'), {
+                userId: user.uid,
+                destination: tripData.destination,
+                days: tripData.days,
+                itinerary: tripData,
+                createdAt: serverTimestamp(),
+                isPublic: true,
+                isDeleted: false
+            });
+
+            setSavedTripId(docRef.id);
+            if (!silent) alert("Trip saved successfully! View it in My Trips.");
+            return docRef.id;
+        } catch (error) {
+            console.error("Error saving trip:", error);
+            if (!silent) alert("Failed to save trip.");
+            return null;
+        } finally {
+            setIsSaving(false);
+        }
+    };
 
     // Scroll to top when component mounts
     useEffect(() => {
         window.scrollTo(0, 0);
     }, []);
 
-    const budgetOptions = [
-        { value: 'comfort', label: 'Comfort', icon: '🛋️', description: 'Standard' },
-        { value: 'premium', label: 'Premium', icon: '💎', description: 'High End' },
-        { value: 'luxury', label: 'Luxury', icon: '👑', description: 'Top Tier' }
-    ];
 
-    const travelStyles = [
-        { value: 'cultural', label: 'Cultural', icon: Camera },
-        { value: 'classic', label: 'Classic', icon: Compass },
-        { value: 'nature', label: 'Nature', icon: Leaf },
-        { value: 'cityscape', label: 'Cityscape', icon: Hotel },
-        { value: 'historical', label: 'Historical', icon: MapPin }
-    ];
-
-    const months = [
-        'January', 'February', 'March', 'April', 'May', 'June',
-        'July', 'August', 'September', 'October', 'November', 'December'
-    ];
-
-    const groupTypes = [
-        { value: 'solo', label: 'Solo', icon: Users },
-        { value: 'family', label: 'Family', icon: Users },
-        { value: 'couple', label: 'Couple', icon: Heart },
-        { value: 'friends', label: 'Friends', icon: Users },
-        { value: 'elderly', label: 'Elderly', icon: Users }
-    ];
-
-    const paceOptions = [
-        { value: 'ambitious', label: 'Ambitious', icon: TrendingUp },
-        { value: 'relaxed', label: 'Relaxed', icon: Coffee }
-    ];
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -94,6 +143,19 @@ const TripPlanner = () => {
             const itinerary = await generateItineraryAPI(dataToSubmit);
             console.log("API Response:", itinerary); // Debug log
             setGeneratedItinerary(itinerary);
+
+            // Auto-save if user is logged in
+            // Auto-save if user is logged in
+            if (user) {
+                try {
+                    const savedId = await saveTrip(itinerary, true);
+                    if (savedId) {
+                        console.log("Auto-saved trip with ID:", savedId);
+                    }
+                } catch (err) {
+                    console.error("Auto-save failed:", err);
+                }
+            }
 
             // Scroll to results
             setTimeout(() => {
@@ -449,9 +511,48 @@ const TripPlanner = () => {
                                 <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
                                     Your {generatedItinerary.days}-Day Journey to {generatedItinerary.destination}
                                 </h2>
-                                <p className="text-slate-600 max-w-2xl mx-auto">
+                                <p className="text-slate-600 max-w-2xl mx-auto mb-6">
                                     Curated for {generatedItinerary.travelers} travelers • {formData.budget} style
                                 </p>
+
+                                {/* Save & Share Actions */}
+                                <div className="flex justify-center gap-4 mb-8">
+                                    <button
+                                        onClick={saveTrip}
+                                        disabled={isSaving}
+                                        className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 rounded-xl shadow-sm hover:shadow-md hover:border-blue-300 transition-all text-slate-700 font-medium"
+                                    >
+                                        {isSaving ? (
+                                            <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
+                                        ) : (
+                                            <Heart className="w-5 h-5 text-pink-500" />
+                                        )}
+                                        {isSaving ? 'Saving...' : (savedTripId ? 'Saved' : 'Save Trip')}
+                                    </button>
+                                    <button
+                                        onClick={async () => {
+                                            let linkToShare = window.location.href;
+
+                                            // If we have a saved trip ID, generate specific link
+                                            if (savedTripId) {
+                                                linkToShare = `${window.location.origin}/trip/${savedTripId}`;
+                                            } else if (user) {
+                                                // Try to save first if not saved yet
+                                                const newId = await saveTrip(generatedItinerary, true);
+                                                if (newId) {
+                                                    linkToShare = `${window.location.origin}/trip/${newId}`;
+                                                }
+                                            }
+
+                                            navigator.clipboard.writeText(linkToShare);
+                                            alert("Trip link copied to clipboard!");
+                                        }}
+                                        className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 rounded-xl shadow-sm hover:shadow-md hover:border-blue-300 transition-all text-slate-700 font-medium"
+                                    >
+                                        <Sparkles className="w-5 h-5 text-purple-500" />
+                                        Share
+                                    </button>
+                                </div>
                             </div>
 
                             {/* Day by Day Plan */}

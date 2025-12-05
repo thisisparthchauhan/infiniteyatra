@@ -269,6 +269,13 @@ const Navbar = () => {
                                                 <Package size={16} />
                                                 My Bookings
                                             </Link>
+                                            <Link
+                                                to="/my-trips"
+                                                className="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                            >
+                                                <Sparkles size={16} />
+                                                My Trips
+                                            </Link>
                                             <button
                                                 onClick={() => {
                                                     if (window.confirm('Are you sure you want to log out?')) {
@@ -451,6 +458,18 @@ const Navbar = () => {
                                 >
                                     <Package size={18} />
                                     My Bookings
+                                </Link>
+                                <Link
+                                    to="/my-trips"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    className="
+                                        w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-medium
+                                        text-blue-600 bg-blue-50 hover:bg-blue-100
+                                        transition-all duration-300
+                                    "
+                                >
+                                    <Sparkles size={18} />
+                                    My Trips
                                 </Link>
                                 <button
                                     onClick={() => {

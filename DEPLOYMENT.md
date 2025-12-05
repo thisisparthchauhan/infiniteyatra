@@ -1,21 +1,30 @@
 # How to Update Your Live Website
 
-Since your project is connected to Vercel and GitHub, updating your website is easy.
+Your website is hosted on **Firebase Hosting**.
 
-## The 3-Step Process
+**Live Link:** [https://infiniteyatra-iy.web.app/](https://infiniteyatra-iy.web.app/)
 
-1.  **Make Changes**: Edit your code (e.g., change text, styles) and save the files.
-2.  **Open Terminal**: Open your terminal in VS Code (Ctrl + `).
-3.  **Push to GitHub**: Run these 3 commands in order:
+## The 2-Step Process
 
-```bash
-git add .
-git commit -m "Describe your change here"
-git push
-```
+Since we have set up a shortcut script, you can deploy your latest changes with a single command.
+
+1.  **Open Terminal**: Open your terminal in VS Code (Ctrl + `).
+2.  **Run Deploy Command**:
+    ```bash
+    npm run deploy
+    ```
 
 ## What happens next?
-- **GitHub** receives your code.
-- **Vercel** automatically detects the new code.
-- Vercel **builds and deploys** your site (takes ~1-2 minutes).
-- Your changes go live at: https://infiniteyatra.vercel.app/
+1.  The script will automatically **build** your project (convert React code to production-ready HTML/JS).
+2.  It will **upload** the `dist` folder to Firebase.
+3.  Your changes will go live immediately at the link above.
+
+---
+
+### Manual Deployment (If needed)
+If the script doesn't work, you can run the commands manually:
+
+```bash
+npm run build
+npx firebase deploy
+```

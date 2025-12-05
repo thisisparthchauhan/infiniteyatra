@@ -20,6 +20,7 @@ export const packages = [
         difficulty: "Moderate",
         bestTime: "December to April",
         maxAltitude: "12,500 ft",
+        maxGroupSize: 12,
         description: "Kedarkantha is one of the most popular winter treks in India, offering stunning views of the Himalayan peaks. This trek takes you through beautiful pine forests, frozen lakes, and snow-covered meadows, culminating in a breathtaking summit climb.",
         highlights: [
             "Summit climb to 12,500 ft",
@@ -139,168 +140,7 @@ export const packages = [
             }
         ]
     },
-    {
-        id: 'kedarnath',
-        title: "Kedarnath Yatra",
-        location: "Uttarakhand, India",
-        image: kedarnathImg,
-        price: 17500,
-        priceDisplay: "₹17,500",
-        type: "custom",
-        rating: 5.0,
-        duration: "5 Days / 4 Nights",
-        difficulty: "Moderate",
-        bestTime: "May to October",
-        maxAltitude: "11,755 ft",
-        description: "Embark on a spiritual journey to Kedarnath, one of the twelve Jyotirlingas of Lord Shiva. This sacred pilgrimage takes you through the majestic Himalayas to the ancient Kedarnath Temple, offering both spiritual fulfillment and breathtaking natural beauty.",
-        highlights: [
-            "Visit the sacred Kedarnath Temple",
-            "Helicopter ride option available",
-            "Scenic trek through Himalayas",
-            "Visit to Gaurikund hot springs",
-            "Spiritual and cultural experience"
-        ],
-        itinerary: [
-            {
-                day: 1,
-                title: "Haridwar to Guptkashi",
-                description: "Drive from Haridwar to Guptkashi (215 km, 8-9 hours). Visit Devprayag and enjoy scenic mountain views. Overnight stay in Guptkashi.",
-                activities: ["Scenic drive", "Devprayag visit", "Hotel check-in"]
-            },
-            {
-                day: 2,
-                title: "Guptkashi to Kedarnath",
-                description: "Drive to Gaurikund, then trek or take helicopter to Kedarnath (18 km trek or 10 min flight). Visit Kedarnath Temple. Overnight stay in Kedarnath.",
-                activities: ["Temple darshan", "Evening aarti", "Overnight stay"]
-            },
-            {
-                day: 3,
-                title: "Kedarnath to Guptkashi",
-                description: "Early morning darshan at Kedarnath Temple. Trek back to Gaurikund and drive to Guptkashi. Overnight stay in Guptkashi.",
-                activities: ["Morning darshan", "Return trek", "Rest in Guptkashi"]
-            },
-            {
-                day: 4,
-                title: "Guptkashi to Rishikesh",
-                description: "Drive from Guptkashi to Rishikesh (165 km, 7-8 hours). Visit local temples and explore Rishikesh. Overnight stay in Rishikesh.",
-                activities: ["Temple visits", "Ganga aarti", "Market exploration"]
-            },
-            {
-                day: 5,
-                title: "Rishikesh to Haridwar",
-                description: "Morning visit to Laxman Jhula and Ram Jhula. Drive to Haridwar (25 km, 1 hour). Trip concludes.",
-                activities: ["Sightseeing", "Return journey", "Trip conclusion"]
-            }
-        ],
-        inclusions: [
-            "Accommodation in hotels and guesthouses",
-            "Daily breakfast and dinner",
-            "Transportation in comfortable vehicles",
-            "Experienced guide and support staff",
-            "All permits and entry fees",
-            "First aid and medical support"
-        ],
-        exclusions: [
-            "Helicopter charges (optional)",
-            "Lunch and snacks",
-            "Personal expenses",
-            "Travel insurance",
-            "Pony/Doli charges for trek",
-            "Any additional activities"
-        ],
-        images: [
-            kedarnathImg,
-            "https://images.unsplash.com/photo-1548013146-72479768bada?q=80&w=2076&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1609137144813-7d9921338f24?q=80&w=2070&auto=format&fit=crop"
-        ]
-    },
-    {
-        id: 'kashmir',
-        title: "Kashmir Paradise",
-        location: "Jammu & Kashmir, India",
-        image: kashmirImg,
-        price: 20000,
-        priceDisplay: "₹20,000",
-        type: "custom",
-        rating: 5.0,
-        duration: "7 Days / 6 Nights",
-        difficulty: "Easy",
-        bestTime: "March to October",
-        maxAltitude: "8,960 ft",
-        description: "Experience the breathtaking beauty of Kashmir, often called 'Paradise on Earth'. This comprehensive tour takes you through the stunning valleys of Srinagar, Gulmarg, Pahalgam, and Sonmarg, offering a perfect blend of natural beauty, adventure, and cultural experiences.",
-        highlights: [
-            "Shikara ride on Dal Lake",
-            "Gondola ride in Gulmarg",
-            "Visit to Betaab Valley",
-            "Explore Mughal Gardens",
-            "Experience houseboat stay"
-        ],
-        itinerary: [
-            {
-                day: 1,
-                title: "Arrival in Srinagar",
-                description: "Arrive at Srinagar airport. Transfer to houseboat on Dal Lake. Evening Shikara ride and explore floating gardens. Overnight in houseboat.",
-                activities: ["Airport pickup", "Shikara ride", "Houseboat stay"]
-            },
-            {
-                day: 2,
-                title: "Srinagar Local Sightseeing",
-                description: "Visit Mughal Gardens (Nishat, Shalimar, Chashme Shahi), Shankaracharya Temple. Explore local markets. Overnight in hotel.",
-                activities: ["Garden visits", "Temple visit", "Shopping"]
-            },
-            {
-                day: 3,
-                title: "Srinagar to Gulmarg",
-                description: "Drive to Gulmarg (50 km, 2 hours). Enjoy Gondola cable car ride to Apharwat Peak. Optional skiing and snow activities. Return to Srinagar.",
-                activities: ["Gondola ride", "Snow activities", "Photography"]
-            },
-            {
-                day: 4,
-                title: "Srinagar to Pahalgam",
-                description: "Drive to Pahalgam (95 km, 3 hours) via Saffron fields and Awantipora ruins. Visit Betaab Valley and Aru Valley. Overnight in Pahalgam.",
-                activities: ["Valley exploration", "Nature walks", "River activities"]
-            },
-            {
-                day: 5,
-                title: "Pahalgam Exploration",
-                description: "Full day to explore Pahalgam. Visit Chandanwari, Baisaran meadows. Optional pony rides and nature walks. Overnight in Pahalgam.",
-                activities: ["Meadow visits", "Pony rides", "Leisure time"]
-            },
-            {
-                day: 6,
-                title: "Pahalgam to Srinagar via Sonmarg",
-                description: "Drive to Sonmarg (150 km, 5 hours). Visit Thajiwas Glacier. Return to Srinagar. Overnight in Srinagar.",
-                activities: ["Glacier visit", "Scenic drive", "Photography"]
-            },
-            {
-                day: 7,
-                title: "Departure from Srinagar",
-                description: "Morning at leisure for last-minute shopping. Transfer to airport for departure with beautiful memories of Kashmir.",
-                activities: ["Shopping", "Airport drop", "Trip conclusion"]
-            }
-        ],
-        inclusions: [
-            "Accommodation in houseboats and hotels",
-            "Daily breakfast and dinner",
-            "All transfers and sightseeing by private vehicle",
-            "Shikara ride on Dal Lake",
-            "Professional tour guide",
-            "All permits and taxes"
-        ],
-        exclusions: [
-            "Gondola cable car tickets",
-            "Lunch and snacks",
-            "Personal expenses and tips",
-            "Travel insurance",
-            "Pony rides and adventure activities",
-            "Any meals not mentioned in inclusions"
-        ],
-        images: [
-            kashmirImg,
-            "https://images.unsplash.com/photo-1605640840605-14ac1855827b?q=80&w=2062&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1567157577867-05ccb1388e66?q=80&w=2054&auto=format&fit=crop"
-        ]
-    },
+
     {
         id: 'tungnath',
         title: "Tungnath Trek",
@@ -309,12 +149,13 @@ export const packages = [
         price: 6000,
         priceDisplay: "₹6,000",
         type: "fixed",
-        availableDates: ["2025-04-15", "2025-05-01", "2025-05-15"],
+        availableDates: ["2026-01-17"],
         rating: 5.0,
         duration: "4 Days / 3 Nights",
         difficulty: "Easy to Moderate",
         bestTime: "April to November",
         maxAltitude: "13,000 ft",
+        maxGroupSize: 12,
         description: "Trek to Tungnath, the highest Shiva temple in the world, and continue to Chandrashila peak for panoramic Himalayan views. This short but rewarding trek offers spiritual significance combined with stunning natural beauty and is perfect for beginners.",
         highlights: [
             "Visit world's highest Shiva temple",
@@ -379,12 +220,17 @@ export const packages = [
         price: 35000,
         priceDisplay: "₹35,000",
         type: "custom",
+        validDateRange: {
+            start: "2026-05-01",
+            end: "2026-10-30"
+        },
         discount: "Early Bird Discount",
         rating: 5.0,
         duration: "10 Days / 9 Nights",
         difficulty: "Moderate",
         bestTime: "May to October",
         maxAltitude: "11,755 ft",
+        maxGroupSize: 12,
         description: "Embark on the holy Chardham Yatra in 2026. Visit Gangotri, Yamunotri, Kedarnath, and Badrinath. Book now to avail early bird discounts!",
         highlights: [
             "Visit Gangotri & Yamunotri",
@@ -479,12 +325,17 @@ export const packages = [
         price: 18000,
         priceDisplay: "₹18,000",
         type: "custom",
+        validDateRange: {
+            start: "2026-05-01",
+            end: "2026-10-30"
+        },
         pdf: "/itineraries/IY_The_Soul_Of_Himalayas.pdf",
         rating: 5.0,
         duration: "7 Days / 6 Nights",
         difficulty: "Moderate",
         bestTime: "Year Round",
         maxAltitude: "12,500 ft",
+        maxGroupSize: 12,
         description: `✨ The Soul of Himalayas – Infinite Yatra Signature Expedition
 
 Kedarnath • Tungnath • Badrinath • 5 Prayag • Rishikesh • River Rafting
