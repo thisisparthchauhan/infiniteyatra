@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, Phone, Search, MapPin, Info, Sparkles, BookOpen, Home, User, Package, Mail, LogOut, LayoutDashboard } from 'lucide-react';
+import { Menu, X, Phone, Search, MapPin, Info, Sparkles, BookOpen, Home, User, Package, Mail, LogOut, LayoutDashboard, Heart } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useWishlist } from '../context/WishlistContext';
 
 import logo from '../assets/logo-new.png';
 
@@ -12,6 +13,7 @@ const Navbar = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const { currentUser, logout } = useAuth();
+    const { wishlist } = useWishlist();
 
     const isAuthPage = location.pathname === '/login' || location.pathname === '/signup';
     const isTripPlannerPage = location.pathname === '/trip-planner';
@@ -22,18 +24,18 @@ const Navbar = () => {
             setIsScrolled(window.scrollY > 50);
 
             // Detect active section for highlighting
-            const sections = ['destinations', 'blog-preview', 'about', 'contact'];
+            const sections = ['destinations', 'blog-preview', 'about'];
 
             // Check if we're near the bottom of the page (contact section)
-            const windowHeight = window.innerHeight;
-            const documentHeight = document.documentElement.scrollHeight;
-            const scrollTop = window.scrollY;
-            const isNearBottom = scrollTop + windowHeight >= documentHeight - 200;
+            // const windowHeight = window.innerHeight;
+            // const documentHeight = document.documentElement.scrollHeight;
+            // const scrollTop = window.scrollY;
+            // const isNearBottom = scrollTop + windowHeight >= documentHeight - 200;
 
-            if (isNearBottom) {
-                setActiveSection('contact');
-                return;
-            }
+            // if (isNearBottom) {
+            //     setActiveSection('contact');
+            //     return;
+            // }
 
             // Find which section is currently in view
             const current = sections.find(section => {
@@ -78,7 +80,7 @@ const Navbar = () => {
         { name: 'AI Trip Planner', icon: Sparkles, href: '/trip-planner', type: 'link' },
         { name: 'Blog', icon: BookOpen, href: '/blog', type: 'link' },
         { name: 'About Us', icon: Info, href: '#about', type: 'scroll' },
-        { name: 'Contact', icon: Mail, href: '#contact', type: 'scroll' }
+        { name: 'Contact', icon: Mail, href: '/contact', type: 'link' }
     ];
 
     const navBackground = isAuthPage || isScrolled || isDestinationsPage
@@ -225,6 +227,29 @@ const Navbar = () => {
                                 >
                                     <Search size={20} />
                                 </button>
+                            )}
+
+                            {/* Wishlist Icon */}
+                            {!isAuthPage && (
+                                <Link
+                                    to="/wishlist"
+                                    className={`
+                                        p-2.5 rounded-full transition-all duration-300 relative
+                                        ${isAuthPage || isScrolled
+                                            ? 'hover:bg-slate-100 text-slate-600'
+                                            : 'hover:bg-white/20 text-white'
+                                        }
+                                        hover:scale-110
+                                    `}
+                                    title="My Wishlist"
+                                >
+                                    <Heart size={20} className={wishlist.length > 0 ? "fill-red-500 text-red-500" : ""} />
+                                    {wishlist.length > 0 && (
+                                        <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                                            {wishlist.length}
+                                        </span>
+                                    )}
+                                </Link>
                             )}
 
                             {currentUser ? (
@@ -429,6 +454,23 @@ const Navbar = () => {
                                 </a>
                             );
                         })}
+
+                        {/* Mobile Wishlist Link */}
+                        {!isAuthPage && (
+                            <Link
+                                to="/wishlist"
+                                className="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-slate-700 hover:bg-slate-50 transition-all duration-300"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                            >
+                                <Heart size={20} className={wishlist.length > 0 ? "text-red-500 fill-red-500" : ""} />
+                                <span>My Wishlist</span>
+                                {wishlist.length > 0 && (
+                                    <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                                        {wishlist.length}
+                                    </span>
+                                )}
+                            </Link>
+                        )}
                     </div>
 
                     {/* Divider */}

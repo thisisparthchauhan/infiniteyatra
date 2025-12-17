@@ -2,6 +2,8 @@ import React, { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider } from './context/AuthContext';
+import { WishlistProvider } from './context/WishlistContext';
+import { ToastProvider } from './context/ToastContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
@@ -23,6 +25,8 @@ import BookingPage from './pages/BookingPage';
 import MyBookings from './pages/MyBookings';
 import MyTrips from './pages/MyTrips';
 import TripDetails from './pages/TripDetails';
+import ContactUs from './pages/ContactUs';
+import WishlistPage from './pages/WishlistPage';
 
 // Lazy load AdminDashboard to avoid potential circular dependencies or build issues
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
@@ -31,66 +35,69 @@ function App() {
   return (
     <HelmetProvider>
       <AuthProvider>
-        <Router>
-          <ScrollToTop />
-          <div className="flex flex-col min-h-screen">
-            <Navbar />
-            <EnquiryPopup />
-            <main className="flex-grow">
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/destinations" element={<DestinationsPage />} />
-                <Route path="/trip-planner" element={<TripPlanner />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/signup" element={<Signup />} />
-                <Route path="/package/:id" element={<PackageDetail />} />
-                <Route path="/blog" element={<BlogPage />} />
-                <Route path="/blog/:id" element={<BlogPost />} />
-                <Route path="/careers" element={<Careers />} />
-                <Route
-                  path="/booking/:id"
-                  element={
-                    <ProtectedRoute>
-                      <BookingPage />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/my-bookings"
-                  element={
-                    <ProtectedRoute>
-                      <MyBookings />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/my-trips"
-                  element={
-                    <ProtectedRoute>
-                      <MyTrips />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route path="/trip/:tripId" element={<TripDetails />} />
-                <Route
-                  path="/admin"
-                  element={
-                    <AdminRoute>
-                      <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
-                        <AdminDashboard />
-                      </Suspense>
-                    </AdminRoute>
-                  }
-                />
-              </Routes>
-            </main>
-            <Footer />
-          </div>
-        </Router>
+        <WishlistProvider>
+          <ToastProvider>
+            <Router>
+              <ScrollToTop />
+              <Navbar />
+              <main>
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/destinations" element={<DestinationsPage />} />
+                  <Route path="/trip-planner" element={<TripPlanner />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/signup" element={<Signup />} />
+                  <Route path="/package/:id" element={<PackageDetail />} />
+                  <Route path="/wishlist" element={<WishlistPage />} />
+                  <Route path="/blog" element={<BlogPage />} />
+                  <Route path="/blog/:id" element={<BlogPost />} />
+                  <Route path="/contact" element={<ContactUs />} />
+                  <Route path="/careers" element={<Careers />} />
+                  <Route
+                    path="/booking/:id"
+                    element={
+                      <ProtectedRoute>
+                        <BookingPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/my-bookings"
+                    element={
+                      <ProtectedRoute>
+                        <MyBookings />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/my-trips"
+                    element={
+                      <ProtectedRoute>
+                        <MyTrips />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route path="/trip/:tripId" element={<TripDetails />} />
+                  <Route
+                    path="/admin"
+                    element={
+                      <AdminRoute>
+                        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+                          <AdminDashboard />
+                        </Suspense>
+                      </AdminRoute>
+                    }
+                  />
+                </Routes>
+              </main>
+              <Footer />
+              <EnquiryPopup />
+            </Router>
+          </ToastProvider>
+        </WishlistProvider>
       </AuthProvider>
     </HelmetProvider>
   );
 }
 
 export default App;
-

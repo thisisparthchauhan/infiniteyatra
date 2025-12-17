@@ -1,11 +1,20 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { MapPin, Star, ArrowRight } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { MapPin, Star, ArrowRight, Heart } from 'lucide-react';
 import { packages } from '../data/packages';
+import { useWishlist } from '../context/WishlistContext';
 
 
 const Destinations = ({ packages: propPackages, title = "Explore Infinite", showViewAll = true }) => {
     const displayPackages = propPackages || packages;
+    const { isInWishlist, toggleWishlist } = useWishlist();
+    const navigate = useNavigate();
+
+    const handleWishlistClick = (e, pkg) => {
+        e.preventDefault(); // Prevent navigating to package detail
+        e.stopPropagation();
+        toggleWishlist(pkg);
+    };
 
     return (
         <section id="destinations" className="py-24 bg-white relative z-10">
@@ -30,7 +39,7 @@ const Destinations = ({ packages: propPackages, title = "Explore Infinite", show
                             <Link
                                 key={dest.id}
                                 to={`/package/${dest.id}`}
-                                className="group cursor-pointer"
+                                className="group cursor-pointer block relative"
                             >
                                 <div className="relative aspect-[4/5] overflow-hidden rounded-2xl mb-4">
                                     <img
@@ -38,9 +47,20 @@ const Destinations = ({ packages: propPackages, title = "Explore Infinite", show
                                         alt={dest.title}
                                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                     />
-                                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full flex items-center gap-1 text-sm font-medium text-slate-900 shadow-sm">
-                                        <Star size={14} className="text-yellow-500 fill-yellow-500" />
-                                        {dest.rating}
+                                    <div className="absolute top-4 right-4 flex gap-2">
+                                        <button
+                                            onClick={(e) => handleWishlistClick(e, dest)}
+                                            className="bg-white/90 backdrop-blur-sm p-2 rounded-full shadow-sm hover:scale-110 transition-transform group/heart"
+                                        >
+                                            <Heart
+                                                size={18}
+                                                className={`transition-colors ${isInWishlist(dest.id) ? 'fill-red-500 text-red-500' : 'text-slate-400 group-hover/heart:text-red-500'}`}
+                                            />
+                                        </button>
+                                        <div className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full flex items-center gap-1 text-sm font-medium text-slate-900 shadow-sm h-[34px]">
+                                            <Star size={14} className="text-yellow-500 fill-yellow-500" />
+                                            {dest.rating}
+                                        </div>
                                     </div>
 
                                     {/* Hover Overlay */}
@@ -96,4 +116,3 @@ const Destinations = ({ packages: propPackages, title = "Explore Infinite", show
 };
 
 export default Destinations;
-

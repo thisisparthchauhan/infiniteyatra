@@ -1,17 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { MapPin, Star, Calendar, TrendingUp, Mountain, Check, X, ArrowLeft, Phone, Mail, MessageCircle } from 'lucide-react';
+import { MapPin, Star, Calendar, TrendingUp, Mountain, Check, X, ArrowLeft, Phone, Mail, MessageCircle, Heart } from 'lucide-react';
 import { getPackageById } from '../data/packages';
 import PhotoGallery from '../components/PhotoGallery';
 import Reviews from '../components/Reviews';
 import FAQ from '../components/FAQ';
 import SEO from '../components/SEO';
+import { useWishlist } from '../context/WishlistContext';
 
 const PackageDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [pkg, setPkg] = useState(null);
     const [activeDay, setActiveDay] = useState(null);
+    const { isInWishlist, toggleWishlist } = useWishlist();
 
     useEffect(() => {
         const packageData = getPackageById(id);
@@ -53,11 +55,23 @@ const PackageDetail = () => {
 
                 {/* Back Button */}
                 <button
-                    onClick={() => navigate('/')}
+                    onClick={() => navigate(-1)}
                     className="absolute top-24 left-6 md:left-12 p-3 bg-white/10 backdrop-blur-md rounded-full 
-                             text-white hover:bg-white/20 transition-all duration-300 group border border-white/20"
+                             text-white hover:bg-white/20 transition-all duration-300 group border border-white/20 z-10"
                 >
                     <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+                </button>
+
+                {/* Wishlist Button */}
+                <button
+                    onClick={() => toggleWishlist(pkg)}
+                    className="absolute top-24 right-6 md:right-12 p-3 bg-white/10 backdrop-blur-md rounded-full 
+                             text-white hover:bg-white/20 transition-all duration-300 group border border-white/20 z-10"
+                >
+                    <Heart
+                        size={20}
+                        className={`transition-colors ${isInWishlist(pkg.id) ? 'fill-red-500 text-red-500' : 'text-white group-hover:text-red-400'}`}
+                    />
                 </button>
 
                 {/* Hero Content */}

@@ -7,6 +7,8 @@ import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
 import { sendBookingEmails } from '../services/email';
+import PhoneInput from 'react-phone-input-2';
+import 'react-phone-input-2/lib/style.css';
 
 const BookingPage = () => {
     const { id } = useParams();
@@ -72,10 +74,21 @@ const BookingPage = () => {
         }));
     };
 
+    const handlePhoneChange = (value) => {
+        setBookingData(prev => ({
+            ...prev,
+            phone: value
+        }));
+    };
+
     const handleTravelerChange = (index, field, value) => {
         setBookingData(prev => {
             const newList = [...prev.travelersList];
-            newList[index] = { ...newList[index], [field]: value };
+            if (field === 'mobile') {
+                newList[index] = { ...newList[index], mobile: value };
+            } else {
+                newList[index] = { ...newList[index], [field]: value };
+            }
             return { ...prev, travelersList: newList };
         });
     };
@@ -387,14 +400,21 @@ const BookingPage = () => {
                                                     />
                                                 </div>
                                                 <div className="relative md:col-span-2">
-                                                    <Phone className="absolute left-3 top-3 text-slate-400" size={18} />
-                                                    <input
-                                                        type="tel"
-                                                        name="phone"
-                                                        placeholder="Phone Number"
+                                                    <PhoneInput
+                                                        country={'in'}
                                                         value={bookingData.phone}
-                                                        onChange={handleInputChange}
-                                                        className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                                        onChange={handlePhoneChange}
+                                                        inputStyle={{
+                                                            width: '100%',
+                                                            height: '48px',
+                                                            fontSize: '16px',
+                                                            paddingLeft: '48px',
+                                                            borderRadius: '0.5rem',
+                                                            border: '1px solid #e2e8f0'
+                                                        }}
+                                                        containerStyle={{
+                                                            width: '100%'
+                                                        }}
                                                     />
                                                 </div>
                                             </div>
@@ -438,13 +458,24 @@ const BookingPage = () => {
                                                                 <option value="Other">Other</option>
                                                             </select>
                                                         </div>
-                                                        <input
-                                                            type="tel"
-                                                            placeholder="Mobile Number"
-                                                            value={traveler.mobile}
-                                                            onChange={(e) => handleTravelerChange(index, 'mobile', e.target.value)}
-                                                            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none md:col-span-2"
-                                                        />
+                                                        <div className="md:col-span-2">
+                                                            <PhoneInput
+                                                                country={'in'}
+                                                                value={traveler.mobile}
+                                                                onChange={(value) => handleTravelerChange(index, 'mobile', value)}
+                                                                inputStyle={{
+                                                                    width: '100%',
+                                                                    height: '48px',
+                                                                    fontSize: '16px',
+                                                                    paddingLeft: '48px',
+                                                                    borderRadius: '0.5rem',
+                                                                    border: '1px solid #e2e8f0'
+                                                                }}
+                                                                containerStyle={{
+                                                                    width: '100%'
+                                                                }}
+                                                            />
+                                                        </div>
                                                     </div>
                                                 </div>
                                             ))}
