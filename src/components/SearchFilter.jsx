@@ -4,6 +4,7 @@ import { Search, SlidersHorizontal, X } from 'lucide-react';
 const SearchFilter = ({ filters, setFilters, minPrice, maxPrice }) => {
     const categories = ['All', 'Trek', 'Tour', 'Spiritual', 'Adventure'];
     const durations = ['All', 'Short (< 5 days)', 'Medium (5-8 days)', 'Long (> 8 days)'];
+    const sortOptions = ['Recommended', 'Price: Low to High', 'Price: High to Low', 'Duration: Shortest', 'Duration: Longest'];
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -19,7 +20,8 @@ const SearchFilter = ({ filters, setFilters, minPrice, maxPrice }) => {
             search: '',
             priceRange: maxPrice,
             category: 'All',
-            duration: 'All'
+            duration: 'All',
+            sortBy: 'Recommended'
         });
     };
 
@@ -54,7 +56,7 @@ const SearchFilter = ({ filters, setFilters, minPrice, maxPrice }) => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-6 border-t border-slate-100">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 pt-6 border-t border-slate-100">
                 {/* Price Range */}
                 <div className="space-y-3">
                     <div className="flex justify-between items-center">
@@ -86,8 +88,8 @@ const SearchFilter = ({ filters, setFilters, minPrice, maxPrice }) => {
                                 key={cat}
                                 onClick={() => handleCategoryChange(cat)}
                                 className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-300 ${filters.category === cat
-                                        ? 'bg-blue-600 text-white shadow-md shadow-blue-200'
-                                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                    ? 'bg-blue-600 text-white shadow-md shadow-blue-200'
+                                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                                     }`}
                             >
                                 {cat}
@@ -107,6 +109,21 @@ const SearchFilter = ({ filters, setFilters, minPrice, maxPrice }) => {
                     >
                         {durations.map(dur => (
                             <option key={dur} value={dur}>{dur}</option>
+                        ))}
+                    </select>
+                </div>
+
+                {/* Sort By */}
+                <div className="space-y-3">
+                    <label className="text-sm font-semibold text-slate-700">Sort By</label>
+                    <select
+                        name="sortBy"
+                        value={filters.sortBy || 'Recommended'}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none cursor-pointer"
+                    >
+                        {sortOptions.map(option => (
+                            <option key={option} value={option}>{option}</option>
                         ))}
                     </select>
                 </div>

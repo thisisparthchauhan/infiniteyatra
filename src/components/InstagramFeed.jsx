@@ -34,10 +34,7 @@ const InstagramFeed = () => {
         <section className="py-20 bg-white overflow-hidden">
             <div className="container mx-auto px-6">
                 <div className="text-center mb-12">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-pink-50 text-pink-600 rounded-full text-sm font-medium mb-4">
-                        <Instagram size={16} />
-                        <span>@infiniteyatra</span>
-                    </div>
+
                     <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
                         Follow Our Adventures
                     </h2>
@@ -50,7 +47,7 @@ const InstagramFeed = () => {
                     {posts.map((post) => (
                         <a
                             key={post.id}
-                            href="https://www.instagram.com"
+                            href="https://www.instagram.com/infinite.yatra/"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="group relative aspect-square overflow-hidden rounded-xl cursor-pointer"
@@ -76,7 +73,7 @@ const InstagramFeed = () => {
 
                 <div className="text-center mt-12">
                     <a
-                        href="https://www.instagram.com"
+                        href="https://www.instagram.com/infinite.yatra/"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-full font-semibold hover:shadow-lg hover:shadow-pink-500/30 transition-all duration-300 transform hover:-translate-y-1"

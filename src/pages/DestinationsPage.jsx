@@ -12,7 +12,8 @@ const DestinationsPage = () => {
         search: '',
         priceRange: maxPrice,
         category: 'All',
-        duration: 'All'
+        duration: 'All',
+        sortBy: 'Recommended'
     });
 
     const [filteredPackages, setFilteredPackages] = useState(packages);
@@ -59,7 +60,23 @@ const DestinationsPage = () => {
             return searchMatch && priceMatch && categoryMatch && durationMatch;
         });
 
-        setFilteredPackages(result);
+
+
+        // Sorting Logic
+        const sortedResult = [...result].sort((a, b) => {
+            if (filters.sortBy === 'Price: Low to High') {
+                return a.price - b.price;
+            } else if (filters.sortBy === 'Price: High to Low') {
+                return b.price - a.price;
+            } else if (filters.sortBy === 'Duration: Shortest') {
+                return parseInt(a.duration) - parseInt(b.duration);
+            } else if (filters.sortBy === 'Duration: Longest') {
+                return parseInt(b.duration) - parseInt(a.duration);
+            }
+            return 0; // Recommended (Default order)
+        });
+
+        setFilteredPackages(sortedResult);
     }, [filters]);
 
     return (

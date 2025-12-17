@@ -28,15 +28,14 @@ import TripDetails from './pages/TripDetails';
 import ContactUs from './pages/ContactUs';
 import WishlistPage from './pages/WishlistPage';
 
-// Lazy load AdminDashboard to avoid potential circular dependencies or build issues
-const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+import AdminDashboard from './pages/AdminDashboard';
 
 function App() {
   return (
     <HelmetProvider>
-      <AuthProvider>
-        <WishlistProvider>
-          <ToastProvider>
+      <ToastProvider>
+        <AuthProvider>
+          <WishlistProvider>
             <Router>
               <ScrollToTop />
               <Navbar />
@@ -82,9 +81,7 @@ function App() {
                     path="/admin"
                     element={
                       <AdminRoute>
-                        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
-                          <AdminDashboard />
-                        </Suspense>
+                        <AdminDashboard />
                       </AdminRoute>
                     }
                   />
@@ -93,9 +90,9 @@ function App() {
               <Footer />
               <EnquiryPopup />
             </Router>
-          </ToastProvider>
-        </WishlistProvider>
-      </AuthProvider>
+          </WishlistProvider>
+        </AuthProvider>
+      </ToastProvider>
     </HelmetProvider>
   );
 }

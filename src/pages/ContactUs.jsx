@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Mail, Phone, MapPin, Send, Instagram } from 'lucide-react';
 import SEO from '../components/SEO';
+import { sendContactEmail } from '../services/email';
+import { useToast } from '../context/ToastContext';
 
 const ContactUs = () => {
     const [formData, setFormData] = useState({
@@ -11,6 +13,7 @@ const ContactUs = () => {
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitStatus, setSubmitStatus] = useState(null);
+    const { addToast } = useToast();
 
     const handleChange = (e) => {
         setFormData({
@@ -23,15 +26,20 @@ const ContactUs = () => {
         e.preventDefault();
         setIsSubmitting(true);
 
-        // Simulate API call for now (we'll connect EmailJS later)
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        const result = await sendContactEmail(formData);
 
-        console.log('Form submitted:', formData);
-        setSubmitStatus('success');
+        if (result.success) {
+            console.log('Form submitted:', formData);
+            setSubmitStatus('success');
+            addToast('Message sent successfully!', 'success');
+            setFormData({ name: '', email: '', subject: '', message: '' });
+            setTimeout(() => setSubmitStatus(null), 5000);
+        } else {
+            console.error('Submission failed');
+            setSubmitStatus('error');
+            addToast('Failed to send message. Please try again.', 'error');
+        }
         setIsSubmitting(false);
-        setFormData({ name: '', email: '', subject: '', message: '' });
-
-        setTimeout(() => setSubmitStatus(null), 5000);
     };
 
     return (

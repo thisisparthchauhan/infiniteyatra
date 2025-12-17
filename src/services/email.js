@@ -49,4 +49,31 @@ export const sendBookingEmails = async (bookingData) => {
         console.error('Failed to send emails:', error);
         return { success: false, error: error };
     }
+}
+
+
+export const sendContactEmail = async (formData) => {
+    if (!PUBLIC_KEY || PUBLIC_KEY === 'YOUR_PUBLIC_KEY') {
+        console.warn('EmailJS Public Key not found. Emails will not be sent.');
+        // Simulate success for demo purposes if keys aren't set
+        return { success: true, message: 'Simulated success (keys missing)' };
+    }
+
+    try {
+        const contactParams = {
+            from_name: formData.name,
+            from_email: formData.email,
+            subject: formData.subject,
+            message: formData.message,
+            to_name: 'Infinite Yatra Team'
+        };
+
+        // Reuse Admin Template for Contact Inquiries as it likely sends to the admin
+        await emailjs.send(SERVICE_ID, TEMPLATE_ID_ADMIN, contactParams, PUBLIC_KEY);
+
+        return { success: true };
+    } catch (error) {
+        console.error('Failed to send contact email:', error);
+        return { success: false, error: error };
+    }
 };
