@@ -5,7 +5,7 @@ import { useToast } from '../context/ToastContext';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
-const ContactUs = () => {
+const ContactNew = () => {
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -262,4 +262,4 @@ const ContactUs = () => {
     );
 };
 
-export default ContactUs;
+export default ContactNew;

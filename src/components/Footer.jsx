@@ -1,7 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Instagram, Mail, Send, Phone } from 'lucide-react';
+import { Instagram, Mail, Send, Phone, CheckCircle, AlertCircle } from 'lucide-react';
 import logo from '../assets/logo-new.png';
+import { db } from '../firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { useToast } from '../context/ToastContext';
 
 // Custom Icons for brands not in lucide-react (or specific versions)
 const XIcon = ({ size = 20, className }) => (
@@ -23,6 +26,32 @@ const WhatsAppIcon = ({ size = 20, className }) => (
 );
 
 const Footer = () => {
+    const { addToast } = useToast();
+    const [email, setEmail] = useState('');
+    const [status, setStatus] = useState('idle'); // idle, loading, success, error
+
+    const handleSubscribe = async (e) => {
+        e.preventDefault();
+        if (!email) return;
+
+        setStatus('loading');
+        try {
+            await addDoc(collection(db, 'newsletter_subscribers'), {
+                email,
+                timestamp: serverTimestamp()
+            });
+            setStatus('success');
+            addToast('Subscribed successfully! Welcome to Infinite Yatra.', 'success');
+            setEmail('');
+            setTimeout(() => setStatus('idle'), 3000);
+        } catch (error) {
+            console.error('Subscription error:', error);
+            setStatus('error');
+            addToast(`Subscription failed: ${error.message || 'Please try again'}`, 'error');
+            setTimeout(() => setStatus('idle'), 3000);
+        }
+    };
+
     return (
         <footer className="relative bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 text-white overflow-hidden">
             {/* Decorative gradient orbs */}
@@ -116,25 +145,44 @@ const Footer = () => {
                         <p className="text-slate-400 mb-6 text-sm leading-relaxed">
                             Subscribe to our newsletter for exclusive travel deals and inspiration.
                         </p>
-                        <div className="space-y-3">
+                        <form onSubmit={handleSubscribe} className="space-y-3">
                             <div className="relative">
                                 <input
                                     type="email"
                                     placeholder="Enter your email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    disabled={status === 'loading' || status === 'success'}
                                     className="w-full bg-slate-800/50 backdrop-blur-sm text-white px-4 py-3 rounded-xl outline-none 
                                              border border-slate-700/50 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 
-                                             transition-all duration-300 placeholder:text-slate-500"
+                                             transition-all duration-300 placeholder:text-slate-500 disabled:opacity-50"
+                                    required
                                 />
                             </div>
-                            <button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 
-                                             px-4 py-3 rounded-xl transition-all duration-300 font-medium
-                                             shadow-lg shadow-blue-600/20 hover:shadow-xl hover:shadow-blue-600/30
-                                             hover:scale-[1.02] active:scale-[0.98]
-                                             flex items-center justify-center gap-2 group">
-                                Subscribe
-                                <Send size={16} className="group-hover:translate-x-1 transition-transform duration-300" />
+                            <button
+                                type="submit"
+                                disabled={status === 'loading' || status === 'success'}
+                                className={`w-full px-4 py-3 rounded-xl transition-all duration-300 font-medium
+                                             shadow-lg hover:shadow-xl active:scale-[0.98]
+                                             flex items-center justify-center gap-2 group
+                                             ${status === 'success'
+                                        ? 'bg-green-600 shadow-green-600/20'
+                                        : status === 'error'
+                                            ? 'bg-red-600 shadow-red-600/20'
+                                            : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-blue-600/20'
+                                    }`}
+                            >
+                                {status === 'loading' ? (
+                                    <span>Subscribing...</span>
+                                ) : status === 'success' ? (
+                                    <>Subscribed <CheckCircle size={16} /></>
+                                ) : status === 'error' ? (
+                                    <>Error, Try Again <AlertCircle size={16} /></>
+                                ) : (
+                                    <>Subscribe <Send size={16} className="group-hover:translate-x-1 transition-transform duration-300" /></>
+                                )}
                             </button>
-                        </div>
+                        </form>
                     </div>
                 </div>
 

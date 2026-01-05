@@ -5,12 +5,14 @@ import { db } from '../firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { MapPin, Calendar, Clock, TrendingUp, Sparkles, Share2, ArrowLeft, Loader2 } from 'lucide-react';
 import SEO from '../components/SEO';
+import { useToast } from '../context/ToastContext';
 
 const TripDetails = () => {
     const { tripId } = useParams();
     const [trip, setTrip] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const { addToast } = useToast();
 
     useEffect(() => {
         const fetchTrip = async () => {
@@ -88,7 +90,7 @@ const TripDetails = () => {
                             <button
                                 onClick={() => {
                                     navigator.clipboard.writeText(window.location.href);
-                                    alert("Link copied to clipboard!");
+                                    addToast("Link copied to clipboard!", "success");
                                 }}
                                 className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg shadow-sm hover:border-blue-300 text-blue-600 font-medium transition-all"
                             >

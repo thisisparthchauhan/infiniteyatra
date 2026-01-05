@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
-import { Send, Mail, Phone, User, MessageSquare, CheckCircle, AlertCircle } from 'lucide-react';
+import { Send, Mail, Phone, User, MessageSquare, AlertCircle } from 'lucide-react';
+import { sendContactEmail } from '../services/email';
+import { useToast } from '../context/ToastContext';
+import { db } from '../firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
-const Contact2 = () => {
+const Contact = () => {
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -9,8 +13,8 @@ const Contact2 = () => {
         message: ''
     });
     const [errors, setErrors] = useState({});
-    const [submitStatus, setSubmitStatus] = useState(null); // 'success', 'error', null
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const { addToast } = useToast();
 
     const validateForm = () => {
         const newErrors = {};
@@ -61,21 +65,32 @@ const Contact2 = () => {
         }
 
         setIsSubmitting(true);
-        setSubmitStatus(null);
 
-        // Simulate API call (replace with actual API endpoint)
         try {
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            // 1. Save to Firestore
+            await addDoc(collection(db, 'enquiries'), {
+                ...formData,
+                timestamp: serverTimestamp(),
+                status: 'new',
+                source: 'home_contact_section'
+            });
 
-            // Success
-            setSubmitStatus('success');
-            setFormData({ name: '', email: '', phone: '', message: '' });
+            // 2. Send Email
+            const result = await sendContactEmail({
+                ...formData,
+                subject: `New Contact from ${formData.name} (Home Page)`
+            });
 
-            // Clear success message after 5 seconds
-            setTimeout(() => setSubmitStatus(null), 5000);
+            if (result.success) {
+                addToast('Message sent successfully! We\'ll get back to you soon.', 'success');
+                setFormData({ name: '', email: '', phone: '', message: '' });
+            } else {
+                addToast('Message saved, but email service reported an issue. We will still contact you.', 'warning');
+            }
+
         } catch (error) {
-            setSubmitStatus('error');
-            setTimeout(() => setSubmitStatus(null), 5000);
+            console.error('Submission failed:', error);
+            addToast(`Error: ${error.message || 'Something went wrong. Please try again later.'}`, 'error');
         } finally {
             setIsSubmitting(false);
         }
@@ -119,8 +134,8 @@ const Contact2 = () => {
                                             value={formData.name}
                                             onChange={handleChange}
                                             className={`w-full pl-12 pr-4 py-3.5 rounded-xl border-2 ${errors.name
-                                                    ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20'
-                                                    : 'border-slate-200 focus:border-blue-500 focus:ring-blue-500/20'
+                                                ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20'
+                                                : 'border-slate-200 focus:border-blue-500 focus:ring-blue-500/20'
                                                 } focus:ring-4 outline-none transition-all duration-300 text-slate-900 placeholder:text-slate-400`}
                                             placeholder="John Doe"
                                         />
@@ -149,8 +164,8 @@ const Contact2 = () => {
                                             value={formData.email}
                                             onChange={handleChange}
                                             className={`w-full pl-12 pr-4 py-3.5 rounded-xl border-2 ${errors.email
-                                                    ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20'
-                                                    : 'border-slate-200 focus:border-blue-500 focus:ring-blue-500/20'
+                                                ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20'
+                                                : 'border-slate-200 focus:border-blue-500 focus:ring-blue-500/20'
                                                 } focus:ring-4 outline-none transition-all duration-300 text-slate-900 placeholder:text-slate-400`}
                                             placeholder="john@example.com"
                                         />
@@ -201,8 +216,8 @@ const Contact2 = () => {
                                         onChange={handleChange}
                                         rows="6"
                                         className={`w-full pl-12 pr-4 py-3.5 rounded-xl border-2 ${errors.message
-                                                ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20'
-                                                : 'border-slate-200 focus:border-blue-500 focus:ring-blue-500/20'
+                                            ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20'
+                                            : 'border-slate-200 focus:border-blue-500 focus:ring-blue-500/20'
                                             } focus:ring-4 outline-none transition-all duration-300 resize-none text-slate-900 placeholder:text-slate-400`}
                                         placeholder="Tell us about your travel plans or any questions you have..."
                                     ></textarea>
@@ -240,25 +255,6 @@ const Contact2 = () => {
                                     )}
                                 </button>
                             </div>
-
-                            {/* Status Messages */}
-                            {submitStatus === 'success' && (
-                                <div className="mt-4 p-4 bg-green-50 border-2 border-green-200 rounded-xl flex items-center gap-3 text-green-800">
-                                    <CheckCircle size={20} className="flex-shrink-0" />
-                                    <p className="text-sm font-medium">
-                                        Thank you for your message! We'll get back to you soon.
-                                    </p>
-                                </div>
-                            )}
-
-                            {submitStatus === 'error' && (
-                                <div className="mt-4 p-4 bg-red-50 border-2 border-red-200 rounded-xl flex items-center gap-3 text-red-800">
-                                    <AlertCircle size={20} className="flex-shrink-0" />
-                                    <p className="text-sm font-medium">
-                                        Oops! Something went wrong. Please try again later.
-                                    </p>
-                                </div>
-                            )}
                         </form>
                     </div>
                 </div>
@@ -267,4 +263,4 @@ const Contact2 = () => {
     );
 };
 
-export default Contact2;
+export default Contact;

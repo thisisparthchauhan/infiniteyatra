@@ -10,6 +10,7 @@ import ScrollToTop from './components/ScrollToTop';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
 import EnquiryPopup from './components/EnquiryPopup';
+import AIChatbot from './components/AIChatbot';
 
 // Pages
 import Home from './pages/Home';
@@ -27,6 +28,7 @@ import MyTrips from './pages/MyTrips';
 import TripDetails from './pages/TripDetails';
 import ContactUs from './pages/ContactUs';
 import WishlistPage from './pages/WishlistPage';
+import ContactNew from './pages/ContactNew';
 
 import AdminDashboard from './pages/AdminDashboard';
 
@@ -50,7 +52,7 @@ function App() {
                   <Route path="/wishlist" element={<WishlistPage />} />
                   <Route path="/blog" element={<BlogPage />} />
                   <Route path="/blog/:id" element={<BlogPost />} />
-                  <Route path="/contact" element={<ContactUs />} />
+                  <Route path="/contact" element={<ContactNew />} />
                   <Route path="/careers" element={<Careers />} />
                   <Route
                     path="/booking/:id"
@@ -89,6 +91,7 @@ function App() {
               </main>
               <Footer />
               <EnquiryPopup />
+              <AIChatbot />
             </Router>
           </WishlistProvider>
         </AuthProvider>

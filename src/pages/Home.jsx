@@ -1,12 +1,12 @@
 import React, { useEffect } from 'react';
 import Hero from '../components/Hero';
+import TrustBadges from '../components/TrustBadges';
 import Destinations from '../components/Destinations';
+import LiveActivityFeed from '../components/LiveActivityFeed';
 import About from '../components/About';
 import BlogPreview from '../components/BlogPreview';
 import Contact from '../components/Contact';
 import SEO from '../components/SEO';
-
-
 import InstagramFeed from '../components/InstagramFeed';
 
 const Home = () => {
@@ -37,7 +37,9 @@ const Home = () => {
                 description="Welcome to Infinite Yatra. Discover your next adventure with our curated travel packages and expert guides."
             />
             <Hero />
+            <TrustBadges />
             <Destinations />
+            <LiveActivityFeed />
             <BlogPreview />
             <About />
             <InstagramFeed />
