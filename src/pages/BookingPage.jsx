@@ -29,7 +29,9 @@ const BookingPage = () => {
         email: '',
         phone: '',
         specialRequests: '',
-        travelersList: []
+        travelersList: [],
+        referralCode: '',
+        discount: 0
     });
 
     useEffect(() => {
@@ -348,7 +350,37 @@ const BookingPage = () => {
                                         </div>
                                     </div>
 
-
+                                    {/* Referral Code */}
+                                    <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-xl p-6 border-2 border-purple-200">
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <Gift className="text-purple-600" size={20} />
+                                            <h3 className="font-bold text-slate-900">Have a Referral Code?</h3>
+                                        </div>
+                                        <p className="text-sm text-slate-600 mb-4">
+                                            Enter a friend's referral code and get ₹1,000 OFF!
+                                        </p>
+                                        <div className="flex gap-3">
+                                            <input
+                                                type="text"
+                                                name="referralCode"
+                                                placeholder="Enter code (e.g., PARTH2026)"
+                                                value={bookingData.referralCode}
+                                                onChange={handleInputChange}
+                                                className="flex-1 px-4 py-3 bg-white border border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none uppercase"
+                                            />
+                                            {bookingData.discount > 0 && (
+                                                <div className="flex items-center gap-2 bg-green-100 text-green-700 px-4 py-3 rounded-lg font-bold">
+                                                    <CheckCircle size={20} />
+                                                    ₹{bookingData.discount} OFF
+                                                </div>
+                                            )}
+                                        </div>
+                                        {bookingData.referralCode && bookingData.discount === 0 && (
+                                            <p className="text-xs text-slate-500 mt-2">
+                                                Code will be validated at checkout
+                                            </p>
+                                        )}
+                                    </div>
 
                                     <div className="flex justify-end pt-6">
                                         <button

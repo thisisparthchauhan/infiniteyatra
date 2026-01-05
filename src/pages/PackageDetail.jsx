@@ -8,6 +8,9 @@ import FAQ from '../components/FAQ';
 import SEO from '../components/SEO';
 import { useWishlist } from '../context/WishlistContext';
 import { useToast } from '../context/ToastContext';
+import SmartPricing from '../components/SmartPricing';
+import PackageBookingCounter from '../components/PackageBookingCounter';
+import RecentPackageBookings from '../components/RecentPackageBookings';
 
 const PackageDetail = () => {
     const { id } = useParams();
@@ -321,15 +324,9 @@ const PackageDetail = () => {
                     {/* Right Column - Booking Card */}
                     <div className="lg:col-span-1">
                         <div className="sticky top-24 space-y-6">
-                            {/* Price Card */}
+                            {/* Smart Pricing Card */}
                             <div className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
-                                <div className="bg-gradient-to-br from-blue-600 to-purple-600 p-6 text-white">
-                                    <p className="text-sm opacity-90 mb-2">Starting from</p>
-                                    <div className="flex items-baseline gap-2">
-                                        <span className="text-4xl font-bold">{pkg.priceDisplay}</span>
-                                        <span className="text-sm opacity-90">per person</span>
-                                    </div>
-                                </div>
+                                <SmartPricing packageData={pkg} />
 
                                 <div className="p-6 space-y-4">
                                     <button
@@ -394,6 +391,12 @@ const PackageDetail = () => {
                                     </div>
                                 </div>
                             </div>
+
+                            {/* Booking Counter */}
+                            <PackageBookingCounter packageId={id} packageTitle={pkg.title} />
+
+                            {/* Recent Bookings */}
+                            <RecentPackageBookings packageTitle={pkg.title} />
 
                             {/* Info Card */}
                             <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-6 border border-blue-100">

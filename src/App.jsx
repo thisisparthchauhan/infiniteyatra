@@ -29,8 +29,10 @@ import TripDetails from './pages/TripDetails';
 import ContactUs from './pages/ContactUs';
 import WishlistPage from './pages/WishlistPage';
 import ContactNew from './pages/ContactNew';
+import UserDashboard from './pages/UserDashboard';
 
 import AdminDashboard from './pages/AdminDashboard';
+import ReferralWidget from './components/ReferralWidget';
 
 function App() {
   return (
@@ -50,6 +52,14 @@ function App() {
                   <Route path="/signup" element={<Signup />} />
                   <Route path="/package/:id" element={<PackageDetail />} />
                   <Route path="/wishlist" element={<WishlistPage />} />
+                  <Route
+                    path="/dashboard"
+                    element={
+                      <ProtectedRoute>
+                        <UserDashboard />
+                      </ProtectedRoute>
+                    }
+                  />
                   <Route path="/blog" element={<BlogPage />} />
                   <Route path="/blog/:id" element={<BlogPost />} />
                   <Route path="/contact" element={<ContactNew />} />
@@ -92,6 +102,7 @@ function App() {
               <Footer />
               <EnquiryPopup />
               <AIChatbot />
+              <ReferralWidget />
             </Router>
           </WishlistProvider>
         </AuthProvider>
