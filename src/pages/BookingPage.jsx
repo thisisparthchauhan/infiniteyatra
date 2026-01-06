@@ -182,21 +182,16 @@ const BookingPage = () => {
                 specialRequests: bookingData.specialRequests
             });
 
-            // Redirect to WhatsApp
-            let travelerDetails = bookingData.travelersList.map((t, i) =>
-                `Traveler ${i + 1}: ${t.name} (${t.age}, ${t.gender})`
-            ).join('\n');
+            // Redirect to Success Page
+            navigate('/booking-success', {
+                state: {
+                    bookingId: bookingRef.id,
+                    packageTitle: pkg.title,
+                    amount: pkg.price * Number(bookingData.travelers) - (bookingData.discount || 0),
+                    date: bookingData.date
+                }
+            });
 
-            const message = `*Booking Confirmation*\n\n*Booking ID:* ${bookingRef.id}\n*Package:* ${pkg.title}\n*Date:* ${bookingData.date}\n*Travelers:* ${bookingData.travelers}\n\n*Primary Contact:*\nName: ${bookingData.name}\nPhone: ${bookingData.phone}\n\n*Traveler Details:*\n${travelerDetails}\n\n--------------------------------\nSent via Infinite Yatra Website`;
-            const whatsappUrl = `https://wa.me/919265799325?text=${encodeURIComponent(message)}`;
-
-            // Try to open in new tab, if blocked, the user can click the button in the next step
-            const newWindow = window.open(whatsappUrl, '_blank');
-            if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
-                console.log("Popup blocked, user needs to click manually");
-            }
-
-            nextStep();
         } catch (error) {
             console.error("Error saving booking:", error);
             setError("Failed to save booking. Please try again or contact support.");
@@ -238,7 +233,7 @@ const BookingPage = () => {
                 <div className="mb-12">
                     <div className="flex items-center justify-between relative">
                         <div className="absolute left-0 right-0 top-1/2 h-1 bg-slate-200 -z-10"></div>
-                        {[1, 2, 3, 4].map((s) => (
+                        {[1, 2, 3].map((s) => (
                             <div key={s} className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-colors ${step >= s ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-500'}`}>
                                 {s}
                             </div>
@@ -248,7 +243,6 @@ const BookingPage = () => {
                         <span>Selection</span>
                         <span>Details</span>
                         <span>Payment</span>
-                        <span>Confirmation</span>
                     </div>
                 </div>
 
@@ -595,6 +589,17 @@ const BookingPage = () => {
                                             <div className="flex items-center gap-2 text-xs text-slate-500 mt-2 justify-center">
                                                 <Lock size={12} />
                                                 Payments are 256-bit encrypted and secure
+                                            </div>
+
+                                            {/* Cancellation Policy */}
+                                            <div className="mt-4 p-4 bg-slate-50 rounded-xl border border-slate-200 text-sm text-slate-600">
+                                                <h5 className="font-bold text-slate-800 mb-2">Cancellation & Refund Policy</h5>
+                                                <ul className="list-disc pl-4 space-y-1">
+                                                    <li>100% refund if cancelled 30 days before the trip.</li>
+                                                    <li>50% refund if cancelled 15-29 days before the trip.</li>
+                                                    <li>No refund if cancelled within 14 days of the trip.</li>
+                                                    <li>In case of weather-related cancellations by operator, full refund or batch shift is provided.</li>
+                                                </ul>
                                             </div>
                                         </div>
                                     </div>

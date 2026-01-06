@@ -121,10 +121,10 @@ const PackageBookingCounter = ({ packageId, packageTitle }) => {
                         </div>
                         <div className="flex-1">
                             <p className="font-bold text-lg mb-1">
-                                ⚡ Only {stats.spotsLeft} spots left!
+                                ⚡ Limited slots per batch!
                             </p>
                             <p className="text-sm text-white/90">
-                                Book now before it's sold out
+                                High demand season - Book early
                             </p>
                         </div>
                     </div>

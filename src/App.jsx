@@ -34,6 +34,7 @@ import UserDashboard from './pages/UserDashboard';
 import StoriesPage from './pages/StoriesPage';
 
 import AdminDashboard from './pages/AdminDashboard';
+import BookingSuccess from './pages/BookingSuccess';
 import ReferralWidget from './components/ReferralWidget';
 
 const Layout = ({ children }) => {
@@ -122,6 +123,7 @@ function App() {
                     }
                   />
                   <Route path="/connect" element={<QRLanding />} />
+                  <Route path="/booking-success" element={<BookingSuccess />} />
                 </Routes>
               </Layout>
             </Router>
