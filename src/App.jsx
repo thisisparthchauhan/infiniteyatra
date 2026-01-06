@@ -30,6 +30,7 @@ import ContactUs from './pages/ContactUs';
 import WishlistPage from './pages/WishlistPage';
 import ContactNew from './pages/ContactNew';
 import UserDashboard from './pages/UserDashboard';
+import StoriesPage from './pages/StoriesPage';
 
 import AdminDashboard from './pages/AdminDashboard';
 import ReferralWidget from './components/ReferralWidget';
@@ -62,6 +63,7 @@ function App() {
                   />
                   <Route path="/blog" element={<BlogPage />} />
                   <Route path="/blog/:id" element={<BlogPost />} />
+                  <Route path="/stories" element={<StoriesPage />} />
                   <Route path="/contact" element={<ContactNew />} />
                   <Route path="/careers" element={<Careers />} />
                   <Route

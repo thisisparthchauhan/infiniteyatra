@@ -4,7 +4,7 @@ import TrustBadges from '../components/TrustBadges';
 import Destinations from '../components/Destinations';
 import LiveActivityFeed from '../components/LiveActivityFeed';
 import About from '../components/About';
-import BlogPreview from '../components/BlogPreview';
+import TravelStories from '../components/TravelStories';
 import Contact from '../components/Contact';
 import SEO from '../components/SEO';
 import InstagramFeed from '../components/InstagramFeed';
@@ -40,7 +40,7 @@ const Home = () => {
             <TrustBadges />
             <Destinations />
             <LiveActivityFeed />
-            <BlogPreview />
+            <TravelStories />
             <About />
             <InstagramFeed />
             <Contact />
