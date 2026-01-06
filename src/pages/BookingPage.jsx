@@ -600,6 +600,11 @@ const BookingPage = () => {
                                                     <li>No refund if cancelled within 14 days of the trip.</li>
                                                     <li>In case of weather-related cancellations by operator, full refund or batch shift is provided.</li>
                                                 </ul>
+                                                <div className="mt-3 pt-3 border-t border-slate-200">
+                                                    <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 font-medium text-xs flex items-center gap-1">
+                                                        Read full Terms & Conditions <ArrowRight size={12} />
+                                                    </a>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

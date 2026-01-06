@@ -35,6 +35,7 @@ import StoriesPage from './pages/StoriesPage';
 
 import AdminDashboard from './pages/AdminDashboard';
 import BookingSuccess from './pages/BookingSuccess';
+import TermsConditions from './pages/TermsConditions';
 import ReferralWidget from './components/ReferralWidget';
 
 const Layout = ({ children }) => {
@@ -124,6 +125,7 @@ function App() {
                   />
                   <Route path="/connect" element={<QRLanding />} />
                   <Route path="/booking-success" element={<BookingSuccess />} />
+                  <Route path="/terms" element={<TermsConditions />} />
                 </Routes>
               </Layout>
             </Router>
