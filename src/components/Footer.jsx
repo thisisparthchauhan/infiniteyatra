@@ -64,9 +64,12 @@ const Footer = () => {
             <div className="relative z-10 container mx-auto px-6 py-20">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-12 lg:gap-16 mb-16">
                     <div className="space-y-6">
-                        <h3 className="text-4xl tracking-widest text-white" style={{ fontFamily: "'Raleway', sans-serif", fontWeight: 100 }}>
-                            INFINITE YATRA
-                        </h3>
+                        <div className="flex flex-col">
+                            <h3 className="text-3xl font-bold tracking-widest text-white leading-tight" style={{ fontFamily: "'Raleway', sans-serif", fontWeight: 700 }}>
+                                INFINITE YATRA
+                            </h3>
+                            <span className="text-[10px] tracking-[0.3em] font-medium text-slate-300" style={{ fontFamily: "'Raleway', sans-serif" }}>EXPLORE INFINITE</span>
+                        </div>
                         <p className="text-slate-400 leading-relaxed text-sm">
                             Discover breathtaking destinations and create unforgettable memories with Infinite Yatra.
                         </p>

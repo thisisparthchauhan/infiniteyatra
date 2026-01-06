@@ -120,9 +120,10 @@ const Navbar = () => {
                         {/* Logo */}
                         <Link
                             to="/"
-                            className="flex items-center group relative z-10"
+                            className="flex flex-col items-center group relative z-10"
                         >
-                            <span className={`text-3xl tracking-widest ${textColor}`} style={{ fontFamily: "'Raleway', sans-serif", fontWeight: 100 }}>INFINITE YATRA</span>
+                            <span className={`text-2xl font-bold tracking-widest ${textColor}`} style={{ fontFamily: "'Raleway', sans-serif", fontWeight: 700 }}>INFINITE YATRA</span>
+                            <span className={`text-[10px] tracking-[0.3em] font-medium ${textColor}`} style={{ fontFamily: "'Raleway', sans-serif" }}>EXPLORE INFINITE</span>
                         </Link>
 
                         {/* Desktop Navigation */}
