@@ -128,7 +128,7 @@ const AdminDashboard = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            await updateDoc(doc(db, 'packages', currentPackage.id), currentPackage);
+            await setDoc(doc(db, 'packages', currentPackage.id), currentPackage, { merge: true });
             await refreshPackages();
             setCurrentPackage(null);
             alert("Package updated successfully!");
