@@ -122,11 +122,7 @@ const Navbar = () => {
                             to="/"
                             className="flex items-center group relative z-10"
                         >
-                            <img
-                                src={logo}
-                                alt="Infinite Yatra"
-                                className="h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
-                            />
+                            <span className={`text-3xl tracking-widest ${textColor}`} style={{ fontFamily: "'Raleway', sans-serif", fontWeight: 100 }}>INFINITE YATRA</span>
                         </Link>
 
                         {/* Desktop Navigation */}
