@@ -20,6 +20,7 @@ const BookingPage = () => {
     const [submitting, setSubmitting] = useState(false);
     const [confirmedBookingId, setConfirmedBookingId] = useState(null);
     const [error, setError] = useState('');
+    const [agreedToTerms, setAgreedToTerms] = useState(false);
 
     const [bookingData, setBookingData] = useState({
         date: '',
@@ -601,9 +602,20 @@ const BookingPage = () => {
                                                     <li>In case of weather-related cancellations by operator, full refund or batch shift is provided.</li>
                                                 </ul>
                                                 <div className="mt-3 pt-3 border-t border-slate-200">
-                                                    <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 font-medium text-xs flex items-center gap-1">
-                                                        Read full Terms & Conditions <ArrowRight size={12} />
-                                                    </a>
+                                                    <div className="flex items-start gap-3">
+                                                        <div className="flex items-center h-5">
+                                                            <input
+                                                                id="terms-checkbox"
+                                                                type="checkbox"
+                                                                checked={agreedToTerms}
+                                                                onChange={(e) => setAgreedToTerms(e.target.checked)}
+                                                                className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                                                            />
+                                                        </div>
+                                                        <label htmlFor="terms-checkbox" className="text-sm text-slate-700 cursor-pointer select-none">
+                                                            I agree to the <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 font-semibold hover:underline">Terms & Conditions</a>, Cancellation Policy, and Trip Rules.
+                                                        </label>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -618,7 +630,7 @@ const BookingPage = () => {
                                         </button>
                                         <button
                                             onClick={handleConfirm}
-                                            disabled={submitting}
+                                            disabled={submitting || !agreedToTerms}
                                             className="bg-green-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors flex items-center gap-2 shadow-lg shadow-green-200"
                                         >
                                             {submitting ? (
