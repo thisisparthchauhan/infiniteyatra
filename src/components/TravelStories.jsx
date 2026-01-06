@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, Plus, MapPin, Heart, MessageCircle, Eye } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { collection, query, orderBy, limit, getDocs, doc, updateDoc, increment } from 'firebase/firestore';
@@ -9,6 +9,7 @@ import StoryCard from './StoryCard';
 import CreateStoryModal from './CreateStoryModal';
 
 const TravelStories = () => {
+    const navigate = useNavigate();
     const [stories, setStories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showCreateModal, setShowCreateModal] = useState(false);
@@ -65,8 +66,9 @@ const TravelStories = () => {
 
     const handleShareStoryClick = () => {
         if (!currentUser) {
-            alert('Please login or sign up to share your travel story!');
-            // You can also redirect to login page or show login modal
+            if (window.confirm('Please login or sign up to share your travel story! Click OK to go to login page.')) {
+                navigate('/login');
+            }
             return;
         }
         setShowCreateModal(true);
