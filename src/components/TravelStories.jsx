@@ -21,15 +21,21 @@ const TravelStories = () => {
     const fetchStories = async () => {
         try {
             const storiesRef = collection(db, 'travelStories');
-            const q = query(storiesRef, orderBy('createdAt', 'desc'), limit(6));
+            const q = query(storiesRef, orderBy('createdAt', 'desc'), limit(20));
             const querySnapshot = await getDocs(q);
 
-            const storiesData = querySnapshot.docs.map(doc => ({
+            const allStories = querySnapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data()
             }));
 
-            setStories(storiesData);
+            // Separate featured/admin stories from community stories
+            const featuredStories = allStories.filter(story => story.isFeatured || story.isAdmin);
+            const communityStories = allStories.filter(story => !story.isFeatured && !story.isAdmin);
+
+            // Show featured stories first, then community stories (limit to 6 total for homepage)
+            const sortedStories = [...featuredStories, ...communityStories].slice(0, 6);
+            setStories(sortedStories);
         } catch (error) {
             console.error('Error fetching stories:', error);
         } finally {
@@ -55,6 +61,15 @@ const TravelStories = () => {
         } catch (error) {
             console.error('Error liking story:', error);
         }
+    };
+
+    const handleShareStoryClick = () => {
+        if (!currentUser) {
+            alert('Please login or sign up to share your travel story!');
+            // You can also redirect to login page or show login modal
+            return;
+        }
+        setShowCreateModal(true);
     };
 
     const containerVariants = {
@@ -121,7 +136,7 @@ const TravelStories = () => {
                             className="flex flex-col sm:flex-row gap-4"
                         >
                             <button
-                                onClick={() => setShowCreateModal(true)}
+                                onClick={handleShareStoryClick}
                                 className="group flex items-center gap-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-2xl font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
                             >
                                 <Plus size={22} className="group-hover:rotate-90 transition-transform duration-300" />
@@ -165,7 +180,7 @@ const TravelStories = () => {
                                 <h3 className="text-2xl font-bold text-slate-900 mb-4">No Stories Yet</h3>
                                 <p className="text-slate-600 mb-8">Be the first to share your travel adventure with our community!</p>
                                 <button
-                                    onClick={() => setShowCreateModal(true)}
+                                    onClick={handleShareStoryClick}
                                     className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
                                 >
                                     Share Your Story

@@ -58,11 +58,23 @@ const StoryCard = ({ story, onLike }) => {
                     </div>
                 )}
 
-                {/* View Count */}
-                <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-md px-3 py-2 rounded-full flex items-center gap-2 text-white">
-                    <Eye size={14} />
-                    <span className="text-xs font-semibold">{story.views || 0}</span>
-                </div>
+                {/* Featured/Admin Badge */}
+                {(story.isFeatured || story.isAdmin) && (
+                    <div className="absolute top-4 right-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 font-bold text-xs uppercase tracking-wide">
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                        <span>Featured</span>
+                    </div>
+                )}
+
+                {/* View Count - moved to bottom right if featured badge exists */}
+                {!story.isFeatured && !story.isAdmin && (
+                    <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-md px-3 py-2 rounded-full flex items-center gap-2 text-white">
+                        <Eye size={14} />
+                        <span className="text-xs font-semibold">{story.views || 0}</span>
+                    </div>
+                )}
             </div>
 
             {/* Content */}
@@ -111,8 +123,8 @@ const StoryCard = ({ story, onLike }) => {
                         <button
                             onClick={handleLike}
                             className={`flex items-center gap-2 transition-all duration-300 ${isLiked
-                                    ? 'text-red-500'
-                                    : 'text-slate-400 hover:text-red-500'
+                                ? 'text-red-500'
+                                : 'text-slate-400 hover:text-red-500'
                                 }`}
                         >
                             <Heart
