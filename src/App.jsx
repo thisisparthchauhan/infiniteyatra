@@ -25,6 +25,7 @@ import Signup from './pages/Signup';
 import BookingPage from './pages/BookingPage';
 import MyBookings from './pages/MyBookings';
 import MyTrips from './pages/MyTrips';
+import QRLanding from './pages/QRLanding';
 import TripDetails from './pages/TripDetails';
 import ContactUs from './pages/ContactUs';
 import WishlistPage from './pages/WishlistPage';
@@ -99,6 +100,7 @@ function App() {
                       </AdminRoute>
                     }
                   />
+                  <Route path="/connect" element={<QRLanding />} />
                 </Routes>
               </main>
               <Footer />
