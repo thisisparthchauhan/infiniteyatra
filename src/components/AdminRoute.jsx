@@ -5,7 +5,8 @@ import { Loader, Lock } from 'lucide-react';
 
 const ADMIN_EMAILS = [
     'infiniteyatra@gmail.com',
-    'chauhanparth06@gmail.com'
+    'chauhanparth165@gmail.com',
+    'universetcenter@gmail.com'
 ];
 
 const AdminRoute = ({ children }) => {
