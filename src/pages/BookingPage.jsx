@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Calendar, Users, User, Mail, Phone, CheckCircle, ArrowRight, ArrowLeft, Loader, CreditCard, Lock } from 'lucide-react';
+import { Calendar, Users, User, Mail, Phone, CheckCircle, ArrowRight, ArrowLeft, Loader, CreditCard, Lock, Gift } from 'lucide-react';
 import { getPackageById } from '../data/packages';
 import { motion, AnimatePresence } from 'framer-motion';
 import { db } from '../firebase';
