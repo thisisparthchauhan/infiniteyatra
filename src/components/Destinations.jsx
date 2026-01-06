@@ -5,7 +5,7 @@ import { packages } from '../data/packages';
 import { useWishlist } from '../context/WishlistContext';
 
 
-const Destinations = ({ packages: propPackages, title = "Explore Infinite", showViewAll = true }) => {
+const Destinations = ({ packages: propPackages, title = "Explore Infinite", subtitle, showViewAll = true, disableHeader = false }) => {
     const displayPackages = propPackages || packages;
     const { isInWishlist, toggleWishlist } = useWishlist();
     const navigate = useNavigate();
@@ -19,19 +19,21 @@ const Destinations = ({ packages: propPackages, title = "Explore Infinite", show
     return (
         <section id="destinations" className="py-24 bg-white relative z-10">
             <div className="container mx-auto px-6">
-                <div className="flex items-end justify-between mb-12">
-                    <div>
-                        <h2 className="text-4xl font-bold text-slate-900 mb-4">{title}</h2>
-                        <p className="text-slate-500 text-lg max-w-xl">
-                            Discover our most loved travel experiences, curated just for you.
-                        </p>
+                {!disableHeader && (
+                    <div className="flex items-end justify-between mb-12">
+                        <div>
+                            <h2 className="text-4xl font-bold text-slate-900 mb-4">{title}</h2>
+                            <p className="text-slate-500 text-lg max-w-xl">
+                                {subtitle || "Curated journeys designed for explorers who want more than just a trip."}
+                            </p>
+                        </div>
+                        {showViewAll && (
+                            <Link to="/destinations" className="hidden md:flex items-center gap-2 text-blue-600 font-medium hover:text-blue-700 transition-colors">
+                                View all <ArrowRight size={20} />
+                            </Link>
+                        )}
                     </div>
-                    {showViewAll && (
-                        <Link to="/destinations" className="hidden md:flex items-center gap-2 text-blue-600 font-medium hover:text-blue-700 transition-colors">
-                            View all <ArrowRight size={20} />
-                        </Link>
-                    )}
-                </div>
+                )}
 
                 {displayPackages.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">

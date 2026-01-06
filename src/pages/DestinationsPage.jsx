@@ -106,8 +106,8 @@ const DestinationsPage = () => {
 
                 <Destinations
                     packages={filteredPackages}
-                    title="Available Packages"
                     showViewAll={false}
+                    disableHeader={true}
                 />
             </div>
         </div>

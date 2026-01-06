@@ -493,6 +493,9 @@ const TripPlanner = () => {
                                 </>
                             )}
                         </button>
+                        <p className="text-center text-xs text-slate-500 mt-3">
+                            *AI suggestions are generated instantly and refined by our travel experts.
+                        </p>
                     </form>
                 </motion.div>
 

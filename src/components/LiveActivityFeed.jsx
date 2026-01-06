@@ -88,6 +88,9 @@ const LiveActivityFeed = () => {
                         <p className="text-slate-600 text-lg">
                             See what others are booking right now
                         </p>
+                        <p className="text-xs text-slate-400 mt-2 italic">
+                            *Live activity is shown for demo purposes
+                        </p>
                     </motion.div>
 
                     {/* Live Activity Card */}
