@@ -164,6 +164,9 @@ const BookingPage = () => {
                 travelersList: bookingData.travelersList,
                 specialRequests: bookingData.specialRequests,
                 totalPrice: pkg.price * Number(bookingData.travelers),
+                paymentType: paymentOption,
+                amountPaid: paymentOption === 'token' ? (1000 * Number(bookingData.travelers)) : (pkg.price * Number(bookingData.travelers) - (bookingData.discount || 0)),
+                balanceDue: paymentOption === 'token' ? ((pkg.price * Number(bookingData.travelers) - (bookingData.discount || 0)) - (1000 * Number(bookingData.travelers))) : 0,
                 status: 'pending',
                 createdAt: serverTimestamp()
             });

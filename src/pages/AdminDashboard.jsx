@@ -56,8 +56,10 @@ const AdminDashboard = () => {
 
             const total = bookingsData.length;
             const revenue = bookingsData.reduce((acc, curr) => {
-                const price = parseFloat(curr.totalPrice) || 0;
-                return acc + price;
+                const amountPaid = parseFloat(curr.amountPaid) || 0;
+                // Fallback for old bookings that might only have totalPrice
+                if (!curr.amountPaid && curr.status === 'confirmed') return acc + (parseFloat(curr.totalPrice) || 0);
+                return acc + amountPaid;
             }, 0);
 
             const profit = bookingsData.reduce((acc, curr) => {
@@ -247,7 +249,12 @@ const AdminDashboard = () => {
                                             <p className="font-medium">{booking.packageTitle}</p>
                                             <p className="text-xs text-slate-500">Travel: {booking.bookingDate}</p>
                                         </td>
-                                        <td className="p-4 text-sm font-medium text-slate-900">₹{booking.totalPrice?.toLocaleString()}</td>
+                                        <td className="p-4 text-sm font-medium text-slate-900">
+                                            ₹{booking.amountPaid ? booking.amountPaid.toLocaleString() : booking.totalPrice?.toLocaleString()}
+                                            {booking.balanceDue > 0 && (
+                                                <div className="text-xs text-orange-600 font-normal">Pending: ₹{booking.balanceDue.toLocaleString()}</div>
+                                            )}
+                                        </td>
                                         <td className="p-4">
                                             <span className={`px-2 py-1 rounded-full text-xs font-bold uppercase ${booking.status === 'confirmed' ? 'bg-green-100 text-green-700' :
                                                 booking.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
@@ -320,10 +327,10 @@ const AdminDashboard = () => {
                         </div>
 
                         <div className="p-6 space-y-8">
-                            {/* Status Banner */}
                             <div className={`p-4 rounded-xl flex items-center gap-3 ${selectedBooking.status === 'confirmed' ? 'bg-green-50 text-green-700 border border-green-200' :
-                                selectedBooking.status === 'pending' ? 'bg-yellow-50 text-yellow-700 border border-yellow-200' :
-                                    'bg-red-50 text-red-700 border border-red-200'
+                                selectedBooking.status === 'pending' && selectedBooking.amountPaid > 0 ? 'bg-orange-50 text-orange-700 border border-orange-200' :
+                                    selectedBooking.status === 'pending' ? 'bg-yellow-50 text-yellow-700 border border-yellow-200' :
+                                        'bg-red-50 text-red-700 border border-red-200'
                                 }`}>
                                 {selectedBooking.status === 'confirmed' ? <CheckCircle size={24} /> :
                                     selectedBooking.status === 'pending' ? <Clock size={24} /> : <XCircle size={24} />}
@@ -397,17 +404,30 @@ const AdminDashboard = () => {
                         {/* Financials */}
                         <div className="bg-slate-50 p-6 rounded-xl border border-slate-200">
                             <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">Payment Details</h3>
-                            <div className="flex justify-between items-center">
+                            <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <p className="text-slate-500 text-sm">Total Amount</p>
-                                    <p className="text-3xl font-bold text-slate-900">₹{selectedBooking.totalPrice?.toLocaleString()}</p>
+                                    <p className="text-slate-500 text-sm">Total Package Cost</p>
+                                    <p className="text-xl font-bold text-slate-900">₹{selectedBooking.totalPrice?.toLocaleString()}</p>
                                 </div>
                                 <div className="text-right">
-                                    <p className="text-slate-500 text-sm">Payment Status</p>
-                                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold uppercase mt-1 ${selectedBooking.status === 'confirmed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
-                                        }`}>
-                                        {selectedBooking.status === 'confirmed' ? 'Paid' : 'Pending'}
-                                    </span>
+                                    <p className="text-slate-500 text-sm">Amount Paid</p>
+                                    <p className="text-xl font-bold text-green-600">
+                                        ₹{selectedBooking.amountPaid ? selectedBooking.amountPaid.toLocaleString() : '0'}
+                                    </p>
+                                </div>
+                                <div className="col-span-2 border-t border-slate-200 pt-4 flex justify-between items-center">
+                                    <div>
+                                        <p className="text-slate-500 text-sm">Payment Type</p>
+                                        <p className="font-semibold text-slate-800 capitalize">
+                                            {selectedBooking.paymentType === 'token' ? 'Token Payment' : 'Full Payment'}
+                                        </p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-slate-500 text-sm">Balance Due</p>
+                                        <p className={`text-xl font-bold ${selectedBooking.balanceDue > 0 ? 'text-orange-600' : 'text-slate-900'}`}>
+                                            ₹{selectedBooking.balanceDue ? selectedBooking.balanceDue.toLocaleString() : '0'}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -465,8 +485,9 @@ const AdminDashboard = () => {
                         )}
                     </div>
                 </div>
-            )}
-        </div>
+            )
+            }
+        </div >
     );
 };
 
