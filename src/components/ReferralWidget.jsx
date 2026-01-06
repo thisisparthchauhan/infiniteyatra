@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Gift, Copy, Check, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 
@@ -11,6 +11,7 @@ const ReferralWidget = () => {
     const { currentUser } = useAuth();
     const { addToast } = useToast();
     const navigate = useNavigate();
+    const location = useLocation();
     const [referralCode, setReferralCode] = useState('');
     const [copied, setCopied] = useState(false);
     const [isVisible, setIsVisible] = useState(true);
@@ -51,7 +52,10 @@ const ReferralWidget = () => {
         navigate('/dashboard?tab=referrals');
     };
 
-    if (!currentUser || !isVisible) return null;
+    const hiddenRoutes = ['/login', '/signup', '/booking-success', '/booking'];
+    const shouldShow = !hiddenRoutes.some(route => location.pathname.startsWith(route));
+
+    if (!currentUser || !isVisible || !shouldShow) return null;
 
     return (
         <motion.div

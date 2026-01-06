@@ -1,7 +1,9 @@
 import React from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
-import { CheckCircle, Download, MessageCircle, Mail, ArrowRight, Home } from 'lucide-react';
+import { CheckCircle, Download, MessageCircle, Mail, ArrowRight, Home, Smartphone, Copy } from 'lucide-react';
 import { motion } from 'framer-motion';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 const BookingSuccess = () => {
     const location = useLocation();
@@ -18,9 +20,58 @@ const BookingSuccess = () => {
     }
 
     const handleDownloadInvoice = () => {
-        // Placeholder for invoice download
-        alert("Invoice download feature coming soon!");
+        const doc = new jsPDF();
+
+        // Header
+        doc.setFillColor(30, 41, 59); // Slate 900
+        doc.rect(0, 0, 210, 40, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(22);
+        doc.text('INFINITE YATRA', 20, 25);
+
+        doc.setFontSize(10);
+        doc.text('Invoice & Booking Receipt', 150, 25);
+
+        // Booking Info
+        doc.setTextColor(30, 41, 59);
+        doc.setFontSize(12);
+        doc.text(`Booking ID: ${bookingId}`, 20, 60);
+        doc.text(`Date: ${new Date().toLocaleDateString()}`, 150, 60);
+
+        doc.setFontSize(16);
+        doc.text(`Trip: ${packageTitle}`, 20, 80);
+
+        doc.setFontSize(12);
+        doc.text(`Travel Date: ${new Date(date).toLocaleDateString()}`, 20, 90);
+
+        // Payment Details Table
+        const tableData = [
+            ['Description', 'Amount'],
+            ['Package Cost', `INR ${totalAmount?.toLocaleString()}`],
+            ['Total Amount', `INR ${totalAmount?.toLocaleString()}`],
+            ['Amount Paid', `INR ${amountPaid?.toLocaleString()}`],
+            ['Balance Due', `INR ${balanceDue?.toLocaleString()}`]
+        ];
+
+        doc.autoTable({
+            startY: 110,
+            head: [['Description', 'Amount']],
+            body: tableData.slice(1),
+            theme: 'grid',
+            headStyles: { fillColor: [30, 41, 59] },
+        });
+
+        // Footer
+        const finalY = doc.lastAutoTable.finalY || 150;
+        doc.setFontSize(10);
+        doc.setTextColor(100);
+        doc.text('Thank you for choosing Infinite Yatra!', 20, finalY + 20);
+        doc.text('For support: infiniteyatra@gmail.com', 20, finalY + 30);
+
+        doc.save(`Invoice_${bookingId}.pdf`);
     };
+
+    const whatsappLink = `https://wa.me/919265799325?text=Hello%20Infinite%20Yatra%2C%20I%20have%20booked%20${encodeURIComponent(packageTitle)}%20(ID%3A%20${bookingId}).`;
 
     const balanceDue = totalAmount - amountPaid;
 
@@ -69,15 +120,20 @@ const BookingSuccess = () => {
                     </div>
 
                     <div className="space-y-4">
-                        <div className="flex items-center gap-4 text-left p-4 bg-blue-50 rounded-xl border border-blue-100">
-                            <div className="p-3 bg-white rounded-lg shadow-sm">
-                                <MessageCircle size={24} className="text-blue-600" />
+                        <a
+                            href={whatsappLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-4 text-left p-4 bg-green-50 rounded-xl border border-green-100 hover:bg-green-100 transition-colors cursor-pointer group"
+                        >
+                            <div className="p-3 bg-white rounded-lg shadow-sm group-hover:scale-110 transition-transform">
+                                <MessageCircle size={24} className="text-green-600" />
                             </div>
                             <div>
-                                <p className="font-bold text-blue-900">WhatsApp Confirmation</p>
-                                <p className="text-sm text-blue-700">Sent to your registered number</p>
+                                <p className="font-bold text-green-900">WhatsApp Confirmation</p>
+                                <p className="text-sm text-green-700">Click to chat with us</p>
                             </div>
-                        </div>
+                        </a>
 
                         <div className="flex items-center gap-4 text-left p-4 bg-purple-50 rounded-xl border border-purple-100">
                             <div className="p-3 bg-white rounded-lg shadow-sm">
@@ -89,6 +145,30 @@ const BookingSuccess = () => {
                             </div>
                         </div>
                     </div>
+
+                    {balanceDue > 0 && (
+                        <div className="mt-8 bg-orange-50 border border-orange-200 rounded-xl p-6 text-left">
+                            <h3 className="text-lg font-bold text-orange-800 mb-2 flex items-center gap-2">
+                                <Smartphone size={20} />
+                                Payment Instructions
+                            </h3>
+                            <p className="text-sm text-orange-700 mb-4">
+                                To complete your payment of <strong>₹{balanceDue?.toLocaleString()}</strong>, please use the details below.
+                            </p>
+                            <div className="bg-white p-4 rounded-lg border border-orange-100">
+                                <div className="flex justify-between items-center mb-2">
+                                    <span className="text-slate-500 text-sm">UPI ID</span>
+                                    <div className="flex items-center gap-2">
+                                        <span className="font-mono font-bold text-slate-800">infiniteyatra@upi</span>
+                                        <button onClick={() => navigator.clipboard.writeText('infiniteyatra@upi')} className="text-blue-600 hover:text-blue-800"><Copy size={14} /></button>
+                                    </div>
+                                </div>
+                                <div className="text-xs text-slate-400 text-center mt-2">
+                                    Include your Booking ID ({bookingId}) in remarks.
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     <div className="mt-8 flex flex-col md:flex-row gap-4">
                         <button
