@@ -1,5 +1,5 @@
 import React, { lazy, Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider } from './context/AuthContext';
 import { WishlistProvider } from './context/WishlistContext';
@@ -36,6 +36,29 @@ import StoriesPage from './pages/StoriesPage';
 import AdminDashboard from './pages/AdminDashboard';
 import ReferralWidget from './components/ReferralWidget';
 
+const Layout = ({ children }) => {
+  const location = useLocation();
+  const isConnectPage = location.pathname === '/connect';
+
+  return (
+    <>
+      <ScrollToTop />
+      {!isConnectPage && <Navbar />}
+      <main>
+        {children}
+      </main>
+      {!isConnectPage && (
+        <>
+          <Footer />
+          <EnquiryPopup />
+          <AIChatbot />
+          <ReferralWidget />
+        </>
+      )}
+    </>
+  );
+};
+
 function App() {
   return (
     <HelmetProvider>
@@ -43,9 +66,7 @@ function App() {
         <AuthProvider>
           <WishlistProvider>
             <Router>
-              <ScrollToTop />
-              <Navbar />
-              <main>
+              <Layout>
                 <Routes>
                   <Route path="/" element={<Home />} />
                   <Route path="/destinations" element={<DestinationsPage />} />
@@ -102,11 +123,7 @@ function App() {
                   />
                   <Route path="/connect" element={<QRLanding />} />
                 </Routes>
-              </main>
-              <Footer />
-              <EnquiryPopup />
-              <AIChatbot />
-              <ReferralWidget />
+              </Layout>
             </Router>
           </WishlistProvider>
         </AuthProvider>
