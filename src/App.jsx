@@ -4,6 +4,7 @@ import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider } from './context/AuthContext';
 import { WishlistProvider } from './context/WishlistContext';
 import { ToastProvider } from './context/ToastContext';
+import { PackageProvider } from './context/PackageContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
@@ -67,68 +68,70 @@ function App() {
       <ToastProvider>
         <AuthProvider>
           <WishlistProvider>
-            <Router>
-              <Layout>
-                <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/destinations" element={<DestinationsPage />} />
-                  <Route path="/trip-planner" element={<TripPlanner />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/signup" element={<Signup />} />
-                  <Route path="/package/:id" element={<PackageDetail />} />
-                  <Route path="/wishlist" element={<WishlistPage />} />
-                  <Route
-                    path="/dashboard"
-                    element={
-                      <ProtectedRoute>
-                        <UserDashboard />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route path="/blog" element={<BlogPage />} />
-                  <Route path="/blog/:id" element={<BlogPost />} />
-                  <Route path="/stories" element={<StoriesPage />} />
-                  <Route path="/contact" element={<ContactNew />} />
-                  <Route path="/careers" element={<Careers />} />
-                  <Route
-                    path="/booking/:id"
-                    element={
-                      <ProtectedRoute>
-                        <BookingPage />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/my-bookings"
-                    element={
-                      <ProtectedRoute>
-                        <MyBookings />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/my-trips"
-                    element={
-                      <ProtectedRoute>
-                        <MyTrips />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route path="/trip/:tripId" element={<TripDetails />} />
-                  <Route
-                    path="/admin"
-                    element={
-                      <AdminRoute>
-                        <AdminDashboard />
-                      </AdminRoute>
-                    }
-                  />
-                  <Route path="/connect" element={<QRLanding />} />
-                  <Route path="/booking-success" element={<BookingSuccess />} />
-                  <Route path="/terms" element={<TermsConditions />} />
-                </Routes>
-              </Layout>
-            </Router>
+            <PackageProvider>
+              <Router>
+                <Layout>
+                  <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/destinations" element={<DestinationsPage />} />
+                    <Route path="/trip-planner" element={<TripPlanner />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/signup" element={<Signup />} />
+                    <Route path="/package/:id" element={<PackageDetail />} />
+                    <Route path="/wishlist" element={<WishlistPage />} />
+                    <Route
+                      path="/dashboard"
+                      element={
+                        <ProtectedRoute>
+                          <UserDashboard />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route path="/blog" element={<BlogPage />} />
+                    <Route path="/blog/:id" element={<BlogPost />} />
+                    <Route path="/stories" element={<StoriesPage />} />
+                    <Route path="/contact" element={<ContactNew />} />
+                    <Route path="/careers" element={<Careers />} />
+                    <Route
+                      path="/booking/:id"
+                      element={
+                        <ProtectedRoute>
+                          <BookingPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/my-bookings"
+                      element={
+                        <ProtectedRoute>
+                          <MyBookings />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/my-trips"
+                      element={
+                        <ProtectedRoute>
+                          <MyTrips />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route path="/trip/:tripId" element={<TripDetails />} />
+                    <Route
+                      path="/admin"
+                      element={
+                        <AdminRoute>
+                          <AdminDashboard />
+                        </AdminRoute>
+                      }
+                    />
+                    <Route path="/connect" element={<QRLanding />} />
+                    <Route path="/booking-success" element={<BookingSuccess />} />
+                    <Route path="/terms" element={<TermsConditions />} />
+                  </Routes>
+                </Layout>
+              </Router>
+            </PackageProvider>
           </WishlistProvider>
         </AuthProvider>
       </ToastProvider>

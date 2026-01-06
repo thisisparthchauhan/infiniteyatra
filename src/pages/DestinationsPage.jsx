@@ -2,21 +2,31 @@ import React, { useState, useEffect, useMemo } from 'react';
 import Destinations from '../components/Destinations';
 import SearchFilter from '../components/SearchFilter';
 import SEO from '../components/SEO';
-import { packages } from '../data/packages';
+import { usePackages } from '../context/PackageContext';
 
 const DestinationsPage = () => {
-    const minPrice = Math.min(...packages.map(p => p.price));
-    const maxPrice = Math.max(...packages.map(p => p.price));
+    const { packages, loading } = usePackages();
+
+    const minPrice = packages.length ? Math.min(...packages.map(p => p.price)) : 0;
+    const maxPrice = packages.length ? Math.max(...packages.map(p => p.price)) : 100000;
 
     const [filters, setFilters] = useState({
         search: '',
-        priceRange: maxPrice,
+        priceRange: 100000, // Default safely high
         category: 'All',
         duration: 'All',
         sortBy: 'Recommended'
     });
 
-    const [filteredPackages, setFilteredPackages] = useState(packages);
+    const [filteredPackages, setFilteredPackages] = useState([]);
+
+    // Update filters when packages load
+    useEffect(() => {
+        if (packages.length > 0) {
+            setFilters(prev => ({ ...prev, priceRange: maxPrice }));
+            setFilteredPackages(packages);
+        }
+    }, [packages]);
 
     useEffect(() => {
         // Scroll to top when page loads
@@ -25,6 +35,8 @@ const DestinationsPage = () => {
 
     // Filter Logic
     useEffect(() => {
+        if (loading) return;
+
         const result = packages.filter(pkg => {
             // 1. Search (Title or Location)
             const searchMatch =

@@ -1,11 +1,12 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { MapPin, Star, ArrowRight, Heart } from 'lucide-react';
-import { packages } from '../data/packages';
+import { usePackages } from '../context/PackageContext';
 import { useWishlist } from '../context/WishlistContext';
 
 
 const Destinations = ({ packages: propPackages, title = "Explore Infinite", subtitle, showViewAll = true, disableHeader = false }) => {
+    const { packages } = usePackages();
     const displayPackages = propPackages || packages;
     const { isInWishlist, toggleWishlist } = useWishlist();
     const navigate = useNavigate();

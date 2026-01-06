@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { MapPin, Star, Calendar, TrendingUp, Mountain, Check, X, ArrowLeft, Phone, Mail, MessageCircle, Heart, Share2 } from 'lucide-react';
-import { getPackageById } from '../data/packages';
+import { usePackages } from '../context/PackageContext';
 import PhotoGallery from '../components/PhotoGallery';
 import Reviews from '../components/Reviews';
 import FAQ from '../components/FAQ';
@@ -17,10 +17,12 @@ const PackageDetail = () => {
     const navigate = useNavigate();
     const [pkg, setPkg] = useState(null);
     const [activeDay, setActiveDay] = useState(null);
+    const { getPackageById, loading } = usePackages();
     const { isInWishlist, toggleWishlist } = useWishlist();
     const { addToast } = useToast();
 
     useEffect(() => {
+        if (loading) return;
         const packageData = getPackageById(id);
         if (packageData) {
             setPkg(packageData);
@@ -28,7 +30,7 @@ const PackageDetail = () => {
         } else {
             navigate('/');
         }
-    }, [id, navigate]);
+    }, [id, navigate, loading, getPackageById]);
 
     const handleShare = async () => {
         if (navigator.share) {
