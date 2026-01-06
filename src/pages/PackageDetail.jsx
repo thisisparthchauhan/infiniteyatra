@@ -322,7 +322,7 @@ const PackageDetail = () => {
                     </div>
 
                     {/* Right Column - Booking Card */}
-                    <div className="lg:col-span-1">
+                    <div className="lg:col-span-1 hidden md:block">
                         <div className="sticky top-24 space-y-6">
                             {/* Smart Pricing Card */}
                             <div className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
@@ -409,6 +409,19 @@ const PackageDetail = () => {
                         </div>
                     </div>
                 </div>
+            </div>
+            {/* Mobile Fixed Booking Bar */}
+            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-4 z-50 md:hidden flex items-center justify-between shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+                <div>
+                    <p className="text-xs text-slate-500">Starting from</p>
+                    <p className="text-xl font-bold text-slate-900">₹{pkg.price.toLocaleString()}</p>
+                </div>
+                <button
+                    onClick={() => navigate(`/booking/${id}`)}
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-blue-600/30"
+                >
+                    Book Now
+                </button>
             </div>
         </div>
     );

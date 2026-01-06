@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Gift, Copy, Share2, Users, TrendingUp, Award, Check } from 'lucide-react';
+import { Gift, Copy, Share2, Users, TrendingUp, Award, Check, Mail, MessageCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { doc, getDoc, setDoc, collection, query, where, getDocs } from 'firebase/firestore';

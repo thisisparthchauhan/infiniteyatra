@@ -122,8 +122,8 @@ const Navbar = () => {
                             to="/"
                             className="flex flex-col items-center group relative z-10"
                         >
-                            <span className={`text-2xl font-extrabold tracking-widest ${textColor} drop-shadow-md`} style={{ fontFamily: "'Raleway', sans-serif" }}>INFINITE YATRA</span>
-                            <span className={`text-[10px] tracking-[0.1em] font-bold ${textColor} drop-shadow-sm`} style={{ fontFamily: "'Raleway', sans-serif" }}>EXPLORE INFINITE</span>
+                            <span className={`text-2xl font-black tracking-[0.2em] ${textColor === 'text-white' ? 'text-white' : 'text-slate-950'} drop-shadow-sm`} style={{ fontFamily: "'Raleway', sans-serif" }}>INFINITE YATRA</span>
+                            <span className={`text-[10px] tracking-[0.3em] font-extrabold ${textColor === 'text-white' ? 'text-white/90' : 'text-slate-800'}`} style={{ fontFamily: "'Raleway', sans-serif" }}>EXPLORE INFINITE</span>
                         </Link>
 
                         {/* Desktop Navigation */}

@@ -230,6 +230,7 @@ const AdminBlogManagement = () => {
                                                 <img
                                                     src={story.imageUrl}
                                                     alt={story.title}
+                                                    loading="lazy"
                                                     className="w-16 h-16 rounded-lg object-cover"
                                                 />
                                             ) : (
@@ -282,8 +283,8 @@ const AdminBlogManagement = () => {
                                             <button
                                                 onClick={() => toggleFeatured(story.id, story.isFeatured || story.isAdmin)}
                                                 className={`p-2 rounded-lg transition-colors ${story.isFeatured || story.isAdmin
-                                                        ? 'bg-amber-100 text-amber-600 hover:bg-amber-200'
-                                                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                                    ? 'bg-amber-100 text-amber-600 hover:bg-amber-200'
+                                                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                                                     }`}
                                                 title={story.isFeatured || story.isAdmin ? 'Unfeature' : 'Feature'}
                                             >

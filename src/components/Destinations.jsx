@@ -47,6 +47,7 @@ const Destinations = ({ packages: propPackages, title = "Explore Infinite", subt
                                     <img
                                         src={dest.image}
                                         alt={dest.title}
+                                        loading="lazy"
                                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                     />
                                     <div className="absolute top-4 right-4 flex gap-2">

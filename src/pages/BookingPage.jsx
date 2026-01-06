@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Calendar, Users, User, Mail, Phone, CheckCircle, ArrowRight, ArrowLeft, Loader } from 'lucide-react';
+import { Calendar, Users, User, Mail, Phone, CheckCircle, ArrowRight, ArrowLeft, Loader, CreditCard, Lock } from 'lucide-react';
 import { getPackageById } from '../data/packages';
 import { motion, AnimatePresence } from 'framer-motion';
 import { db } from '../firebase';
@@ -238,7 +238,7 @@ const BookingPage = () => {
                 <div className="mb-12">
                     <div className="flex items-center justify-between relative">
                         <div className="absolute left-0 right-0 top-1/2 h-1 bg-slate-200 -z-10"></div>
-                        {[1, 2, 3].map((s) => (
+                        {[1, 2, 3, 4].map((s) => (
                             <div key={s} className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-colors ${step >= s ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-500'}`}>
                                 {s}
                             </div>
@@ -247,6 +247,7 @@ const BookingPage = () => {
                     <div className="flex justify-between mt-2 text-sm font-medium text-slate-600">
                         <span>Selection</span>
                         <span>Details</span>
+                        <span>Payment</span>
                         <span>Confirmation</span>
                     </div>
                 </div>
@@ -538,18 +539,13 @@ const BookingPage = () => {
                                             <ArrowLeft size={20} /> Back
                                         </button>
                                         <button
-                                            onClick={handleConfirm}
-                                            disabled={!isFormValid() || submitting}
+                                            onClick={nextStep}
+                                            disabled={!isFormValid()}
                                             className="bg-blue-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                                         >
-                                            {submitting ? (
-                                                <>
-                                                    <Loader className="animate-spin" size={20} /> Processing...
-                                                </>
-                                            ) : (
-                                                'Confirm Booking'
-                                            )}
+                                            Proceed to Payment <ArrowRight size={20} />
                                         </button>
+
                                     </div>
                                 </motion.div>
                             )}
@@ -557,6 +553,79 @@ const BookingPage = () => {
                             {step === 3 && (
                                 <motion.div
                                     key="step3"
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -20 }}
+                                    className="space-y-6"
+                                >
+                                    <div className="bg-slate-50 p-6 rounded-xl border border-slate-200">
+                                        <h3 className="text-xl font-bold text-slate-900 mb-6">Payment Details</h3>
+
+                                        <div className="flex flex-col gap-4 mb-8">
+                                            <div className="flex justify-between items-center p-4 bg-white rounded-lg border border-slate-200">
+                                                <span className="text-slate-600">Package Base Price</span>
+                                                <span className="font-medium">₹{pkg.price.toLocaleString()} x {bookingData.travelers}</span>
+                                            </div>
+                                            {bookingData.discount > 0 && (
+                                                <div className="flex justify-between items-center p-4 bg-green-50 rounded-lg border border-green-200 text-green-700">
+                                                    <span className="flex items-center gap-2"><CheckCircle size={16} /> Referral Discount</span>
+                                                    <span className="font-bold">- ₹{bookingData.discount}</span>
+                                                </div>
+                                            )}
+                                            <div className="flex justify-between items-center p-4 bg-blue-50 rounded-lg border border-blue-200">
+                                                <span className="text-lg font-bold text-slate-900">Total Amount</span>
+                                                <span className="text-2xl font-bold text-blue-600">
+                                                    ₹{(pkg.price * Number(bookingData.travelers) - (bookingData.discount || 0)).toLocaleString()}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div className="grid gap-4">
+                                            <h4 className="font-semibold text-slate-700 mb-2">Select Payment Method</h4>
+
+                                            <label className="flex items-center gap-4 p-4 border-2 border-blue-600 bg-blue-50 rounded-xl cursor-pointer transition-all">
+                                                <input type="radio" name="payment" defaultChecked className="w-5 h-5 text-blue-600" />
+                                                <div className="flex-1">
+                                                    <div className="font-bold text-slate-900">UPI / Net Banking / Cards</div>
+                                                    <div className="text-sm text-slate-500">Fast & Secure payment via Razorpay</div>
+                                                </div>
+                                                <CreditCard className="text-blue-600" />
+                                            </label>
+
+                                            <div className="flex items-center gap-2 text-xs text-slate-500 mt-2 justify-center">
+                                                <Lock size={12} />
+                                                Payments are 256-bit encrypted and secure
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex justify-between pt-6">
+                                        <button
+                                            onClick={prevStep}
+                                            className="text-slate-600 font-semibold hover:text-slate-900 flex items-center gap-2"
+                                        >
+                                            <ArrowLeft size={20} /> Back
+                                        </button>
+                                        <button
+                                            onClick={handleConfirm}
+                                            disabled={submitting}
+                                            className="bg-green-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors flex items-center gap-2 shadow-lg shadow-green-200"
+                                        >
+                                            {submitting ? (
+                                                <>
+                                                    <Loader className="animate-spin" size={20} /> Processing...
+                                                </>
+                                            ) : (
+                                                <>Pay Now <CheckCircle size={20} /></>
+                                            )}
+                                        </button>
+                                    </div>
+                                </motion.div>
+                            )}
+
+                            {step === 4 && (
+                                <motion.div
+                                    key="step4"
                                     initial={{ opacity: 0, scale: 0.9 }}
                                     animate={{ opacity: 1, scale: 1 }}
                                     className="text-center py-8"

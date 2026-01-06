@@ -55,6 +55,7 @@ const InstagramFeed = () => {
                             <img
                                 src={post.image}
                                 alt="Instagram post"
+                                loading="lazy"
                                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                             />
                             <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-6 text-white">

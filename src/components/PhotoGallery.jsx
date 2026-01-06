@@ -46,7 +46,7 @@ const PhotoGallery = ({ images }) => {
                         className="gallery-item"
                         onClick={() => openLightbox(index)}
                     >
-                        <img src={image.url} alt={image.alt} />
+                        <img src={image.url} alt={image.alt} loading="lazy" />
                         <div className="gallery-overlay">
                             <span className="view-icon">🔍</span>
                         </div>

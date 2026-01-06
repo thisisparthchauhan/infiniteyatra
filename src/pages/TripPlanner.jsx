@@ -11,6 +11,7 @@ import { generateItinerary as generateItineraryAPI } from '../services/groq';
 import { db, auth } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
+import { sendTripEmail } from '../services/email';
 
 
 const budgetOptions = [
@@ -67,6 +68,7 @@ const TripPlanner = () => {
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [user, setUser] = useState(null);
     const [isSaving, setIsSaving] = useState(false);
+    const [isEmailing, setIsEmailing] = useState(false);
     const [savedTripId, setSavedTripId] = useState(null);
 
     useEffect(() => {
@@ -106,6 +108,30 @@ const TripPlanner = () => {
             return null;
         } finally {
             setIsSaving(false);
+        }
+    };
+
+    const handleEmailTrip = async () => {
+        if (!user) {
+            alert("Please login to email the itinerary.");
+            return;
+        }
+        if (!generatedItinerary) return;
+
+        setIsEmailing(true);
+        try {
+            const tripDataWithId = { ...generatedItinerary, id: savedTripId };
+            const result = await sendTripEmail(tripDataWithId, user.email, user.displayName || 'Traveler');
+            if (result.success) {
+                alert("Itinerary emailed successfully!");
+            } else {
+                alert("Failed to send email. Please try again.");
+            }
+        } catch (error) {
+            console.error(error);
+            alert("Error sending email.");
+        } finally {
+            setIsEmailing(false);
         }
     };
 
@@ -554,6 +580,18 @@ const TripPlanner = () => {
                                     >
                                         <Sparkles className="w-5 h-5 text-purple-500" />
                                         Share
+                                    </button>
+                                    <button
+                                        onClick={handleEmailTrip}
+                                        disabled={isEmailing}
+                                        className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 rounded-xl shadow-sm hover:shadow-md hover:border-blue-300 transition-all text-slate-700 font-medium"
+                                    >
+                                        {isEmailing ? (
+                                            <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
+                                        ) : (
+                                            <Mail className="w-5 h-5 text-blue-500" />
+                                        )}
+                                        {isEmailing ? 'Sending...' : 'Email Plan'}
                                     </button>
                                 </div>
                             </div>

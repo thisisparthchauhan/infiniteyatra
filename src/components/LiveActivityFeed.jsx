@@ -9,7 +9,7 @@ const LiveActivityFeed = () => {
     // Sample activities - In production, fetch from Firebase
     const activities = [
         {
-            name: 'Priya S.',
+            name: 'Traveler from Mumbai',
             location: 'Mumbai',
             action: 'just booked',
             package: 'Kedarkantha Trek',
@@ -17,7 +17,7 @@ const LiveActivityFeed = () => {
             travelers: 2
         },
         {
-            name: 'Rahul K.',
+            name: 'Traveler from Delhi',
             location: 'Delhi',
             action: 'just booked',
             package: 'Tungnath Trek',
@@ -25,7 +25,7 @@ const LiveActivityFeed = () => {
             travelers: 1
         },
         {
-            name: 'Anjali M.',
+            name: 'Traveler from Bangalore',
             location: 'Bangalore',
             action: 'just booked',
             package: 'Chardham Yatra 2026',
@@ -33,7 +33,7 @@ const LiveActivityFeed = () => {
             travelers: 4
         },
         {
-            name: 'Vikram P.',
+            name: 'Traveler from Pune',
             location: 'Pune',
             action: 'just booked',
             package: 'Soul of Himalayas',
@@ -41,7 +41,7 @@ const LiveActivityFeed = () => {
             travelers: 2
         },
         {
-            name: 'Sneha R.',
+            name: 'Traveler from Hyderabad',
             location: 'Hyderabad',
             action: 'just booked',
             package: 'Kedarkantha Trek',
@@ -108,7 +108,7 @@ const LiveActivityFeed = () => {
                                     <div className="flex items-start gap-4 flex-1">
                                         {/* Avatar */}
                                         <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg shrink-0">
-                                            {activity.name.charAt(0)}
+                                            <Users size={20} />
                                         </div>
 
                                         {/* Activity Details */}
@@ -162,11 +162,11 @@ const LiveActivityFeed = () => {
                         className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4"
                     >
                         <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100 text-center">
-                            <div className="text-3xl font-bold text-blue-600 mb-1">127</div>
-                            <div className="text-sm text-slate-600">Bookings this month</div>
+                            <div className="text-3xl font-bold text-blue-600 mb-1">Growing</div>
+                            <div className="text-sm text-slate-600">Community of Travelers</div>
                         </div>
                         <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100 text-center">
-                            <div className="text-3xl font-bold text-green-600 mb-1">23</div>
+                            <div className="text-3xl font-bold text-green-600 mb-1">Active</div>
                             <div className="text-sm text-slate-600">Bookings this week</div>
                         </div>
                         <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100 text-center">
