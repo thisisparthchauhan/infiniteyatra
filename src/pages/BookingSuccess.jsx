@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 const BookingSuccess = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const { bookingId, packageTitle, amount, date } = location.state || {};
+    const { bookingId, packageTitle, amountPaid, totalAmount, date } = location.state || {};
 
     if (!bookingId) {
         return (
@@ -21,6 +21,8 @@ const BookingSuccess = () => {
         // Placeholder for invoice download
         alert("Invoice download feature coming soon!");
     };
+
+    const balanceDue = totalAmount - amountPaid;
 
     return (
         <div className="min-h-screen bg-slate-50 pt-28 pb-20 px-6">
@@ -46,9 +48,19 @@ const BookingSuccess = () => {
                             <span className="text-slate-500 text-sm">Booking ID</span>
                             <span className="font-mono font-bold text-slate-900">{bookingId}</span>
                         </div>
-                        <div className="flex justify-between items-center mb-4">
+                        <div className="flex justify-between items-center mb-2">
                             <span className="text-slate-500 text-sm">Amount Paid</span>
-                            <span className="font-bold text-green-600">₹{amount.toLocaleString()}</span>
+                            <span className="font-bold text-green-600">₹{amountPaid?.toLocaleString()}</span>
+                        </div>
+                        {balanceDue > 0 && (
+                            <div className="flex justify-between items-center mb-2">
+                                <span className="text-slate-500 text-sm">Balance Due</span>
+                                <span className="font-bold text-orange-600">₹{balanceDue?.toLocaleString()}</span>
+                            </div>
+                        )}
+                        <div className="flex justify-between items-center mb-4 pb-4 border-b border-slate-200">
+                            <span className="text-slate-500 text-sm">Total Amount</span>
+                            <span className="font-bold text-slate-900">₹{totalAmount?.toLocaleString()}</span>
                         </div>
                         <div className="flex justify-between items-center">
                             <span className="text-slate-500 text-sm">Trip Date</span>

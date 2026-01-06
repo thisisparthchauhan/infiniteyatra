@@ -21,6 +21,7 @@ const BookingPage = () => {
     const [confirmedBookingId, setConfirmedBookingId] = useState(null);
     const [error, setError] = useState('');
     const [agreedToTerms, setAgreedToTerms] = useState(false);
+    const [paymentOption, setPaymentOption] = useState('token'); // 'token' or 'full'
 
     const [bookingData, setBookingData] = useState({
         date: '',
@@ -188,8 +189,12 @@ const BookingPage = () => {
                 state: {
                     bookingId: bookingRef.id,
                     packageTitle: pkg.title,
-                    amount: pkg.price * Number(bookingData.travelers) - (bookingData.discount || 0),
-                    date: bookingData.date
+                    amountPaid: paymentOption === 'token'
+                        ? (1000 * Number(bookingData.travelers))
+                        : (pkg.price * Number(bookingData.travelers) - (bookingData.discount || 0)),
+                    totalAmount: pkg.price * Number(bookingData.travelers) - (bookingData.discount || 0),
+                    date: bookingData.date,
+                    paymentOption: paymentOption
                 }
             });
 
@@ -576,46 +581,98 @@ const BookingPage = () => {
                                         </div>
 
                                         <div className="grid gap-4">
-                                            <h4 className="font-semibold text-slate-700 mb-2">Select Payment Method</h4>
+                                            <h4 className="font-semibold text-slate-700 mb-2">Select Payment Option</h4>
 
-                                            <label className="flex items-center gap-4 p-4 border-2 border-blue-600 bg-blue-50 rounded-xl cursor-pointer transition-all">
-                                                <input type="radio" name="payment" defaultChecked className="w-5 h-5 text-blue-600" />
+                                            {/* Token Amount Option */}
+                                            <label className={`flex items-start gap-4 p-4 border-2 rounded-xl cursor-pointer transition-all ${paymentOption === 'token' ? 'border-blue-600 bg-blue-50' : 'border-slate-200 hover:border-blue-200'}`}>
+                                                <input
+                                                    type="radio"
+                                                    name="paymentOption"
+                                                    checked={paymentOption === 'token'}
+                                                    onChange={() => setPaymentOption('token')}
+                                                    className="w-5 h-5 text-blue-600 mt-1"
+                                                />
                                                 <div className="flex-1">
-                                                    <div className="font-bold text-slate-900">UPI / Net Banking / Cards</div>
-                                                    <div className="text-sm text-slate-500">Fast & Secure payment via Razorpay</div>
+                                                    <div className="flex justify-between">
+                                                        <div className="font-bold text-slate-900">Pay Token Amount</div>
+                                                        <div className="font-bold text-blue-600">₹{(1000 * bookingData.travelers).toLocaleString()}</div>
+                                                    </div>
+                                                    <div className="text-sm text-slate-500 mt-1">
+                                                        Mandatory to secure your slots (₹1000 per person). Non-refundable.
+                                                    </div>
                                                 </div>
-                                                <CreditCard className="text-blue-600" />
                                             </label>
 
-                                            <div className="flex items-center gap-2 text-xs text-slate-500 mt-2 justify-center">
-                                                <Lock size={12} />
-                                                Payments are 256-bit encrypted and secure
-                                            </div>
-
-                                            {/* Cancellation Policy */}
-                                            <div className="mt-4 p-4 bg-slate-50 rounded-xl border border-slate-200 text-sm text-slate-600">
-                                                <h5 className="font-bold text-slate-800 mb-2">Cancellation & Refund Policy</h5>
-                                                <ul className="list-disc pl-4 space-y-1">
-                                                    <li>100% refund if cancelled 30 days before the trip.</li>
-                                                    <li>50% refund if cancelled 15-29 days before the trip.</li>
-                                                    <li>No refund if cancelled within 14 days of the trip.</li>
-                                                    <li>In case of weather-related cancellations by operator, full refund or batch shift is provided.</li>
-                                                </ul>
-                                                <div className="mt-3 pt-3 border-t border-slate-200">
-                                                    <div className="flex items-start gap-3">
-                                                        <div className="flex items-center h-5">
-                                                            <input
-                                                                id="terms-checkbox"
-                                                                type="checkbox"
-                                                                checked={agreedToTerms}
-                                                                onChange={(e) => setAgreedToTerms(e.target.checked)}
-                                                                className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
-                                                            />
+                                            {/* Full Amount Option */}
+                                            <label className={`flex items-start gap-4 p-4 border-2 rounded-xl cursor-pointer transition-all ${paymentOption === 'full' ? 'border-blue-600 bg-blue-50' : 'border-slate-200 hover:border-blue-200'}`}>
+                                                <input
+                                                    type="radio"
+                                                    name="paymentOption"
+                                                    checked={paymentOption === 'full'}
+                                                    onChange={() => setPaymentOption('full')}
+                                                    className="w-5 h-5 text-blue-600 mt-1"
+                                                />
+                                                <div className="flex-1">
+                                                    <div className="flex justify-between">
+                                                        <div className="font-bold text-slate-900">Pay Full Amount</div>
+                                                        <div className="font-bold text-blue-600">
+                                                            ₹{(pkg.price * Number(bookingData.travelers) - (bookingData.discount || 0)).toLocaleString()}
                                                         </div>
-                                                        <label htmlFor="terms-checkbox" className="text-sm text-slate-700 cursor-pointer select-none">
-                                                            I agree to the <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 font-semibold hover:underline">Terms & Conditions</a>, Cancellation Policy, and Trip Rules.
-                                                        </label>
                                                     </div>
+                                                    <div className="text-sm text-slate-500 mt-1">
+                                                        Clear all dues now.
+                                                    </div>
+                                                </div>
+                                            </label>
+                                        </div>
+
+                                        {/* Summary of what is being paid */}
+                                        <div className="flex justify-between items-center p-4 bg-slate-900 text-white rounded-xl shadow-lg mt-4">
+                                            <div>
+                                                <div className="text-slate-400 text-sm">Amount Payable Now</div>
+                                                <div className="text-2xl font-bold">
+                                                    ₹{paymentOption === 'token'
+                                                        ? (1000 * bookingData.travelers).toLocaleString()
+                                                        : (pkg.price * Number(bookingData.travelers) - (bookingData.discount || 0)).toLocaleString()
+                                                    }
+                                                </div>
+                                            </div>
+                                            {paymentOption === 'token' && (
+                                                <div className="text-right">
+                                                    <div className="text-slate-400 text-xs">Balance Due</div>
+                                                    <div className="font-medium">
+                                                        ₹{((pkg.price * Number(bookingData.travelers) - (bookingData.discount || 0)) - (1000 * bookingData.travelers)).toLocaleString()}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Cancellation Policy */}
+                                        <div className="mt-4 p-4 bg-slate-50 rounded-xl border border-slate-200 text-sm text-slate-600">
+                                            <h5 className="font-bold text-slate-800 mb-2">Cancellation & Refund Policy</h5>
+                                            <ul className="list-disc pl-4 space-y-1">
+                                                <li><strong>Token Amount (₹1000/person):</strong> Non-Refundable & Non-Transferable.</li>
+                                                <li><strong>Full Payment Refund:</strong>
+                                                    <ul className="list-[circle] pl-4 mt-1 space-y-1">
+                                                        <li>Cancelled <strong>&gt;7 days</strong> before trip: Full Refund minus token charges.</li>
+                                                        <li>Cancelled <strong>&lt;7 days</strong> before trip: 50% Refund only.</li>
+                                                    </ul>
+                                                </li>
+                                            </ul>
+                                            <div className="mt-3 pt-3 border-t border-slate-200">
+                                                <div className="flex items-start gap-3">
+                                                    <div className="flex items-center h-5">
+                                                        <input
+                                                            id="terms-checkbox"
+                                                            type="checkbox"
+                                                            checked={agreedToTerms}
+                                                            onChange={(e) => setAgreedToTerms(e.target.checked)}
+                                                            className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                                                        />
+                                                    </div>
+                                                    <label htmlFor="terms-checkbox" className="text-sm text-slate-700 cursor-pointer select-none">
+                                                        I agree to the <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 font-semibold hover:underline">Terms & Conditions</a>, Cancellation Policy, and Trip Rules.
+                                                    </label>
                                                 </div>
                                             </div>
                                         </div>
@@ -689,7 +746,7 @@ const BookingPage = () => {
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
 
