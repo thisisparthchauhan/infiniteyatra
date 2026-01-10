@@ -11,12 +11,17 @@ import { useToast } from '../context/ToastContext';
 import SmartPricing from '../components/SmartPricing';
 import PackageBookingCounter from '../components/PackageBookingCounter';
 import RecentPackageBookings from '../components/RecentPackageBookings';
+import TrustBadges from '../components/TrustBadges';
+import WhatsAppBookingButton from '../components/WhatsAppBookingButton';
+import ReviewForm from '../components/ReviewForm';
+import { AnimatePresence } from 'framer-motion';
 
 const PackageDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [pkg, setPkg] = useState(null);
     const [activeDay, setActiveDay] = useState(null);
+    const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
     const { getPackageById, loading } = usePackages();
     const { isInWishlist, toggleWishlist } = useWishlist();
     const { addToast } = useToast();
@@ -309,11 +314,40 @@ const PackageDetail = () => {
                         )}
 
                         {/* Reviews */}
-                        {pkg.reviews && pkg.reviews.length > 0 && (
-                            <section>
+                        <section>
+                            <div className="flex items-center justify-between mb-2">
+                                <h2 className="text-3xl font-bold text-slate-900">Reviews</h2>
+                                <button
+                                    onClick={() => setIsReviewModalOpen(true)}
+                                    className="px-4 py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-50 transition-colors"
+                                >
+                                    Write a Review
+                                </button>
+                            </div>
+                            {pkg.reviews && pkg.reviews.length > 0 ? (
                                 <Reviews reviews={pkg.reviews} />
-                            </section>
-                        )}
+                            ) : (
+                                <div className="text-center py-8 bg-slate-50 rounded-xl border border-slate-100">
+                                    <p className="text-slate-500 mb-4">No reviews yet. Be the first to share your experience!</p>
+                                </div>
+                            )}
+                        </section>
+
+                        {/* Review Modal */}
+                        <AnimatePresence>
+                            {isReviewModalOpen && (
+                                <ReviewForm
+                                    packageId={id}
+                                    packageTitle={pkg.title}
+                                    onClose={() => setIsReviewModalOpen(false)}
+                                    onReviewSubmitted={() => {
+                                        // Ideally fetch reviews again or update local state
+                                        // For now just close modal
+                                        setIsReviewModalOpen(false);
+                                    }}
+                                />
+                            )}
+                        </AnimatePresence>
 
                         {/* FAQ */}
                         {pkg.faqs && pkg.faqs.length > 0 && (
@@ -321,6 +355,11 @@ const PackageDetail = () => {
                                 <FAQ faqs={pkg.faqs} />
                             </section>
                         )}
+
+                        {/* Trust Badges Section */}
+                        <section className="border-t border-slate-200 pt-8 mt-8">
+                            <TrustBadges />
+                        </section>
                     </div>
 
                     {/* Right Column - Booking Card */}
@@ -341,6 +380,8 @@ const PackageDetail = () => {
                                         <Calendar size={20} className="group-hover:scale-110 transition-transform" />
                                         Book Now
                                     </button>
+
+                                    <WhatsAppBookingButton packageTitle={pkg.title} price={pkg.price} />
 
                                     {pkg.pdf && (
                                         <a
@@ -424,6 +465,9 @@ const PackageDetail = () => {
                 >
                     Book Now
                 </button>
+                <div className="ml-2">
+                    <WhatsAppBookingButton packageTitle={pkg.title} price={pkg.price} mobile={true} />
+                </div>
             </div>
         </div>
     );
