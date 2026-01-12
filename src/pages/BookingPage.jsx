@@ -4,7 +4,7 @@ import { Calendar, Users, User, Mail, Phone, CheckCircle, ArrowRight, ArrowLeft,
 import { getPackageById } from '../data/packages';
 import { motion, AnimatePresence } from 'framer-motion';
 import { db } from '../firebase';
-import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
 import { sendBookingEmails } from '../services/email';
 import PhoneInput from 'react-phone-input-2';
@@ -143,7 +143,7 @@ const BookingPage = () => {
         setError(''); // Clear previous errors
 
         try {
-            // Check availability first
+            // 1. Check availability
             const availability = await checkAvailability(pkg.id, bookingData.date, Number(bookingData.travelers));
 
             if (!availability.available) {
@@ -152,6 +152,16 @@ const BookingPage = () => {
                 return;
             }
 
+            // 2. Calculate Amount (in paise for Razorpay)
+            // If token payment: 1000 * travelers
+            // If full payment: (price * travelers) - discount
+            const amountToPay = paymentOption === 'token'
+                ? (1000 * Number(bookingData.travelers))
+                : (pkg.price * Number(bookingData.travelers) - (bookingData.discount || 0));
+
+            const totalAmount = pkg.price * Number(bookingData.travelers) - (bookingData.discount || 0);
+
+            // 3. Create "Pending" Booking in Firestore first
             const bookingRef = await addDoc(collection(db, 'bookings'), {
                 userId: currentUser.uid,
                 packageId: pkg.id,
@@ -165,46 +175,98 @@ const BookingPage = () => {
                 specialRequests: bookingData.specialRequests,
                 totalPrice: pkg.price * Number(bookingData.travelers),
                 paymentType: paymentOption,
-                amountPaid: paymentOption === 'token' ? (1000 * Number(bookingData.travelers)) : (pkg.price * Number(bookingData.travelers) - (bookingData.discount || 0)),
-                balanceDue: paymentOption === 'token' ? ((pkg.price * Number(bookingData.travelers) - (bookingData.discount || 0)) - (1000 * Number(bookingData.travelers))) : 0,
-                status: 'pending',
+                amountPaid: 0, // Initially 0 until payment success
+                balanceDue: totalAmount,
+                status: 'pending_payment', // Use a temporary status
                 createdAt: serverTimestamp()
             });
 
-            setConfirmedBookingId(bookingRef.id);
+            // 4. Initialize Razorpay
+            const options = {
+                key: "rzp_live_S2yg6cwyGDfgjI", // Live Key ID
+                amount: amountToPay * 100, // Amount in paise
+                currency: "INR",
+                name: "Infinite Yatra",
+                description: `Booking ID: ${bookingRef.id}`,
+                image: "https://your-logo-url.com/logo.png", // Optional: Add your logo URL here
+                handler: async function (response) {
+                    // 5. On Payment Success
+                    try {
+                        const paymentId = response.razorpay_payment_id;
 
-            // Send Emails (Non-blocking)
-            sendBookingEmails({
-                id: bookingRef.id,
-                contactName: bookingData.name,
-                contactEmail: bookingData.email,
-                contactPhone: bookingData.phone,
-                travelersList: bookingData.travelersList,
-                packageTitle: pkg.title,
-                bookingDate: bookingData.date,
-                travelers: Number(bookingData.travelers),
-                totalPrice: pkg.price * Number(bookingData.travelers),
-                specialRequests: bookingData.specialRequests
-            });
+                        // Update Booking in Firestore
+                        await updateDoc(doc(db, 'bookings', bookingRef.id), {
+                            status: 'confirmed',
+                            amountPaid: amountToPay,
+                            balanceDue: paymentOption === 'token' ? (totalAmount - amountToPay) : 0,
+                            paymentId: paymentId,
+                            paymentDate: serverTimestamp()
+                        });
 
-            // Redirect to Success Page
-            navigate('/booking-success', {
-                state: {
-                    bookingId: bookingRef.id,
-                    packageTitle: pkg.title,
-                    amountPaid: paymentOption === 'token'
-                        ? (1000 * Number(bookingData.travelers))
-                        : (pkg.price * Number(bookingData.travelers) - (bookingData.discount || 0)),
-                    totalAmount: pkg.price * Number(bookingData.travelers) - (bookingData.discount || 0),
-                    date: bookingData.date,
-                    paymentOption: paymentOption
+                        setConfirmedBookingId(bookingRef.id);
+
+                        // Send Emails (Non-blocking)
+                        sendBookingEmails({
+                            id: bookingRef.id,
+                            contactName: bookingData.name,
+                            contactEmail: bookingData.email,
+                            contactPhone: bookingData.phone,
+                            travelersList: bookingData.travelersList,
+                            packageTitle: pkg.title,
+                            bookingDate: bookingData.date,
+                            travelers: Number(bookingData.travelers),
+                            totalPrice: pkg.price * Number(bookingData.travelers),
+                            specialRequests: bookingData.specialRequests
+                        });
+
+                        // Redirect to Success Page
+                        navigate('/booking-success', {
+                            state: {
+                                bookingId: bookingRef.id,
+                                packageTitle: pkg.title,
+                                amountPaid: amountToPay,
+                                totalAmount: totalAmount,
+                                date: bookingData.date,
+                                paymentOption: paymentOption
+                            }
+                        });
+
+                    } catch (err) {
+                        console.error("Error updating booking after payment:", err);
+                        setError("Payment successful but failed to update booking. Please contact support.");
+                        setSubmitting(false);
+                    }
+                },
+                prefill: {
+                    name: bookingData.name,
+                    email: bookingData.email,
+                    contact: bookingData.phone
+                },
+                notes: {
+                    address: "Infinite Yatra Office"
+                },
+                theme: {
+                    color: "#2563EB"
+                },
+                modal: {
+                    ondismiss: function () {
+                        setSubmitting(false);
+                        // Optional: Delete the pending booking or mark as cancelled
+                    }
                 }
+            };
+
+            const rzp1 = new window.Razorpay(options);
+            rzp1.on('payment.failed', function (response) {
+                setError(`Payment Failed: ${response.error.description}`);
+                setSubmitting(false);
             });
+
+            rzp1.open();
 
         } catch (error) {
-            console.error("Error saving booking:", error);
-            setError("Failed to save booking. Please try again or contact support.");
-        } finally {
+            console.error("Error initiating booking:", error);
+            setError("Failed to initiate booking. Please try again or contact support.");
             setSubmitting(false);
         }
     };
@@ -309,7 +371,7 @@ const BookingPage = () => {
                                                             name="date"
                                                             value={bookingData.date}
                                                             onChange={handleInputChange}
-                                                            min={pkg.validDateRange?.start}
+                                                            min={pkg.validDateRange?.start && pkg.validDateRange.start > new Date().toISOString().split('T')[0] ? pkg.validDateRange.start : new Date().toISOString().split('T')[0]}
                                                             max={pkg.validDateRange?.end}
                                                             className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
                                                             placeholder="Choose Custom Date"
@@ -321,7 +383,7 @@ const BookingPage = () => {
                                                         name="date"
                                                         value={bookingData.date}
                                                         onChange={handleInputChange}
-                                                        min={pkg.validDateRange?.start}
+                                                        min={pkg.validDateRange?.start && pkg.validDateRange.start > new Date().toISOString().split('T')[0] ? pkg.validDateRange.start : new Date().toISOString().split('T')[0]}
                                                         max={pkg.validDateRange?.end}
                                                         className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
                                                     />
@@ -354,37 +416,7 @@ const BookingPage = () => {
                                         </div>
                                     </div>
 
-                                    {/* Referral Code */}
-                                    <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-xl p-6 border-2 border-purple-200">
-                                        <div className="flex items-center gap-2 mb-3">
-                                            <Gift className="text-purple-600" size={20} />
-                                            <h3 className="font-bold text-slate-900">Have a Referral Code?</h3>
-                                        </div>
-                                        <p className="text-sm text-slate-600 mb-4">
-                                            Enter a friend's referral code and get ₹1,000 OFF!
-                                        </p>
-                                        <div className="flex gap-3">
-                                            <input
-                                                type="text"
-                                                name="referralCode"
-                                                placeholder="Enter code (e.g., PARTH2026)"
-                                                value={bookingData.referralCode}
-                                                onChange={handleInputChange}
-                                                className="flex-1 px-4 py-3 bg-white border border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none uppercase"
-                                            />
-                                            {bookingData.discount > 0 && (
-                                                <div className="flex items-center gap-2 bg-green-100 text-green-700 px-4 py-3 rounded-lg font-bold">
-                                                    <CheckCircle size={20} />
-                                                    ₹{bookingData.discount} OFF
-                                                </div>
-                                            )}
-                                        </div>
-                                        {bookingData.referralCode && bookingData.discount === 0 && (
-                                            <p className="text-xs text-slate-500 mt-2">
-                                                Code will be validated at checkout
-                                            </p>
-                                        )}
-                                    </div>
+
 
                                     <div className="flex justify-end pt-6">
                                         <button
