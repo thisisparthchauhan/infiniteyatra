@@ -155,8 +155,9 @@ const BookingPage = () => {
             // 2. Calculate Amount (in paise for Razorpay)
             // If token payment: 1000 * travelers
             // If full payment: (price * travelers) - discount
+            const tokenAmount = pkg.tokenPrice || 1000;
             const amountToPay = paymentOption === 'token'
-                ? (1000 * Number(bookingData.travelers))
+                ? (tokenAmount * Number(bookingData.travelers))
                 : (pkg.price * Number(bookingData.travelers) - (bookingData.discount || 0));
 
             const totalAmount = pkg.price * Number(bookingData.travelers) - (bookingData.discount || 0);
