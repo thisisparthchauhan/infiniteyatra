@@ -53,11 +53,13 @@ const DestinationsPage = () => {
                 const isSpiritual = pkg.title.toLowerCase().includes('yatra') || pkg.title.toLowerCase().includes('temple') || pkg.id === 'kedarnath' || pkg.id === 'tungnath';
                 const isTour = !isTrek && !isSpiritual; // Fallback for tours
                 const isAdventure = isTrek || pkg.difficulty === 'Moderate' || pkg.difficulty === 'Hard';
+                const isInternational = !pkg.location.includes('India');
 
                 if (filters.category === 'Trek') categoryMatch = isTrek;
                 else if (filters.category === 'Tour') categoryMatch = isTour;
                 else if (filters.category === 'Spiritual') categoryMatch = isSpiritual;
                 else if (filters.category === 'Adventure') categoryMatch = isAdventure;
+                else if (filters.category === 'International') categoryMatch = isInternational;
             }
 
             // 4. Duration

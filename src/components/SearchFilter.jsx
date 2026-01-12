@@ -2,7 +2,7 @@ import React from 'react';
 import { Search, SlidersHorizontal, X } from 'lucide-react';
 
 const SearchFilter = ({ filters, setFilters, minPrice, maxPrice }) => {
-    const categories = ['All', 'Trek', 'Tour', 'Spiritual', 'Adventure'];
+    const categories = ['All', 'Trek', 'Tour', 'Spiritual', 'Adventure', 'International'];
     const durations = ['All', 'Short (< 5 days)', 'Medium (5-8 days)', 'Long (> 8 days)'];
     const sortOptions = ['Recommended', 'Price: Low to High', 'Price: High to Low', 'Duration: Shortest', 'Duration: Longest'];
 

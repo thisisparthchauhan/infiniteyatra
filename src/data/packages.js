@@ -395,9 +395,169 @@ When you return, you don’t just bring back photos — you bring back a new ver
         images: [
             soulOfHimalayasImg
         ]
+    },
+    {
+        id: 'kedarnath',
+        title: "Kedarnath Trek",
+        location: "Uttarakhand, India",
+        image: kedarnathImg,
+        price: 12000,
+        priceDisplay: "₹12,000",
+        type: "mixed",
+        availableDates: ["2026-05-15", "2026-05-22", "2026-05-29", "2026-06-05"],
+        rating: 4.9,
+        duration: "5 Days / 4 Nights",
+        difficulty: "Moderate to Difficult",
+        bestTime: "May to June, September to October",
+        maxAltitude: "11,755 ft",
+        maxGroupSize: 15,
+        description: "A spiritual journey to one of the holiest shrines of Lord Shiva. The Kedarnath trek offers a blend of spirituality and adventure, taking you through picturesque landscapes to the ancient temple standing tall amidst the Himalayas.",
+        highlights: [
+            "Darshan of Kedarnath Temple",
+            "Trek through scenic landscapes",
+            "Witness the majestic Himalayas",
+            "Experience the spiritual aura",
+            "Camping amidst nature"
+        ],
+        itinerary: [
+            {
+                day: 1,
+                title: "Haridwar to Guptkashi",
+                description: "Drive from Haridwar to Guptkashi. Check-in at hotel. Relax and prepare for the trek.",
+                activities: ["Scenic Drive", "Hotel Check-in"]
+            },
+            {
+                day: 2,
+                title: "Guptkashi to Kedarnath",
+                description: "Drive to Sonprayag/Gaurikund and start the trek to Kedarnath. Reach by evening and attend Aarti.",
+                activities: ["Trek start", "Evening Aarti"]
+            },
+            {
+                day: 3,
+                title: "Kedarnath Darshan & Return",
+                description: "Morning Darshan at temple. Trek down to Gaurikund and drive back to Guptkashi.",
+                activities: ["Temple Darshan", "Trek down"]
+            },
+            {
+                day: 4,
+                title: "Guptkashi to Rishikesh",
+                description: "Drive back towards Rishikesh. Explore the Yoga Capital.",
+                activities: ["Drive", "Rishikesh exploration"]
+            },
+            {
+                day: 5,
+                title: "Departure",
+                description: "Departure from Rishikesh/Haridwar.",
+                activities: ["Departure"]
+            }
+        ],
+        inclusions: ["Transport", "Meals", "Stay", "Guide"],
+        exclusions: ["Personal Expenses", "Pony/Palki charges"],
+        images: [
+            kedarnathImg,
+            "https://images.unsplash.com/photo-1548013146-72479768bada?q=80&w=2076&auto=format&fit=crop"
+        ]
+    },
+    {
+        id: 'usa-nyc',
+        title: "New York City Explorer",
+        location: "New York, USA",
+        image: "https://images.unsplash.com/photo-1496442226666-8d4a0e62e6e9?q=80&w=2070&auto=format&fit=crop",
+        price: 150000,
+        priceDisplay: "₹1,50,000",
+        type: "custom",
+        rating: 4.8,
+        duration: "7 Days / 6 Nights",
+        difficulty: "Easy",
+        bestTime: "April to June, September to November",
+        maxGroupSize: 20,
+        description: "Experience the vibrant energy of the Big Apple! From Times Square to Central Park, explore the iconic landmarks of New York City in this comprehensive tour.",
+        highlights: [
+            "Statue of Liberty Cruise",
+            "Empire State Building View",
+            "Central Park Walk",
+            "Times Square Experience",
+            "Broadway Show (Optional)"
+        ],
+        itinerary: [
+            { day: 1, title: "Arrival in NYC", description: "Arrive at JFK, transfer to hotel. Evening at Times Square.", activities: ["Arrival", "Times Square"] },
+            { day: 2, title: "Statue of Liberty & Ellis Island", description: "Ferry ride to Statue of Liberty and Ellis Island.", activities: ["Cruise", "Sightseeing"] },
+            { day: 3, title: "Manhattan Highlights", description: "Empire State Building, Rockefeller Center, 5th Avenue.", activities: ["City Tour"] },
+            { day: 4, title: "Brooklyn Bridge & Dumbo", description: "Walk the Brooklyn Bridge, explore Dumbo.", activities: ["Walking Tour"] },
+            { day: 5, title: "Central Park & Museums", description: "Relax in Central Park, visit MET or MoMA.", activities: ["Museum", "Park"] },
+            { day: 6, title: "Shopping & Leisure", description: "Free day for shopping or optional tours.", activities: ["Shopping"] },
+            { day: 7, title: "Departure", description: "Transfer to airport for flight back.", activities: ["Departure"] }
+        ],
+        inclusions: ["Hotel Stay", "Breakfast", "Airport Transfers", "Sightseeing Tours"],
+        exclusions: ["International Flights", "Visa Fees", "Lunch & Dinner", "Personal Expenses"],
+        images: ["https://images.unsplash.com/photo-1496442226666-8d4a0e62e6e9?q=80&w=2070&auto=format&fit=crop"]
+    },
+    {
+        id: 'dubai-highlights',
+        title: "Dazzling Dubai",
+        location: "Dubai, UAE",
+        image: "https://images.unsplash.com/photo-1512453979798-5ea904ac66de?q=80&w=2009&auto=format&fit=crop",
+        price: 45000,
+        priceDisplay: "₹45,000",
+        type: "custom",
+        rating: 4.7,
+        duration: "5 Days / 4 Nights",
+        difficulty: "Easy",
+        bestTime: "November to March",
+        maxGroupSize: 25,
+        description: "Discover the city of gold! Experience luxury, adventure, and futuristic architecture in Dubai. Desert Safari, Burj Khalifa, and more.",
+        highlights: [
+            "Burj Khalifa - At the Top",
+            "Desert Safari with BBQ Dinner",
+            "Dubai Mall & Fountain Show",
+            "Palm Jumeirah Tour",
+            "Dhow Cruise Dinner"
+        ],
+        itinerary: [
+            { day: 1, title: "Arrival & Dhow Cruise", description: "Arrive in Dubai. Evening Dhow Cruise with dinner.", activities: ["Arrival", "Cruise"] },
+            { day: 2, title: "Dubai City Tour & Burj Khalifa", description: "Half day city tour. Evening visit to Burj Khalifa 124th floor.", activities: ["City Tour", "Burj Khalifa"] },
+            { day: 3, title: "Desert Safari", description: "Morning free. Afternoon Desert Safari with dune bashing and dinner.", activities: ["Desert Safari", "BBQ Dinner"] },
+            { day: 4, title: "Abu Dhabi Day Trip (Optional)", description: "Optional trip to Abu Dhabi or free day for shopping.", activities: ["Optional Tour", "Shopping"] },
+            { day: 5, title: "Departure", description: "Transfer to airport.", activities: ["Departure"] }
+        ],
+        inclusions: ["Hotel 4*", "Daily Breakfast", "Transfers", "Sightseeing"],
+        exclusions: ["Flights", "Visa", "Tourism Dirham Fee"],
+        images: ["https://images.unsplash.com/photo-1512453979798-5ea904ac66de?q=80&w=2009&auto=format&fit=crop"]
+    },
+    {
+        id: 'thailand-tropical',
+        title: "Tropical Thailand",
+        location: "Phuket & Bangkok, Thailand",
+        image: "https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?q=80&w=2039&auto=format&fit=crop",
+        price: 35000,
+        priceDisplay: "₹35,000",
+        type: "mixed",
+        rating: 4.6,
+        duration: "6 Days / 5 Nights",
+        difficulty: "Easy",
+        bestTime: "November to April",
+        maxGroupSize: 20,
+        description: "The perfect mix of city life and beach vibes. Explore the bustling streets of Bangkok and relax on the pristine beaches of Phuket.",
+        highlights: [
+            "Phi Phi Island Tour",
+            "Bangkok Temple Tour",
+            "Phuket City Tour",
+            "Beach Relaxation",
+            "Shopping in Bangkok"
+        ],
+        itinerary: [
+            { day: 1, title: "Arrival in Phuket", description: "Transfer to hotel. Evening at leisure/Patong Beach.", activities: ["Arrival", "Beach"] },
+            { day: 2, title: "Phi Phi Island Tour", description: "Full day tour to Phi Phi Islands by speedboat with lunch.", activities: ["Island Tour", "Snorkeling"] },
+            { day: 3, title: "Phuket City Tour", description: "Half day city tour. Visit Big Buddha and Wat Chalong.", activities: ["Sightseeing"] },
+            { day: 4, title: "Phuket to Bangkok", description: "Flight to Bangkok. Check-in. Evening Chao Phraya Cruise (Optional).", activities: ["Flight", "Transfer"] },
+            { day: 5, title: "Bangkok City & Temple Tour", description: "Visit Golden Buddha and Marble Temple. Shopping at MBK/Pratunam.", activities: ["Temple Tour", "Shopping"] },
+            { day: 6, title: "Departure", description: "Transfer to airport.", activities: ["Departure"] }
+        ],
+        inclusions: ["Hotels", "Breakfast", "Airport Transfers", "Phi Phi Tour"],
+        exclusions: ["Flights (International/Domestic)", "Visa on Arrival", "Lunch & Dinner"],
+        images: ["https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?q=80&w=2039&auto=format&fit=crop"]
     }
 ];
-
 export const getPackageById = (id) => {
     return packages.find(pkg => pkg.id === id);
 };
