@@ -6,6 +6,7 @@ import TravelStories from '../components/TravelStories';
 import Contact from '../components/Contact';
 import SEO from '../components/SEO';
 import InstagramFeed from '../components/InstagramFeed';
+import RevealOnScroll from '../components/RevealOnScroll';
 
 const Home = () => {
     useEffect(() => {
@@ -35,11 +36,28 @@ const Home = () => {
                 description="Welcome to Infinite Yatra. Discover your next adventure with our curated travel packages and expert guides."
             />
             <Hero />
-            <Destinations />
-            <TravelStories />
-            <About />
-            <InstagramFeed />
-            <Contact />
+
+            <div className="flex flex-col items-center w-full">
+                <RevealOnScroll width="100%">
+                    <Destinations />
+                </RevealOnScroll>
+
+                <RevealOnScroll width="100%">
+                    <TravelStories />
+                </RevealOnScroll>
+
+                <RevealOnScroll width="100%">
+                    <About />
+                </RevealOnScroll>
+
+                <RevealOnScroll width="100%">
+                    <InstagramFeed />
+                </RevealOnScroll>
+
+                <RevealOnScroll width="100%">
+                    <Contact />
+                </RevealOnScroll>
+            </div>
         </>
     );
 };

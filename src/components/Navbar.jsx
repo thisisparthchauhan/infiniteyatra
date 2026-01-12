@@ -24,7 +24,7 @@ const Navbar = () => {
             setIsScrolled(window.scrollY > 50);
 
             // Detect active section for highlighting
-            const sections = ['destinations', 'blog-preview', 'about'];
+            const sections = ['destinations', 'stories-preview', 'about'];
 
             // Check if we're near the bottom of the page (contact section)
             // const windowHeight = window.innerHeight;
@@ -77,8 +77,8 @@ const Navbar = () => {
     const navItems = [
         { name: 'Home', icon: Home, href: '/', type: 'link' },
         { name: 'Destinations', icon: MapPin, href: '/destinations', type: 'link' },
-        { name: 'AI Trip Planner', icon: Sparkles, href: '/trip-planner', type: 'link' },
-        { name: 'Blog', icon: BookOpen, href: '/blog', type: 'link' },
+        { name: 'AI Trip Planner', icon: Sparkles, href: '/trip-planner', type: 'link', highlight: true },
+        { name: 'Stories', icon: BookOpen, href: '/stories', type: 'link' },
         { name: 'About Us', icon: Info, href: '#about', type: 'scroll' },
         { name: 'Contact', icon: Mail, href: '/contact', type: 'link' }
     ];
@@ -130,7 +130,7 @@ const Navbar = () => {
                                 const isActive = item.name === 'Home'
                                     ? location.pathname === '/' && !activeSection
                                     : item.type === 'link'
-                                        ? location.pathname === item.href || (location.pathname === '/' && activeSection === 'destinations' && item.name === 'Destinations') || (location.pathname === '/' && activeSection === 'blog-preview' && item.name === 'Blog')
+                                        ? location.pathname === item.href || (location.pathname === '/' && activeSection === 'destinations' && item.name === 'Destinations') || (location.pathname === '/' && activeSection === 'stories-preview' && item.name === 'Stories')
                                         : activeSection === item.href.replace('#', '');
 
                                 if (item.type === 'link') {
@@ -152,13 +152,15 @@ const Navbar = () => {
                                                 relative px-4 py-2 text-sm font-medium rounded-lg 
                                                 transition-all duration-300 group
                                                 flex items-center gap-2
-                                                ${isActive
-                                                    ? (isAuthPage || isScrolled || isTripPlannerPage || isDestinationsPage
-                                                        ? 'text-blue-600 bg-blue-50'
-                                                        : 'text-white bg-white/20')
-                                                    : (isAuthPage || isScrolled || isTripPlannerPage || isDestinationsPage
-                                                        ? 'text-slate-600 hover:text-blue-600 hover:bg-slate-50'
-                                                        : 'text-white/90 hover:text-white hover:bg-white/10')
+                                                ${item.highlight
+                                                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:scale-105 border-0'
+                                                    : isActive
+                                                        ? (isAuthPage || isScrolled || isTripPlannerPage || isDestinationsPage
+                                                            ? 'text-blue-600 bg-blue-50'
+                                                            : 'text-white bg-white/20')
+                                                        : (isAuthPage || isScrolled || isTripPlannerPage || isDestinationsPage
+                                                            ? 'text-slate-600 hover:text-blue-600 hover:bg-slate-50'
+                                                            : 'text-white/90 hover:text-white hover:bg-white/10')
                                                 }
                                             `}
                                         >
@@ -292,6 +294,20 @@ const Navbar = () => {
                                             >
                                                 <Sparkles size={16} />
                                                 My Trips
+                                            </Link>
+                                            <Link
+                                                to="/profile"
+                                                className="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                            >
+                                                <User size={16} />
+                                                My Profile
+                                            </Link>
+                                            <Link
+                                                to="/support"
+                                                className="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                            >
+                                                <Info size={16} />
+                                                Support
                                             </Link>
                                             <button
                                                 onClick={() => {

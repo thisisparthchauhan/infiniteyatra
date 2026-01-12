@@ -7,6 +7,7 @@ import { db } from '../firebase';
 import { useAuth } from '../context/AuthContext';
 import StoryCard from './StoryCard';
 import CreateStoryModal from './CreateStoryModal';
+import { seededStories } from '../data/seededStories';
 
 const TravelStories = () => {
     const navigate = useNavigate();
@@ -34,8 +35,13 @@ const TravelStories = () => {
             const featuredStories = allStories.filter(story => story.isFeatured || story.isAdmin);
             const communityStories = allStories.filter(story => !story.isFeatured && !story.isAdmin);
 
-            // Show featured stories first, then community stories (limit to 6 total for homepage)
-            const sortedStories = [...featuredStories, ...communityStories].slice(0, 6);
+            // Combine fetched stories with seeded stories
+            // Show featured stories first, then community stories (limit to 3 for homepage)
+            const combinedStories = [...featuredStories, ...communityStories, ...seededStories];
+            // Remove duplicates based on ID if real stories start flowing in that might match seeds (unlikely with random IDs but good practice)
+            const uniqueStories = Array.from(new Map(combinedStories.map(item => [item.id, item])).values());
+
+            const sortedStories = uniqueStories.slice(0, 3);
             setStories(sortedStories);
         } catch (error) {
             console.error('Error fetching stories:', error);
@@ -98,7 +104,7 @@ const TravelStories = () => {
 
     return (
         <>
-            <section className="py-24 bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50 relative overflow-hidden">
+            <section id="stories-preview" className="py-24 bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50 relative overflow-hidden">
                 {/* Background Decorations */}
                 <div className="absolute inset-0 overflow-hidden pointer-events-none">
                     <div className="absolute top-20 left-10 w-72 h-72 bg-blue-200/20 rounded-full blur-3xl"></div>

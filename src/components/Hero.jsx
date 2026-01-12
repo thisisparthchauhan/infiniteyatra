@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { Search, MapPin, Calendar, Users, Phone, Send, CheckCircle, Loader } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { MapPin, Calendar, Users, Phone, Send, CheckCircle, Loader, ArrowDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '../context/ToastContext';
+import BackgroundSlider from './BackgroundSlider';
 
 const Hero = () => {
     const [formData, setFormData] = useState({
@@ -15,6 +16,16 @@ const Hero = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
     const { addToast } = useToast();
+
+    const words = ["Journey", "Adventure", "Escape", "Experience", "Odyssey"];
+    const [index, setIndex] = useState(0);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setIndex((prevIndex) => (prevIndex + 1) % words.length);
+        }, 3000);
+        return () => clearInterval(interval);
+    }, []);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -59,43 +70,81 @@ const Hero = () => {
 
     return (
         <div className="relative h-screen min-h-[600px] flex items-center justify-center overflow-hidden">
-            {/* Background Image */}
-            <div className="absolute inset-0 z-0">
-                <img
-                    src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=2070&auto=format&fit=crop"
-                    alt="Mountain Landscape"
-                    className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-black/40" />
-            </div>
+            {/* Background Slider */}
+            <BackgroundSlider />
+
+            {/* Dark Gradient Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/20 z-[1] pointer-events-none" />
 
             {/* Content */}
             <div className="relative z-10 container mx-auto px-4 text-center text-white">
                 <motion.h1
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8, delay: 0.2 }}
-                    className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6"
+                    transition={{ duration: 1, delay: 0.2, ease: "easeOut" }}
+                    className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6 drop-shadow-lg"
                 >
                     Discover Your Next <br />
-                    <span className="text-blue-400">Adventure</span>
+                    <span className="text-blue-400 inline-block min-w-[280px]">
+                        <AnimatePresence mode="wait">
+                            <motion.span
+                                key={words[index]}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -20 }}
+                                transition={{ duration: 0.5 }}
+                                className="inline-block"
+                            >
+                                {words[index].split('').map((char, i) => (
+                                    <motion.span
+                                        key={i}
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        transition={{ duration: 0.1, delay: i * 0.05 }}
+                                    >
+                                        {char}
+                                    </motion.span>
+                                ))}
+                            </motion.span>
+                        </AnimatePresence>
+                    </span>
                 </motion.h1>
 
                 <motion.div
                     initial={{ opacity: 0, scaleX: 0 }}
                     animate={{ opacity: 1, scaleX: 1 }}
-                    transition={{ duration: 0.8, delay: 0.3 }}
-                    className="h-1 bg-white w-32 md:w-48 mx-auto mb-8 rounded-full"
+                    transition={{ duration: 0.8, delay: 0.5 }}
+                    className="h-1 bg-white w-32 md:w-48 mx-auto mb-6 md:mb-8 rounded-full shadow-lg"
                 />
 
                 <motion.p
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8, delay: 0.4 }}
-                    className="text-2xl md:text-4xl lg:text-5xl text-white font-bold mb-10 max-w-2xl mx-auto tracking-wide"
+                    transition={{ duration: 0.8, delay: 0.6 }}
+                    className="text-2xl md:text-4xl lg:text-5xl text-white font-bold mb-8 md:mb-10 max-w-2xl mx-auto tracking-wide drop-shadow-md"
                 >
                     Explore Infinite Yatra
                 </motion.p>
+
+                {/* Mobile: Plan Trip Button (Expands Form) */}
+                <div className="lg:hidden mb-8">
+                    <motion.button
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 1 }}
+                        className="bg-white text-blue-600 px-8 py-4 rounded-full font-bold text-lg shadow-xl flex items-center gap-2 mx-auto"
+                        onClick={() => {
+                            const formElement = document.getElementById('enquiry-form');
+                            if (formElement) {
+                                formElement.scrollIntoView({ behavior: 'smooth' });
+                                // Logic to expand/highlight form could go here
+                            }
+                        }}
+                    >
+                        <Send size={20} />
+                        Plan Your Trip
+                    </motion.button>
+                </div>
 
                 {/* Enquiry Form / Success Message */}
                 <div className="max-w-5xl mx-auto min-h-[100px]">
@@ -106,27 +155,28 @@ const Hero = () => {
                                 initial={{ opacity: 0, scale: 0.8 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0, scale: 0.8 }}
-                                className="bg-green-500/90 backdrop-blur-md p-8 rounded-3xl shadow-2xl flex flex-col items-center justify-center text-white"
+                                className="bg-green-500/90 backdrop-blur-md p-8 rounded-3xl shadow-2xl flex flex-col items-center justify-center text-white border border-white/20"
                             >
-                                <CheckCircle size={64} className="mb-4 text-white" />
+                                <CheckCircle size={64} className="mb-4 text-white drop-shadow-md" />
                                 <h3 className="text-3xl font-bold mb-2">Thank you!</h3>
                                 <p className="text-xl font-medium">We will reach you soon to plan your dream trip. 🚀</p>
                             </motion.div>
                         ) : (
                             <motion.form
+                                id="enquiry-form"
                                 key="form"
-                                initial={{ opacity: 0, y: 20 }}
+                                initial={{ opacity: 0, y: 30 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -20 }}
-                                transition={{ duration: 0.8, delay: 0.6 }}
+                                transition={{ duration: 0.8, delay: 0.9 }}
                                 onSubmit={handleSubmit}
-                                className="bg-white p-2 rounded-[2rem] shadow-2xl flex flex-col lg:flex-row items-center gap-2"
+                                className="bg-white/95 backdrop-blur-sm p-2 rounded-[2rem] shadow-2xl flex flex-col lg:flex-row items-center gap-2 border border-white/50"
                             >
                                 {/* Location */}
-                                <div className="flex-1 flex items-center gap-3 px-6 py-4 w-full border-b lg:border-b-0 lg:border-r border-slate-100">
+                                <div className="flex-1 flex items-center gap-3 px-6 py-4 w-full border-b lg:border-b-0 lg:border-r border-slate-200">
                                     <MapPin className="text-blue-500 shrink-0" size={24} />
                                     <div className="text-left w-full">
-                                        <label htmlFor="location" className="block text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">Location</label>
+                                        <label htmlFor="location" className="block text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Location</label>
                                         <input
                                             id="location"
                                             name="location"
@@ -135,16 +185,16 @@ const Hero = () => {
                                             onChange={handleChange}
                                             placeholder="Where to?"
                                             required
-                                            className="w-full outline-none text-slate-900 placeholder:text-slate-300 font-semibold text-lg bg-transparent"
+                                            className="w-full outline-none text-slate-900 placeholder:text-slate-400 font-semibold text-lg bg-transparent"
                                         />
                                     </div>
                                 </div>
 
                                 {/* Days */}
-                                <div className="flex-1 flex items-center gap-3 px-6 py-4 w-full border-b lg:border-b-0 lg:border-r border-slate-100">
+                                <div className="flex-1 flex items-center gap-3 px-6 py-4 w-full border-b lg:border-b-0 lg:border-r border-slate-200">
                                     <Calendar className="text-blue-500 shrink-0" size={24} />
                                     <div className="text-left w-full">
-                                        <label htmlFor="days" className="block text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">Days</label>
+                                        <label htmlFor="days" className="block text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Days</label>
                                         <input
                                             id="days"
                                             name="days"
@@ -153,16 +203,16 @@ const Hero = () => {
                                             value={formData.days}
                                             onChange={handleChange}
                                             placeholder="Duration"
-                                            className="w-full outline-none text-slate-900 placeholder:text-slate-300 font-semibold text-lg bg-transparent"
+                                            className="w-full outline-none text-slate-900 placeholder:text-slate-400 font-semibold text-lg bg-transparent"
                                         />
                                     </div>
                                 </div>
 
                                 {/* Persons */}
-                                <div className="flex-1 flex items-center gap-3 px-6 py-4 w-full border-b lg:border-b-0 lg:border-r border-slate-100">
+                                <div className="flex-1 flex items-center gap-3 px-6 py-4 w-full border-b lg:border-b-0 lg:border-r border-slate-200">
                                     <Users className="text-blue-500 shrink-0" size={24} />
                                     <div className="text-left w-full">
-                                        <label htmlFor="persons" className="block text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">Travelers</label>
+                                        <label htmlFor="persons" className="block text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Travelers</label>
                                         <input
                                             id="persons"
                                             name="persons"
@@ -171,7 +221,7 @@ const Hero = () => {
                                             value={formData.persons}
                                             onChange={handleChange}
                                             placeholder="How many?"
-                                            className="w-full outline-none text-slate-900 placeholder:text-slate-300 font-semibold text-lg bg-transparent"
+                                            className="w-full outline-none text-slate-900 placeholder:text-slate-400 font-semibold text-lg bg-transparent"
                                         />
                                     </div>
                                 </div>
@@ -180,7 +230,7 @@ const Hero = () => {
                                 <div className="flex-1 flex items-center gap-3 px-6 py-4 w-full">
                                     <Phone className="text-blue-500 shrink-0" size={24} />
                                     <div className="text-left w-full">
-                                        <label htmlFor="phone" className="block text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">Phone</label>
+                                        <label htmlFor="phone" className="block text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Phone</label>
                                         <input
                                             id="phone"
                                             name="phone"
@@ -189,36 +239,71 @@ const Hero = () => {
                                             onChange={handleChange}
                                             placeholder="Your number"
                                             required
-                                            className="w-full outline-none text-slate-900 placeholder:text-slate-300 font-semibold text-lg bg-transparent"
+                                            className="w-full outline-none text-slate-900 placeholder:text-slate-400 font-semibold text-lg bg-transparent"
                                         />
                                     </div>
                                 </div>
 
                                 {/* Submit Button */}
                                 <div className="p-2 w-full lg:w-auto">
-                                    <button
+                                    <motion.button
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
+                                        animate={{
+                                            scale: [1, 1.02, 1],
+                                            boxShadow: [
+                                                "0 10px 15px -3px rgba(37, 99, 235, 0.3)",
+                                                "0 10px 20px -2px rgba(37, 99, 235, 0.5)",
+                                                "0 10px 15px -3px rgba(37, 99, 235, 0.3)"
+                                            ]
+                                        }}
+                                        transition={{
+                                            scale: { repeat: Infinity, duration: 2, repeatDelay: 6 },
+                                            boxShadow: { repeat: Infinity, duration: 2, repeatDelay: 6 }
+                                        }}
                                         type="submit"
                                         disabled={isSubmitting}
-                                        className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white p-5 rounded-[1.5rem] w-full lg:w-auto transition-all duration-300 shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed group"
+                                        className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white p-5 rounded-[1.5rem] w-full lg:w-auto transition-all duration-300 shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2Disabled:opacity-70 disabled:cursor-not-allowed group cursor-pointer min-w-[60px] lg:min-w-[170px]"
                                     >
                                         {isSubmitting ? (
                                             <Loader size={24} className="animate-spin" />
                                         ) : (
                                             <>
-                                                <span className="lg:hidden font-bold text-lg">Send Enquiry</span>
+                                                <span className="font-bold text-lg lg:hidden lg:group-hover:inline-block transition-all duration-300 whitespace-nowrap">Plan My Trip</span>
                                                 <Send size={24} className="lg:group-hover:translate-x-1 transition-transform" />
                                             </>
                                         )}
-                                    </button>
+                                    </motion.button>
                                 </div>
                             </motion.form>
                         )}
                     </AnimatePresence>
                 </div>
             </div>
+
+            {/* Scroll Cue */}
+            <motion.div
+                className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 cursor-pointer text-white/80 hover:text-white transition-colors"
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 2, duration: 1 }}
+                onClick={() => {
+                    const destinations = document.getElementById('destinations');
+                    if (destinations) destinations.scrollIntoView({ behavior: 'smooth' });
+                }}
+            >
+                <span className="text-sm font-medium tracking-widest uppercase">Explore Trips</span>
+                <motion.div
+                    animate={{ y: [0, 8, 0] }}
+                    transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+                >
+                    <ArrowDown size={24} />
+                </motion.div>
+            </motion.div>
         </div>
     );
 };
 
 export default Hero;
+
 
