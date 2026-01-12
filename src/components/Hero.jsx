@@ -23,7 +23,7 @@ const Hero = () => {
     useEffect(() => {
         const interval = setInterval(() => {
             setIndex((prevIndex) => (prevIndex + 1) % words.length);
-        }, 3000);
+        }, 5000);
         return () => clearInterval(interval);
     }, []);
 
