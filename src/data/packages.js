@@ -490,7 +490,12 @@ When you return, you don’t just bring back photos — you bring back a new ver
         ],
         inclusions: ["Hotel Stay", "Breakfast", "Airport Transfers", "Sightseeing Tours"],
         exclusions: ["International Flights", "Visa Fees", "Lunch & Dinner", "Personal Expenses"],
-        images: ["https://images.unsplash.com/photo-1496442226666-8d4a0e62e6e9?q=80&w=2070&auto=format&fit=crop"]
+        images: [
+            "https://images.unsplash.com/photo-1496442226666-8d4a0e62e6e9?q=80&w=2070&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1605130284535-11dd9eedc58a?q=80&w=2070&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1534430480872-3498386e7856?q=80&w=2070&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1585862705417-62dc04423871?q=80&w=2072&auto=format&fit=crop"
+        ]
     },
     {
         id: 'dubai-highlights',
@@ -522,7 +527,12 @@ When you return, you don’t just bring back photos — you bring back a new ver
         ],
         inclusions: ["Hotel 4*", "Daily Breakfast", "Transfers", "Sightseeing"],
         exclusions: ["Flights", "Visa", "Tourism Dirham Fee"],
-        images: ["https://images.unsplash.com/photo-1512453979798-5ea904ac66de?q=80&w=2009&auto=format&fit=crop"]
+        images: [
+            "https://images.unsplash.com/photo-1512453979798-5ea904ac66de?q=80&w=2009&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1451337516015-6b6fcd1f9013?q=80&w=2070&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1578335345700-111000780490?q=80&w=2069&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1582657233895-0f37a3691ea9?q=80&w=2070&auto=format&fit=crop"
+        ]
     },
     {
         id: 'thailand-tropical',

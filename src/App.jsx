@@ -36,6 +36,7 @@ import StoriesPage from './pages/StoriesPage';
 
 import AdminDashboard from './pages/AdminDashboard';
 import BookingSuccess from './pages/BookingSuccess';
+
 import TermsConditions from './pages/TermsConditions';
 
 const Layout = ({ children }) => {
