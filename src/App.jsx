@@ -37,7 +37,6 @@ import StoriesPage from './pages/StoriesPage';
 import AdminDashboard from './pages/AdminDashboard';
 import BookingSuccess from './pages/BookingSuccess';
 import TermsConditions from './pages/TermsConditions';
-import ReferralWidget from './components/ReferralWidget';
 
 const Layout = ({ children }) => {
   const location = useLocation();
@@ -55,7 +54,6 @@ const Layout = ({ children }) => {
           <Footer />
           <EnquiryPopup />
           <AIChatbot />
-          <ReferralWidget />
         </>
       )}
     </>

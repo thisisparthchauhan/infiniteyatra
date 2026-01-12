@@ -102,13 +102,8 @@ const Navbar = () => {
         // If we're on homepage, scroll to section
         const element = document.querySelector(href);
         if (element) {
-            const offset = 80;
-            const elementPosition = element.getBoundingClientRect().top;
-            const offsetPosition = elementPosition + window.pageYOffset - offset;
-            window.scrollTo({
-                top: offsetPosition,
-                behavior: 'smooth'
-            });
+            // Using scrollIntoView with scroll-margin-top CSS property
+            element.scrollIntoView({ behavior: 'smooth' });
         }
     };
 

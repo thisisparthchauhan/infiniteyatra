@@ -41,7 +41,7 @@ const About = () => {
             id="about"
             ref={ref}
             onMouseMove={handleMouseMove}
-            className="py-24 bg-slate-50 relative z-10 overflow-hidden"
+            className="py-24 bg-slate-50 relative z-10 overflow-hidden scroll-mt-28"
         >
             <div className="container mx-auto px-6">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">

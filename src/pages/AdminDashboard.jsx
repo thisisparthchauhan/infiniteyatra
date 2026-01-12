@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { db } from '../firebase';
 import { collection, query, getDocs, doc, updateDoc, deleteDoc, setDoc } from 'firebase/firestore';
-import { Loader, CheckCircle, XCircle, Trash2, Search, Calendar, DollarSign, Users, Eye, X, Clock, TrendingUp, Package, Edit, Save, Plus, Database } from 'lucide-react';
+import { Loader, CheckCircle, XCircle, Trash2, Search, Calendar, DollarSign, Users, Eye, X, Clock, TrendingUp, Package, Edit, Save, Plus, Database, CloudUpload } from 'lucide-react';
 import { usePackages } from '../context/PackageContext';
 import { packages as staticPackages } from '../data/packages';
 import SEO from '../components/SEO';
+import AdminBlogManagement from '../components/AdminBlogManagement';
 
 const AdminDashboard = () => {
     const { packages, refreshPackages } = usePackages();
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState('bookings'); // 'bookings' | 'packages'
+    const [activeTab, setActiveTab] = useState('bookings'); // 'bookings' | 'packages' | 'stories'
     const [currentPackage, setCurrentPackage] = useState(null); // For Edit Modal
     const [searchTerm, setSearchTerm] = useState('');
     const [error, setError] = useState('');
@@ -216,12 +217,20 @@ const AdminDashboard = () => {
                         >
                             Packages
                         </button>
+                        <button
+                            onClick={() => setActiveTab('stories')}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'stories' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-50'}`}
+                        >
+                            Stories
+                        </button>
                     </div>
                 </div>
 
                 <div className="flex justify-between items-center mb-6">
                     <p className="text-slate-500">
-                        {activeTab === 'bookings' ? 'Manage and track all customer bookings.' : 'Manage tour packages, pricing, and availability.'}
+                        {activeTab === 'bookings' ? 'Manage and track all customer bookings.' :
+                            activeTab === 'packages' ? 'Manage tour packages, pricing, and availability.' :
+                                'Manage user travel stories and featured content.'}
                     </p>
                     <button onClick={fetchBookings} className="text-blue-600 hover:underline text-sm flex items-center gap-1">
                         <Clock size={14} /> Last refreshed: {new Date().toLocaleTimeString()}
@@ -446,6 +455,11 @@ const AdminDashboard = () => {
                             </div>
                         )}
                     </div>
+                )}
+
+                {/* Stories Tab Content */}
+                {activeTab === 'stories' && (
+                    <AdminBlogManagement />
                 )}
             </div>
 

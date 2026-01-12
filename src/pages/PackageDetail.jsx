@@ -435,11 +435,7 @@ const PackageDetail = () => {
                                 </div>
                             </div>
 
-                            {/* Booking Counter */}
-                            <PackageBookingCounter packageId={id} packageTitle={pkg.title} />
 
-                            {/* Recent Bookings */}
-                            <RecentPackageBookings packageTitle={pkg.title} />
 
                             {/* Info Card */}
                             <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-6 border border-blue-100">

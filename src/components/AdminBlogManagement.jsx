@@ -129,7 +129,7 @@ const AdminBlogManagement = () => {
         <div className="bg-white rounded-2xl shadow-lg p-8">
             <div className="flex items-center justify-between mb-8">
                 <div>
-                    <h2 className="text-3xl font-bold text-slate-900">Blog Management</h2>
+                    <h2 className="text-3xl font-bold text-slate-900">Travel Stories Management</h2>
                     <p className="text-slate-600 mt-2">Manage travel stories and featured content</p>
                 </div>
                 <button

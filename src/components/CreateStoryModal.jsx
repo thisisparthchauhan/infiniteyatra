@@ -57,10 +57,17 @@ const CreateStoryModal = ({ onClose, onStoryCreated }) => {
 
             // Upload image if selected
             if (imageFile) {
-                const storage = getStorage();
-                const storageRef = ref(storage, `stories/${currentUser.uid}/${Date.now()}_${imageFile.name}`);
-                await uploadBytes(storageRef, imageFile);
-                imageUrl = await getDownloadURL(storageRef);
+                try {
+                    const storage = getStorage();
+                    const storageRef = ref(storage, `stories/${currentUser.uid}/${Date.now()}_${imageFile.name}`);
+                    await uploadBytes(storageRef, imageFile);
+                    imageUrl = await getDownloadURL(storageRef);
+                } catch (storageError) {
+                    console.error("Storage Error:", storageError);
+                    showToast('Image upload failed. Enable Firebase Storage in console.', 'error');
+                    setLoading(false);
+                    return;
+                }
             }
 
             // Create story document
@@ -86,7 +93,7 @@ const CreateStoryModal = ({ onClose, onStoryCreated }) => {
             onClose();
         } catch (error) {
             console.error('Error creating story:', error);
-            showToast('Failed to share story. Please try again.', 'error');
+            showToast(`Failed: ${error.message}`, 'error');
         } finally {
             setLoading(false);
         }

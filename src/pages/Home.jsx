@@ -1,8 +1,6 @@
 import React, { useEffect } from 'react';
 import Hero from '../components/Hero';
-import TrustBadges from '../components/TrustBadges';
 import Destinations from '../components/Destinations';
-import LiveActivityFeed from '../components/LiveActivityFeed';
 import About from '../components/About';
 import TravelStories from '../components/TravelStories';
 import Contact from '../components/Contact';
@@ -14,19 +12,19 @@ const Home = () => {
         // Handle hash scrolling when page loads with a hash (e.g., /#about)
         const hash = window.location.hash;
         if (hash) {
-            // Small delay to ensure page is fully rendered
-            setTimeout(() => {
+            const scrollToHash = () => {
                 const element = document.querySelector(hash);
                 if (element) {
-                    const offset = 80; // Account for fixed navbar
-                    const elementPosition = element.getBoundingClientRect().top;
-                    const offsetPosition = elementPosition + window.pageYOffset - offset;
-                    window.scrollTo({
-                        top: offsetPosition,
-                        behavior: 'smooth'
-                    });
+                    element.scrollIntoView({ behavior: 'smooth' });
                 }
-            }, 100);
+            };
+
+            // Initial scroll
+            setTimeout(scrollToHash, 100);
+
+            // Retry after potential data loading/layout shifts
+            setTimeout(scrollToHash, 500);
+            setTimeout(scrollToHash, 1000);
         }
     }, []);
 
@@ -37,9 +35,7 @@ const Home = () => {
                 description="Welcome to Infinite Yatra. Discover your next adventure with our curated travel packages and expert guides."
             />
             <Hero />
-            <TrustBadges />
             <Destinations />
-            <LiveActivityFeed />
             <TravelStories />
             <About />
             <InstagramFeed />
