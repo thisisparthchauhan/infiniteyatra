@@ -12,6 +12,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
 import EnquiryPopup from './components/EnquiryPopup';
 import AIChatbot from './components/AIChatbot';
+import MaintenanceBanner from './components/MaintenanceBanner';
 
 // Pages
 import Home from './pages/Home';
@@ -45,6 +46,7 @@ const Layout = ({ children }) => {
 
   return (
     <>
+      <MaintenanceBanner />
       <ScrollToTop />
       {!isConnectPage && <Navbar />}
       <main>

@@ -306,10 +306,10 @@ const PackageDetail = () => {
                         </section>
 
                         {/* Photo Gallery */}
-                        {pkg.gallery && pkg.gallery.length > 0 && (
+                        {pkg.images && pkg.images.length > 0 && (
                             <section>
                                 <h2 className="text-3xl font-bold text-slate-900 mb-6">Photo Gallery</h2>
-                                <PhotoGallery images={pkg.gallery} />
+                                <PhotoGallery images={pkg.images.map((img, i) => ({ id: i, url: img, alt: `${pkg.title} - Image ${i + 1}` }))} />
                             </section>
                         )}
 
