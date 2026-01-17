@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-// eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
 import { User, Calendar, Heart, Gift, Settings, LogOut } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -84,8 +83,8 @@ const UserDashboard = () => {
                                             key={tab.id}
                                             onClick={() => setActiveTab(tab.id)}
                                             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === tab.id
-                                                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
-                                                : 'text-slate-700 hover:bg-slate-100'
+                                                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
+                                                    : 'text-slate-700 hover:bg-slate-100'
                                                 }`}
                                         >
                                             <Icon size={20} />

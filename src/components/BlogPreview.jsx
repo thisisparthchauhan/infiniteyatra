@@ -32,14 +32,8 @@ const BlogPreview = () => {
     };
 
     return (
-        <section id="blog-preview" className="py-24 bg-slate-900 relative overflow-hidden">
-            {/* Background Decorations */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute top-40 right-10 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl mix-blend-screen"></div>
-                <div className="absolute bottom-20 left-10 w-72 h-72 bg-blue-600/10 rounded-full blur-3xl mix-blend-screen"></div>
-            </div>
-
-            <div className="container mx-auto px-6 relative z-10">
+        <section id="blog-preview" className="py-24 bg-slate-50">
+            <div className="container mx-auto px-6">
                 <div className="flex items-end justify-between mb-12">
                     <motion.div
                         initial={{ opacity: 0, x: -20 }}
@@ -47,12 +41,12 @@ const BlogPreview = () => {
                         viewport={{ once: true }}
                         transition={{ duration: 0.6 }}
                     >
-                        <h2 className="text-4xl font-bold text-white mb-4">Latest Stories</h2>
-                        <p className="text-slate-400 text-lg max-w-xl">
+                        <h2 className="text-4xl font-bold text-slate-900 mb-4">Latest Stories</h2>
+                        <p className="text-slate-500 text-lg max-w-xl">
                             Travel tips, itineraries, and inspiration for your next journey.
                         </p>
                     </motion.div>
-                    <Link to="/blog" className="hidden md:flex items-center gap-2 text-blue-400 font-medium hover:text-blue-300 transition-colors">
+                    <Link to="/blog" className="hidden md:flex items-center gap-2 text-blue-600 font-medium hover:text-blue-700 transition-colors">
                         View all guides <ArrowRight size={20} />
                     </Link>
                 </div>
@@ -72,7 +66,7 @@ const BlogPreview = () => {
                 </motion.div>
 
                 <div className="mt-12 md:hidden text-center">
-                    <Link to="/blog" className="inline-flex items-center gap-2 text-blue-400 font-medium hover:text-blue-300 transition-colors">
+                    <Link to="/blog" className="inline-flex items-center gap-2 text-blue-600 font-medium hover:text-blue-700 transition-colors">
                         View all guides <ArrowRight size={20} />
                     </Link>
                 </div>

@@ -104,12 +104,11 @@ const TravelStories = () => {
 
     return (
         <>
-            <section id="stories-preview" className="py-24 bg-slate-900 relative overflow-hidden">
+            <section id="stories-preview" className="py-24 bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50 relative overflow-hidden">
                 {/* Background Decorations */}
                 <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                    <div className="absolute top-20 left-10 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl mix-blend-screen"></div>
-                    <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl mix-blend-screen"></div>
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-slate-800/30 rounded-full blur-3xl"></div>
+                    <div className="absolute top-20 left-10 w-72 h-72 bg-blue-200/20 rounded-full blur-3xl"></div>
+                    <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-200/20 rounded-full blur-3xl"></div>
                 </div>
 
                 <div className="container mx-auto px-6 relative z-10">
@@ -122,17 +121,17 @@ const TravelStories = () => {
                             transition={{ duration: 0.7 }}
                             className="max-w-2xl"
                         >
-                            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-full text-sm font-semibold mb-4 shadow-lg shadow-blue-900/20">
+                            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-full text-sm font-semibold mb-4 shadow-lg">
                                 <MapPin size={16} />
                                 <span>Community Stories</span>
                             </div>
-                            <h2 className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
+                            <h2 className="text-5xl md:text-6xl font-bold text-slate-900 mb-6 leading-tight">
                                 Latest Travel
-                                <span className="block bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                                <span className="block bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
                                     Adventures
                                 </span>
                             </h2>
-                            <p className="text-slate-300 text-lg md:text-xl leading-relaxed">
+                            <p className="text-slate-600 text-lg md:text-xl leading-relaxed">
                                 Real stories from real travelers. Share your journey, inspire others, and discover amazing experiences from our community.
                             </p>
                         </motion.div>
@@ -146,7 +145,7 @@ const TravelStories = () => {
                         >
                             <button
                                 onClick={handleShareStoryClick}
-                                className="group flex items-center gap-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-2xl font-semibold shadow-xl hover:shadow-2xl shadow-blue-900/20 transition-all duration-300 hover:scale-105"
+                                className="group flex items-center gap-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-2xl font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
                             >
                                 <Plus size={22} className="group-hover:rotate-90 transition-transform duration-300" />
                                 Share Your Story
@@ -154,7 +153,7 @@ const TravelStories = () => {
 
                             <Link
                                 to="/stories"
-                                className="hidden md:flex items-center gap-2 text-blue-400 font-semibold hover:text-purple-400 transition-colors px-6 py-4 rounded-2xl hover:bg-white/5 backdrop-blur-sm border border-transparent hover:border-white/10"
+                                className="hidden md:flex items-center gap-2 text-blue-600 font-semibold hover:text-purple-600 transition-colors px-6 py-4 rounded-2xl hover:bg-white/50 backdrop-blur-sm"
                             >
                                 View All Stories
                                 <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
@@ -166,12 +165,12 @@ const TravelStories = () => {
                     {loading ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                             {[1, 2, 3, 4, 5, 6].map(i => (
-                                <div key={i} className="glass-card overflow-hidden shadow-lg animate-pulse h-[400px]">
-                                    <div className="h-48 bg-white/5"></div>
+                                <div key={i} className="bg-white rounded-3xl overflow-hidden shadow-lg animate-pulse">
+                                    <div className="aspect-[4/3] bg-slate-200"></div>
                                     <div className="p-6 space-y-4">
-                                        <div className="h-4 bg-white/10 rounded w-3/4"></div>
-                                        <div className="h-4 bg-white/10 rounded w-1/2"></div>
-                                        <div className="h-20 bg-white/5 rounded"></div>
+                                        <div className="h-4 bg-slate-200 rounded w-3/4"></div>
+                                        <div className="h-4 bg-slate-200 rounded w-1/2"></div>
+                                        <div className="h-20 bg-slate-200 rounded"></div>
                                     </div>
                                 </div>
                             ))}
@@ -182,12 +181,12 @@ const TravelStories = () => {
                             animate={{ opacity: 1, scale: 1 }}
                             className="text-center py-20"
                         >
-                            <div className="glass-card p-12 max-w-md mx-auto">
-                                <div className="w-24 h-24 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                                    <MapPin size={40} className="text-blue-400" />
+                            <div className="bg-white rounded-3xl shadow-xl p-12 max-w-md mx-auto">
+                                <div className="w-24 h-24 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                                    <MapPin size={40} className="text-blue-600" />
                                 </div>
-                                <h3 className="text-2xl font-bold text-white mb-4">No Stories Yet</h3>
-                                <p className="text-slate-300 mb-8">Be the first to share your travel adventure with our community!</p>
+                                <h3 className="text-2xl font-bold text-slate-900 mb-4">No Stories Yet</h3>
+                                <p className="text-slate-600 mb-8">Be the first to share your travel adventure with our community!</p>
                                 <button
                                     onClick={handleShareStoryClick}
                                     className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
@@ -217,7 +216,7 @@ const TravelStories = () => {
                         <div className="mt-12 md:hidden text-center">
                             <Link
                                 to="/stories"
-                                className="inline-flex items-center gap-2 text-blue-400 font-semibold hover:text-purple-400 transition-colors px-8 py-4 rounded-2xl glass-card hover:bg-white/10"
+                                className="inline-flex items-center gap-2 text-blue-600 font-semibold hover:text-purple-600 transition-colors px-8 py-4 rounded-2xl bg-white shadow-lg"
                             >
                                 View All Stories
                                 <ArrowRight size={20} />

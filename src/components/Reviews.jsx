@@ -34,27 +34,27 @@ const Reviews = ({ reviews }) => {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={() => setSelectedImage(null)}
-                        className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4 cursor-zoom-out backdrop-blur-sm"
+                        className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 cursor-zoom-out"
                     >
                         <img
                             src={selectedImage}
                             alt="Review full size"
-                            className="max-w-full max-h-[90vh] rounded-2xl object-contain shadow-2xl border border-white/10"
+                            className="max-w-full max-h-[90vh] rounded-lg object-contain"
                         />
-                        <button className="absolute top-4 right-4 text-white/80 hover:text-white p-2 hover:bg-white/10 rounded-full transition-colors">
+                        <button className="absolute top-4 right-4 text-white p-2 hover:bg-white/10 rounded-full">
                             <X size={24} />
                         </button>
                     </motion.div>
                 )}
             </AnimatePresence>
 
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
-                <h2 className="text-3xl font-bold text-white">Customer Reviews</h2>
-                <div className="flex items-center gap-4 bg-white/5 backdrop-blur-md border border-white/10 px-5 py-3 rounded-2xl">
-                    <div className="text-3xl font-bold text-white">{averageRating.toFixed(1)}</div>
+            <div className="flex items-center justify-between mb-8">
+                <h2 className="text-3xl font-bold text-slate-900">Customer Reviews</h2>
+                <div className="flex items-center gap-4 bg-slate-50 px-4 py-2 rounded-xl">
+                    <div className="text-3xl font-bold text-slate-900">{averageRating.toFixed(1)}</div>
                     <div>
                         <div className="flex gap-1 mb-1">{renderStars(Math.round(averageRating))}</div>
-                        <p className="text-xs text-slate-400 font-medium">{reviews.length} reviews</p>
+                        <p className="text-xs text-slate-500 font-medium">{reviews.length} reviews</p>
                     </div>
                 </div>
             </div>
@@ -63,24 +63,24 @@ const Reviews = ({ reviews }) => {
                 {reviews.map((review, index) => (
                     <div
                         key={review.id || index}
-                        className="glass-card p-6 !bg-white/5 hover:!bg-white/10 transition-colors"
+                        className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow"
                     >
                         <div className="flex justify-between items-start mb-4">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-inner border border-white/20">
+                                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
                                     {review.name.charAt(0).toUpperCase()}
                                 </div>
                                 <div>
                                     <div className="flex items-center gap-2">
-                                        <h4 className="font-bold text-white">{review.name}</h4>
+                                        <h4 className="font-bold text-slate-900">{review.name}</h4>
                                         {review.verified && (
-                                            <div className="flex items-center gap-1 bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full text-[10px] font-bold border border-green-500/30 uppercase tracking-wide">
+                                            <div className="flex items-center gap-1 bg-green-50 text-green-700 px-2 py-0.5 rounded-full text-[10px] font-bold border border-green-100 uppercase tracking-wide">
                                                 <CheckCircle size={10} />
                                                 Verified
                                             </div>
                                         )}
                                     </div>
-                                    <p className="text-xs text-slate-400">{formatDate(review.date)}</p>
+                                    <p className="text-xs text-slate-500">{formatDate(review.date)}</p>
                                 </div>
                             </div>
                             <div className="flex gap-0.5">
@@ -88,18 +88,18 @@ const Reviews = ({ reviews }) => {
                             </div>
                         </div>
 
-                        <p className="text-slate-300 text-sm leading-relaxed mb-4">{review.comment}</p>
+                        <p className="text-slate-600 text-sm leading-relaxed mb-4">{review.comment}</p>
 
                         {review.photos && review.photos.length > 0 && (
-                            <div className="flex gap-2 mt-4 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
+                            <div className="flex gap-2 mt-4 overflow-x-auto pb-2 scrollbar-thin">
                                 {review.photos.map((photo, pIndex) => (
                                     <button
                                         key={pIndex}
                                         onClick={() => setSelectedImage(photo)}
-                                        className="relative flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border border-white/10 hover:border-blue-400 transition-colors group"
+                                        className="relative flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border border-slate-200 hover:border-blue-400 transition-colors group"
                                     >
                                         <img src={photo} alt={`Review ${pIndex}`} className="w-full h-full object-cover" />
-                                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+                                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
                                     </button>
                                 ))}
                             </div>

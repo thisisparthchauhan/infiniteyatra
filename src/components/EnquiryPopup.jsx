@@ -119,29 +119,29 @@ const EnquiryPopup = () => {
     return (
         <AnimatePresence>
             {isVisible && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
                     <motion.div
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.9 }}
-                        className="bg-slate-900/95 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl overflow-hidden max-w-4xl w-full flex flex-col md:flex-row relative"
+                        className="bg-white rounded-3xl shadow-2xl overflow-hidden max-w-4xl w-full flex flex-col md:flex-row relative"
                     >
                         {/* Close Button */}
                         <button
                             onClick={handleClose}
-                            className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-full z-10 transition-colors"
+                            className="absolute top-4 right-4 p-2 bg-white/80 hover:bg-slate-100 rounded-full z-10 transition-colors"
                         >
-                            <X className="w-5 h-5 text-white" />
+                            <X className="w-5 h-5 text-slate-500" />
                         </button>
 
                         {/* Image Side */}
-                        <div className="md:w-5/12 bg-blue-600 relative min-h-[200px] md:min-h-full hidden md:block">
+                        <div className="md:w-5/12 bg-blue-600 relative min-h-[200px] md:min-h-full">
                             <img
                                 src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=2070&auto=format&fit=crop"
                                 alt="Travel"
                                 className="absolute inset-0 w-full h-full object-cover opacity-80"
                             />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-8">
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-8">
                                 <div className="text-white">
                                     <h3 className="text-2xl font-bold mb-2">Plan Your Dream Trip</h3>
                                     <p className="text-white/90 text-sm">Get exclusive deals and personalized itineraries delivered to your inbox.</p>
@@ -150,22 +150,22 @@ const EnquiryPopup = () => {
                         </div>
 
                         {/* Form Side */}
-                        <div className="md:w-7/12 p-8 md:p-12">
+                        <div className="md:w-7/12 p-8 md:p-12 bg-white">
                             {isSubmitted ? (
                                 <div className="h-full flex flex-col items-center justify-center text-center py-12">
-                                    <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mb-4">
-                                        <Send className="w-8 h-8 text-green-400" />
+                                    <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                                        <Send className="w-8 h-8 text-green-600" />
                                     </div>
-                                    <h3 className="text-2xl font-bold text-white mb-2">Thank You!</h3>
-                                    <p className="text-slate-300">We'll be in touch with you shortly.</p>
+                                    <h3 className="text-2xl font-bold text-slate-900 mb-2">Thank You!</h3>
+                                    <p className="text-slate-600">We'll be in touch with you shortly.</p>
                                 </div>
                             ) : (
                                 <>
-                                    <h2 className="text-2xl font-bold text-white mb-6">Enquire Now</h2>
+                                    <h2 className="text-2xl font-bold text-slate-900 mb-6">Enquire Now</h2>
                                     <form onSubmit={handleSubmit} className="space-y-4">
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
-                                                <label className="block text-sm font-medium text-slate-300 mb-1">First Name*</label>
+                                                <label className="block text-sm font-medium text-slate-700 mb-1">First Name*</label>
                                                 <input
                                                     type="text"
                                                     name="firstName"
@@ -173,11 +173,11 @@ const EnquiryPopup = () => {
                                                     value={formData.firstName}
                                                     onChange={handleChange}
                                                     placeholder="First Name"
-                                                    className="w-full px-4 py-3 rounded-xl border border-white/10 focus:border-blue-500/50 bg-white/5 text-white placeholder:text-slate-500 outline-none transition-colors"
+                                                    className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-blue-500 outline-none bg-slate-50"
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-sm font-medium text-slate-300 mb-1">Last Name*</label>
+                                                <label className="block text-sm font-medium text-slate-700 mb-1">Last Name*</label>
                                                 <input
                                                     type="text"
                                                     name="lastName"
@@ -185,13 +185,13 @@ const EnquiryPopup = () => {
                                                     value={formData.lastName}
                                                     onChange={handleChange}
                                                     placeholder="Last Name"
-                                                    className="w-full px-4 py-3 rounded-xl border border-white/10 focus:border-blue-500/50 bg-white/5 text-white placeholder:text-slate-500 outline-none transition-colors"
+                                                    className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-blue-500 outline-none bg-slate-50"
                                                 />
                                             </div>
                                         </div>
 
                                         <div>
-                                            <label className="block text-sm font-medium text-slate-300 mb-1">Mobile No*</label>
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">Mobile No*</label>
                                             <input
                                                 type="tel"
                                                 name="mobile"
@@ -199,12 +199,12 @@ const EnquiryPopup = () => {
                                                 value={formData.mobile}
                                                 onChange={handleChange}
                                                 placeholder="Your mobile no"
-                                                className="w-full px-4 py-3 rounded-xl border border-white/10 focus:border-blue-500/50 bg-white/5 text-white placeholder:text-slate-500 outline-none transition-colors"
+                                                className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-blue-500 outline-none bg-slate-50"
                                             />
                                         </div>
 
                                         <div>
-                                            <label className="block text-sm font-medium text-slate-300 mb-1">Email*</label>
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">Email*</label>
                                             <input
                                                 type="email"
                                                 name="email"
@@ -212,16 +212,16 @@ const EnquiryPopup = () => {
                                                 value={formData.email}
                                                 onChange={handleChange}
                                                 placeholder="Your mail id"
-                                                className="w-full px-4 py-3 rounded-xl border border-white/10 focus:border-blue-500/50 bg-white/5 text-white placeholder:text-slate-500 outline-none transition-colors"
+                                                className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-blue-500 outline-none bg-slate-50"
                                             />
                                         </div>
 
                                         <button
                                             type="submit"
                                             disabled={isLoading}
-                                            className="w-full bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-slate-900 font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-yellow-400/20 mt-4 flex items-center justify-center gap-2"
+                                            className="w-full bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-bold py-3 rounded-xl transition-colors mt-4 flex items-center justify-center gap-2"
                                         >
-                                            {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Submit Enquiry'}
+                                            {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Submit'}
                                         </button>
                                     </form>
                                 </>

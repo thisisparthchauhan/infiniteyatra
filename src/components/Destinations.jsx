@@ -18,13 +18,13 @@ const Destinations = ({ packages: propPackages, title = "Explore Infinite", subt
     };
 
     return (
-        <section id="destinations" className="py-24 relative z-10">
+        <section id="destinations" className="py-24 bg-white relative z-10">
             <div className="container mx-auto px-6">
                 {!disableHeader && (
                     <div className="flex items-end justify-between mb-12">
                         <div>
-                            <h2 className="text-4xl font-bold text-white mb-4">{title}</h2>
-                            <p className="text-slate-300 text-lg max-w-xl">
+                            <h2 className="text-4xl font-bold text-slate-900 mb-4">{title}</h2>
+                            <p className="text-slate-500 text-lg max-w-xl">
                                 {subtitle || "Curated journeys designed for explorers who want more than just a trip."}
                             </p>
                         </div>
@@ -42,9 +42,9 @@ const Destinations = ({ packages: propPackages, title = "Explore Infinite", subt
                             <Link
                                 key={dest.id}
                                 to={`/package/${dest.id}`}
-                                className="group cursor-pointer block relative glass-card p-4 hover:-translate-y-2 transition-transform duration-500"
+                                className="group cursor-pointer block relative"
                             >
-                                <div className="relative aspect-[4/5] overflow-hidden rounded-2xl mb-4 shadow-md">
+                                <div className="relative aspect-[4/5] overflow-hidden rounded-2xl mb-4">
                                     <img
                                         src={dest.image}
                                         alt={dest.title}
@@ -77,13 +77,13 @@ const Destinations = ({ packages: propPackages, title = "Explore Infinite", subt
 
                                 <div className="space-y-3">
                                     <div className="flex items-center justify-between">
-                                        <h3 className="text-xl font-bold text-white group-hover:text-blue-400 transition-colors">
+                                        <h3 className="text-xl font-bold text-slate-950 group-hover:text-blue-600 transition-colors">
                                             {dest.title}
                                         </h3>
-                                        <span className="text-blue-200 font-bold">{dest.priceDisplay}</span>
+                                        <span className="text-slate-950 font-bold">{dest.priceDisplay}</span>
                                     </div>
 
-                                    <div className="flex items-center gap-2 text-slate-400 text-sm">
+                                    <div className="flex items-center gap-2 text-slate-600 text-sm">
                                         <MapPin size={16} />
                                         {dest.location}
                                     </div>

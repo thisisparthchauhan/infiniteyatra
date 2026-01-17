@@ -148,12 +148,12 @@ Answer questions about our treks, packages, booking process, what to pack, diffi
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 20, scale: 0.95 }}
                         transition={{ duration: 0.2 }}
-                        className="fixed bottom-6 right-6 z-50 w-[380px] max-w-[calc(100vw-3rem)] h-[600px] max-h-[calc(100vh-3rem)] glass-card flex flex-col overflow-hidden !border-white/20 !shadow-2xl"
+                        className="fixed bottom-6 right-6 z-50 w-[380px] max-w-[calc(100vw-3rem)] h-[600px] max-h-[calc(100vh-3rem)] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-slate-200"
                     >
                         {/* Header */}
                         <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/20">
+                                <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
                                     <Sparkles size={20} />
                                 </div>
                                 <div>
@@ -170,7 +170,7 @@ Answer questions about our treks, packages, booking process, what to pack, diffi
                         </div>
 
                         {/* Messages */}
-                        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50">
                             {messages.map((message, index) => (
                                 <motion.div
                                     key={index}
@@ -181,8 +181,8 @@ Answer questions about our treks, packages, booking process, what to pack, diffi
                                 >
                                     <div
                                         className={`max-w-[80%] rounded-2xl px-4 py-3 ${message.role === 'user'
-                                            ? 'bg-gradient-to-br from-blue-600 to-purple-600 text-white shadow-lg'
-                                            : 'bg-white/10 backdrop-blur-md text-slate-100 shadow-sm border border-white/10'
+                                                ? 'bg-gradient-to-br from-blue-600 to-purple-600 text-white'
+                                                : 'bg-white text-slate-900 shadow-sm border border-slate-200'
                                             }`}
                                     >
                                         <p className="text-sm leading-relaxed whitespace-pre-wrap">
@@ -198,10 +198,10 @@ Answer questions about our treks, packages, booking process, what to pack, diffi
                                     animate={{ opacity: 1 }}
                                     className="flex justify-start"
                                 >
-                                    <div className="bg-white/10 backdrop-blur-md rounded-2xl px-4 py-3 shadow-sm border border-white/10">
+                                    <div className="bg-white rounded-2xl px-4 py-3 shadow-sm border border-slate-200">
                                         <div className="flex items-center gap-2">
-                                            <Loader2 size={16} className="animate-spin text-blue-400" />
-                                            <span className="text-sm text-slate-300">Thinking...</span>
+                                            <Loader2 size={16} className="animate-spin text-blue-600" />
+                                            <span className="text-sm text-slate-600">Thinking...</span>
                                         </div>
                                     </div>
                                 </motion.div>
@@ -212,14 +212,14 @@ Answer questions about our treks, packages, booking process, what to pack, diffi
 
                         {/* Quick Suggestions */}
                         {messages.length === 1 && (
-                            <div className="px-4 py-2 border-t border-white/10 bg-white/5">
-                                <p className="text-xs text-slate-400 mb-2">Quick questions:</p>
+                            <div className="px-4 py-2 bg-white border-t border-slate-200">
+                                <p className="text-xs text-slate-500 mb-2">Quick questions:</p>
                                 <div className="flex flex-wrap gap-2">
                                     {quickSuggestions.map((suggestion, index) => (
                                         <button
                                             key={index}
                                             onClick={() => handleQuickSuggestion(suggestion)}
-                                            className="text-xs bg-white/5 hover:bg-white/10 text-slate-300 border border-white/5 hover:border-white/20 px-3 py-1.5 rounded-full transition-all"
+                                            className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-full transition-colors"
                                         >
                                             {suggestion}
                                         </button>
@@ -229,7 +229,7 @@ Answer questions about our treks, packages, booking process, what to pack, diffi
                         )}
 
                         {/* Input */}
-                        <div className="p-4 border-t border-white/10 bg-white/5">
+                        <div className="p-4 bg-white border-t border-slate-200">
                             <div className="flex items-end gap-2">
                                 <textarea
                                     ref={inputRef}
@@ -238,7 +238,7 @@ Answer questions about our treks, packages, booking process, what to pack, diffi
                                     onKeyPress={handleKeyPress}
                                     placeholder="Ask me anything..."
                                     rows="1"
-                                    className="flex-1 resize-none outline-none bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50 transition-all placeholder:text-slate-500"
+                                    className="flex-1 resize-none outline-none border border-slate-300 rounded-xl px-4 py-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
                                     style={{ maxHeight: '100px' }}
                                 />
                                 <button

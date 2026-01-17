@@ -15,7 +15,6 @@ const Hero = () => {
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
-    const [isMobileFormOpen, setIsMobileFormOpen] = useState(false);
     const { addToast } = useToast();
 
     const words = ["Journey", "Adventure", "Escape", "Experience", "Odyssey"];
@@ -128,44 +127,27 @@ const Hero = () => {
                 </motion.p>
 
                 {/* Mobile: Plan Trip Button (Expands Form) */}
-                {/* Mobile: Plan Trip Button (Expands Form) */}
-                <div className="lg:hidden mb-8 relative z-20">
+                <div className="lg:hidden mb-8">
                     <motion.button
                         initial={{ opacity: 0, y: 20 }}
-                        animate={{
-                            opacity: 1,
-                            y: 0,
-                            scale: [1, 1.05, 1],
-                            boxShadow: [
-                                "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
-                                "0 0 20px rgba(59, 130, 246, 0.5)",
-                                "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)"
-                            ]
-                        }}
-                        transition={{
-                            delay: 1,
-                            scale: {
-                                duration: 2,
-                                repeat: Infinity,
-                                ease: "easeInOut"
-                            },
-                            boxShadow: {
-                                duration: 2,
-                                repeat: Infinity,
-                                ease: "easeInOut"
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 1 }}
+                        className="bg-white text-blue-600 px-8 py-4 rounded-full font-bold text-lg shadow-xl flex items-center gap-2 mx-auto"
+                        onClick={() => {
+                            const formElement = document.getElementById('enquiry-form');
+                            if (formElement) {
+                                formElement.scrollIntoView({ behavior: 'smooth' });
+                                // Logic to expand/highlight form could go here
                             }
                         }}
-                        whileTap={{ scale: 0.95 }}
-                        className="glass text-blue-300 px-8 py-4 rounded-full font-bold text-lg border border-white/20 flex items-center gap-3 mx-auto"
-                        onClick={() => setIsMobileFormOpen(!isMobileFormOpen)}
                     >
-                        {isMobileFormOpen ? 'Close Planner' : 'Plan Your Trip'}
-                        <Send size={20} className={isMobileFormOpen ? 'rotate-180 transition-transform text-red-400' : 'text-blue-400'} />
+                        <Send size={20} />
+                        Plan Your Trip
                     </motion.button>
                 </div>
 
                 {/* Enquiry Form / Success Message */}
-                <div className="max-w-5xl mx-auto min-h-[20px] lg:min-h-[100px]">
+                <div className="max-w-5xl mx-auto min-h-[100px]">
                     <AnimatePresence mode="wait">
                         {isSubmitted ? (
                             <motion.div
@@ -180,120 +162,120 @@ const Hero = () => {
                                 <p className="text-xl font-medium">We will reach you soon to plan your dream trip. 🚀</p>
                             </motion.div>
                         ) : (
-                            <motion.div
-                                key="form-container"
-                                initial={false}
-                                animate={{
-                                    height: isMobileFormOpen || window.innerWidth >= 1024 ? 'auto' : 0,
-                                    opacity: isMobileFormOpen || window.innerWidth >= 1024 ? 1 : 0
-                                }}
-                                className="overflow-hidden"
+                            <motion.form
+                                id="enquiry-form"
+                                key="form"
+                                initial={{ opacity: 0, y: 30 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -20 }}
+                                transition={{ duration: 0.8, delay: 0.9 }}
+                                onSubmit={handleSubmit}
+                                className="bg-white/95 backdrop-blur-sm p-2 rounded-[2rem] shadow-2xl flex flex-col lg:flex-row items-center gap-2 border border-white/50"
                             >
-                                <motion.form
-                                    id="enquiry-form"
-                                    initial={{ opacity: 0, y: 30 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -20 }}
-                                    transition={{ duration: 0.5 }}
-                                    onSubmit={handleSubmit}
-                                    className={`
-                                        p-3 rounded-[2.5rem] flex flex-col lg:flex-row items-center gap-4 border border-white/20 transition-all duration-500
-                                        ${isMobileFormOpen ? 'glass mt-4' : 'glass lg:glass-card'}
-                                    `}
-                                >
-                                    {/* Location */}
-                                    <div className="flex-1 flex items-center gap-3 px-6 py-4 w-full border-b lg:border-b-0 lg:border-r border-slate-200/50">
-                                        <MapPin className="text-blue-500 shrink-0" size={24} />
-                                        <div className="text-left w-full">
-                                            <label htmlFor="location" className="block text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Location</label>
-                                            <input
-                                                id="location"
-                                                name="location"
-                                                type="text"
-                                                value={formData.location}
-                                                onChange={handleChange}
-                                                placeholder="Where to?"
-                                                required
-                                                className="w-full outline-none text-white placeholder:text-white/50 font-medium text-lg bg-transparent border-b border-transparent focus:border-blue-400 transition-colors py-1"
-                                            />
-                                        </div>
+                                {/* Location */}
+                                <div className="flex-1 flex items-center gap-3 px-6 py-4 w-full border-b lg:border-b-0 lg:border-r border-slate-200">
+                                    <MapPin className="text-blue-500 shrink-0" size={24} />
+                                    <div className="text-left w-full">
+                                        <label htmlFor="location" className="block text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Location</label>
+                                        <input
+                                            id="location"
+                                            name="location"
+                                            type="text"
+                                            value={formData.location}
+                                            onChange={handleChange}
+                                            placeholder="Where to?"
+                                            required
+                                            className="w-full outline-none text-slate-900 placeholder:text-slate-400 font-semibold text-lg bg-transparent"
+                                        />
                                     </div>
+                                </div>
 
-                                    {/* Days */}
-                                    <div className="flex-1 flex items-center gap-3 px-6 py-4 w-full border-b lg:border-b-0 lg:border-r border-slate-200/50">
-                                        <Calendar className="text-blue-500 shrink-0" size={24} />
-                                        <div className="text-left w-full">
-                                            <label htmlFor="days" className="block text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Days</label>
-                                            <input
-                                                id="days"
-                                                name="days"
-                                                type="number"
-                                                min="1"
-                                                value={formData.days}
-                                                onChange={handleChange}
-                                                placeholder="Duration"
-                                                className="w-full outline-none text-white placeholder:text-white/50 font-medium text-lg bg-transparent border-b border-transparent focus:border-blue-400 transition-colors py-1"
-                                            />
-                                        </div>
+                                {/* Days */}
+                                <div className="flex-1 flex items-center gap-3 px-6 py-4 w-full border-b lg:border-b-0 lg:border-r border-slate-200">
+                                    <Calendar className="text-blue-500 shrink-0" size={24} />
+                                    <div className="text-left w-full">
+                                        <label htmlFor="days" className="block text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Days</label>
+                                        <input
+                                            id="days"
+                                            name="days"
+                                            type="number"
+                                            min="1"
+                                            value={formData.days}
+                                            onChange={handleChange}
+                                            placeholder="Duration"
+                                            className="w-full outline-none text-slate-900 placeholder:text-slate-400 font-semibold text-lg bg-transparent"
+                                        />
                                     </div>
+                                </div>
 
-                                    {/* Persons */}
-                                    <div className="flex-1 flex items-center gap-3 px-6 py-4 w-full border-b lg:border-b-0 lg:border-r border-slate-200/50">
-                                        <Users className="text-blue-500 shrink-0" size={24} />
-                                        <div className="text-left w-full">
-                                            <label htmlFor="persons" className="block text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Travelers</label>
-                                            <input
-                                                id="persons"
-                                                name="persons"
-                                                type="number"
-                                                min="1"
-                                                value={formData.persons}
-                                                onChange={handleChange}
-                                                placeholder="How many?"
-                                                className="w-full outline-none text-white placeholder:text-white/50 font-medium text-lg bg-transparent border-b border-transparent focus:border-blue-400 transition-colors py-1"
-                                            />
-                                        </div>
+                                {/* Persons */}
+                                <div className="flex-1 flex items-center gap-3 px-6 py-4 w-full border-b lg:border-b-0 lg:border-r border-slate-200">
+                                    <Users className="text-blue-500 shrink-0" size={24} />
+                                    <div className="text-left w-full">
+                                        <label htmlFor="persons" className="block text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Travelers</label>
+                                        <input
+                                            id="persons"
+                                            name="persons"
+                                            type="number"
+                                            min="1"
+                                            value={formData.persons}
+                                            onChange={handleChange}
+                                            placeholder="How many?"
+                                            className="w-full outline-none text-slate-900 placeholder:text-slate-400 font-semibold text-lg bg-transparent"
+                                        />
                                     </div>
+                                </div>
 
-                                    {/* Phone */}
-                                    <div className="flex-1 flex items-center gap-3 px-6 py-4 w-full">
-                                        <Phone className="text-blue-500 shrink-0" size={24} />
-                                        <div className="text-left w-full">
-                                            <label htmlFor="phone" className="block text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Phone</label>
-                                            <input
-                                                id="phone"
-                                                name="phone"
-                                                type="tel"
-                                                value={formData.phone}
-                                                onChange={handleChange}
-                                                placeholder="Your number"
-                                                required
-                                                className="w-full outline-none text-white placeholder:text-white/50 font-medium text-lg bg-transparent border-b border-transparent focus:border-blue-400 transition-colors py-1"
-                                            />
-                                        </div>
+                                {/* Phone */}
+                                <div className="flex-1 flex items-center gap-3 px-6 py-4 w-full">
+                                    <Phone className="text-blue-500 shrink-0" size={24} />
+                                    <div className="text-left w-full">
+                                        <label htmlFor="phone" className="block text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Phone</label>
+                                        <input
+                                            id="phone"
+                                            name="phone"
+                                            type="tel"
+                                            value={formData.phone}
+                                            onChange={handleChange}
+                                            placeholder="Your number"
+                                            required
+                                            className="w-full outline-none text-slate-900 placeholder:text-slate-400 font-semibold text-lg bg-transparent"
+                                        />
                                     </div>
+                                </div>
 
-                                    {/* Submit Button */}
-                                    <div className="p-2 w-full lg:w-auto">
-                                        <motion.button
-                                            whileHover={{ scale: 1.05 }}
-                                            whileTap={{ scale: 0.95 }}
-                                            type="submit"
-                                            disabled={isSubmitting}
-                                            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white p-5 rounded-[1.5rem] w-full lg:w-auto transition-all duration-300 shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed group cursor-pointer min-w-[60px] lg:min-w-[170px]"
-                                        >
-                                            {isSubmitting ? (
-                                                <Loader size={24} className="animate-spin" />
-                                            ) : (
-                                                <>
-                                                    <span className="font-bold text-lg lg:hidden lg:group-hover:inline-block transition-all duration-300 whitespace-nowrap">Plan My Trip</span>
-                                                    <Send size={24} className="lg:group-hover:translate-x-1 transition-transform" />
-                                                </>
-                                            )}
-                                        </motion.button>
-                                    </div>
-                                </motion.form>
-                            </motion.div>
+                                {/* Submit Button */}
+                                <div className="p-2 w-full lg:w-auto">
+                                    <motion.button
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
+                                        animate={{
+                                            scale: [1, 1.02, 1],
+                                            boxShadow: [
+                                                "0 10px 15px -3px rgba(37, 99, 235, 0.3)",
+                                                "0 10px 20px -2px rgba(37, 99, 235, 0.5)",
+                                                "0 10px 15px -3px rgba(37, 99, 235, 0.3)"
+                                            ]
+                                        }}
+                                        transition={{
+                                            scale: { repeat: Infinity, duration: 2, repeatDelay: 6 },
+                                            boxShadow: { repeat: Infinity, duration: 2, repeatDelay: 6 }
+                                        }}
+                                        type="submit"
+                                        disabled={isSubmitting}
+                                        className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white p-5 rounded-[1.5rem] w-full lg:w-auto transition-all duration-300 shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2Disabled:opacity-70 disabled:cursor-not-allowed group cursor-pointer min-w-[60px] lg:min-w-[170px]"
+                                    >
+                                        {isSubmitting ? (
+                                            <Loader size={24} className="animate-spin" />
+                                        ) : (
+                                            <>
+                                                <span className="font-bold text-lg lg:hidden lg:group-hover:inline-block transition-all duration-300 whitespace-nowrap">Plan My Trip</span>
+                                                <Send size={24} className="lg:group-hover:translate-x-1 transition-transform" />
+                                            </>
+                                        )}
+                                    </motion.button>
+                                </div>
+                            </motion.form>
                         )}
                     </AnimatePresence>
                 </div>

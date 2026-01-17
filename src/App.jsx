@@ -46,13 +46,9 @@ const Layout = ({ children }) => {
 
   return (
     <>
+      <MaintenanceBanner />
       <ScrollToTop />
-      {!isConnectPage && (
-        <div className="fixed top-0 left-0 right-0 z-50 flex flex-col">
-          <MaintenanceBanner />
-          <Navbar static={true} />
-        </div>
-      )}
+      {!isConnectPage && <Navbar />}
       <main>
         {children}
       </main>

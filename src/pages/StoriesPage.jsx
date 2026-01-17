@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { MapPin, Plus, Filter, TrendingUp, Clock, Heart, Sparkles } from 'lucide-react';
-import { collection, query, orderBy, getDocs, doc, updateDoc, increment } from 'firebase/firestore';
+import { collection, query, orderBy, getDocs, doc, updateDoc, increment, where } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../context/AuthContext';
 import StoryCard from '../components/StoryCard';
@@ -19,7 +19,11 @@ const StoriesPage = () => {
 
 
 
-    const fetchStories = useCallback(async () => {
+    useEffect(() => {
+        fetchStories();
+    }, [filter]);
+
+    const fetchStories = async () => {
         setLoading(true);
         try {
             const storiesRef = collection(db, 'travelStories');
@@ -48,11 +52,7 @@ const StoriesPage = () => {
         } finally {
             setLoading(false);
         }
-    }, [filter]);
-
-    useEffect(() => {
-        fetchStories();
-    }, [fetchStories]);
+    };
 
     const handleLike = async (storyId) => {
         if (!currentUser) return;
@@ -89,13 +89,13 @@ const StoriesPage = () => {
                 keywords="travel stories, travel blog, adventure stories, travel experiences"
             />
 
-            <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900/20 to-slate-900">
+            <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50">
                 {/* Hero Section */}
                 <section className="relative pt-32 pb-20 overflow-hidden">
                     {/* Background Decorations */}
                     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                        <div className="absolute top-20 left-10 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl"></div>
-                        <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl"></div>
+                        <div className="absolute top-20 left-10 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl"></div>
+                        <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-200/30 rounded-full blur-3xl"></div>
                     </div>
 
                     <div className="container mx-auto px-6 relative z-10">
@@ -105,25 +105,25 @@ const StoriesPage = () => {
                             transition={{ duration: 0.7 }}
                             className="text-center max-w-4xl mx-auto flex flex-col items-center"
                         >
-                            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600/20 to-purple-600/20 text-blue-300 px-6 py-3 rounded-full text-sm font-semibold mb-6 shadow-lg border border-blue-500/20 backdrop-blur-sm">
+                            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-full text-sm font-semibold mb-6 shadow-lg">
                                 <MapPin size={18} />
                                 <span>Community Travel Stories</span>
                             </div>
 
-                            <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold text-white mb-6 leading-tight">
+                            <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold text-slate-900 mb-6 leading-tight">
                                 Stories That <br className="hidden md:block" />
-                                <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                                <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
                                     Inspire Wanderlust
                                 </span>
                             </h1>
 
-                            <p className="text-lg md:text-xl text-slate-400 mb-8 leading-relaxed max-w-2xl mx-auto">
+                            <p className="text-lg md:text-xl text-slate-600 mb-8 leading-relaxed max-w-2xl mx-auto">
                                 Discover real experiences from real travelers. Get inspired, learn tips, and share your own adventures.
                             </p>
 
                             <button
                                 onClick={() => setShowCreateModal(true)}
-                                className="w-full md:w-auto inline-flex items-center justify-center gap-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 md:px-10 py-4 md:py-5 rounded-2xl font-semibold shadow-xl shadow-purple-900/20 hover:shadow-2xl transition-all duration-300 hover:scale-105 text-lg"
+                                className="w-full md:w-auto inline-flex items-center justify-center gap-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 md:px-10 py-4 md:py-5 rounded-2xl font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 text-lg"
                             >
                                 <Plus size={24} />
                                 Share Your Story
@@ -133,7 +133,7 @@ const StoriesPage = () => {
                 </section>
 
                 {/* Categories Section */}
-                <section className="py-4 bg-slate-900/50 border-b border-white/5 overflow-x-auto backdrop-blur-sm">
+                <section className="py-4 bg-white border-b border-slate-100 overflow-x-auto">
                     <div className="container mx-auto px-6">
                         <div className="flex items-center gap-3 pb-2 md:pb-0 min-w-max">
                             {categories.map((cat) => (
@@ -141,8 +141,8 @@ const StoriesPage = () => {
                                     key={cat}
                                     onClick={() => setCategory(cat)}
                                     className={`px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300 whitespace-nowrap ${category === cat
-                                        ? 'bg-white text-slate-900 shadow-md'
-                                        : 'bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white'
+                                        ? 'bg-slate-900 text-white shadow-md'
+                                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                                         }`}
                                 >
                                     {cat}
@@ -153,12 +153,12 @@ const StoriesPage = () => {
                 </section>
 
                 {/* Filter Section */}
-                <section className="py-8 border-y border-white/5 bg-slate-900/80 backdrop-blur-md sticky top-0 z-20">
+                <section className="py-8 border-y border-slate-200 bg-white/50 backdrop-blur-sm sticky top-0 z-20">
                     <div className="container mx-auto px-6">
                         <div className="flex items-center justify-between flex-wrap gap-4">
                             <div className="flex items-center gap-3">
-                                <Filter size={20} className="text-slate-400" />
-                                <span className="font-semibold text-slate-200">Filter by:</span>
+                                <Filter size={20} className="text-slate-600" />
+                                <span className="font-semibold text-slate-900">Filter by:</span>
                             </div>
 
                             <div className="flex gap-3">
@@ -170,7 +170,7 @@ const StoriesPage = () => {
                                             onClick={() => setFilter(option.id)}
                                             className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${filter === option.id
                                                 ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
-                                                : 'bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white border border-white/5'
+                                                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
                                                 }`}
                                         >
                                             <Icon size={18} />
@@ -189,12 +189,12 @@ const StoriesPage = () => {
                         {loading ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                                 {[1, 2, 3].map(i => (
-                                    <div key={i} className="glass-card overflow-hidden shadow-lg animate-pulse">
-                                        <div className="aspect-[4/3] bg-white/10"></div>
+                                    <div key={i} className="bg-white rounded-3xl overflow-hidden shadow-lg animate-pulse">
+                                        <div className="aspect-[4/3] bg-slate-200"></div>
                                         <div className="p-6 space-y-4">
-                                            <div className="h-4 bg-white/10 rounded w-3/4"></div>
-                                            <div className="h-4 bg-white/10 rounded w-1/2"></div>
-                                            <div className="h-20 bg-white/10 rounded"></div>
+                                            <div className="h-4 bg-slate-200 rounded w-3/4"></div>
+                                            <div className="h-4 bg-slate-200 rounded w-1/2"></div>
+                                            <div className="h-20 bg-slate-200 rounded"></div>
                                         </div>
                                     </div>
                                 ))}
@@ -203,7 +203,7 @@ const StoriesPage = () => {
                             <div className="flex flex-col items-center">
                                 {/* Seeded Empty State Cards */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full mb-12 opacity-50 pointer-events-none grayscale-[0.5] hover:grayscale-0 transition-all duration-500">
-                                    {seededStories.map((story) => (
+                                    {seededStories.map((story, index) => (
                                         <StoryCard key={story.id} story={story} onLike={() => { }} />
                                     ))}
                                 </div>

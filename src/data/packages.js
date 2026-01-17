@@ -1,3 +1,7 @@
+import kedarnathImg from '../assets/kedarnath.png';
+import tungnathImg from '../assets/tungnath.png';
+import kashmirImg from '../assets/kashmir_v2.jpg';
+import soulOfHimalayasImg from '../assets/soul_of_himalayas.png';
 
 export const packages = [
 
@@ -81,14 +85,15 @@ export const packages = [
         images: [
             "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?q=80&w=2070&auto=format&fit=crop",
             "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=2070&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=2070&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1516715094483-75da7dd0f409?q=80&w=2070&auto=format&fit=crop"
+            "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=2070&auto=format&fit=crop"
         ],
         gallery: [
-            { id: 1, url: 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?q=80&w=2070&auto=format&fit=crop', alt: 'Stunning sunrise view from Kedarkantha summit' },
-            { id: 2, url: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=2070&auto=format&fit=crop', alt: 'Trekkers hiking on snowy trail with Himalayan background' },
-            { id: 3, url: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=2070&auto=format&fit=crop', alt: 'Camping under starry night sky at base camp' },
-            { id: 4, url: 'https://images.unsplash.com/photo-1516715094483-75da7dd0f409?q=80&w=2070&auto=format&fit=crop', alt: 'Beautiful pine forest trail with snow' }
+            { id: 1, url: '/images/gallery/kedarkantha-1.png', alt: 'Stunning sunrise view from Kedarkantha summit with golden snow-covered peaks' },
+            { id: 2, url: '/images/gallery/kedarkantha-2.png', alt: 'Trekkers hiking on snowy trail with Himalayan mountains in background' },
+            { id: 3, url: '/images/gallery/kedarkantha-3.png', alt: 'Camping under starry night sky at Kedarkantha base camp' },
+            { id: 4, url: '/images/gallery/kedarkantha-4.png', alt: 'Panoramic 360-degree view from Kedarkantha peak with prayer flags' },
+            { id: 5, url: '/images/gallery/kedarkantha-5.png', alt: 'Beautiful pine forest trail with snow and wooden bridge' },
+            { id: 6, url: '/images/gallery/kedarkantha-6.png', alt: 'Traditional Uttarakhand village with Himalayan peaks in background' }
         ],
 
         faqs: [
@@ -139,7 +144,7 @@ export const packages = [
         id: 'tungnath',
         title: "Tungnath Trek",
         location: "Uttarakhand, India",
-        image: "https://images.unsplash.com/photo-1626714485836-3ec55216d822?q=80&w=2070",
+        image: tungnathImg,
         price: 6000,
         priceDisplay: "₹6,000",
         type: "fixed",
@@ -201,23 +206,16 @@ export const packages = [
             "Meals during travel days"
         ],
         images: [
-            "https://images.unsplash.com/photo-1626714485836-3ec55216d822?q=80&w=2070",
-            "https://images.unsplash.com/photo-1624687520037-1478201b12b3?q=80&w=2070",
-            "https://images.unsplash.com/photo-1598424324220-dca78e87d3a1?q=80&w=2070",
+            tungnathImg,
+            "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=2070&auto=format&fit=crop",
             "https://images.unsplash.com/photo-1486870591958-9b9d0d1dda99?q=80&w=2070&auto=format&fit=crop"
-        ],
-        gallery: [
-            { id: 1, url: 'https://images.unsplash.com/photo-1626714485836-3ec55216d822?q=80&w=2070', alt: 'Tungnath Temple view' },
-            { id: 2, url: 'https://images.unsplash.com/photo-1624687520037-1478201b12b3?q=80&w=2070', alt: 'Mountains surroundings Tungnath' },
-            { id: 3, url: 'https://images.unsplash.com/photo-1598424324220-dca78e87d3a1?q=80&w=2070', alt: 'Himalayan range from Chandrashila' },
-            { id: 4, url: 'https://images.unsplash.com/photo-1486870591958-9b9d0d1dda99?q=80&w=2070', alt: 'Scenic mountain trails' }
         ]
     },
     {
         id: 'chardham-2026',
         title: "Chardham Yatra 2026",
         location: "Uttarakhand, India",
-        image: "https://images.unsplash.com/photo-1548013146-72479768bada?q=80&w=2076&auto=format&fit=crop",
+        image: kedarnathImg,
         price: 35000,
         priceDisplay: "₹35,000",
         type: "custom",
@@ -314,21 +312,15 @@ export const packages = [
             "Helicopter tickets"
         ],
         images: [
-            "https://images.unsplash.com/photo-1548013146-72479768bada?q=80&w=2076&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1598424324220-dca78e87d3a1?q=80&w=2070&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1626714485836-3ec55216d822?q=80&w=2070"
-        ],
-        gallery: [
-            { id: 1, url: 'https://images.unsplash.com/photo-1548013146-72479768bada?q=80&w=2076', alt: 'Kedarnath Temple in winter' },
-            { id: 2, url: 'https://images.unsplash.com/photo-1598424324220-dca78e87d3a1?q=80&w=2070', alt: 'Devotees on the way to temple' },
-            { id: 3, url: 'https://images.unsplash.com/photo-1626714485836-3ec55216d822?q=80&w=2070', alt: 'Himalayan peaks' }
+            kedarnathImg,
+            "https://images.unsplash.com/photo-1548013146-72479768bada?q=80&w=2076&auto=format&fit=crop"
         ]
     },
     {
         id: 'soul-of-himalayas',
         title: "The Soul of Himalayas",
         location: "Himalayas, India",
-        image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=2070&auto=format&fit=crop",
+        image: soulOfHimalayasImg,
         price: 18000,
         priceDisplay: "₹18,000",
         type: "custom",
@@ -401,21 +393,14 @@ When you return, you don’t just bring back photos — you bring back a new ver
             "Personal Expenses"
         ],
         images: [
-            "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=2070&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1586929562872-bb421503ef21?q=80&w=2068&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1589136777351-943a44b80e5b?q=80&w=2070&auto=format&fit=crop"
-        ],
-        gallery: [
-            { id: 1, url: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=2070', alt: 'Majestic Himalayan Peaks' },
-            { id: 2, url: 'https://images.unsplash.com/photo-1586929562872-bb421503ef21?q=80&w=2068', alt: 'Snow covered mountains' },
-            { id: 3, url: 'https://images.unsplash.com/photo-1589136777351-943a44b80e5b?q=80&w=2070', alt: 'River flowing through valley' }
+            soulOfHimalayasImg
         ]
     },
     {
         id: 'kedarnath',
         title: "Kedarnath Trek",
         location: "Uttarakhand, India",
-        image: "https://images.unsplash.com/photo-1548013146-72479768bada?q=80&w=2076&auto=format&fit=crop",
+        image: kedarnathImg,
         price: 12000,
         priceDisplay: "₹12,000",
         type: "mixed",
@@ -469,14 +454,8 @@ When you return, you don’t just bring back photos — you bring back a new ver
         inclusions: ["Transport", "Meals", "Stay", "Guide"],
         exclusions: ["Personal Expenses", "Pony/Palki charges"],
         images: [
-            "https://images.unsplash.com/photo-1548013146-72479768bada?q=80&w=2076&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1598424324220-dca78e87d3a1?q=80&w=2070&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1626714485836-3ec55216d822?q=80&w=2070"
-        ],
-        gallery: [
-            { id: 1, url: 'https://images.unsplash.com/photo-1548013146-72479768bada?q=80&w=2076', alt: 'Kedarnath Main Temple' },
-            { id: 2, url: 'https://images.unsplash.com/photo-1598424324220-dca78e87d3a1?q=80&w=2070', alt: 'Pilgrimage Path' },
-            { id: 3, url: 'https://images.unsplash.com/photo-1626714485836-3ec55216d822?q=80&w=2070', alt: 'Himalayan Backdrop' }
+            kedarnathImg,
+            "https://images.unsplash.com/photo-1548013146-72479768bada?q=80&w=2076&auto=format&fit=crop"
         ]
     },
     {

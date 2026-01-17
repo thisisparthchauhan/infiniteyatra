@@ -31,17 +31,17 @@ const PackageBookingCounter = ({ packageId, packageTitle }) => {
             <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="bg-gradient-to-br from-orange-500/10 to-red-500/10 rounded-2xl p-6 border border-orange-500/20 backdrop-blur-sm"
+                className="bg-gradient-to-br from-orange-50 to-red-50 rounded-2xl p-6 border-2 border-orange-200 shadow-lg"
             >
                 <div className="flex items-start gap-3 mb-4">
-                    <div className="p-2 bg-orange-500/20 rounded-lg border border-orange-500/30">
-                        <Flame size={24} className="text-orange-500" />
+                    <div className="p-2 bg-orange-500 rounded-lg">
+                        <Flame size={24} className="text-white" />
                     </div>
                     <div className="flex-1">
-                        <h3 className="font-bold text-orange-400 text-lg mb-1">
+                        <h3 className="font-bold text-orange-900 text-lg mb-1">
                             🔥 Trending Now!
                         </h3>
-                        <p className="text-orange-300/80 text-sm">
+                        <p className="text-orange-700 text-sm">
                             High demand for this trek
                         </p>
                     </div>
@@ -49,20 +49,20 @@ const PackageBookingCounter = ({ packageId, packageTitle }) => {
 
                 <div className="space-y-3">
                     {/* 7 Days Bookings */}
-                    <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5">
+                    <div className="flex items-center justify-between p-3 bg-white rounded-xl">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-blue-500/10 rounded-lg">
-                                <TrendingUp size={20} className="text-blue-400" />
+                            <div className="p-2 bg-blue-100 rounded-lg">
+                                <TrendingUp size={20} className="text-blue-600" />
                             </div>
                             <div>
-                                <p className="text-sm text-slate-400">Last 7 days</p>
-                                <p className="font-bold text-white text-lg">
+                                <p className="text-sm text-slate-600">Last 7 days</p>
+                                <p className="font-bold text-slate-900 text-lg">
                                     {stats.last7Days} bookings
                                 </p>
                             </div>
                         </div>
                         <div className="text-right">
-                            <div className="inline-flex items-center gap-1 bg-green-500/10 text-green-400 px-2 py-1 rounded-full text-xs font-semibold border border-green-500/20">
+                            <div className="inline-flex items-center gap-1 bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-semibold">
                                 <TrendingUp size={12} />
                                 +45%
                             </div>
@@ -70,14 +70,14 @@ const PackageBookingCounter = ({ packageId, packageTitle }) => {
                     </div>
 
                     {/* 24 Hours Bookings */}
-                    <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5">
+                    <div className="flex items-center justify-between p-3 bg-white rounded-xl">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-purple-500/10 rounded-lg">
-                                <Clock size={20} className="text-purple-400" />
+                            <div className="p-2 bg-purple-100 rounded-lg">
+                                <Clock size={20} className="text-purple-600" />
                             </div>
                             <div>
-                                <p className="text-sm text-slate-400">Last 24 hours</p>
-                                <p className="font-bold text-white text-lg">
+                                <p className="text-sm text-slate-600">Last 24 hours</p>
+                                <p className="font-bold text-slate-900 text-lg">
                                     {stats.last24Hours} bookings
                                 </p>
                             </div>
@@ -89,14 +89,14 @@ const PackageBookingCounter = ({ packageId, packageTitle }) => {
                     </div>
 
                     {/* Total Bookings */}
-                    <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5">
+                    <div className="flex items-center justify-between p-3 bg-white rounded-xl">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-green-500/10 rounded-lg">
-                                <Users size={20} className="text-green-400" />
+                            <div className="p-2 bg-green-100 rounded-lg">
+                                <Users size={20} className="text-green-600" />
                             </div>
                             <div>
-                                <p className="text-sm text-slate-400">Total travelers</p>
-                                <p className="font-bold text-white text-lg">
+                                <p className="text-sm text-slate-600">Total travelers</p>
+                                <p className="font-bold text-slate-900 text-lg">
                                     {stats.totalBookings}+ happy customers
                                 </p>
                             </div>
@@ -110,20 +110,20 @@ const PackageBookingCounter = ({ packageId, packageTitle }) => {
                 <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="bg-gradient-to-r from-red-600/20 to-orange-600/20 rounded-xl p-4 text-white shadow-lg border border-red-500/30 backdrop-blur-md"
+                    className="bg-gradient-to-r from-red-500 to-orange-500 rounded-xl p-4 text-white shadow-lg"
                 >
                     <div className="flex items-center gap-3">
                         <div className="relative">
-                            <div className="absolute inset-0 animate-ping bg-red-500 rounded-full opacity-50"></div>
-                            <div className="relative w-10 h-10 bg-red-500/20 rounded-full flex items-center justify-center border border-red-500/50">
-                                <span className="text-red-400 font-bold text-lg">!</span>
+                            <div className="absolute inset-0 animate-ping bg-white rounded-full opacity-75"></div>
+                            <div className="relative w-10 h-10 bg-white rounded-full flex items-center justify-center">
+                                <span className="text-red-600 font-bold text-lg">!</span>
                             </div>
                         </div>
                         <div className="flex-1">
-                            <p className="font-bold text-lg mb-1 text-red-100">
+                            <p className="font-bold text-lg mb-1">
                                 ⚡ Limited slots per batch!
                             </p>
-                            <p className="text-sm text-red-200/80">
+                            <p className="text-sm text-white/90">
                                 High demand season - Book early
                             </p>
                         </div>
@@ -136,10 +136,10 @@ const PackageBookingCounter = ({ packageId, packageTitle }) => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.3 }}
-                className="bg-blue-900/10 rounded-xl p-4 border border-blue-500/20"
+                className="bg-blue-50 rounded-xl p-4 border border-blue-200"
             >
-                <p className="text-sm text-blue-300 text-center">
-                    <span className="font-semibold text-blue-200">Join {stats.totalBookings}+ travelers</span> who have already experienced this amazing trek!
+                <p className="text-sm text-blue-900 text-center">
+                    <span className="font-semibold">Join {stats.totalBookings}+ travelers</span> who have already experienced this amazing trek!
                 </p>
             </motion.div>
         </div>

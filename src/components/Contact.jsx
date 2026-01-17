@@ -97,34 +97,34 @@ const Contact = () => {
     };
 
     return (
-        <section id="contact" className="py-24 relative overflow-hidden">
+        <section id="contact" className="py-16 bg-gradient-to-b from-white to-slate-50 relative overflow-hidden">
             {/* Decorative elements */}
-            <div className="absolute top-0 left-0 w-96 h-96 bg-blue-500/10 rounded-full blur-[100px] pointer-events-none"></div>
-            <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-500/10 rounded-full blur-[100px] pointer-events-none"></div>
+            <div className="absolute top-0 left-0 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl"></div>
+            <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl"></div>
 
             <div className="container mx-auto px-6 relative z-10">
                 <div className="max-w-3xl mx-auto">
                     {/* Header */}
-                    <div className="text-center mb-12">
-                        <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">
+                    <div className="text-center mb-8">
+                        <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-3">
                             Get In Touch
                         </h2>
-                        <p className="text-slate-300 text-lg max-w-2xl mx-auto leading-relaxed">
+                        <p className="text-slate-600 text-base max-w-2xl mx-auto">
                             Have questions about your next adventure? We'd love to hear from you. Send us a message and we'll respond as soon as possible.
                         </p>
                     </div>
 
                     {/* Contact Form */}
-                    <div className="glass-card p-6 md:p-10 !bg-white/5 backdrop-blur-xl border border-white/10">
-                        <form onSubmit={handleSubmit} className="space-y-8">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 p-6 md:p-8 border border-slate-100">
+                        <form onSubmit={handleSubmit} className="space-y-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {/* Name Field */}
                                 <div>
-                                    <label htmlFor="name" className="block text-sm font-semibold text-slate-300 mb-2">
+                                    <label htmlFor="name" className="block text-sm font-semibold text-slate-700 mb-2">
                                         Full Name *
                                     </label>
-                                    <div className="relative group">
-                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-400 transition-colors">
+                                    <div className="relative">
+                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
                                             <User size={20} />
                                         </div>
                                         <input
@@ -133,15 +133,15 @@ const Contact = () => {
                                             name="name"
                                             value={formData.name}
                                             onChange={handleChange}
-                                            className={`w-full pl-12 pr-4 py-4 rounded-xl border bg-white/5 ${errors.name
-                                                ? 'border-red-500/50 focus:border-red-500 focus:bg-red-500/10'
-                                                : 'border-white/10 focus:border-blue-500/50 focus:bg-blue-500/5'
-                                                } focus:outline-none focus:ring-1 focus:ring-blue-500/50 transition-all duration-300 text-white placeholder:text-slate-600`}
+                                            className={`w-full pl-12 pr-4 py-3.5 rounded-xl border-2 ${errors.name
+                                                ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20'
+                                                : 'border-slate-200 focus:border-blue-500 focus:ring-blue-500/20'
+                                                } focus:ring-4 outline-none transition-all duration-300 text-slate-900 placeholder:text-slate-400`}
                                             placeholder="John Doe"
                                         />
                                     </div>
                                     {errors.name && (
-                                        <p className="mt-2 text-sm text-red-400 flex items-center gap-1">
+                                        <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
                                             <AlertCircle size={14} />
                                             {errors.name}
                                         </p>
@@ -150,11 +150,11 @@ const Contact = () => {
 
                                 {/* Email Field */}
                                 <div>
-                                    <label htmlFor="email" className="block text-sm font-semibold text-slate-300 mb-2">
+                                    <label htmlFor="email" className="block text-sm font-semibold text-slate-700 mb-2">
                                         Email Address *
                                     </label>
-                                    <div className="relative group">
-                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-400 transition-colors">
+                                    <div className="relative">
+                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
                                             <Mail size={20} />
                                         </div>
                                         <input
@@ -163,15 +163,15 @@ const Contact = () => {
                                             name="email"
                                             value={formData.email}
                                             onChange={handleChange}
-                                            className={`w-full pl-12 pr-4 py-4 rounded-xl border bg-white/5 ${errors.email
-                                                ? 'border-red-500/50 focus:border-red-500 focus:bg-red-500/10'
-                                                : 'border-white/10 focus:border-blue-500/50 focus:bg-blue-500/5'
-                                                } focus:outline-none focus:ring-1 focus:ring-blue-500/50 transition-all duration-300 text-white placeholder:text-slate-600`}
+                                            className={`w-full pl-12 pr-4 py-3.5 rounded-xl border-2 ${errors.email
+                                                ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20'
+                                                : 'border-slate-200 focus:border-blue-500 focus:ring-blue-500/20'
+                                                } focus:ring-4 outline-none transition-all duration-300 text-slate-900 placeholder:text-slate-400`}
                                             placeholder="john@example.com"
                                         />
                                     </div>
                                     {errors.email && (
-                                        <p className="mt-2 text-sm text-red-400 flex items-center gap-1">
+                                        <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
                                             <AlertCircle size={14} />
                                             {errors.email}
                                         </p>
@@ -181,11 +181,11 @@ const Contact = () => {
 
                             {/* Phone Field (Optional) */}
                             <div>
-                                <label htmlFor="phone" className="block text-sm font-semibold text-slate-300 mb-2">
-                                    Phone Number <span className="text-slate-500 font-normal">(Optional)</span>
+                                <label htmlFor="phone" className="block text-sm font-semibold text-slate-700 mb-2">
+                                    Phone Number <span className="text-slate-400 font-normal">(Optional)</span>
                                 </label>
-                                <div className="relative group">
-                                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-400 transition-colors">
+                                <div className="relative">
+                                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
                                         <Phone size={20} />
                                     </div>
                                     <input
@@ -194,7 +194,7 @@ const Contact = () => {
                                         name="phone"
                                         value={formData.phone}
                                         onChange={handleChange}
-                                        className="w-full pl-12 pr-4 py-4 rounded-xl border border-white/10 bg-white/5 focus:border-blue-500/50 focus:bg-blue-500/5 focus:outline-none focus:ring-1 focus:ring-blue-500/50 transition-all duration-300 text-white placeholder:text-slate-600"
+                                        className="w-full pl-12 pr-4 py-3.5 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 outline-none transition-all duration-300 text-slate-900 placeholder:text-slate-400"
                                         placeholder="+91 98765 43210"
                                     />
                                 </div>
@@ -202,11 +202,11 @@ const Contact = () => {
 
                             {/* Message Field */}
                             <div>
-                                <label htmlFor="message" className="block text-sm font-semibold text-slate-300 mb-2">
+                                <label htmlFor="message" className="block text-sm font-semibold text-slate-700 mb-2">
                                     Your Message *
                                 </label>
-                                <div className="relative group">
-                                    <div className="absolute left-4 top-4 text-slate-500 group-focus-within:text-blue-400 transition-colors">
+                                <div className="relative">
+                                    <div className="absolute left-4 top-4 text-slate-400">
                                         <MessageSquare size={20} />
                                     </div>
                                     <textarea
@@ -215,15 +215,15 @@ const Contact = () => {
                                         value={formData.message}
                                         onChange={handleChange}
                                         rows="6"
-                                        className={`w-full pl-12 pr-4 py-4 rounded-xl border bg-white/5 ${errors.message
-                                            ? 'border-red-500/50 focus:border-red-500 focus:bg-red-500/10'
-                                            : 'border-white/10 focus:border-blue-500/50 focus:bg-blue-500/5'
-                                            } focus:outline-none focus:ring-1 focus:ring-blue-500/50 transition-all duration-300 resize-none text-white placeholder:text-slate-600`}
+                                        className={`w-full pl-12 pr-4 py-3.5 rounded-xl border-2 ${errors.message
+                                            ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20'
+                                            : 'border-slate-200 focus:border-blue-500 focus:ring-blue-500/20'
+                                            } focus:ring-4 outline-none transition-all duration-300 resize-none text-slate-900 placeholder:text-slate-400`}
                                         placeholder="Tell us about your travel plans or any questions you have..."
                                     ></textarea>
                                 </div>
                                 {errors.message && (
-                                    <p className="mt-2 text-sm text-red-400 flex items-center gap-1">
+                                    <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
                                         <AlertCircle size={14} />
                                         {errors.message}
                                     </p>
@@ -231,16 +231,16 @@ const Contact = () => {
                             </div>
 
                             {/* Submit Button */}
-                            <div className="pt-4">
+                            <div className="pt-2">
                                 <button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 
-                                             text-white px-8 py-5 rounded-2xl font-bold text-lg
-                                             shadow-lg shadow-blue-600/20 hover:shadow-blue-600/40
-                                             transition-all duration-300 hover:scale-[1.01] active:scale-[0.99]
+                                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 
+                                             text-white px-8 py-4 rounded-xl font-semibold text-base
+                                             shadow-lg shadow-blue-600/30 hover:shadow-xl hover:shadow-blue-600/40
+                                             transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]
                                              disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100
-                                             flex items-center justify-center gap-3 group border border-white/10"
+                                             flex items-center justify-center gap-3 group"
                                 >
                                     {isSubmitting ? (
                                         <>
