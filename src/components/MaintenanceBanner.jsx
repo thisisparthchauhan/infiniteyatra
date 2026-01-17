@@ -10,10 +10,10 @@ const MaintenanceBanner = () => {
     return (
         <AnimatePresence>
             <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                className="bg-gradient-to-r from-blue-900 via-slate-900 to-blue-900 text-white relative overflow-hidden"
+                initial={{ y: 100, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: 100, opacity: 0 }}
+                className="fixed bottom-0 left-0 right-0 z-[100] bg-gradient-to-r from-blue-900 via-slate-900 to-blue-900 text-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]"
             >
                 <div className="absolute top-0 left-0 w-full h-full bg-white/5 pattern-grid-lg opacity-10"></div>
 

@@ -1,5 +1,4 @@
 import kedarnathImg from '../assets/kedarnath.png';
-import tungnathImg from '../assets/tungnath.png';
 import kashmirImg from '../assets/kashmir_v2.jpg';
 import soulOfHimalayasImg from '../assets/soul_of_himalayas.png';
 
@@ -144,7 +143,7 @@ export const packages = [
         id: 'tungnath',
         title: "Tungnath Trek",
         location: "Uttarakhand, India",
-        image: tungnathImg,
+        image: "/images/tungnath.png",
         price: 6000,
         priceDisplay: "₹6,000",
         type: "fixed",
@@ -206,7 +205,7 @@ export const packages = [
             "Meals during travel days"
         ],
         images: [
-            tungnathImg,
+            "/images/tungnath.png",
             "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=2070&auto=format&fit=crop",
             "https://images.unsplash.com/photo-1486870591958-9b9d0d1dda99?q=80&w=2070&auto=format&fit=crop"
         ]
@@ -400,7 +399,7 @@ When you return, you don’t just bring back photos — you bring back a new ver
         id: 'kedarnath',
         title: "Kedarnath Trek",
         location: "Uttarakhand, India",
-        image: kedarnathImg,
+        image: "/images/kedarnath_new.jpg",
         price: 12000,
         priceDisplay: "₹12,000",
         type: "mixed",
@@ -454,7 +453,7 @@ When you return, you don’t just bring back photos — you bring back a new ver
         inclusions: ["Transport", "Meals", "Stay", "Guide"],
         exclusions: ["Personal Expenses", "Pony/Palki charges"],
         images: [
-            kedarnathImg,
+            "/images/kedarnath_new.jpg",
             "https://images.unsplash.com/photo-1548013146-72479768bada?q=80&w=2076&auto=format&fit=crop"
         ]
     },
@@ -501,7 +500,7 @@ When you return, you don’t just bring back photos — you bring back a new ver
         id: 'dubai-highlights',
         title: "Dazzling Dubai",
         location: "Dubai, UAE",
-        image: "https://images.unsplash.com/photo-1512453979798-5ea904ac66de?q=80&w=2009&auto=format&fit=crop",
+        image: "/images/dubai.jpg",
         price: 45000,
         priceDisplay: "₹45,000",
         type: "custom",
@@ -528,7 +527,7 @@ When you return, you don’t just bring back photos — you bring back a new ver
         inclusions: ["Hotel 4*", "Daily Breakfast", "Transfers", "Sightseeing"],
         exclusions: ["Flights", "Visa", "Tourism Dirham Fee"],
         images: [
-            "https://images.unsplash.com/photo-1512453979798-5ea904ac66de?q=80&w=2009&auto=format&fit=crop",
+            "/images/dubai.jpg",
             "https://images.unsplash.com/photo-1451337516015-6b6fcd1f9013?q=80&w=2070&auto=format&fit=crop",
             "https://images.unsplash.com/photo-1578335345700-111000780490?q=80&w=2069&auto=format&fit=crop",
             "https://images.unsplash.com/photo-1582657233895-0f37a3691ea9?q=80&w=2070&auto=format&fit=crop"

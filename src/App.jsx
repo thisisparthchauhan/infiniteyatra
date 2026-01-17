@@ -38,6 +38,8 @@ import StoriesPage from './pages/StoriesPage';
 import AdminDashboard from './pages/AdminDashboard';
 import BookingSuccess from './pages/BookingSuccess';
 
+import MigrateData from './pages/MigrateData';
+
 import TermsConditions from './pages/TermsConditions';
 
 const Layout = ({ children }) => {
@@ -129,6 +131,7 @@ function App() {
                     <Route path="/connect" element={<QRLanding />} />
                     <Route path="/booking-success" element={<BookingSuccess />} />
                     <Route path="/terms" element={<TermsConditions />} />
+                    <Route path="/migrate-packages-fix" element={<MigrateData />} />
                   </Routes>
                 </Layout>
               </Router>

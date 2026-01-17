@@ -18,6 +18,23 @@ const Navbar = () => {
     const isAuthPage = location.pathname === '/login' || location.pathname === '/signup';
     const isTripPlannerPage = location.pathname === '/trip-planner';
     const isDestinationsPage = location.pathname === '/destinations';
+    // Pages that need a solid navbar (white background, dark text)
+    const isLightPage =
+        location.pathname === '/login' ||
+        location.pathname === '/signup' ||
+        location.pathname === '/destinations' ||
+        location.pathname.startsWith('/booking') ||
+        location.pathname.startsWith('/trip/') || // Trip Details
+        location.pathname.startsWith('/blog') ||
+        location.pathname === '/my-bookings' ||
+        location.pathname === '/my-trips' ||
+        location.pathname === '/wishlist' ||
+        location.pathname === '/contact' ||
+        location.pathname === '/dashboard' ||
+        location.pathname === '/profile' ||
+        location.pathname === '/careers' ||
+        location.pathname === '/terms' ||
+        location.pathname === '/booking-success';
 
     useEffect(() => {
         const handleScroll = () => {
@@ -83,11 +100,11 @@ const Navbar = () => {
         { name: 'Contact', icon: Mail, href: '/contact', type: 'link' }
     ];
 
-    const navBackground = isAuthPage || isScrolled || isDestinationsPage
+    const navBackground = isLightPage || isScrolled
         ? 'bg-white/95 backdrop-blur-xl shadow-lg border-b border-slate-200/50'
         : 'bg-gradient-to-b from-black/30 to-transparent backdrop-blur-sm';
 
-    const textColor = isAuthPage || isScrolled || isDestinationsPage ? 'text-slate-900' : 'text-white';
+    const textColor = isLightPage || isScrolled ? 'text-slate-900' : 'text-white';
 
     const handleNavClick = (e, href) => {
         e.preventDefault();
@@ -155,10 +172,10 @@ const Navbar = () => {
                                                 ${item.highlight
                                                     ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:scale-105 border-0'
                                                     : isActive
-                                                        ? (isAuthPage || isScrolled || isTripPlannerPage || isDestinationsPage
+                                                        ? (isLightPage || isScrolled || isTripPlannerPage
                                                             ? 'text-blue-600 bg-blue-50'
                                                             : 'text-white bg-white/20')
-                                                        : (isAuthPage || isScrolled || isTripPlannerPage || isDestinationsPage
+                                                        : (isLightPage || isScrolled || isTripPlannerPage
                                                             ? 'text-slate-600 hover:text-blue-600 hover:bg-slate-50'
                                                             : 'text-white/90 hover:text-white hover:bg-white/10')
                                                 }
@@ -185,10 +202,10 @@ const Navbar = () => {
                                             transition-all duration-300 group
                                             flex items-center gap-2
                                             ${isActive
-                                                ? (isAuthPage || isScrolled || isTripPlannerPage || isDestinationsPage
+                                                ? (isLightPage || isScrolled || isTripPlannerPage
                                                     ? 'text-blue-600 bg-blue-50'
                                                     : 'text-white bg-white/20')
-                                                : (isAuthPage || isScrolled || isTripPlannerPage || isDestinationsPage
+                                                : (isLightPage || isScrolled || isTripPlannerPage
                                                     ? 'text-slate-600 hover:text-blue-600 hover:bg-slate-50'
                                                     : 'text-white/90 hover:text-white hover:bg-white/10')
                                             }
@@ -212,7 +229,7 @@ const Navbar = () => {
                                 <button
                                     className={`
                                         p-2.5 rounded-full transition-all duration-300
-                                        ${isAuthPage || isScrolled
+                                        ${isLightPage || isScrolled
                                             ? 'hover:bg-slate-100 text-slate-600'
                                             : 'hover:bg-white/20 text-white'
                                         }
@@ -229,7 +246,7 @@ const Navbar = () => {
                                     to="/wishlist"
                                     className={`
                                         p-2.5 rounded-full transition-all duration-300 relative
-                                        ${isAuthPage || isScrolled
+                                        ${isLightPage || isScrolled
                                             ? 'hover:bg-slate-100 text-slate-600'
                                             : 'hover:bg-white/20 text-white'
                                         }
@@ -250,7 +267,7 @@ const Navbar = () => {
                                 <div className="relative group flex items-center gap-3">
                                     <div className={`
                                         flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300
-                                        ${isAuthPage || isScrolled ? 'bg-slate-100 text-slate-700 hover:bg-slate-200' : 'bg-white/10 text-white hover:bg-white/20'}
+                                        ${isLightPage || isScrolled ? 'bg-slate-100 text-slate-700 hover:bg-slate-200' : 'bg-white/10 text-white hover:bg-white/20'}
                                     `}>
                                         <User size={18} />
                                         <span className="font-medium text-sm max-w-[100px] truncate">
@@ -264,7 +281,7 @@ const Navbar = () => {
                                             to="/admin"
                                             className={`
                                                 p-2.5 rounded-full transition-all duration-300
-                                                ${isAuthPage || isScrolled
+                                                ${isLightPage || isScrolled
                                                     ? 'hover:bg-purple-50 text-slate-600 hover:text-purple-600'
                                                     : 'hover:bg-white/20 text-white hover:text-purple-200'}
                                             `}
@@ -329,7 +346,7 @@ const Navbar = () => {
                                         to="/login"
                                         className={`
                                             px-5 py-2.5 rounded-full font-medium transition-all duration-300
-                                            ${isAuthPage || isScrolled
+                                            ${isLightPage || isScrolled
                                                 ? 'text-slate-700 hover:text-blue-600 hover:bg-slate-100'
                                                 : 'text-white hover:bg-white/20'
                                             }
@@ -361,7 +378,7 @@ const Navbar = () => {
                         <button
                             className={`
                                 md:hidden p-2 rounded-lg transition-all duration-300
-                                ${isAuthPage || isScrolled ? 'text-slate-900 hover:bg-slate-100' : 'text-white hover:bg-white/20'}
+                                ${isLightPage || isScrolled ? 'text-slate-900 hover:bg-slate-100' : 'text-white hover:bg-white/20'}
                             `}
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                             aria-label="Toggle menu"
