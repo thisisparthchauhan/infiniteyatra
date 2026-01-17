@@ -32,37 +32,43 @@ export const packages = [
                 day: 1,
                 title: "Dehradun to Sankri",
                 description: "Drive from Dehradun to Sankri village (220 km, 8-10 hours). Enjoy scenic views of the Himalayas and Tons river. Overnight stay in Sankri.",
-                activities: ["Scenic drive", "Village exploration", "Acclimatization"]
+                activities: ["Scenic drive", "Village exploration", "Acclimatization"],
+                image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=2070&auto=format&fit=crop"
             },
             {
                 day: 2,
                 title: "Sankri to Juda Ka Talab",
                 description: "Trek from Sankri to Juda Ka Talab (4 km, 4-5 hours). Walk through dense pine forests and reach the beautiful frozen lake. Camp overnight.",
-                activities: ["Forest trek", "Lake visit", "Camping"]
+                activities: ["Forest trek", "Lake visit", "Camping"],
+                image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=2070&auto=format&fit=crop"
             },
             {
                 day: 3,
                 title: "Juda Ka Talab to Kedarkantha Base",
                 description: "Trek to Kedarkantha base camp (4 km, 3-4 hours). Gradual ascent through oak forests with stunning mountain views. Overnight camping.",
-                activities: ["Mountain trek", "Photography", "Base camp setup"]
+                activities: ["Mountain trek", "Photography", "Base camp setup"],
+                image: "https://images.unsplash.com/photo-1519904981063-b0cf448d479e?q=80&w=2070&auto=format&fit=crop"
             },
             {
                 day: 4,
                 title: "Summit Day - Kedarkantha Peak",
                 description: "Early morning summit push to Kedarkantha peak (6 km, 6-7 hours round trip). Witness spectacular sunrise and 360-degree views. Descend to Hargaon camp.",
-                activities: ["Summit climb", "Sunrise viewing", "Descent to Hargaon"]
+                activities: ["Summit climb", "Sunrise viewing", "Descent to Hargaon"],
+                image: "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?q=80&w=2070&auto=format&fit=crop"
             },
             {
                 day: 5,
                 title: "Hargaon to Sankri",
                 description: "Trek back to Sankri village (6 km, 4-5 hours). Descend through forests and meadows. Celebrate the successful trek. Overnight in Sankri.",
-                activities: ["Descent trek", "Village stay", "Celebration"]
+                activities: ["Descent trek", "Village stay", "Celebration"],
+                image: "https://images.unsplash.com/photo-1486870591958-9b9d0d1dda99?q=80&w=2070&auto=format&fit=crop"
             },
             {
                 day: 6,
                 title: "Sankri to Dehradun",
                 description: "Drive back to Dehradun (220 km, 8-10 hours). Trip concludes with beautiful memories of the Himalayas.",
-                activities: ["Return journey", "Trip conclusion"]
+                activities: ["Return journey", "Trip conclusion"],
+                image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=2070&auto=format&fit=crop"
             }
         ],
         inclusions: [
@@ -143,7 +149,7 @@ export const packages = [
         id: 'tungnath',
         title: "Tungnath Trek",
         location: "Uttarakhand, India",
-        image: "/images/tungnath.png",
+        image: "/images/tungnath_trek.jpg",
         price: 6000,
         priceDisplay: "₹6,000",
         type: "fixed",
@@ -205,7 +211,7 @@ export const packages = [
             "Meals during travel days"
         ],
         images: [
-            "/images/tungnath.png",
+            "/images/tungnath_trek.jpg",
             "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=2070&auto=format&fit=crop",
             "https://images.unsplash.com/photo-1486870591958-9b9d0d1dda99?q=80&w=2070&auto=format&fit=crop"
         ]
@@ -461,7 +467,7 @@ When you return, you don’t just bring back photos — you bring back a new ver
         id: 'usa-nyc',
         title: "New York City Explorer",
         location: "New York, USA",
-        image: "https://images.unsplash.com/photo-1496442226666-8d4a0e62e6e9?q=80&w=2070&auto=format&fit=crop",
+        image: "/images/new_york_city.jpg",
         price: 150000,
         priceDisplay: "₹1,50,000",
         type: "custom",
@@ -490,7 +496,7 @@ When you return, you don’t just bring back photos — you bring back a new ver
         inclusions: ["Hotel Stay", "Breakfast", "Airport Transfers", "Sightseeing Tours"],
         exclusions: ["International Flights", "Visa Fees", "Lunch & Dinner", "Personal Expenses"],
         images: [
-            "https://images.unsplash.com/photo-1496442226666-8d4a0e62e6e9?q=80&w=2070&auto=format&fit=crop",
+            "/images/new_york_city.jpg",
             "https://images.unsplash.com/photo-1605130284535-11dd9eedc58a?q=80&w=2070&auto=format&fit=crop",
             "https://images.unsplash.com/photo-1534430480872-3498386e7856?q=80&w=2070&auto=format&fit=crop",
             "https://images.unsplash.com/photo-1585862705417-62dc04423871?q=80&w=2072&auto=format&fit=crop"

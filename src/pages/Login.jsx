@@ -3,15 +3,25 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import SEO from '../components/SEO';
 import { useAuth } from '../context/AuthContext';
+import PhoneInput from 'react-phone-input-2';
+import 'react-phone-input-2/lib/style.css';
 
 const Login = () => {
+    const [loginMethod, setLoginMethod] = useState('email'); // 'email' or 'phone'
     const [email, setEmail] = useState('');
+    const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
-    const { login } = useAuth();
+    const { login, loginWithPhone } = useAuth();
     const navigate = useNavigate();
+
+    // Validate email format
+    const validateEmail = (email) => {
+        const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        return emailRegex.test(email);
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -19,13 +29,29 @@ const Login = () => {
         setLoading(true);
 
         try {
-            await login(email, password);
+            if (loginMethod === 'email') {
+                // Validate email format
+                if (!validateEmail(email)) {
+                    setError('Please enter a valid email address');
+                    setLoading(false);
+                    return;
+                }
+                await login(email, password);
+            } else {
+                // Login with phone number
+                await loginWithPhone(phone, password);
+            }
             navigate('/');
         } catch (err) {
             console.error(err);
             let errorMessage = 'Failed to log in.';
-            if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
-                errorMessage = 'Incorrect email or password.';
+
+            if (err.message && err.message.includes('Phone number not registered')) {
+                errorMessage = 'Phone number not registered. Please sign up first.';
+            } else if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+                errorMessage = loginMethod === 'email'
+                    ? 'Incorrect email or password.'
+                    : 'Incorrect phone number or password.';
             } else if (err.code === 'auth/too-many-requests') {
                 errorMessage = 'Too many failed attempts. Please try again later.';
             }
@@ -67,17 +93,71 @@ const Login = () => {
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">Email Address</label>
-                        <input
-                            type="email"
-                            required
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            placeholder="Enter your email"
-                            className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
-                        />
+                    {/* Login Method Toggle */}
+                    <div className="flex gap-2 p-1 bg-slate-100 rounded-lg mb-6">
+                        <button
+                            type="button"
+                            onClick={() => setLoginMethod('email')}
+                            className={`flex-1 py-2 px-4 rounded-md font-medium transition-all ${loginMethod === 'email'
+                                    ? 'bg-white text-blue-600 shadow-sm'
+                                    : 'text-slate-600 hover:text-slate-900'
+                                }`}
+                        >
+                            Email
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setLoginMethod('phone')}
+                            className={`flex-1 py-2 px-4 rounded-md font-medium transition-all ${loginMethod === 'phone'
+                                    ? 'bg-white text-blue-600 shadow-sm'
+                                    : 'text-slate-600 hover:text-slate-900'
+                                }`}
+                        >
+                            Phone Number
+                        </button>
                     </div>
+
+                    {/* Email Input (shown when email method selected) */}
+                    {loginMethod === 'email' && (
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">Email Address</label>
+                            <input
+                                type="email"
+                                required
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder="Enter your email"
+                                className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                            />
+                        </div>
+                    )}
+
+                    {/* Phone Input (shown when phone method selected) */}
+                    {loginMethod === 'phone' && (
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">Phone Number</label>
+                            <PhoneInput
+                                country={'in'}
+                                value={phone}
+                                onChange={setPhone}
+                                inputStyle={{
+                                    width: '100%',
+                                    height: '48px',
+                                    fontSize: '16px',
+                                    paddingLeft: '48px',
+                                    borderRadius: '0.5rem',
+                                    border: '1px solid #e2e8f0'
+                                }}
+                                containerStyle={{
+                                    width: '100%'
+                                }}
+                                buttonStyle={{
+                                    borderRadius: '0.5rem 0 0 0.5rem',
+                                    border: '1px solid #e2e8f0'
+                                }}
+                            />
+                        </div>
+                    )}
 
                     <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1">Password</label>

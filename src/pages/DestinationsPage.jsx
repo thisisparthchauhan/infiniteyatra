@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import Destinations from '../components/Destinations';
 import SearchFilter from '../components/SearchFilter';
 import SEO from '../components/SEO';
+import AnimatedBanner from '../components/AnimatedBanner';
 import { usePackages } from '../context/PackageContext';
 
 const DestinationsPage = () => {
@@ -100,8 +101,11 @@ const DestinationsPage = () => {
                 description="Explore our curated collection of treks, tours, and spiritual journeys. Find your dream journey with Infinite Yatra."
                 url="/destinations"
             />
+
+            <AnimatedBanner />
+
             <div className="container mx-auto px-6">
-                <div className="mb-10 text-center">
+                <div className="mb-10 text-center mt-12">
                     <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">
                         Find Your Dream Journey
                     </h1>

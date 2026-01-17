@@ -1,0 +1,237 @@
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@700&display=swap');
+
+/* ===================================
+   Ultimate Minimal Brand Presence
+   =================================== */
+
+.animated-banner {
+    position: relative;
+    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
+    min-height: 500px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6rem 2rem;
+}
+
+/* Background Layer - Single Brand Lettermark */
+.background-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Single Large IY Lettermark - Fog/Light Presence */
+.bg-lettermark {
+    position: absolute;
+    font-size: 50rem;
+    font-weight: 700;
+    font-family: 'Caveat', cursive;
+    color: rgba(240, 240, 240, 0.04);
+    filter: blur(12px);
+    opacity: 1;
+    user-select: none;
+    pointer-events: none;
+    line-height: 0.8;
+    text-transform: lowercase;
+    transform: scaleY(1.4) translateX(-5%);
+    animation: fogDrift 40s ease-in-out infinite;
+}
+
+/* Foreground Layer - Sharp Focus */
+.foreground-layer {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: floatingHero 6s ease-in-out infinite;
+}
+
+.hero-content {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 3rem 2.5rem;
+    border-radius: 32px;
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+}
+
+.hero-text {
+    font-size: 5rem;
+    font-weight: 700;
+    font-family: 'Caveat', cursive;
+    color: #ffffff;
+    margin: 0;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    text-shadow:
+        0 2px 20px rgba(0, 0, 0, 0.6),
+        0 4px 40px rgba(0, 0, 0, 0.4);
+    filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.5));
+}
+
+.heart-glow {
+    font-size: 6rem;
+    display: inline-block;
+    animation: gentlePulse 3s ease-in-out infinite;
+    filter:
+        drop-shadow(0 0 20px rgba(255, 59, 48, 0.6)) drop-shadow(0 0 40px rgba(255, 59, 48, 0.4)) drop-shadow(0 4px 20px rgba(0, 0, 0, 0.3));
+}
+
+/* ===================================
+   Animations
+   =================================== */
+
+/* Extremely slow fog drift for brand lettermark */
+@keyframes fogDrift {
+
+    0%,
+    100% {
+        transform: scaleY(1.4) translateX(-5%) translateY(0);
+        opacity: 0.04;
+    }
+
+    50% {
+        transform: scaleY(1.42) translateX(-3%) translateY(-30px);
+        opacity: 0.05;
+    }
+}
+
+/* Floating hero content */
+@keyframes floatingHero {
+
+    0%,
+    100% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+/* Gentle heart pulse */
+@keyframes gentlePulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+        filter:
+            drop-shadow(0 0 20px rgba(255, 59, 48, 0.6)) drop-shadow(0 0 40px rgba(255, 59, 48, 0.4)) drop-shadow(0 4px 20px rgba(0, 0, 0, 0.3));
+    }
+
+    50% {
+        transform: scale(1.08);
+        filter:
+            drop-shadow(0 0 30px rgba(255, 59, 48, 0.8)) drop-shadow(0 0 60px rgba(255, 59, 48, 0.6)) drop-shadow(0 4px 20px rgba(0, 0, 0, 0.3));
+    }
+}
+
+/* ===================================
+   Responsive Design
+   =================================== */
+
+@media (max-width: 1024px) {
+    .animated-banner {
+        min-height: 400px;
+        padding: 4rem 1.5rem;
+    }
+
+    .bg-lettermark {
+        font-size: 38rem;
+        filter: blur(10px);
+    }
+
+    .hero-text {
+        font-size: 4rem;
+    }
+
+    .heart-glow {
+        font-size: 5rem;
+    }
+
+    .hero-content {
+        padding: 2.5rem 2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .animated-banner {
+        min-height: 350px;
+        padding: 3rem 1rem;
+    }
+
+    .bg-lettermark {
+        font-size: 28rem;
+        filter: blur(8px);
+    }
+
+    .hero-text {
+        font-size: 3rem;
+    }
+
+    .heart-glow {
+        font-size: 4rem;
+    }
+
+    .hero-content {
+        padding: 2rem 1.5rem;
+        border-radius: 24px;
+    }
+}
+
+@media (max-width: 480px) {
+    .animated-banner {
+        min-height: 300px;
+        padding: 2rem 0.5rem;
+    }
+
+    .bg-lettermark {
+        font-size: 20rem;
+        filter: blur(6px);
+    }
+
+    .hero-text {
+        font-size: 2.5rem;
+    }
+
+    .heart-glow {
+        font-size: 3rem;
+    }
+
+    .hero-content {
+        padding: 1.5rem 1rem;
+        border-radius: 20px;
+        gap: 0.75rem;
+    }
+}
+
+/* ===================================
+   Performance Optimizations
+   =================================== */
+
+.background-layer,
+.foreground-layer,
+.hero-content {
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+}
+
+.bg-lettermark {
+    will-change: opacity, transform;
+}

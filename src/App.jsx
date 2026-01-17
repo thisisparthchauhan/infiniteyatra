@@ -34,6 +34,7 @@ import WishlistPage from './pages/WishlistPage';
 import ContactNew from './pages/ContactNew';
 import UserDashboard from './pages/UserDashboard';
 import StoriesPage from './pages/StoriesPage';
+import Profile from './pages/Profile';
 
 import AdminDashboard from './pages/AdminDashboard';
 import BookingSuccess from './pages/BookingSuccess';
@@ -87,6 +88,14 @@ function App() {
                       element={
                         <ProtectedRoute>
                           <UserDashboard />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/profile"
+                      element={
+                        <ProtectedRoute>
+                          <Profile />
                         </ProtectedRoute>
                       }
                     />

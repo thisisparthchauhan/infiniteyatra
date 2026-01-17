@@ -7,7 +7,7 @@ import {
     updateProfile
 } from 'firebase/auth';
 import { auth, db } from '../firebase';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 
 const AuthContext = createContext();
 
@@ -43,6 +43,34 @@ export const AuthProvider = ({ children }) => {
     // Login Function
     const login = (email, password) => {
         return signInWithEmailAndPassword(auth, email, password);
+    };
+
+    // Login with Phone Number (looks up email first)
+    const loginWithPhone = async (phone, password) => {
+        try {
+            // Query Firestore to find user with this phone number
+            const usersRef = collection(db, 'users');
+            const q = query(usersRef, where('phone', '==', phone));
+            const querySnapshot = await getDocs(q);
+
+            if (querySnapshot.empty) {
+                throw new Error('Phone number not registered. Please sign up first.');
+            }
+
+            // Get the user's email from Firestore
+            const userDoc = querySnapshot.docs[0];
+            const userData = userDoc.data();
+            const email = userData.email;
+
+            // Login using email and password
+            return signInWithEmailAndPassword(auth, email, password);
+        } catch (error) {
+            // Re-throw with more specific error message
+            if (error.message.includes('Phone number not registered')) {
+                throw error;
+            }
+            throw error;
+        }
     };
 
     // Logout Function
@@ -83,6 +111,7 @@ export const AuthProvider = ({ children }) => {
         loading,
         signup,
         login,
+        loginWithPhone,
         logout
     };
 
