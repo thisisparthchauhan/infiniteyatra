@@ -63,7 +63,7 @@ const ReferralWidget = () => {
             animate={{ opacity: 1, y: 0 }}
             className="fixed bottom-24 right-6 z-40 max-w-sm"
         >
-            <div className="bg-gradient-to-br from-purple-600 to-blue-600 rounded-2xl shadow-2xl p-6 text-white border-2 border-white/20">
+            <div className="bg-gradient-to-br from-purple-600/90 to-blue-600/90 backdrop-blur-lg rounded-2xl shadow-2xl p-6 text-white border border-white/20">
                 {/* Close Button */}
                 <button
                     onClick={() => setIsVisible(false)}
@@ -74,7 +74,7 @@ const ReferralWidget = () => {
 
                 {/* Icon */}
                 <div className="flex items-center gap-3 mb-4">
-                    <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
+                    <div className="p-2 bg-white/20 backdrop-blur-md rounded-lg border border-white/20 shadow-lg">
                         <Gift size={24} />
                     </div>
                     <div>
@@ -85,7 +85,7 @@ const ReferralWidget = () => {
 
                 {/* Referral Code */}
                 {referralCode && (
-                    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 mb-3">
+                    <div className="bg-white/10 backdrop-blur-md rounded-lg p-3 mb-3 border border-white/10">
                         <p className="text-xs text-white/70 mb-1">Your Code:</p>
                         <div className="flex items-center gap-2">
                             <span className="font-mono font-bold text-lg tracking-wider flex-1">
@@ -93,7 +93,7 @@ const ReferralWidget = () => {
                             </span>
                             <button
                                 onClick={copyCode}
-                                className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors"
+                                className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors border border-white/20"
                             >
                                 {copied ? <Check size={18} /> : <Copy size={18} />}
                             </button>
@@ -104,7 +104,7 @@ const ReferralWidget = () => {
                 {/* CTA */}
                 <button
                     onClick={goToReferralDashboard}
-                    className="w-full bg-white text-purple-600 hover:bg-white/90 px-4 py-2 rounded-lg font-semibold transition-colors text-sm"
+                    className="w-full bg-white text-purple-600 hover:bg-slate-50 px-4 py-2 rounded-lg font-bold transition-colors text-sm shadow-lg shadow-black/10"
                 >
                     {hasReferrals ? 'View Referral Stats' : 'Start Referring'}
                 </button>

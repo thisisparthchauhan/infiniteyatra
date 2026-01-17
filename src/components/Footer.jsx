@@ -53,13 +53,13 @@ const Footer = () => {
     };
 
     return (
-        <footer className="relative bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 text-white overflow-hidden">
-            {/* Decorative gradient orbs */}
-            <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
+        <footer className="relative bg-slate-950 text-white overflow-hidden footer-glass-overlay">
+            {/* Background Image or Gradient */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black opacity-80"></div>
             <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"></div>
 
-            {/* Top gradient border */}
-            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500/50 to-transparent"></div>
+            {/* Top glass border */}
+            <div className="absolute top-0 left-0 right-0 h-px bg-white/10"></div>
 
             <div className="relative z-10 container mx-auto px-6 py-20">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-12 lg:gap-16 mb-16">
@@ -162,8 +162,8 @@ const Footer = () => {
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     disabled={status === 'loading' || status === 'success'}
-                                    className="w-full bg-slate-800/50 backdrop-blur-sm text-white px-4 py-3 rounded-xl outline-none 
-                                             border border-slate-700/50 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 
+                                    className="w-full glass bg-white/5 text-white px-4 py-3 rounded-xl outline-none 
+                                             border border-white/10 focus:border-blue-500/50 focus:bg-white/10
                                              transition-all duration-300 placeholder:text-slate-500 disabled:opacity-50"
                                     required
                                 />
@@ -221,10 +221,10 @@ const Footer = () => {
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         title={social.title}
-                                        className={`p-3 rounded-xl bg-slate-800/50 backdrop-blur-sm text-slate-400 
+                                        className={`p-3 rounded-xl glass bg-white/5 text-slate-400 
                                                   ${social.color} hover:text-white
                                                   transition-all duration-300 hover:scale-110 hover:-translate-y-1
-                                                  border border-slate-700/50 hover:border-transparent
+                                                  border border-white/10 hover:border-transparent
                                                   shadow-lg hover:shadow-xl group`}
                                     >
                                         <Icon size={20} className={social.iconColor || ""} />

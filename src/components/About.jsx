@@ -41,17 +41,17 @@ const About = () => {
             id="about"
             ref={ref}
             onMouseMove={handleMouseMove}
-            className="py-24 bg-slate-50 relative z-10 overflow-hidden scroll-mt-28"
+            className="py-24 relative z-10 overflow-hidden scroll-mt-28"
         >
             <div className="container mx-auto px-6">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                     {/* Content */}
                     <div className="space-y-8">
                         <div>
-                            <h2 className="text-4xl font-bold text-slate-900 mb-6">
+                            <h2 className="text-4xl font-bold text-white mb-6">
                                 About Infinite Yatra 🌎
                             </h2>
-                            <p className="text-lg text-slate-600 leading-relaxed">
+                            <p className="text-lg text-slate-300 leading-relaxed">
                                 Infinite Yatra is a travel community built by real travelers, for real travelers.
                                 We create journeys that feel personal — spiritual yatras, Himalayan treks, cultural trips,
                                 and experiences that touch the heart.
@@ -59,37 +59,37 @@ const About = () => {
                         </div>
 
                         <div className="space-y-6">
-                            <div className="flex gap-4">
-                                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                    <Compass className="text-blue-600" size={24} />
+                            <div className="flex gap-4 glass-card glass-hover p-6 items-start">
+                                <div className="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <Compass className="text-blue-400" size={24} />
                                 </div>
                                 <div>
-                                    <h3 className="text-xl font-bold text-slate-900 mb-2">Our Goal</h3>
-                                    <p className="text-slate-600">
+                                    <h3 className="text-xl font-bold text-white mb-2">Our Goal</h3>
+                                    <p className="text-slate-300">
                                         To help people explore, feel alive, and collect unforgettable memories — safely and authentically.
                                     </p>
                                 </div>
                             </div>
 
-                            <div className="flex gap-4">
-                                <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                    <Mountain className="text-orange-600" size={24} />
+                            <div className="flex gap-4 glass-card glass-hover p-6 items-start">
+                                <div className="w-12 h-12 bg-orange-500/20 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <Mountain className="text-orange-400" size={24} />
                                 </div>
                                 <div>
-                                    <h3 className="text-xl font-bold text-slate-900 mb-2">Himalayan Calm to Indian Culture</h3>
-                                    <p className="text-slate-600">
+                                    <h3 className="text-xl font-bold text-white mb-2">Himalayan Calm to Indian Culture</h3>
+                                    <p className="text-slate-300">
                                         We combine spirituality, adventure, and comfort to make every trip meaningful.
                                     </p>
                                 </div>
                             </div>
 
-                            <div className="flex gap-4">
-                                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                    <Heart className="text-red-600" size={24} />
+                            <div className="flex gap-4 glass-card glass-hover p-6 items-start">
+                                <div className="w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <Heart className="text-red-400" size={24} />
                                 </div>
                                 <div>
-                                    <h3 className="text-xl font-bold text-slate-900 mb-2">More Than Just Tours</h3>
-                                    <p className="text-slate-600">
+                                    <h3 className="text-xl font-bold text-white mb-2">More Than Just Tours</h3>
+                                    <p className="text-slate-300">
                                         We don’t just plan tours — we guide you on journeys that stay with you forever.
                                     </p>
                                 </div>
@@ -97,7 +97,7 @@ const About = () => {
                         </div>
 
                         <div className="pt-4">
-                            <p className="text-2xl font-handwriting text-blue-600 font-bold">
+                            <p className="text-2xl font-handwriting text-blue-400 font-bold">
                                 Explore Infinite... 🚀
                             </p>
                         </div>

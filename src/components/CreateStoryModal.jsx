@@ -104,7 +104,7 @@ const CreateStoryModal = ({ onClose, onStoryCreated }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4"
             onClick={onClose}
         >
             <motion.div
@@ -112,18 +112,18 @@ const CreateStoryModal = ({ onClose, onStoryCreated }) => {
                 animate={{ scale: 1, opacity: 1, y: 0 }}
                 exit={{ scale: 0.9, opacity: 0, y: 20 }}
                 transition={{ type: "spring", duration: 0.5 }}
-                className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+                className="bg-slate-900/90 border border-white/10 rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
-                <div className="sticky top-0 bg-white border-b border-slate-200 px-8 py-6 flex items-center justify-between rounded-t-3xl z-10">
+                <div className="sticky top-0 bg-slate-900/95 border-b border-white/10 px-8 py-6 flex items-center justify-between rounded-t-3xl z-10 backdrop-blur-lg">
                     <div>
-                        <h2 className="text-3xl font-bold text-slate-900">Share Your Journey</h2>
-                        <p className="text-slate-600 mt-1">Inspire others with your travel story</p>
+                        <h2 className="text-3xl font-bold text-white">Share Your Journey</h2>
+                        <p className="text-slate-400 mt-1">Inspire others with your travel story</p>
                     </div>
                     <button
                         onClick={onClose}
-                        className="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-colors"
+                        className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors text-white"
                     >
                         <X size={20} />
                     </button>
@@ -133,12 +133,12 @@ const CreateStoryModal = ({ onClose, onStoryCreated }) => {
                 <form onSubmit={handleSubmit} className="p-8 space-y-6">
                     {/* Image Upload */}
                     <div>
-                        <label className="block text-sm font-semibold text-slate-900 mb-3">
+                        <label className="block text-sm font-semibold text-slate-200 mb-3">
                             Cover Image
                         </label>
                         <div className="relative">
                             {imagePreview ? (
-                                <div className="relative aspect-video rounded-2xl overflow-hidden border-2 border-slate-200">
+                                <div className="relative aspect-video rounded-2xl overflow-hidden border border-white/10">
                                     <img
                                         src={imagePreview}
                                         alt="Preview"
@@ -150,19 +150,19 @@ const CreateStoryModal = ({ onClose, onStoryCreated }) => {
                                             setImageFile(null);
                                             setImagePreview(null);
                                         }}
-                                        className="absolute top-4 right-4 w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition-colors"
+                                        className="absolute top-4 right-4 w-8 h-8 rounded-full bg-red-500/80 hover:bg-red-600 text-white flex items-center justify-center backdrop-blur-sm transition-colors"
                                     >
                                         <X size={16} />
                                     </button>
                                 </div>
                             ) : (
-                                <label className="block aspect-video rounded-2xl border-2 border-dashed border-slate-300 hover:border-blue-500 transition-colors cursor-pointer bg-slate-50 hover:bg-blue-50/50">
+                                <label className="block aspect-video rounded-2xl border-2 border-dashed border-white/10 hover:border-blue-500/50 transition-colors cursor-pointer bg-white/5 hover:bg-white/10">
                                     <div className="h-full flex flex-col items-center justify-center gap-3">
-                                        <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center">
-                                            <ImageIcon size={28} className="text-blue-600" />
+                                        <div className="w-16 h-16 rounded-full bg-blue-500/20 flex items-center justify-center">
+                                            <ImageIcon size={28} className="text-blue-400" />
                                         </div>
                                         <div className="text-center">
-                                            <p className="text-slate-900 font-semibold">Click to upload image</p>
+                                            <p className="text-white font-semibold">Click to upload image</p>
                                             <p className="text-slate-500 text-sm mt-1">PNG, JPG up to 5MB</p>
                                         </div>
                                     </div>
@@ -179,47 +179,47 @@ const CreateStoryModal = ({ onClose, onStoryCreated }) => {
 
                     {/* Title */}
                     <div>
-                        <label className="block text-sm font-semibold text-slate-900 mb-3">
-                            Story Title <span className="text-red-500">*</span>
+                        <label className="block text-sm font-semibold text-slate-200 mb-3">
+                            Story Title <span className="text-red-400">*</span>
                         </label>
                         <input
                             type="text"
                             value={formData.title}
                             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                             placeholder="e.g., My Amazing Trek to Kedarkantha"
-                            className="w-full px-5 py-4 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all text-slate-900 placeholder-slate-400"
+                            className="w-full px-5 py-4 rounded-xl bg-white/5 border border-white/10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50 outline-none transition-all text-white placeholder-slate-500"
                             required
                         />
                     </div>
 
                     {/* Location */}
                     <div>
-                        <label className="block text-sm font-semibold text-slate-900 mb-3">
+                        <label className="block text-sm font-semibold text-slate-200 mb-3">
                             Location
                         </label>
                         <div className="relative">
-                            <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+                            <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={20} />
                             <input
                                 type="text"
                                 value={formData.location}
                                 onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                                 placeholder="e.g., Uttarakhand, India"
-                                className="w-full pl-12 pr-5 py-4 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all text-slate-900 placeholder-slate-400"
+                                className="w-full pl-12 pr-5 py-4 rounded-xl bg-white/5 border border-white/10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50 outline-none transition-all text-white placeholder-slate-500"
                             />
                         </div>
                     </div>
 
                     {/* Description */}
                     <div>
-                        <label className="block text-sm font-semibold text-slate-900 mb-3">
-                            Your Story <span className="text-red-500">*</span>
+                        <label className="block text-sm font-semibold text-slate-200 mb-3">
+                            Your Story <span className="text-red-400">*</span>
                         </label>
                         <textarea
                             value={formData.description}
                             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                             placeholder="Share your experience, tips, and memorable moments..."
                             rows={6}
-                            className="w-full px-5 py-4 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all text-slate-900 placeholder-slate-400 resize-none"
+                            className="w-full px-5 py-4 rounded-xl bg-white/5 border border-white/10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50 outline-none transition-all text-white placeholder-slate-500 resize-none"
                             required
                         />
                         <p className="text-sm text-slate-500 mt-2">
@@ -229,7 +229,7 @@ const CreateStoryModal = ({ onClose, onStoryCreated }) => {
 
                     {/* Tags */}
                     <div>
-                        <label className="block text-sm font-semibold text-slate-900 mb-3">
+                        <label className="block text-sm font-semibold text-slate-200 mb-3">
                             Tags
                         </label>
                         <input
@@ -237,7 +237,7 @@ const CreateStoryModal = ({ onClose, onStoryCreated }) => {
                             value={formData.tags}
                             onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
                             placeholder="e.g., trekking, adventure, mountains (comma separated)"
-                            className="w-full px-5 py-4 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all text-slate-900 placeholder-slate-400"
+                            className="w-full px-5 py-4 rounded-xl bg-white/5 border border-white/10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50 outline-none transition-all text-white placeholder-slate-500"
                         />
                     </div>
 
@@ -246,14 +246,14 @@ const CreateStoryModal = ({ onClose, onStoryCreated }) => {
                         <button
                             type="button"
                             onClick={onClose}
-                            className="flex-1 px-6 py-4 rounded-xl border-2 border-slate-200 text-slate-700 font-semibold hover:bg-slate-50 transition-colors"
+                            className="flex-1 px-6 py-4 rounded-xl border border-white/10 text-slate-300 font-semibold hover:bg-white/5 transition-colors"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
                             disabled={loading}
-                            className="flex-1 px-6 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            className="flex-1 px-6 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold hover:shadow-lg hover:shadow-blue-500/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                         >
                             {loading ? (
                                 <>

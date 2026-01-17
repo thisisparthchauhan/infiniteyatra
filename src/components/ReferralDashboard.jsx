@@ -121,9 +121,9 @@ const ReferralDashboard = () => {
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div className="bg-gradient-to-br from-purple-600 to-blue-600 rounded-2xl p-8 text-white">
+            <div className="bg-gradient-to-br from-purple-600 to-blue-600 rounded-2xl p-8 text-white shadow-xl shadow-purple-900/20">
                 <div className="flex items-center gap-3 mb-4">
-                    <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+                    <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl border border-white/20">
                         <Gift size={32} />
                     </div>
                     <div>
@@ -136,12 +136,12 @@ const ReferralDashboard = () => {
                 <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
                     <p className="text-sm text-white/80 mb-2">Your Referral Code</p>
                     <div className="flex items-center gap-3">
-                        <div className="flex-1 bg-white/20 rounded-lg px-4 py-3 font-mono text-2xl font-bold tracking-wider">
+                        <div className="flex-1 bg-black/20 rounded-lg px-4 py-3 font-mono text-2xl font-bold tracking-wider text-center border border-white/10">
                             {referralCode}
                         </div>
                         <button
                             onClick={copyReferralCode}
-                            className="p-3 bg-white/20 hover:bg-white/30 rounded-lg transition-colors"
+                            className="p-3 bg-white/20 hover:bg-white/30 rounded-lg transition-colors border border-white/20"
                         >
                             {copied ? <Check size={24} /> : <Copy size={24} />}
                         </button>
@@ -152,21 +152,21 @@ const ReferralDashboard = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
                     <button
                         onClick={shareViaWhatsApp}
-                        className="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-lg font-semibold transition-colors"
+                        className="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-lg font-semibold transition-colors shadow-lg shadow-green-900/20"
                     >
                         <MessageCircle size={20} />
                         WhatsApp
                     </button>
                     <button
                         onClick={shareViaEmail}
-                        className="flex items-center justify-center gap-2 bg-white/20 hover:bg-white/30 text-white px-4 py-3 rounded-lg font-semibold transition-colors"
+                        className="flex items-center justify-center gap-2 bg-white/20 hover:bg-white/30 text-white px-4 py-3 rounded-lg font-semibold transition-colors border border-white/20"
                     >
                         <Mail size={20} />
                         Email
                     </button>
                     <button
                         onClick={copyReferralLink}
-                        className="flex items-center justify-center gap-2 bg-white/20 hover:bg-white/30 text-white px-4 py-3 rounded-lg font-semibold transition-colors"
+                        className="flex items-center justify-center gap-2 bg-white/20 hover:bg-white/30 text-white px-4 py-3 rounded-lg font-semibold transition-colors border border-white/20"
                     >
                         <Share2 size={20} />
                         Copy Link
@@ -179,15 +179,15 @@ const ReferralDashboard = () => {
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="bg-white rounded-xl p-6 shadow-sm border border-slate-200"
+                    className="glass-card p-6"
                 >
                     <div className="flex items-center gap-3 mb-3">
-                        <div className="p-2 bg-blue-100 rounded-lg">
-                            <Users size={24} className="text-blue-600" />
+                        <div className="p-2 bg-blue-500/10 rounded-lg">
+                            <Users size={24} className="text-blue-400" />
                         </div>
                         <div>
-                            <p className="text-sm text-slate-600">Total Referrals</p>
-                            <p className="text-3xl font-bold text-slate-900">{referralStats.totalReferrals}</p>
+                            <p className="text-sm text-slate-400">Total Referrals</p>
+                            <p className="text-3xl font-bold text-white">{referralStats.totalReferrals}</p>
                         </div>
                     </div>
                     <p className="text-xs text-slate-500">Friends you've invited</p>
@@ -197,15 +197,15 @@ const ReferralDashboard = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 }}
-                    className="bg-white rounded-xl p-6 shadow-sm border border-slate-200"
+                    className="glass-card p-6"
                 >
                     <div className="flex items-center gap-3 mb-3">
-                        <div className="p-2 bg-green-100 rounded-lg">
-                            <TrendingUp size={24} className="text-green-600" />
+                        <div className="p-2 bg-green-500/10 rounded-lg">
+                            <TrendingUp size={24} className="text-green-400" />
                         </div>
                         <div>
-                            <p className="text-sm text-slate-600">Successful Bookings</p>
-                            <p className="text-3xl font-bold text-slate-900">{referralStats.successfulBookings}</p>
+                            <p className="text-sm text-slate-400">Successful Bookings</p>
+                            <p className="text-3xl font-bold text-white">{referralStats.successfulBookings}</p>
                         </div>
                     </div>
                     <p className="text-xs text-slate-500">Referrals who booked</p>
@@ -215,15 +215,15 @@ const ReferralDashboard = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
-                    className="bg-white rounded-xl p-6 shadow-sm border border-slate-200"
+                    className="glass-card p-6"
                 >
                     <div className="flex items-center gap-3 mb-3">
-                        <div className="p-2 bg-purple-100 rounded-lg">
-                            <Gift size={24} className="text-purple-600" />
+                        <div className="p-2 bg-purple-500/10 rounded-lg">
+                            <Gift size={24} className="text-purple-400" />
                         </div>
                         <div>
-                            <p className="text-sm text-slate-600">Total Savings</p>
-                            <p className="text-3xl font-bold text-slate-900">₹{referralStats.totalSavings.toLocaleString('en-IN')}</p>
+                            <p className="text-sm text-slate-400">Total Savings</p>
+                            <p className="text-3xl font-bold text-white">₹{referralStats.totalSavings.toLocaleString('en-IN')}</p>
                         </div>
                     </div>
                     <p className="text-xs text-slate-500">Money you've earned</p>
@@ -233,15 +233,15 @@ const ReferralDashboard = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
-                    className="bg-white rounded-xl p-6 shadow-sm border border-slate-200"
+                    className="glass-card p-6"
                 >
                     <div className="flex items-center gap-3 mb-3">
-                        <div className="p-2 bg-orange-100 rounded-lg">
-                            <Award size={24} className="text-orange-600" />
+                        <div className="p-2 bg-orange-500/10 rounded-lg">
+                            <Award size={24} className="text-orange-400" />
                         </div>
                         <div>
-                            <p className="text-sm text-slate-600">Pending</p>
-                            <p className="text-3xl font-bold text-slate-900">{referralStats.pendingReferrals}</p>
+                            <p className="text-sm text-slate-400">Pending</p>
+                            <p className="text-3xl font-bold text-white">{referralStats.pendingReferrals}</p>
                         </div>
                     </div>
                     <p className="text-xs text-slate-500">Awaiting booking</p>
@@ -249,55 +249,55 @@ const ReferralDashboard = () => {
             </div>
 
             {/* How it Works */}
-            <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-8 border border-blue-200">
-                <h3 className="text-2xl font-bold text-slate-900 mb-6">How It Works</h3>
+            <div className="bg-gradient-to-br from-blue-900/20 to-purple-900/20 rounded-2xl p-8 border border-white/10 backdrop-blur-sm">
+                <h3 className="text-2xl font-bold text-white mb-6">How It Works</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="text-center">
-                        <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">
+                    <div className="text-center group">
+                        <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4 shadow-lg shadow-blue-600/30 group-hover:scale-110 transition-transform">
                             1
                         </div>
-                        <h4 className="font-bold text-slate-900 mb-2">Share Your Code</h4>
-                        <p className="text-sm text-slate-600">Send your unique referral code to friends via WhatsApp, email, or social media</p>
+                        <h4 className="font-bold text-white mb-2">Share Your Code</h4>
+                        <p className="text-sm text-slate-400">Send your unique referral code to friends via WhatsApp, email, or social media</p>
                     </div>
-                    <div className="text-center">
-                        <div className="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">
+                    <div className="text-center group">
+                        <div className="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4 shadow-lg shadow-purple-600/30 group-hover:scale-110 transition-transform">
                             2
                         </div>
-                        <h4 className="font-bold text-slate-900 mb-2">They Book a Trek</h4>
-                        <p className="text-sm text-slate-600">Your friend uses your code and gets ₹1,000 OFF on their first booking</p>
+                        <h4 className="font-bold text-white mb-2">They Book a Trek</h4>
+                        <p className="text-sm text-slate-400">Your friend uses your code and gets ₹1,000 OFF on their first booking</p>
                     </div>
-                    <div className="text-center">
-                        <div className="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">
+                    <div className="text-center group">
+                        <div className="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4 shadow-lg shadow-green-600/30 group-hover:scale-110 transition-transform">
                             3
                         </div>
-                        <h4 className="font-bold text-slate-900 mb-2">You Both Win!</h4>
-                        <p className="text-sm text-slate-600">You get ₹1,000 OFF on your next booking. Unlimited referrals!</p>
+                        <h4 className="font-bold text-white mb-2">You Both Win!</h4>
+                        <p className="text-sm text-slate-400">You get ₹1,000 OFF on your next booking. Unlimited referrals!</p>
                     </div>
                 </div>
             </div>
 
             {/* Terms */}
-            <div className="bg-slate-50 rounded-xl p-6 border border-slate-200">
-                <h4 className="font-bold text-slate-900 mb-3">Terms & Conditions</h4>
-                <ul className="space-y-2 text-sm text-slate-600">
+            <div className="bg-white/5 rounded-xl p-6 border border-white/5">
+                <h4 className="font-bold text-slate-300 mb-3">Terms & Conditions</h4>
+                <ul className="space-y-2 text-sm text-slate-400">
                     <li className="flex items-start gap-2">
-                        <Check size={16} className="text-green-600 mt-0.5 flex-shrink-0" />
+                        <Check size={16} className="text-green-500 mt-0.5 flex-shrink-0" />
                         <span>Both referrer and referee get ₹1,000 discount on their booking</span>
                     </li>
                     <li className="flex items-start gap-2">
-                        <Check size={16} className="text-green-600 mt-0.5 flex-shrink-0" />
+                        <Check size={16} className="text-green-500 mt-0.5 flex-shrink-0" />
                         <span>Discount is applied automatically when referral code is used</span>
                     </li>
                     <li className="flex items-start gap-2">
-                        <Check size={16} className="text-green-600 mt-0.5 flex-shrink-0" />
+                        <Check size={16} className="text-green-500 mt-0.5 flex-shrink-0" />
                         <span>Unlimited referrals - refer as many friends as you want!</span>
                     </li>
                     <li className="flex items-start gap-2">
-                        <Check size={16} className="text-green-600 mt-0.5 flex-shrink-0" />
+                        <Check size={16} className="text-green-500 mt-0.5 flex-shrink-0" />
                         <span>Referral discount cannot be combined with other promotional offers</span>
                     </li>
                     <li className="flex items-start gap-2">
-                        <Check size={16} className="text-green-600 mt-0.5 flex-shrink-0" />
+                        <Check size={16} className="text-green-500 mt-0.5 flex-shrink-0" />
                         <span>Minimum booking value of ₹5,000 required to use referral discount</span>
                     </li>
                 </ul>

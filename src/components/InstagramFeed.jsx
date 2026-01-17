@@ -31,14 +31,13 @@ const InstagramFeed = () => {
     ];
 
     return (
-        <section className="py-20 bg-white overflow-hidden">
-            <div className="container mx-auto px-6">
+        <section className="py-20 bg-gradient-to-t from-slate-900 to-slate-800 overflow-hidden relative">
+            <div className="container mx-auto px-6 relative z-10">
                 <div className="text-center mb-12">
-
-                    <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
+                    <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
                         Follow Our Adventures
                     </h2>
-                    <p className="text-slate-600 max-w-2xl mx-auto">
+                    <p className="text-slate-400 max-w-2xl mx-auto">
                         Join our community of travelers and get inspired by the breathtaking beauty of the Himalayas.
                     </p>
                 </div>
@@ -50,7 +49,7 @@ const InstagramFeed = () => {
                             href="https://www.instagram.com/infinite.yatra/"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="group relative aspect-square overflow-hidden rounded-xl cursor-pointer"
+                            className="group relative aspect-square overflow-hidden rounded-xl cursor-pointer shadow-lg shadow-black/20 border border-white/5"
                         >
                             <img
                                 src={post.image}
@@ -58,7 +57,7 @@ const InstagramFeed = () => {
                                 loading="lazy"
                                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                             />
-                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-6 text-white">
+                            <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-6 text-white backdrop-blur-sm">
                                 <div className="flex items-center gap-2">
                                     <Heart className="fill-white" size={20} />
                                     <span className="font-bold">{post.likes}</span>
@@ -77,7 +76,7 @@ const InstagramFeed = () => {
                         href="https://www.instagram.com/infinite.yatra/"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-full font-semibold hover:shadow-lg hover:shadow-pink-500/30 transition-all duration-300 transform hover:-translate-y-1"
+                        className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-full font-semibold hover:shadow-lg hover:shadow-pink-500/30 transition-all duration-300 transform hover:-translate-y-1 hover:scale-105"
                     >
                         <Instagram size={20} />
                         Follow on Instagram

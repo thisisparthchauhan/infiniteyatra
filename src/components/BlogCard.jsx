@@ -4,7 +4,7 @@ import { Calendar, User, ArrowRight } from 'lucide-react';
 
 const BlogCard = ({ blog }) => {
     return (
-        <Link to={`/blog/${blog.id}`} className="group flex flex-col bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 hover:-translate-y-2">
+        <Link to={`/blog/${blog.id}`} className="group flex flex-col glass-card overflow-hidden hover:-translate-y-2 transition-transform duration-500">
             <div className="relative aspect-video overflow-hidden">
                 <img
                     src={blog.image}
@@ -18,7 +18,7 @@ const BlogCard = ({ blog }) => {
             </div>
 
             <div className="p-8 flex flex-col flex-grow">
-                <div className="flex items-center gap-4 text-slate-600 text-base mb-5">
+                <div className="flex items-center gap-4 text-slate-400 text-base mb-5">
                     <span className="flex items-center gap-2 font-semibold">
                         <Calendar size={18} />
                         {blog.date}
@@ -29,15 +29,15 @@ const BlogCard = ({ blog }) => {
                     </span>
                 </div>
 
-                <h3 className="text-3xl font-bold text-slate-900 mb-5 group-hover:text-blue-600 transition-colors line-clamp-2 leading-tight">
+                <h3 className="text-3xl font-bold text-white mb-5 group-hover:text-blue-400 transition-colors line-clamp-2 leading-tight">
                     {blog.title}
                 </h3>
 
-                <p className="text-slate-700 text-lg leading-relaxed mb-6 line-clamp-3 flex-grow font-normal">
+                <p className="text-slate-300 text-lg leading-relaxed mb-6 line-clamp-3 flex-grow font-normal">
                     {blog.excerpt}
                 </p>
 
-                <div className="flex items-center text-blue-600 font-bold text-lg mt-auto group/btn">
+                <div className="flex items-center text-blue-400 font-bold text-lg mt-auto group/btn">
                     Read Article
                     <ArrowRight size={20} className="ml-2 transition-transform group-hover/btn:translate-x-1" />
                 </div>

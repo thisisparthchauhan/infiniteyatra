@@ -6,7 +6,7 @@ import { useWishlist } from '../context/WishlistContext';
 
 import logo from '../assets/logo-new.png';
 
-const Navbar = () => {
+const Navbar = (props) => {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [activeSection, setActiveSection] = useState('');
@@ -84,8 +84,8 @@ const Navbar = () => {
     ];
 
     const navBackground = isAuthPage || isScrolled || isDestinationsPage
-        ? 'bg-white/95 backdrop-blur-xl shadow-lg border-b border-slate-200/50'
-        : 'bg-gradient-to-b from-black/30 to-transparent backdrop-blur-sm';
+        ? 'glass border-white/20'
+        : 'bg-transparent';
 
     const textColor = isAuthPage || isScrolled || isDestinationsPage ? 'text-slate-900' : 'text-white';
 
@@ -109,7 +109,11 @@ const Navbar = () => {
 
     return (
         <>
-            <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${navBackground}`}>
+            <nav className={`transition-all duration-500 z-50 
+                ${props.static ? 'w-full static glass rounded-none border-b border-white/10' : 'fixed top-0 left-0 right-0 md:top-6 md:left-6 md:right-6 md:rounded-2xl'}
+                ${navBackground}
+                ${isScrolled && !props.static ? 'md:glass shadow-2xl' : ''}
+            `}>
                 <div className="container mx-auto px-6 lg:px-8">
                     <div className="flex items-center justify-between h-20">
                         {/* Logo */}
@@ -375,7 +379,7 @@ const Navbar = () => {
             {/* Mobile Menu Overlay */}
             <div
                 className={`
-                    fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden 
+                    fixed inset-0 bg-black/60 backdrop-blur-md z-40 md:hidden 
                     transition-opacity duration-300
                     ${isMobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}
                 `}
@@ -385,12 +389,19 @@ const Navbar = () => {
             {/* Mobile Menu */}
             <div
                 className={`
-                    fixed top-20 right-0 bottom-0 w-80 max-w-[85vw] bg-white z-40 md:hidden
-                    shadow-2xl transform transition-transform duration-300 ease-out
+                    fixed top-0 right-0 bottom-0 w-[85vw] max-w-sm glass-dark z-50 md:hidden
+                    border-l border-white/10 shadow-2xl transform transition-transform duration-500 cubic-bezier(0.22, 1, 0.36, 1)
                     ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}
                 `}
             >
-                <div className="flex flex-col h-full overflow-y-auto">
+                <div className="flex flex-col h-full overflow-y-auto pt-24 relative">
+                    {/* Close Button Inside Menu */}
+                    <button
+                        className="absolute top-6 right-6 p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                        <X size={24} />
+                    </button>
                     {/* Navigation Items */}
                     <div className="p-6 space-y-2">
                         {!isAuthPage && navItems.map((item, index) => {
