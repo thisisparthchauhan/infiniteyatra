@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { db } from '../firebase';
-import { collection, query, getDocs, doc, updateDoc, deleteDoc, setDoc } from 'firebase/firestore';
+import { collection, query, getDocs, doc, updateDoc, deleteDoc, setDoc, orderBy, limit } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL, listAll } from 'firebase/storage';
+import { storage } from '../firebase';
 import { Loader, CheckCircle, XCircle, Trash2, Search, Calendar, DollarSign, Users, Eye, X, Clock, TrendingUp, Package, Edit, Save, Plus, Database, CloudUpload } from 'lucide-react';
 import { usePackages } from '../context/PackageContext';
 import { packages as staticPackages } from '../data/packages';
 import SEO from '../components/SEO';
 import AdminBlogManagement from '../components/AdminBlogManagement';
+import AdminImageUpload from '../components/AdminImageUpload';
 
 const AdminDashboard = () => {
     const { packages, refreshPackages } = usePackages();
@@ -223,6 +226,12 @@ const AdminDashboard = () => {
                         >
                             Stories
                         </button>
+                        <button
+                            onClick={() => setActiveTab('media')}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'media' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-50'}`}
+                        >
+                            Media
+                        </button>
                     </div>
                 </div>
 
@@ -230,7 +239,8 @@ const AdminDashboard = () => {
                     <p className="text-slate-500">
                         {activeTab === 'bookings' ? 'Manage and track all customer bookings.' :
                             activeTab === 'packages' ? 'Manage tour packages, pricing, and availability.' :
-                                'Manage user travel stories and featured content.'}
+                                activeTab === 'stories' ? 'Manage user travel stories and featured content.' :
+                                    'Upload and manage images for your website.'}
                     </p>
                     <button onClick={fetchBookings} className="text-blue-600 hover:underline text-sm flex items-center gap-1">
                         <Clock size={14} /> Last refreshed: {new Date().toLocaleTimeString()}
@@ -460,6 +470,11 @@ const AdminDashboard = () => {
                 {/* Stories Tab Content */}
                 {activeTab === 'stories' && (
                     <AdminBlogManagement />
+                )}
+
+                {/* Media Tab Content */}
+                {activeTab === 'media' && (
+                    <AdminImageUpload />
                 )}
             </div>
 

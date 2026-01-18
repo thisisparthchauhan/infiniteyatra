@@ -53,10 +53,10 @@ const Footer = () => {
     };
 
     return (
-        <footer className="relative bg-black text-white overflow-hidden">
+        <footer className="relative bg-black pt-20 pb-10 text-white overflow-hidden border-t border-white/5">
             {/* Decorative gradient orbs - subtle on black */}
-            <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl"></div>
-            <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl"></div>
+            <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
             {/* Top gradient border */}
             <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-slate-700/50 to-transparent"></div>
@@ -68,9 +68,9 @@ const Footer = () => {
                             <h3 className="text-3xl font-bold tracking-widest text-white leading-tight" style={{ fontFamily: "'Raleway', sans-serif", fontWeight: 700 }}>
                                 INFINITE YATRA
                             </h3>
-                            <span className="text-[10px] tracking-[0.3em] font-medium text-slate-300" style={{ fontFamily: "'Raleway', sans-serif" }}>EXPLORE INFINITE</span>
+                            <span className="text-[10px] tracking-[0.3em] font-medium text-white/50" style={{ fontFamily: "'Raleway', sans-serif" }}>EXPLORE INFINITE</span>
                         </div>
-                        <p className="text-slate-400 leading-relaxed text-sm">
+                        <p className="text-white/60 leading-relaxed text-sm font-light">
                             Discover breathtaking destinations and create unforgettable memories with Infinite Yatra.
                         </p>
                         <div className="flex items-center gap-3 pt-2">
@@ -88,7 +88,7 @@ const Footer = () => {
                             <li>
                                 <a
                                     href="#"
-                                    className="text-slate-400 hover:text-white transition-all duration-300 group inline-flex items-center gap-2"
+                                    className="text-white/60 hover:text-white transition-all duration-300 group inline-flex items-center gap-2 font-light"
                                 >
                                     <span className="w-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 group-hover:w-4 transition-all duration-300 rounded-full"></span>
                                     About Us
@@ -97,7 +97,7 @@ const Footer = () => {
                             <li>
                                 <Link
                                     to="/careers"
-                                    className="text-slate-400 hover:text-white transition-all duration-300 group inline-flex items-center gap-2"
+                                    className="text-white/60 hover:text-white transition-all duration-300 group inline-flex items-center gap-2 font-light"
                                 >
                                     <span className="w-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 group-hover:w-4 transition-all duration-300 rounded-full"></span>
                                     Careers
@@ -106,7 +106,7 @@ const Footer = () => {
                             <li>
                                 <Link
                                     to="/terms"
-                                    className="text-slate-400 hover:text-white transition-all duration-300 group inline-flex items-center gap-2"
+                                    className="text-white/60 hover:text-white transition-all duration-300 group inline-flex items-center gap-2 font-light"
                                 >
                                     <span className="w-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 group-hover:w-4 transition-all duration-300 rounded-full"></span>
                                     Terms & Conditions
@@ -124,9 +124,9 @@ const Footer = () => {
                             <li>
                                 <a
                                     href="tel:+919265799325"
-                                    className="text-slate-400 hover:text-white transition-all duration-300 group flex items-center gap-3"
+                                    className="text-white/60 hover:text-white transition-all duration-300 group flex items-center gap-3 font-light"
                                 >
-                                    <div className="p-2 rounded-lg bg-slate-800/50 group-hover:bg-blue-600/20 transition-all duration-300">
+                                    <div className="p-2 rounded-lg bg-white/5 group-hover:bg-blue-600/20 transition-all duration-300 border border-white/5 group-hover:border-blue-500/30">
                                         <Phone size={16} className="group-hover:text-blue-400 transition-colors" />
                                     </div>
                                     <span>+91 9265799325</span>
@@ -135,9 +135,9 @@ const Footer = () => {
                             <li>
                                 <a
                                     href="mailto:infiniteyatra@gmail.com"
-                                    className="text-slate-400 hover:text-white transition-all duration-300 group flex items-center gap-3"
+                                    className="text-white/60 hover:text-white transition-all duration-300 group flex items-center gap-3 font-light"
                                 >
-                                    <div className="p-2 rounded-lg bg-slate-800/50 group-hover:bg-purple-600/20 transition-all duration-300">
+                                    <div className="p-2 rounded-lg bg-white/5 group-hover:bg-purple-600/20 transition-all duration-300 border border-white/5 group-hover:border-purple-500/30">
                                         <Mail size={16} className="group-hover:text-purple-400 transition-colors" />
                                     </div>
                                     <span className="text-sm">infiniteyatra@gmail.com</span>
@@ -151,7 +151,7 @@ const Footer = () => {
                         <h4 className="font-bold text-lg mb-6 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
                             Stay Updated
                         </h4>
-                        <p className="text-slate-400 mb-6 text-sm leading-relaxed">
+                        <p className="text-white/60 mb-6 text-sm leading-relaxed font-light">
                             Subscribe to our newsletter for exclusive travel deals and inspiration.
                         </p>
                         <form onSubmit={handleSubscribe} className="space-y-3">
@@ -162,9 +162,9 @@ const Footer = () => {
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     disabled={status === 'loading' || status === 'success'}
-                                    className="w-full bg-slate-800/50 backdrop-blur-sm text-white px-4 py-3 rounded-xl outline-none 
-                                             border border-slate-700/50 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 
-                                             transition-all duration-300 placeholder:text-slate-500 disabled:opacity-50"
+                                    className="w-full bg-white/5 backdrop-blur-sm text-white px-4 py-3 rounded-xl outline-none 
+                                             border border-white/10 focus:border-blue-500/50 focus:bg-white/10
+                                             transition-all duration-300 placeholder:text-white/30 disabled:opacity-50"
                                     required
                                 />
                             </div>
@@ -173,12 +173,12 @@ const Footer = () => {
                                 disabled={status === 'loading' || status === 'success'}
                                 className={`w-full px-4 py-3 rounded-xl transition-all duration-300 font-medium
                                              shadow-lg hover:shadow-xl active:scale-[0.98]
-                                             flex items-center justify-center gap-2 group
+                                             flex items-center justify-center gap-2 group glass-btn
                                              ${status === 'success'
-                                        ? 'bg-green-600 shadow-green-600/20'
+                                        ? 'bg-green-500/20 border-green-500/50 text-green-400'
                                         : status === 'error'
-                                            ? 'bg-red-600 shadow-red-600/20'
-                                            : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-blue-600/20'
+                                            ? 'bg-red-500/20 border-red-500/50 text-red-400'
+                                            : 'bg-white/10 hover:bg-white/20 border-white/20 text-white'
                                     }`}
                             >
                                 {status === 'loading' ? (
@@ -197,10 +197,10 @@ const Footer = () => {
 
                 {/* Bottom Section */}
                 <div className="relative">
-                    <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-slate-700 to-transparent"></div>
+                    <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
 
                     <div className="pt-10 flex flex-col md:flex-row items-center justify-between gap-6">
-                        <p className="text-slate-500 text-sm">
+                        <p className="text-white/40 text-sm font-light">
                             © {new Date().getFullYear()} Infinite Yatra. All rights reserved.
                         </p>
 
@@ -221,10 +221,10 @@ const Footer = () => {
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         title={social.title}
-                                        className={`p-3 rounded-xl bg-slate-800/50 backdrop-blur-sm text-slate-400 
+                                        className={`p-3 rounded-xl bg-white/5 backdrop-blur-sm text-white/60 
                                                   ${social.color} hover:text-white
                                                   transition-all duration-300 hover:scale-110 hover:-translate-y-1
-                                                  border border-slate-700/50 hover:border-transparent
+                                                  border border-white/10 hover:border-white/30
                                                   shadow-lg hover:shadow-xl group`}
                                     >
                                         <Icon size={20} className={social.iconColor || ""} />

@@ -97,34 +97,34 @@ const Contact = () => {
     };
 
     return (
-        <section id="contact" className="py-16 bg-gradient-to-b from-white to-slate-50 relative overflow-hidden">
-            {/* Decorative elements */}
-            <div className="absolute top-0 left-0 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl"></div>
-            <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl"></div>
+        <section id="contact" className="py-16 relative overflow-hidden">
+            {/* Decorative elements - Subtle for dark mode */}
+            <div className="absolute top-0 left-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
             <div className="container mx-auto px-6 relative z-10">
                 <div className="max-w-3xl mx-auto">
                     {/* Header */}
                     <div className="text-center mb-8">
-                        <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-3">
+                        <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
                             Get In Touch
                         </h2>
-                        <p className="text-slate-600 text-base max-w-2xl mx-auto">
+                        <p className="text-white/70 text-base max-w-2xl mx-auto font-light">
                             Have questions about your next adventure? We'd love to hear from you. Send us a message and we'll respond as soon as possible.
                         </p>
                     </div>
 
                     {/* Contact Form */}
-                    <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 p-6 md:p-8 border border-slate-100">
+                    <div className="glass-card p-6 md:p-8">
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {/* Name Field */}
                                 <div>
-                                    <label htmlFor="name" className="block text-sm font-semibold text-slate-700 mb-2">
+                                    <label htmlFor="name" className="block text-sm font-semibold text-white/90 mb-2">
                                         Full Name *
                                     </label>
                                     <div className="relative">
-                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50">
                                             <User size={20} />
                                         </div>
                                         <input
@@ -133,10 +133,10 @@ const Contact = () => {
                                             name="name"
                                             value={formData.name}
                                             onChange={handleChange}
-                                            className={`w-full pl-12 pr-4 py-3.5 rounded-xl border-2 ${errors.name
-                                                ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20'
-                                                : 'border-slate-200 focus:border-blue-500 focus:ring-blue-500/20'
-                                                } focus:ring-4 outline-none transition-all duration-300 text-slate-900 placeholder:text-slate-400`}
+                                            className={`w-full pl-12 pr-4 py-3.5 rounded-xl bg-white/5 border ${errors.name
+                                                ? 'border-red-400 focus:border-red-500'
+                                                : 'border-white/10 focus:border-blue-400'
+                                                } focus:ring-0 outline-none transition-all duration-300 text-white placeholder:text-white/30`}
                                             placeholder="John Doe"
                                         />
                                     </div>
@@ -150,11 +150,11 @@ const Contact = () => {
 
                                 {/* Email Field */}
                                 <div>
-                                    <label htmlFor="email" className="block text-sm font-semibold text-slate-700 mb-2">
+                                    <label htmlFor="email" className="block text-sm font-semibold text-white/90 mb-2">
                                         Email Address *
                                     </label>
                                     <div className="relative">
-                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50">
                                             <Mail size={20} />
                                         </div>
                                         <input
@@ -163,10 +163,10 @@ const Contact = () => {
                                             name="email"
                                             value={formData.email}
                                             onChange={handleChange}
-                                            className={`w-full pl-12 pr-4 py-3.5 rounded-xl border-2 ${errors.email
-                                                ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20'
-                                                : 'border-slate-200 focus:border-blue-500 focus:ring-blue-500/20'
-                                                } focus:ring-4 outline-none transition-all duration-300 text-slate-900 placeholder:text-slate-400`}
+                                            className={`w-full pl-12 pr-4 py-3.5 rounded-xl bg-white/5 border ${errors.email
+                                                ? 'border-red-400 focus:border-red-500'
+                                                : 'border-white/10 focus:border-blue-400'
+                                                } focus:ring-0 outline-none transition-all duration-300 text-white placeholder:text-white/30`}
                                             placeholder="john@example.com"
                                         />
                                     </div>
@@ -181,11 +181,11 @@ const Contact = () => {
 
                             {/* Phone Field (Optional) */}
                             <div>
-                                <label htmlFor="phone" className="block text-sm font-semibold text-slate-700 mb-2">
-                                    Phone Number <span className="text-slate-400 font-normal">(Optional)</span>
+                                <label htmlFor="phone" className="block text-sm font-semibold text-white/90 mb-2">
+                                    Phone Number <span className="text-white/40 font-normal">(Optional)</span>
                                 </label>
                                 <div className="relative">
-                                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50">
                                         <Phone size={20} />
                                     </div>
                                     <input
@@ -194,7 +194,7 @@ const Contact = () => {
                                         name="phone"
                                         value={formData.phone}
                                         onChange={handleChange}
-                                        className="w-full pl-12 pr-4 py-3.5 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 outline-none transition-all duration-300 text-slate-900 placeholder:text-slate-400"
+                                        className="w-full pl-12 pr-4 py-3.5 rounded-xl bg-white/5 border border-white/10 focus:border-blue-400 focus:ring-0 outline-none transition-all duration-300 text-white placeholder:text-white/30"
                                         placeholder="+91 98765 43210"
                                     />
                                 </div>
@@ -202,11 +202,11 @@ const Contact = () => {
 
                             {/* Message Field */}
                             <div>
-                                <label htmlFor="message" className="block text-sm font-semibold text-slate-700 mb-2">
+                                <label htmlFor="message" className="block text-sm font-semibold text-white/90 mb-2">
                                     Your Message *
                                 </label>
                                 <div className="relative">
-                                    <div className="absolute left-4 top-4 text-slate-400">
+                                    <div className="absolute left-4 top-4 text-white/50">
                                         <MessageSquare size={20} />
                                     </div>
                                     <textarea
@@ -215,10 +215,10 @@ const Contact = () => {
                                         value={formData.message}
                                         onChange={handleChange}
                                         rows="6"
-                                        className={`w-full pl-12 pr-4 py-3.5 rounded-xl border-2 ${errors.message
-                                            ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20'
-                                            : 'border-slate-200 focus:border-blue-500 focus:ring-blue-500/20'
-                                            } focus:ring-4 outline-none transition-all duration-300 resize-none text-slate-900 placeholder:text-slate-400`}
+                                        className={`w-full pl-12 pr-4 py-3.5 rounded-xl bg-white/5 border ${errors.message
+                                            ? 'border-red-400 focus:border-red-500'
+                                            : 'border-white/10 focus:border-blue-400'
+                                            } focus:ring-0 outline-none transition-all duration-300 resize-none text-white placeholder:text-white/30`}
                                         placeholder="Tell us about your travel plans or any questions you have..."
                                     ></textarea>
                                 </div>
@@ -235,12 +235,7 @@ const Contact = () => {
                                 <button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 
-                                             text-white px-8 py-4 rounded-xl font-semibold text-base
-                                             shadow-lg shadow-blue-600/30 hover:shadow-xl hover:shadow-blue-600/40
-                                             transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]
-                                             disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100
-                                             flex items-center justify-center gap-3 group"
+                                    className="w-full glass-btn justify-center bg-white/10 hover:bg-white/20 border-white/20 hover:border-white/30"
                                 >
                                     {isSubmitting ? (
                                         <>

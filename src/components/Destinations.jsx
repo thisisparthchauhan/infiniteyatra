@@ -18,18 +18,18 @@ const Destinations = ({ packages: propPackages, title = "Explore Infinite", subt
     };
 
     return (
-        <section id="destinations" className="py-24 bg-white relative z-10">
+        <section id="destinations" className="py-24 relative z-10">
             <div className="container mx-auto px-6">
                 {!disableHeader && (
                     <div className="flex items-end justify-between mb-12">
                         <div>
-                            <h2 className="text-4xl font-bold text-slate-900 mb-4">{title}</h2>
-                            <p className="text-slate-500 text-lg max-w-xl">
+                            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight">{title}</h2>
+                            <p className="text-xl text-white/70 max-w-xl font-light">
                                 {subtitle || "Curated journeys designed for explorers who want more than just a trip."}
                             </p>
                         </div>
                         {showViewAll && (
-                            <Link to="/destinations" className="hidden md:flex items-center gap-2 text-blue-600 font-medium hover:text-blue-700 transition-colors">
+                            <Link to="/destinations" className="hidden md:flex items-center gap-2 text-blue-400 font-medium hover:text-blue-300 transition-colors">
                                 View all <ArrowRight size={20} />
                             </Link>
                         )}
@@ -44,61 +44,63 @@ const Destinations = ({ packages: propPackages, title = "Explore Infinite", subt
                                 to={`/package/${dest.id}`}
                                 className="group cursor-pointer block relative"
                             >
-                                <div className="relative aspect-[4/5] overflow-hidden rounded-2xl mb-4">
-                                    <img
-                                        src={dest.image}
-                                        alt={dest.title}
-                                        loading="lazy"
-                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                    />
-                                    <div className="absolute top-4 right-4 flex gap-2">
-                                        <button
-                                            onClick={(e) => handleWishlistClick(e, dest)}
-                                            className="bg-white/90 backdrop-blur-sm p-2 rounded-full shadow-sm hover:scale-110 transition-transform group/heart"
-                                        >
-                                            <Heart
-                                                size={18}
-                                                className={`transition-colors ${isInWishlist(dest.id) ? 'fill-red-500 text-red-500' : 'text-slate-400 group-hover/heart:text-red-500'}`}
-                                            />
-                                        </button>
-                                        <div className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full flex items-center gap-1 text-sm font-medium text-slate-900 shadow-sm h-[34px]">
-                                            <Star size={14} className="text-yellow-500 fill-yellow-500" />
-                                            {dest.rating}
+                                <div className="glass-card p-3 h-full hover:bg-white/10 transition-colors">
+                                    <div className="relative aspect-[4/5] overflow-hidden rounded-2xl mb-4">
+                                        <img
+                                            src={dest.image}
+                                            alt={dest.title}
+                                            loading="lazy"
+                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                        />
+                                        <div className="absolute top-4 right-4 flex gap-2">
+                                            <button
+                                                onClick={(e) => handleWishlistClick(e, dest)}
+                                                className="bg-black/40 backdrop-blur-md p-2 rounded-full hover:scale-110 transition-transform group/heart border border-white/10"
+                                            >
+                                                <Heart
+                                                    size={18}
+                                                    className={`transition-colors ${isInWishlist(dest.id) ? 'fill-red-500 text-red-500' : 'text-white/70 group-hover/heart:text-red-500'}`}
+                                                />
+                                            </button>
+                                            <div className="bg-black/40 backdrop-blur-md px-3 py-1 rounded-full flex items-center gap-1 text-sm font-medium text-white shadow-sm h-[34px] border border-white/10">
+                                                <Star size={14} className="text-yellow-400 fill-yellow-400" />
+                                                {dest.rating}
+                                            </div>
+                                        </div>
+
+                                        {/* Hover Overlay */}
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
+                                            <span className="glass-btn text-xs !py-2 !px-4">
+                                                View Details <ArrowRight size={14} className="ml-1" />
+                                            </span>
                                         </div>
                                     </div>
 
-                                    {/* Hover Overlay */}
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
-                                        <span className="text-white font-semibold flex items-center gap-2">
-                                            View Details <ArrowRight size={18} />
-                                        </span>
+                                    <div className="space-y-2 px-1 pb-2">
+                                        <div className="flex items-start justify-between">
+                                            <h3 className="text-xl font-bold text-white group-hover:text-blue-400 transition-colors font-handwritten tracking-wide leading-tight">
+                                                {dest.title}
+                                            </h3>
+                                        </div>
+
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-1.5 text-slate-400 text-sm">
+                                                <MapPin size={14} className="text-blue-400" />
+                                                {dest.location}
+                                            </div>
+                                            <span className="text-white font-bold text-lg">{dest.priceDisplay}</span>
+                                        </div>
                                     </div>
-                                </div>
-
-                                <div className="space-y-3">
-                                    <div className="flex items-center justify-between">
-                                        <h3 className="text-xl font-bold text-slate-950 group-hover:text-blue-600 transition-colors">
-                                            {dest.title}
-                                        </h3>
-                                        <span className="text-slate-950 font-bold">{dest.priceDisplay}</span>
-                                    </div>
-
-                                    <div className="flex items-center gap-2 text-slate-600 text-sm">
-                                        <MapPin size={16} />
-                                        {dest.location}
-                                    </div>
-
-
                                 </div>
                             </Link>
                         ))}
                     </div>
                 ) : (
                     <div className="text-center py-12">
-                        <p className="text-xl text-slate-500">No packages found matching your criteria.</p>
+                        <p className="text-xl text-white/50">No packages found matching your criteria.</p>
                         <button
                             onClick={() => window.location.reload()}
-                            className="mt-4 text-blue-600 font-medium hover:underline"
+                            className="mt-4 text-blue-400 font-medium hover:underline"
                         >
                             Reset Filters
                         </button>
@@ -107,14 +109,12 @@ const Destinations = ({ packages: propPackages, title = "Explore Infinite", subt
 
                 {showViewAll && (
                     <div className="mt-12 md:hidden text-center">
-                        <Link to="/destinations" className="inline-flex items-center gap-2 text-blue-600 font-medium hover:text-blue-700 transition-colors">
+                        <Link to="/destinations" className="glass-btn">
                             View all <ArrowRight size={20} />
                         </Link>
                     </div>
                 )}
             </div>
-
-
         </section>
     );
 };

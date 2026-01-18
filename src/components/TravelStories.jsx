@@ -104,12 +104,8 @@ const TravelStories = () => {
 
     return (
         <>
-            <section id="stories-preview" className="py-24 bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50 relative overflow-hidden">
-                {/* Background Decorations */}
-                <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                    <div className="absolute top-20 left-10 w-72 h-72 bg-blue-200/20 rounded-full blur-3xl"></div>
-                    <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-200/20 rounded-full blur-3xl"></div>
-                </div>
+            <section id="stories-preview" className="py-24 relative overflow-hidden">
+                {/* Background Decorations - Removed for cleaner look */}
 
                 <div className="container mx-auto px-6 relative z-10">
                     {/* Header */}
@@ -121,17 +117,17 @@ const TravelStories = () => {
                             transition={{ duration: 0.7 }}
                             className="max-w-2xl"
                         >
-                            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-full text-sm font-semibold mb-4 shadow-lg">
+                            <div className="inline-flex items-center gap-2 glass-card border border-blue-500/20 text-blue-300 px-4 py-2 rounded-full text-sm font-semibold mb-4">
                                 <MapPin size={16} />
                                 <span>Community Stories</span>
                             </div>
-                            <h2 className="text-5xl md:text-6xl font-bold text-slate-900 mb-6 leading-tight">
+                            <h2 className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
                                 Latest Travel
-                                <span className="block bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+                                <span className="block bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
                                     Adventures
                                 </span>
                             </h2>
-                            <p className="text-slate-600 text-lg md:text-xl leading-relaxed">
+                            <p className="text-white/70 text-lg md:text-xl leading-relaxed font-light">
                                 Real stories from real travelers. Share your journey, inspire others, and discover amazing experiences from our community.
                             </p>
                         </motion.div>
@@ -145,7 +141,7 @@ const TravelStories = () => {
                         >
                             <button
                                 onClick={handleShareStoryClick}
-                                className="group flex items-center gap-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-2xl font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
+                                className="group flex items-center gap-3 bg-white text-black px-8 py-4 rounded-full font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
                             >
                                 <Plus size={22} className="group-hover:rotate-90 transition-transform duration-300" />
                                 Share Your Story
@@ -153,7 +149,7 @@ const TravelStories = () => {
 
                             <Link
                                 to="/stories"
-                                className="hidden md:flex items-center gap-2 text-blue-600 font-semibold hover:text-purple-600 transition-colors px-6 py-4 rounded-2xl hover:bg-white/50 backdrop-blur-sm"
+                                className="hidden md:flex items-center gap-2 text-white/80 font-semibold hover:text-white transition-colors px-6 py-4 rounded-full hover:bg-white/10 backdrop-blur-sm border border-white/10"
                             >
                                 View All Stories
                                 <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
@@ -165,12 +161,12 @@ const TravelStories = () => {
                     {loading ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                             {[1, 2, 3, 4, 5, 6].map(i => (
-                                <div key={i} className="bg-white rounded-3xl overflow-hidden shadow-lg animate-pulse">
-                                    <div className="aspect-[4/3] bg-slate-200"></div>
+                                <div key={i} className="glass-card rounded-3xl overflow-hidden shadow-lg animate-pulse">
+                                    <div className="aspect-[4/3] bg-white/5"></div>
                                     <div className="p-6 space-y-4">
-                                        <div className="h-4 bg-slate-200 rounded w-3/4"></div>
-                                        <div className="h-4 bg-slate-200 rounded w-1/2"></div>
-                                        <div className="h-20 bg-slate-200 rounded"></div>
+                                        <div className="h-4 bg-white/10 rounded w-3/4"></div>
+                                        <div className="h-4 bg-white/10 rounded w-1/2"></div>
+                                        <div className="h-20 bg-white/10 rounded"></div>
                                     </div>
                                 </div>
                             ))}

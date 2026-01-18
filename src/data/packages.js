@@ -1,6 +1,7 @@
 import kedarnathImg from '../assets/kedarnath.png';
 import kashmirImg from '../assets/kashmir_v2.jpg';
 import soulOfHimalayasImg from '../assets/soul_of_himalayas.png';
+import dubaiImg from '../assets/dubai1.jpg';
 
 export const packages = [
 
@@ -142,78 +143,6 @@ export const packages = [
                 question: 'What about food during the trek?',
                 answer: 'We provide nutritious vegetarian meals including breakfast, lunch, and dinner. The menu includes parathas, rice, dal, vegetables, soup, tea, and snacks. We ensure hygienic food preparation and cater to dietary requirements if informed in advance.'
             }
-        ]
-    },
-
-    {
-        id: 'tungnath',
-        title: "Tungnath Trek",
-        location: "Uttarakhand, India",
-        image: "/images/tungnath_trek.jpg",
-        price: 6000,
-        priceDisplay: "₹6,000",
-        type: "fixed",
-        availableDates: ["2026-01-17"],
-        rating: 5.0,
-        duration: "4 Days / 3 Nights",
-        difficulty: "Easy to Moderate",
-        bestTime: "April to November",
-        maxAltitude: "13,000 ft",
-        maxGroupSize: 12,
-        description: "Trek to Tungnath, the highest Shiva temple in the world, and continue to Chandrashila peak for panoramic Himalayan views. This short but rewarding trek offers spiritual significance combined with stunning natural beauty and is perfect for beginners.",
-        highlights: [
-            "Visit world's highest Shiva temple",
-            "360-degree Himalayan views from Chandrashila",
-            "Walk through rhododendron forests",
-            "Witness spectacular sunrise",
-            "Perfect for beginner trekkers"
-        ],
-        itinerary: [
-            {
-                day: 1,
-                title: "Haridwar to Chopta",
-                description: "Drive from Haridwar to Chopta (215 km, 8-9 hours). Pass through Devprayag, Rudraprayag, and scenic mountain roads. Overnight camping in Chopta.",
-                activities: ["Scenic drive", "Village exploration", "Camping"]
-            },
-            {
-                day: 2,
-                title: "Chopta to Tungnath to Chandrashila",
-                description: "Trek to Tungnath Temple (3.5 km, 3-4 hours). Visit the temple, then continue to Chandrashila summit (1.5 km, 1-2 hours). Descend back to Chopta. Overnight camping.",
-                activities: ["Temple visit", "Summit climb", "Photography"]
-            },
-            {
-                day: 3,
-                title: "Chopta to Deoria Tal to Sari Village",
-                description: "Drive to Sari village. Trek to Deoria Tal lake (2.5 km, 1-2 hours). Enjoy the reflection of Chaukhamba peaks in the lake. Return to Sari. Overnight stay.",
-                activities: ["Lake visit", "Nature photography", "Relaxation"]
-            },
-            {
-                day: 4,
-                title: "Sari to Haridwar",
-                description: "Drive back to Haridwar (220 km, 8-9 hours). Trip concludes with memories of the beautiful Himalayan trek.",
-                activities: ["Return journey", "Trip conclusion"]
-            }
-        ],
-        inclusions: [
-            "Accommodation in camps and guesthouses",
-            "All meals during the trek",
-            "Experienced trek guide",
-            "Trekking equipment (tents, sleeping bags)",
-            "First aid kit and basic medical support",
-            "Forest permits and camping charges",
-            "Transportation from Haridwar to Haridwar"
-        ],
-        exclusions: [
-            "Personal trekking gear",
-            "Personal expenses and tips",
-            "Insurance",
-            "Any additional activities",
-            "Meals during travel days"
-        ],
-        images: [
-            "/images/tungnath_trek.jpg",
-            "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=2070&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1486870591958-9b9d0d1dda99?q=80&w=2070&auto=format&fit=crop"
         ]
     },
     {
@@ -405,7 +334,7 @@ When you return, you don’t just bring back photos — you bring back a new ver
         id: 'kedarnath',
         title: "Kedarnath Trek",
         location: "Uttarakhand, India",
-        image: "/images/kedarnath_new.jpg",
+        image: "https://images.unsplash.com/photo-1548013146-72479768bada?q=80&w=2076&auto=format&fit=crop",
         price: 12000,
         priceDisplay: "₹12,000",
         type: "mixed",
@@ -459,84 +388,11 @@ When you return, you don’t just bring back photos — you bring back a new ver
         inclusions: ["Transport", "Meals", "Stay", "Guide"],
         exclusions: ["Personal Expenses", "Pony/Palki charges"],
         images: [
-            "/images/kedarnath_new.jpg",
-            "https://images.unsplash.com/photo-1548013146-72479768bada?q=80&w=2076&auto=format&fit=crop"
-        ]
-    },
-    {
-        id: 'usa-nyc',
-        title: "New York City Explorer",
-        location: "New York, USA",
-        image: "/images/new_york_city.jpg",
-        price: 150000,
-        priceDisplay: "₹1,50,000",
-        type: "custom",
-        rating: 4.8,
-        duration: "7 Days / 6 Nights",
-        difficulty: "Easy",
-        bestTime: "April to June, September to November",
-        maxGroupSize: 20,
-        description: "Experience the vibrant energy of the Big Apple! From Times Square to Central Park, explore the iconic landmarks of New York City in this comprehensive tour.",
-        highlights: [
-            "Statue of Liberty Cruise",
-            "Empire State Building View",
-            "Central Park Walk",
-            "Times Square Experience",
-            "Broadway Show (Optional)"
-        ],
-        itinerary: [
-            { day: 1, title: "Arrival in NYC", description: "Arrive at JFK, transfer to hotel. Evening at Times Square.", activities: ["Arrival", "Times Square"] },
-            { day: 2, title: "Statue of Liberty & Ellis Island", description: "Ferry ride to Statue of Liberty and Ellis Island.", activities: ["Cruise", "Sightseeing"] },
-            { day: 3, title: "Manhattan Highlights", description: "Empire State Building, Rockefeller Center, 5th Avenue.", activities: ["City Tour"] },
-            { day: 4, title: "Brooklyn Bridge & Dumbo", description: "Walk the Brooklyn Bridge, explore Dumbo.", activities: ["Walking Tour"] },
-            { day: 5, title: "Central Park & Museums", description: "Relax in Central Park, visit MET or MoMA.", activities: ["Museum", "Park"] },
-            { day: 6, title: "Shopping & Leisure", description: "Free day for shopping or optional tours.", activities: ["Shopping"] },
-            { day: 7, title: "Departure", description: "Transfer to airport for flight back.", activities: ["Departure"] }
-        ],
-        inclusions: ["Hotel Stay", "Breakfast", "Airport Transfers", "Sightseeing Tours"],
-        exclusions: ["International Flights", "Visa Fees", "Lunch & Dinner", "Personal Expenses"],
-        images: [
-            "/images/new_york_city.jpg",
-            "https://images.unsplash.com/photo-1605130284535-11dd9eedc58a?q=80&w=2070&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1534430480872-3498386e7856?q=80&w=2070&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1585862705417-62dc04423871?q=80&w=2072&auto=format&fit=crop"
-        ]
-    },
-    {
-        id: 'dubai-highlights',
-        title: "Dazzling Dubai",
-        location: "Dubai, UAE",
-        image: "/images/dubai.jpg",
-        price: 45000,
-        priceDisplay: "₹45,000",
-        type: "custom",
-        rating: 4.7,
-        duration: "5 Days / 4 Nights",
-        difficulty: "Easy",
-        bestTime: "November to March",
-        maxGroupSize: 25,
-        description: "Discover the city of gold! Experience luxury, adventure, and futuristic architecture in Dubai. Desert Safari, Burj Khalifa, and more.",
-        highlights: [
-            "Burj Khalifa - At the Top",
-            "Desert Safari with BBQ Dinner",
-            "Dubai Mall & Fountain Show",
-            "Palm Jumeirah Tour",
-            "Dhow Cruise Dinner"
-        ],
-        itinerary: [
-            { day: 1, title: "Arrival & Dhow Cruise", description: "Arrive in Dubai. Evening Dhow Cruise with dinner.", activities: ["Arrival", "Cruise"] },
-            { day: 2, title: "Dubai City Tour & Burj Khalifa", description: "Half day city tour. Evening visit to Burj Khalifa 124th floor.", activities: ["City Tour", "Burj Khalifa"] },
-            { day: 3, title: "Desert Safari", description: "Morning free. Afternoon Desert Safari with dune bashing and dinner.", activities: ["Desert Safari", "BBQ Dinner"] },
-            { day: 4, title: "Abu Dhabi Day Trip (Optional)", description: "Optional trip to Abu Dhabi or free day for shopping.", activities: ["Optional Tour", "Shopping"] },
-            { day: 5, title: "Departure", description: "Transfer to airport.", activities: ["Departure"] }
-        ],
-        inclusions: ["Hotel 4*", "Daily Breakfast", "Transfers", "Sightseeing"],
-        exclusions: ["Flights", "Visa", "Tourism Dirham Fee"],
-        images: [
-            "/images/dubai.jpg",
-            "https://images.unsplash.com/photo-1451337516015-6b6fcd1f9013?q=80&w=2070&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1578335345700-111000780490?q=80&w=2069&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1582657233895-0f37a3691ea9?q=80&w=2070&auto=format&fit=crop"
+            "https://images.unsplash.com/photo-1548013146-72479768bada?q=80&w=2076&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?q=80&w=2070&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=2070&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=2070&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1519904981063-b0cf448d479e?q=80&w=2070&auto=format&fit=crop"
         ]
     },
     {
@@ -571,6 +427,83 @@ When you return, you don’t just bring back photos — you bring back a new ver
         inclusions: ["Hotels", "Breakfast", "Airport Transfers", "Phi Phi Tour"],
         exclusions: ["Flights (International/Domestic)", "Visa on Arrival", "Lunch & Dinner"],
         images: ["https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?q=80&w=2039&auto=format&fit=crop"]
+    },
+    {
+        id: 'dazzling-dubai',
+        title: "Dazzling Dubai",
+        location: "Dubai, UAE",
+        image: dubaiImg,
+        price: 45000,
+        priceDisplay: "₹45,000",
+        type: "mixed",
+        rating: 4.8,
+        duration: "5 Days / 4 Nights",
+        difficulty: "Easy",
+        bestTime: "October to April",
+        maxGroupSize: 25,
+        description: "Experience the glitz and glamour of Dubai. From the tallest building in the world to the vast desert dunes, this trip offers a blend of modern luxury and traditional Arabian culture.",
+        highlights: [
+            "Burj Khalifa - At the Top",
+            "Desert Safari with BBQ Dinner",
+            "Marina Dhow Cruise",
+            "Dubai Mall & Fountain Show",
+            "Abu Dhabi City Tour (Optional)"
+        ],
+        itinerary: [
+            { day: 1, title: "Arrival in Dubai", description: "Arrival at Dubai International Airport. Transfer to hotel. Evening Dhow Cruise with dinner.", activities: ["Arrival", "Dhow Cruise"] },
+            { day: 2, title: "Dubai City Tour & Burj Khalifa", description: "Half-day city tour covering Jumeirah Beach, Atlantis, and Gold Souk. Evening visit to Burj Khalifa 124th floor.", activities: ["City Tour", "Burj Khalifa"] },
+            { day: 3, title: "Desert Safari", description: "Morning at leisure. Afternoon pick up for Desert Safari with dune bashing, camel riding, and BBQ dinner.", activities: ["Desert Safari", "BBQ Dinner"] },
+            { day: 4, title: "Abu Dhabi Tour / Leisure", description: "Optional full-day tour to Abu Dhabi visiting Sheikh Zayed Mosque and Ferrari World, or spend the day shopping.", activities: ["Abu Dhabi (Optional)", "Shopping"] },
+            { day: 5, title: "Departure", description: "Check out and transfer to airport for your flight back home.", activities: ["Departure"] }
+        ],
+        inclusions: ["4 Nights Hotel Stay", "Daily Breakfast", "Airport Transfers", "Desert Safari", "Dhow Cruise", "Burj Khalifa Tickets"],
+        exclusions: ["Flights", "Visa Fees", "Tourism Dirham Fee", "Personal Expenses"],
+        images: [
+            "https://images.unsplash.com/photo-1512453979798-5ea904ac6605?q=80&w=2070&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1546412414-e1885259563a?q=80&w=1974&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1582672060674-bc2bd808a8b5?q=80&w=1935&auto=format&fit=crop"
+        ]
+    },
+    {
+        id: 'usa-explorer',
+        title: "USA Explorer",
+        location: "New York & Las Vegas, USA",
+        image: "https://images.unsplash.com/photo-1534430480872-3498386e7856?q=80&w=2070&auto=format&fit=crop",
+        price: 150000,
+        priceDisplay: "₹1,50,000",
+        type: "mixed",
+        rating: 4.9,
+        duration: "10 Days / 9 Nights",
+        difficulty: "Easy",
+        bestTime: "April to October",
+        maxGroupSize: 15,
+        description: "A grand tour of the United States, featuring the bustling streets of New York City and the entertainment capital of the world, Las Vegas.",
+        highlights: [
+            "Statue of Liberty & Ellis Island",
+            "Times Square & Broadway",
+            "Las Vegas Strip",
+            "Grand Canyon Day Trip",
+            "Central Park"
+        ],
+        itinerary: [
+            { day: 1, title: "Arrival in New York", description: "Welcome to the Big Apple! Transfer to hotel in Manhattan.", activities: ["Arrival", "Times Square"] },
+            { day: 2, title: "Statue of Liberty & City Tour", description: "Ferry to Statue of Liberty. Visit Wall Street, 9/11 Memorial.", activities: ["Statue of Liberty", "City Sightseeing"] },
+            { day: 3, title: "Central Park & Museums", description: "Explore Central Park and the Metropolitan Museum of Art.", activities: ["Central Park", "Museum Visit"] },
+            { day: 4, title: "Flight to Las Vegas", description: "Fly to Las Vegas. Evening explore the Strip and Bellagio Fountains.", activities: ["Flight", "The Strip"] },
+            { day: 5, title: "Grand Canyon West Rim", description: "Day trip to Grand Canyon West Rim. Walk on the Skywalk (optional).", activities: ["Grand Canyon", "Sightseeing"] },
+            { day: 6, title: "Las Vegas Leisure", description: "Free day to explore casinos, shows, or shopping.", activities: ["Leisure", "Casino"] },
+            { day: 7, title: "Flight to Los Angeles", description: "Short flight/drive to LA. Visit Hollywood Walk of Fame.", activities: ["Hollywood", "Transfer"] },
+            { day: 8, title: "Universal Studios Hollywood", description: "Full day at Universal Studios theme park.", activities: ["Theme Park"] },
+            { day: 9, title: "Santa Monica & Beverly Hills", description: "Visit Santa Monica Pier and luxury shopping in Beverly Hills.", activities: ["Beach", "Shopping"] },
+            { day: 10, title: "Departure", description: "Transfer to LAX airport for departure.", activities: ["Departure"] }
+        ],
+        inclusions: ["Accommodation", "Daily Breakfast", "Domestic Flights (NYC-LAS-LAX)", "Sightseeing Tours", "Airport Transfers"],
+        exclusions: ["International Flights", "USA Visa", "Lunch & Dinner", "Resort Fees", "Tips"],
+        images: [
+            "https://images.unsplash.com/photo-1534430480872-3498386e7856?q=80&w=2070&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=2070&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1605833556294-ea5c7a74f57d?q=80&w=2074&auto=format&fit=crop"
+        ]
     }
 ];
 export const getPackageById = (id) => {

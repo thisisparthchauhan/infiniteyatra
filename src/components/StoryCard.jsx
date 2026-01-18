@@ -31,7 +31,7 @@ const StoryCard = ({ story, onLike }) => {
     return (
         <motion.div
             whileHover={{ y: -8 }}
-            className="group bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 border border-slate-100"
+            className="group glass-card rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500"
         >
             {/* Image Container */}
             <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-blue-100 to-purple-100">
@@ -53,9 +53,9 @@ const StoryCard = ({ story, onLike }) => {
 
                 {/* Location Badge */}
                 {story.location && (
-                    <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-md px-4 py-2 rounded-full shadow-lg flex items-center gap-2">
-                        <MapPin size={16} className="text-blue-600" />
-                        <span className="text-sm font-semibold text-slate-900">{story.location}</span>
+                    <div className="absolute top-4 left-4 glass-card !rounded-full px-4 py-2 flex items-center gap-2">
+                        <MapPin size={16} className="text-blue-400" />
+                        <span className="text-sm font-semibold text-white">{story.location}</span>
                     </div>
                 )}
 
@@ -71,7 +71,7 @@ const StoryCard = ({ story, onLike }) => {
 
                 {/* View Count - moved to bottom right if featured badge exists */}
                 {!story.isFeatured && !story.isAdmin && (
-                    <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-md px-3 py-2 rounded-full flex items-center gap-2 text-white">
+                    <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-md px-3 py-2 rounded-full flex items-center gap-2 text-white border border-white/10">
                         <Eye size={14} />
                         <span className="text-xs font-semibold">{story.views || 0}</span>
                     </div>
@@ -82,12 +82,12 @@ const StoryCard = ({ story, onLike }) => {
             <div className="p-6">
                 {/* Author Info */}
                 <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold border border-white/20">
                         {story.authorName?.charAt(0).toUpperCase() || 'A'}
                     </div>
                     <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-slate-900 truncate">{story.authorName || 'Anonymous'}</p>
-                        <div className="flex items-center gap-2 text-xs text-slate-500">
+                        <p className="font-semibold text-white truncate">{story.authorName || 'Anonymous'}</p>
+                        <div className="flex items-center gap-2 text-xs text-white/50">
                             <Calendar size={12} />
                             <span>{formatDate(story.createdAt)}</span>
                         </div>
@@ -95,12 +95,12 @@ const StoryCard = ({ story, onLike }) => {
                 </div>
 
                 {/* Title */}
-                <h3 className="text-xl font-bold text-slate-900 mb-3 line-clamp-2 leading-tight group-hover:text-blue-600 transition-colors">
+                <h3 className="text-xl font-bold text-white mb-3 line-clamp-2 leading-tight group-hover:text-blue-400 transition-colors">
                     {story.title}
                 </h3>
 
                 {/* Description */}
-                <p className="text-slate-600 text-sm leading-relaxed mb-5 line-clamp-3">
+                <p className="text-white/70 text-sm leading-relaxed mb-5 line-clamp-3 font-light">
                     {story.description}
                 </p>
 
@@ -110,7 +110,7 @@ const StoryCard = ({ story, onLike }) => {
                         {story.tags.slice(0, 3).map((tag, index) => (
                             <span
                                 key={index}
-                                className="px-3 py-1 bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 text-xs font-semibold rounded-full border border-blue-100"
+                                className="px-3 py-1 bg-white/10 text-blue-300 text-xs font-semibold rounded-full border border-white/10"
                             >
                                 #{tag}
                             </span>
@@ -125,7 +125,7 @@ const StoryCard = ({ story, onLike }) => {
                             onClick={handleLike}
                             className={`flex items-center gap-2 transition-all duration-300 ${isLiked
                                 ? 'text-red-500'
-                                : 'text-slate-400 hover:text-red-500'
+                                : 'text-white/40 hover:text-red-500'
                                 }`}
                         >
                             <Heart
@@ -135,7 +135,7 @@ const StoryCard = ({ story, onLike }) => {
                             <span className="text-sm font-semibold">{localLikes}</span>
                         </button>
 
-                        <button className="flex items-center gap-2 text-slate-400 hover:text-blue-600 transition-colors">
+                        <button className="flex items-center gap-2 text-white/40 hover:text-blue-400 transition-colors">
                             <MessageCircle size={20} />
                             <span className="text-sm font-semibold">{story.comments || 0}</span>
                         </button>
@@ -143,7 +143,7 @@ const StoryCard = ({ story, onLike }) => {
 
                     <Link
                         to={`/story/${story.id}`}
-                        className="text-blue-600 hover:text-purple-600 font-semibold text-sm flex items-center gap-1 group/link"
+                        className="text-blue-400 hover:text-purple-400 font-semibold text-sm flex items-center gap-1 group/link"
                     >
                         Read More
                         <span className="group-hover/link:translate-x-1 transition-transform inline-block">→</span>

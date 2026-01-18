@@ -4,6 +4,7 @@ import { MapPin, Calendar, ChevronDown, Check, X, Phone, MessageCircle, Plus, Mi
 import { usePackages } from '../context/PackageContext';
 import SEO from '../components/SEO';
 import AnimatedBanner from '../components/AnimatedBanner';
+import PhotoGallery from '../components/PhotoGallery';
 import './PackageDetail.css';
 
 const PackageDetail = () => {
@@ -16,6 +17,7 @@ const PackageDetail = () => {
     const [guests, setGuests] = useState(1);
     const [selectedDate, setSelectedDate] = useState(null);
     const [showFullDescription, setShowFullDescription] = useState(false);
+    const [showGallery, setShowGallery] = useState(false);
     const { getPackageById, loading } = usePackages();
 
     useEffect(() => {
@@ -90,18 +92,24 @@ const PackageDetail = () => {
             />
 
             {/* Hero Section with Image Gallery */}
+            {/* Hero Section with Image Gallery */}
             <div className="hero-section">
                 <div className="hero-title">
-                    <h1>Experience {pkg.title.split(' ')[0]}</h1>
+                    <h1>Experience <span className="font-handwritten text-yellow-400">{pkg.title}</span></h1>
                 </div>
                 <div className="image-gallery">
-                    {pkg.images && pkg.images.slice(0, 5).map((image, index) => (
-                        <div key={index} className={`gallery-item item-${index + 1}`}>
+                    {pkg.images && pkg.images.slice(0, 3).map((image, index) => (
+                        <div
+                            key={index}
+                            className={`gallery-item item-${index + 1}`}
+                            onClick={() => setShowGallery(true)}
+                        >
                             <img src={image} alt={`${pkg.title} - ${index + 1}`} />
-                            {index === 4 && pkg.images.length > 5 && (
-                                <div className="see-all-overlay">
-                                    <span>See all</span>
-                                </div>
+                            {index === 2 && (
+                                <button className="see-all-btn">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-image"><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></svg>
+                                    See all
+                                </button>
                             )}
                         </div>
                     ))}
@@ -325,27 +333,7 @@ const PackageDetail = () => {
                             </div>
                         )}
 
-                        {/* Guest Counter */}
-                        <div className="guest-counter">
-                            <span className="guest-label">Guests</span>
-                            <div className="counter-controls">
-                                <button
-                                    className="counter-btn"
-                                    onClick={() => setGuests(Math.max(1, guests - 1))}
-                                    disabled={guests <= 1}
-                                >
-                                    <Minus size={16} />
-                                </button>
-                                <span className="guest-count">{guests}</span>
-                                <button
-                                    className="counter-btn"
-                                    onClick={() => setGuests(Math.min(pkg.maxGroupSize || 20, guests + 1))}
-                                    disabled={guests >= (pkg.maxGroupSize || 20)}
-                                >
-                                    <Plus size={16} />
-                                </button>
-                            </div>
-                        </div>
+
 
                         {/* Book Now Button */}
                         <button className="book-now-btn" onClick={handleBookNow}>
@@ -370,6 +358,26 @@ const PackageDetail = () => {
 
             {/* Animated Banner at the end */}
             <AnimatedBanner />
+
+            {/* Full Screen Gallery Overlay */}
+            {showGallery && (
+                <div className="fixed inset-0 z-50 bg-black flex flex-col">
+                    <div className="p-4 flex justify-between items-center bg-black/50 backdrop-blur-sm absolute top-0 left-0 w-full z-10">
+                        <h2 className="text-white text-lg font-semibold">{pkg.title} Gallery</h2>
+                        <button
+                            onClick={() => setShowGallery(false)}
+                            className="bg-white/10 p-2 rounded-full hover:bg-white/20 transition-colors text-white"
+                        >
+                            <X size={24} />
+                        </button>
+                    </div>
+                    <div className="flex-1 flex items-center justify-center p-4">
+                        <PhotoGallery
+                            images={pkg.images.map((url, i) => ({ id: i, url: url, alt: `${pkg.title} ${i + 1}` }))}
+                        />
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
