@@ -59,67 +59,69 @@ const ContactNew = () => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 pt-20">
+        <div className="min-h-screen bg-black pt-20">
             {/* Hero Section */}
-            <div className="relative bg-slate-900 py-24">
-                <div className="absolute inset-0 bg-blue-600/10"></div>
-                <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1596386461350-326ea7750550?q=80&w=1000&auto=format&fit=crop')] bg-cover bg-center opacity-20"></div>
-                <div className="relative container mx-auto px-6 text-center">
-                    <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">Get in Touch</h1>
-                    <p className="text-xl text-slate-300 max-w-2xl mx-auto">
-                        Have questions about a package? Want a custom itinerary?
-                        We're here to help you plan the trip of a lifetime.
+            <div className="relative py-24 overflow-hidden">
+                {/* Background Glows */}
+                <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-600/20 rounded-full blur-[128px] pointer-events-none"></div>
+                <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-600/20 rounded-full blur-[128px] pointer-events-none"></div>
+
+                <div className="relative container mx-auto px-6 text-center z-10">
+                    <h1 className="text-5xl md:text-6xl font-bold text-white mb-6 tracking-tight">Get In Touch</h1>
+                    <p className="text-xl text-slate-400 max-w-2xl mx-auto">
+                        Have questions about your next adventure? We'd love to hear from you.
+                        Send us a message and we'll respond as soon as possible.
                     </p>
                 </div>
             </div>
 
-            <div className="container mx-auto px-6 py-16 -mt-10 relative z-10">
+            <div className="container mx-auto px-6 py-12 -mt-10 relative z-10 pb-24">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
                     {/* Contact Info Cards */}
                     <div className="space-y-6">
                         {/* Contact Details */}
-                        <div className="bg-white rounded-2xl shadow-xl p-8 border border-slate-100">
-                            <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-                                <span className="p-2 bg-blue-100 rounded-lg text-blue-600">
-                                    <Phone size={20} />
+                        <div className="bg-white/5 backdrop-blur-xl rounded-3xl p-8 border border-white/10 shadow-2xl">
+                            <h3 className="text-xl font-bold text-white mb-8 flex items-center gap-3">
+                                <span className="p-3 bg-white/10 rounded-xl text-blue-400">
+                                    <Phone size={24} />
                                 </span>
                                 Contact Details
                             </h3>
 
-                            <div className="space-y-6">
-                                <div className="flex items-start gap-4">
-                                    <div className="p-2 bg-slate-50 rounded-lg text-slate-600 mt-1">
-                                        <Phone size={18} />
+                            <div className="space-y-8">
+                                <div className="flex items-start gap-4 group">
+                                    <div className="p-3 bg-white/5 rounded-xl text-slate-400 group-hover:text-blue-400 group-hover:bg-blue-500/10 transition-colors">
+                                        <Phone size={20} />
                                     </div>
                                     <div>
-                                        <p className="text-sm text-slate-500 mb-1">Call Us</p>
-                                        <a href="tel:+919265799325" className="text-slate-800 font-semibold hover:text-blue-600 transition-colors">
+                                        <p className="text-sm text-slate-500 mb-1 uppercase tracking-wider font-medium">Call Us</p>
+                                        <a href="tel:+919265799325" className="text-white text-lg font-medium hover:text-blue-400 transition-colors">
                                             +91 9265799325
                                         </a>
-                                        <p className="text-xs text-slate-400 mt-1">Mon-Sat, 9am - 8pm</p>
+                                        <p className="text-sm text-slate-500 mt-1">Mon-Sat, 9am - 8pm</p>
                                     </div>
                                 </div>
 
-                                <div className="flex items-start gap-4">
-                                    <div className="p-2 bg-slate-50 rounded-lg text-slate-600 mt-1">
-                                        <Mail size={18} />
+                                <div className="flex items-start gap-4 group">
+                                    <div className="p-3 bg-white/5 rounded-xl text-slate-400 group-hover:text-purple-400 group-hover:bg-purple-500/10 transition-colors">
+                                        <Mail size={20} />
                                     </div>
                                     <div>
-                                        <p className="text-sm text-slate-500 mb-1">Email Us</p>
-                                        <a href="mailto:infiniteyatra@gmail.com" className="text-slate-800 font-semibold hover:text-blue-600 transition-colors break-all">
+                                        <p className="text-sm text-slate-500 mb-1 uppercase tracking-wider font-medium">Email Us</p>
+                                        <a href="mailto:infiniteyatra@gmail.com" className="text-white text-lg font-medium hover:text-purple-400 transition-colors break-all">
                                             infiniteyatra@gmail.com
                                         </a>
                                     </div>
                                 </div>
 
-                                <div className="flex items-start gap-4">
-                                    <div className="p-2 bg-slate-50 rounded-lg text-slate-600 mt-1">
-                                        <MapPin size={18} />
+                                <div className="flex items-start gap-4 group">
+                                    <div className="p-3 bg-white/5 rounded-xl text-slate-400 group-hover:text-emerald-400 group-hover:bg-emerald-500/10 transition-colors">
+                                        <MapPin size={20} />
                                     </div>
                                     <div>
-                                        <p className="text-sm text-slate-500 mb-1">Visit Us</p>
-                                        <p className="text-slate-800 font-medium">
+                                        <p className="text-sm text-slate-500 mb-1 uppercase tracking-wider font-medium">Visit Us</p>
+                                        <p className="text-white font-medium leading-relaxed">
                                             Infinite Yatra HQ<br />
                                             Ahmedabad, Gujarat<br />
                                             India
@@ -130,17 +132,17 @@ const ContactNew = () => {
                         </div>
 
                         {/* Social Links */}
-                        <div className="bg-white rounded-2xl shadow-xl p-8 border border-slate-100 text-center">
-                            <h3 className="text-xl font-bold text-slate-800 mb-6">Connect With Us</h3>
+                        <div className="bg-white/5 backdrop-blur-xl rounded-3xl p-8 border border-white/10 shadow-2xl text-center">
+                            <h3 className="text-xl font-bold text-white mb-6">Connect With Us</h3>
                             <div className="flex justify-center gap-4">
-                                <a href="https://x.com/infiniteyatra" target="_blank" rel="noopener noreferrer" className="p-3 bg-slate-50 rounded-full text-slate-600 hover:bg-black hover:text-white transition-all duration-300">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
+                                <a href="https://x.com/infiniteyatra" target="_blank" rel="noopener noreferrer" className="p-4 bg-white/5 rounded-2xl text-slate-400 hover:bg-black hover:text-white border border-white/5 hover:border-white/20 transition-all duration-300">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
                                 </a>
-                                <a href="https://www.instagram.com/infinite.yatra/" target="_blank" rel="noopener noreferrer" className="p-3 bg-slate-50 rounded-full text-slate-600 hover:bg-gradient-to-br hover:from-purple-600 hover:to-pink-600 hover:text-white transition-all duration-300">
-                                    <Instagram size={20} />
+                                <a href="https://www.instagram.com/infinite.yatra/" target="_blank" rel="noopener noreferrer" className="p-4 bg-white/5 rounded-2xl text-slate-400 hover:bg-gradient-to-br hover:from-purple-600 hover:to-pink-600 hover:text-white border border-white/5 hover:border-white/20 transition-all duration-300">
+                                    <Instagram size={24} />
                                 </a>
-                                <a href="https://www.whatsapp.com/channel/0029VbBX7rv3gvWStqSdXf08" target="_blank" rel="noopener noreferrer" className="p-3 bg-slate-50 rounded-full text-slate-600 hover:bg-green-600 hover:text-white transition-all duration-300">
-                                    <Phone size={20} />
+                                <a href="https://www.whatsapp.com/channel/0029VbBX7rv3gvWStqSdXf08" target="_blank" rel="noopener noreferrer" className="p-4 bg-white/5 rounded-2xl text-slate-400 hover:bg-green-600 hover:text-white border border-white/5 hover:border-white/20 transition-all duration-300">
+                                    <Phone size={24} />
                                 </a>
                             </div>
                         </div>
@@ -148,74 +150,73 @@ const ContactNew = () => {
 
                     {/* Contact Form */}
                     <div className="lg:col-span-2">
-                        <div className="bg-white rounded-2xl shadow-xl p-8 lg:p-10 border border-slate-100 h-full">
-                            <div className="mb-8">
-                                <h1 className="text-3xl font-bold text-slate-900 mb-2">Send us a Message</h1>
-                                <p className="text-slate-600">Fill out the form below and we'll get back to you within 24 hours.</p>
-                            </div>
+                        <div className="bg-white/5 backdrop-blur-xl rounded-3xl p-8 lg:p-12 border border-white/10 h-full shadow-2xl">
 
                             {submitStatus === 'success' && (
-                                <div className="mb-6 p-4 bg-green-50 text-green-700 rounded-xl flex items-center gap-2 animate-fadeIn">
-                                    <div className="p-1 bg-green-100 rounded-full"><Send size={14} /></div>
-                                    Message sent successfully! We'll be in touch soon.
+                                <div className="mb-8 p-4 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-2xl flex items-center gap-3 animate-fadeIn">
+                                    <div className="p-2 bg-emerald-500/20 rounded-full"><Send size={16} /></div>
+                                    <span className="font-medium">Message sent successfully! We'll be in touch soon.</span>
                                 </div>
                             )}
 
-                            <form onSubmit={handleSubmit} className="space-y-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="space-y-2">
-                                        <label htmlFor="name" className="text-sm font-semibold text-slate-700">Your Name</label>
-                                        <input
-                                            type="text"
-                                            id="name"
-                                            name="name"
-                                            required
-                                            value={formData.name}
-                                            onChange={handleChange}
-                                            className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-200 transition-all outline-none"
-                                            placeholder="John Doe"
-                                        />
+                            <form onSubmit={handleSubmit} className="space-y-8">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div className="space-y-3">
+                                        <label htmlFor="name" className="text-sm font-semibold text-slate-300 ml-1">Full Name <span className="text-blue-500">*</span></label>
+                                        <div className="relative group">
+                                            <input
+                                                type="text"
+                                                id="name"
+                                                name="name"
+                                                required
+                                                value={formData.name}
+                                                onChange={handleChange}
+                                                className="w-full pl-6 pr-4 py-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:border-blue-500 focus:bg-white/10 focus:ring-1 focus:ring-blue-500 transition-all outline-none"
+                                                placeholder="John Doe"
+                                            />
+                                        </div>
                                     </div>
-                                    <div className="space-y-2">
-                                        <label htmlFor="email" className="text-sm font-semibold text-slate-700">Email Address</label>
-                                        <input
-                                            type="email"
-                                            id="email"
-                                            name="email"
-                                            required
-                                            value={formData.email}
-                                            onChange={handleChange}
-                                            className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-200 transition-all outline-none"
-                                            placeholder="john@example.com"
-                                        />
+                                    <div className="space-y-3">
+                                        <label htmlFor="email" className="text-sm font-semibold text-slate-300 ml-1">Email Address <span className="text-blue-500">*</span></label>
+                                        <div className="relative group">
+                                            <input
+                                                type="email"
+                                                id="email"
+                                                name="email"
+                                                required
+                                                value={formData.email}
+                                                onChange={handleChange}
+                                                className="w-full pl-6 pr-4 py-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:border-blue-500 focus:bg-white/10 focus:ring-1 focus:ring-blue-500 transition-all outline-none"
+                                                placeholder="john@example.com"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div className="space-y-2">
-                                    <label htmlFor="subject" className="text-sm font-semibold text-slate-700">Subject</label>
+                                <div className="space-y-3">
+                                    <label htmlFor="subject" className="text-sm font-semibold text-slate-300 ml-1">Phone Number <span className="text-slate-500 font-normal">(Optional)</span></label>
                                     <input
-                                        type="text"
-                                        id="subject"
-                                        name="subject"
-                                        required
+                                        type="tel"
+                                        id="phone"
+                                        name="subject" // Using subject field for phone number based on intent, or rename it later
                                         value={formData.subject}
                                         onChange={handleChange}
-                                        className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-200 transition-all outline-none"
-                                        placeholder="Inquiry about Kedarnath Trek"
+                                        className="w-full pl-6 pr-4 py-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:border-blue-500 focus:bg-white/10 focus:ring-1 focus:ring-blue-500 transition-all outline-none"
+                                        placeholder="+91 98765 43210"
                                     />
                                 </div>
 
-                                <div className="space-y-2">
-                                    <label htmlFor="message" className="text-sm font-semibold text-slate-700">Message</label>
+                                <div className="space-y-3">
+                                    <label htmlFor="message" className="text-sm font-semibold text-slate-300 ml-1">Your Message <span className="text-blue-500">*</span></label>
                                     <textarea
                                         id="message"
                                         name="message"
                                         required
-                                        rows="5"
+                                        rows="6"
                                         value={formData.message}
                                         onChange={handleChange}
-                                        className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-200 transition-all outline-none resize-none"
-                                        placeholder="Tell us about your travel plans..."
+                                        className="w-full pl-6 pr-4 py-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:border-blue-500 focus:bg-white/10 focus:ring-1 focus:ring-blue-500 transition-all outline-none resize-none leading-relaxed"
+                                        placeholder="Tell us about your travel plans or any questions you have..."
                                     ></textarea>
                                 </div>
 
@@ -223,10 +224,10 @@ const ContactNew = () => {
                                     type="submit"
                                     disabled={isSubmitting}
                                     className={`
-                                        w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 
-                                        text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-600/30 
+                                        w-full bg-white/10 hover:bg-white/20 border border-white/10
+                                        text-white font-bold py-5 rounded-xl shadow-xl backdrop-blur-sm
                                         transition-all duration-300 transform hover:-translate-y-1
-                                        flex items-center justify-center gap-2
+                                        flex items-center justify-center gap-3 text-lg
                                         ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}
                                     `}
                                 >
@@ -235,27 +236,13 @@ const ContactNew = () => {
                                     ) : (
                                         <>
                                             Send Message
-                                            <Send size={18} />
+                                            <Send size={20} />
                                         </>
                                     )}
                                 </button>
                             </form>
                         </div>
                     </div>
-                </div>
-
-                {/* Map Section */}
-                <div className="mt-16 bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-100">
-                    <iframe
-                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d117506.96543787766!2d72.48911585805562!3d23.019996818380896!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x395e848aba5bd449%3A0x4fcedd11614f6516!2sAhmedabad%2C%20Gujarat!5e0!3m2!1sen!2sin!4v1709462829289!5m2!1sen!2sin"
-                        width="100%"
-                        height="400"
-                        style={{ border: 0 }}
-                        allowFullScreen=""
-                        loading="lazy"
-                        referrerPolicy="no-referrer-when-downgrade"
-                        title="Infinite Yatra Location"
-                    ></iframe>
                 </div>
             </div>
         </div>
