@@ -16,11 +16,22 @@ const Navbar = () => {
     const { wishlist } = useWishlist();
 
     const isAuthPage = location.pathname === '/login' || location.pathname === '/signup';
-    const isTripPlannerPage = location.pathname === '/trip-planner';
-    // const isDestinationsPage = location.pathname === '/destinations';
-    // Removed isLightPage logic - defaulting to global dark/glass theme
-    // But keeping variable for now to minimize refactor risk if used elsewhere, set to false
-    const isLightPage = false;
+
+    // Identify pages that need a light theme navbar (dark text)
+    const isLightPage = [
+        '/destinations',
+        '/wishlist',
+        '/my-bookings',
+        '/my-trips',
+        '/profile',
+        '/stories',
+        '/blog',
+        '/careers'
+    ].some(path => location.pathname.startsWith(path));
+
+    // Also handle dynamic routes if needed, or stick to this list.
+    // Generally, if it's not Home or Package Detail or Contact, it might be light.
+    // But let's start with this list which covers the reported issue.
 
     useEffect(() => {
         const handleScroll = () => {
@@ -90,7 +101,9 @@ const Navbar = () => {
         ? 'bg-black/50 backdrop-blur-xl border-b border-white/5'
         : 'bg-transparent backdrop-blur-none';
 
-    const textColor = 'text-white';
+    const textColor = isLightPage && !isScrolled
+        ? 'text-slate-900'
+        : 'text-white';
 
     const handleNavClick = (e, href) => {
         e.preventDefault();
@@ -120,21 +133,22 @@ const Navbar = () => {
                             to="/"
                             className="flex flex-col items-center group relative z-10"
                         >
-                            <span className={`text-2xl font-black tracking-[0.2em] ${textColor === 'text-white' ? 'text-white' : 'text-slate-950'} drop-shadow-sm`} style={{ fontFamily: "'Raleway', sans-serif" }}>INFINITE YATRA</span>
+                            <span className={`text-2xl font-black tracking-[0.2em] ${textColor === 'text-white' ? 'text-white' : 'text-slate-950'} drop-shadow-sm whitespace-nowrap`} style={{ fontFamily: "'Raleway', sans-serif" }}>INFINITE YATRA</span>
                             <span className={`text-[10px] tracking-[0.3em] font-extrabold ${textColor === 'text-white' ? 'text-white/90' : 'text-slate-800'}`} style={{ fontFamily: "'Raleway', sans-serif" }}>EXPLORE INFINITE</span>
                         </Link>
 
                         {/* Desktop Navigation */}
-                        <div className="hidden md:flex items-center gap-1 lg:gap-2">
+                        <div className="hidden md:flex items-center gap-1 lg:gap-2 ml-10">
                             {!isAuthPage && navItems.map((item) => {
                                 const Icon = item.icon;
-                                // For Home link, only active if on homepage AND no active section
-                                // For other links, check pathname or active section
                                 const isActive = item.name === 'Home'
                                     ? location.pathname === '/' && !activeSection
                                     : item.type === 'link'
                                         ? location.pathname === item.href || (location.pathname === '/' && activeSection === 'destinations' && item.name === 'Destinations') || (location.pathname === '/' && activeSection === 'stories-preview' && item.name === 'Stories')
                                         : activeSection === item.href.replace('#', '');
+
+                                const baseTextClass = textColor === 'text-slate-900' ? 'text-slate-900 hover:bg-black/5' : 'text-white/70 hover:text-white hover:bg-white/5';
+                                const activeTextClass = textColor === 'text-slate-900' ? 'text-blue-600 bg-blue-50' : 'text-white bg-white/10';
 
                                 if (item.type === 'link') {
                                     return (
@@ -142,13 +156,9 @@ const Navbar = () => {
                                             key={item.name}
                                             to={item.href}
                                             onClick={(e) => {
-                                                // If clicking Home while already on homepage, scroll to top
                                                 if (item.name === 'Home' && location.pathname === '/') {
                                                     e.preventDefault();
-                                                    window.scrollTo({
-                                                        top: 0,
-                                                        behavior: 'smooth'
-                                                    });
+                                                    window.scrollTo({ top: 0, behavior: 'smooth' });
                                                 }
                                             }}
                                             className={`
@@ -156,10 +166,10 @@ const Navbar = () => {
                                                 transition-all duration-300 group
                                                 flex items-center gap-2
                                                 ${item.highlight
-                                                    ? 'glass-btn border-white/20 !px-4 !py-2 !text-xs !bg-white/10 hover:!bg-white/20'
+                                                    ? `glass-btn !px-4 !py-2 !text-xs hover:!bg-white/20 ${textColor === 'text-slate-900' ? '!bg-[#0f172a] !border-white/10 text-white shadow-lg' : 'border-white/20 bg-white/10 text-white'}`
                                                     : isActive
-                                                        ? 'text-white bg-white/10'
-                                                        : 'text-white/70 hover:text-white hover:bg-white/5'
+                                                        ? activeTextClass
+                                                        : baseTextClass
                                                 }
                                             `}
                                         >
@@ -184,8 +194,8 @@ const Navbar = () => {
                                             transition-all duration-300 group
                                             flex items-center gap-2
                                             ${isActive
-                                                ? 'text-white bg-white/10'
-                                                : 'text-white/70 hover:text-white hover:bg-white/5'
+                                                ? activeTextClass
+                                                : baseTextClass
                                             }
                                         `}
                                     >
@@ -207,8 +217,8 @@ const Navbar = () => {
                                 <button
                                     className={`
                                         p-2.5 rounded-full transition-all duration-300
-                                        hover:bg-white/10 text-white
                                         hover:scale-110 hover:rotate-12
+                                        ${textColor === 'text-slate-900' ? 'text-slate-900 hover:bg-black/5' : 'hover:bg-white/10 text-white'}
                                     `}
                                 >
                                     <Search size={20} />
@@ -221,8 +231,8 @@ const Navbar = () => {
                                     to="/wishlist"
                                     className={`
                                         p-2.5 rounded-full transition-all duration-300 relative
-                                        hover:bg-white/10 text-white
                                         hover:scale-110
+                                        ${textColor === 'text-slate-900' ? 'text-slate-900 hover:bg-black/5' : 'hover:bg-white/10 text-white'}
                                     `}
                                     title="My Wishlist"
                                 >
@@ -236,15 +246,69 @@ const Navbar = () => {
                             )}
 
                             {currentUser ? (
-                                <div className="relative group flex items-center gap-3">
-                                    <div className={`
-                                        flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300
-                                        bg-white/5 text-white hover:bg-white/10 border border-white/10
-                                    `}>
-                                        <User size={18} />
-                                        <span className="font-medium text-sm max-w-[100px] truncate">
-                                            {currentUser.displayName || currentUser.email.split('@')[0]}
-                                        </span>
+                                <div className="flex items-center gap-3">
+                                    <div className="relative group">
+                                        <div className={`
+                                            flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300
+                                            border cursor-pointer
+                                            ${textColor === 'text-slate-900'
+                                                ? 'bg-white text-slate-900 border-slate-200 hover:bg-slate-50'
+                                                : 'bg-white/5 text-white hover:bg-white/10 border-white/10'}
+                                        `}>
+                                            <User size={18} />
+                                            <span className="font-medium text-sm max-w-[100px] truncate">
+                                                {currentUser.displayName || currentUser.email.split('@')[0]}
+                                            </span>
+                                        </div>
+
+                                        {/* Dropdown Menu */}
+                                        <div className="absolute right-0 top-full mt-2 w-48 glass-card !rounded-2xl !bg-black/80 !backdrop-blur-xl border border-white/10 overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform origin-top-right z-50">
+                                            <div className="p-3 border-b border-white/10">
+                                                <p className="text-sm font-bold text-white truncate">{currentUser.displayName || 'User'}</p>
+                                                <p className="text-xs text-white/50 truncate">{currentUser.email}</p>
+                                            </div>
+                                            <div className="p-1">
+                                                <Link
+                                                    to="/my-bookings"
+                                                    className="flex items-center gap-2 px-3 py-2 text-sm text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                                                >
+                                                    <Package size={16} />
+                                                    My Bookings
+                                                </Link>
+                                                <Link
+                                                    to="/my-trips"
+                                                    className="flex items-center gap-2 px-3 py-2 text-sm text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                                                >
+                                                    <Sparkles size={16} />
+                                                    My Trips
+                                                </Link>
+                                                <Link
+                                                    to="/profile"
+                                                    className="flex items-center gap-2 px-3 py-2 text-sm text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                                                >
+                                                    <User size={16} />
+                                                    My Profile
+                                                </Link>
+                                                <Link
+                                                    to="/support"
+                                                    className="flex items-center gap-2 px-3 py-2 text-sm text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                                                >
+                                                    <Info size={16} />
+                                                    Support
+                                                </Link>
+                                                <button
+                                                    onClick={() => {
+                                                        if (window.confirm('Are you sure you want to log out?')) {
+                                                            handleLogout();
+                                                        }
+                                                    }}
+                                                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 rounded-lg transition-colors text-left"
+                                                >
+                                                    <LogOut size={16} />
+                                                    Log Out
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
 
                                     {/* Admin Link */}
@@ -253,7 +317,7 @@ const Navbar = () => {
                                             to="/admin"
                                             className={`
                                                 p-2.5 rounded-full transition-all duration-300
-                                                ${isLightPage || isScrolled
+                                                ${textColor === 'text-slate-900'
                                                     ? 'hover:bg-purple-50 text-slate-600 hover:text-purple-600'
                                                     : 'hover:bg-white/20 text-white hover:text-purple-200'}
                                             `}
@@ -262,55 +326,6 @@ const Navbar = () => {
                                             <LayoutDashboard size={20} />
                                         </Link>
                                     )}
-
-                                    {/* Dropdown Menu */}
-                                    <div className="absolute right-0 top-full mt-2 w-48 glass-card !rounded-2xl !bg-black/80 !backdrop-blur-xl border !border-white/10 overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform origin-top-right z-50">
-                                        <div className="p-3 border-b border-white/10">
-                                            <p className="text-sm font-bold text-white truncate">{currentUser.displayName || 'User'}</p>
-                                            <p className="text-xs text-white/50 truncate">{currentUser.email}</p>
-                                        </div>
-                                        <div className="p-1">
-                                            <Link
-                                                to="/my-bookings"
-                                                className="flex items-center gap-2 px-3 py-2 text-sm text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
-                                            >
-                                                <Package size={16} />
-                                                My Bookings
-                                            </Link>
-                                            <Link
-                                                to="/my-trips"
-                                                className="flex items-center gap-2 px-3 py-2 text-sm text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
-                                            >
-                                                <Sparkles size={16} />
-                                                My Trips
-                                            </Link>
-                                            <Link
-                                                to="/profile"
-                                                className="flex items-center gap-2 px-3 py-2 text-sm text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
-                                            >
-                                                <User size={16} />
-                                                My Profile
-                                            </Link>
-                                            <Link
-                                                to="/support"
-                                                className="flex items-center gap-2 px-3 py-2 text-sm text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
-                                            >
-                                                <Info size={16} />
-                                                Support
-                                            </Link>
-                                            <button
-                                                onClick={() => {
-                                                    if (window.confirm('Are you sure you want to log out?')) {
-                                                        handleLogout();
-                                                    }
-                                                }}
-                                                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 rounded-lg transition-colors text-left"
-                                            >
-                                                <LogOut size={16} />
-                                                Log Out
-                                            </button>
-                                        </div>
-                                    </div>
                                 </div>
                             ) : (
                                 <>
@@ -356,10 +371,10 @@ const Navbar = () => {
                         </button>
                     </div>
                 </div>
-            </nav>
+            </nav >
 
             {/* Mobile Menu Overlay */}
-            <div
+            < div
                 className={`
                     fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden 
                     transition-opacity duration-300

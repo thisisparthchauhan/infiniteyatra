@@ -150,7 +150,7 @@ const Hero = () => {
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.8, delay: 0.8 }}
                                 onSubmit={handleSubmit}
-                                className="glass-card p-2 rounded-[2rem] flex flex-col lg:flex-row items-center gap-2"
+                                className="glass-card-dark p-2 rounded-[2rem] flex flex-col lg:flex-row items-center gap-2"
                             >
                                 {/* Location */}
                                 <div className="flex-1 flex items-center gap-3 px-6 py-4 w-full border-b lg:border-b-0 lg:border-r border-white/10">
@@ -265,5 +265,3 @@ const Hero = () => {
 };
 
 export default Hero;
-
-

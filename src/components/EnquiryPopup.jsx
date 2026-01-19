@@ -1,15 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useLocation } from 'react-router-dom';
 import { X, Send, Loader2 } from 'lucide-react';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
+import PhoneInput from 'react-phone-input-2';
+import 'react-phone-input-2/lib/style.css';
 
 const EnquiryPopup = () => {
     const { currentUser } = useAuth();
+    const location = useLocation();
     const [isVisible, setIsVisible] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [isCoolingDown, setIsCoolingDown] = useState(false);
+
+    // Form state
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
@@ -18,91 +25,76 @@ const EnquiryPopup = () => {
     });
 
     // Configuration
-    const POPUP_DELAY = 10000; // 10 seconds
-    const SCROLL_THRESHOLD = 0.3; // 30% scroll
-    const RETRY_DELAY = 2 * 60 * 1000; // 2 minutes
+    const SCROLL_THRESHOLD = 0.5; // 50% scroll
+    const RETRY_DELAY = 150 * 1000; // 150 seconds
 
     useEffect(() => {
-        // Don't show if user is logged in
-        if (currentUser) return;
-
-        // Check localStorage for last closed time
-        const lastClosed = localStorage.getItem('enquiryPopupClosed');
-        if (lastClosed) {
-            const timeSinceClosed = Date.now() - parseInt(lastClosed);
-            if (timeSinceClosed < RETRY_DELAY) {
-                // If closed less than 2 mins ago, schedule check for when 2 mins is up
-                const remainingTime = RETRY_DELAY - timeSinceClosed;
-                const timer = setTimeout(() => checkTriggers(), remainingTime);
-                return () => clearTimeout(timer);
-            }
+        // Don't setup listeners if user logged in or on auth pages
+        const isAuthPage = ['/login', '/signup'].includes(location.pathname);
+        if (currentUser || isAuthPage) {
+            setIsVisible(false);
+            return;
         }
 
-        checkTriggers();
-
-        // Scroll listener
         const handleScroll = () => {
-            if (isVisible || isSubmitted) return;
+            // If already visible, submitted, or in cooling down period, do nothing
+            if (isVisible || isSubmitted || isCoolingDown) return;
 
-            const scrollPercent = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight);
+            const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+            if (scrollHeight <= 0) return;
+
+            const scrollPercent = window.scrollY / scrollHeight;
             if (scrollPercent > SCROLL_THRESHOLD) {
-                showPopup();
+                setIsVisible(true);
             }
         };
 
         window.addEventListener('scroll', handleScroll);
-
-        // Time trigger
-        const timer = setTimeout(() => {
-            if (!isVisible && !isSubmitted) {
-                showPopup();
-            }
-        }, POPUP_DELAY);
-
-        return () => {
-            window.removeEventListener('scroll', handleScroll);
-            clearTimeout(timer);
-        };
-    }, [currentUser, isVisible, isSubmitted]);
-
-    const checkTriggers = () => {
-        // This function is called when we're allowed to show the popup again
-        // We re-attach listeners or set timers here if needed
-        // For simplicity, the main useEffect handles the initial setup
-    };
-
-    const showPopup = () => {
-        // Double check login status and cooldown
-        if (currentUser) return;
-
-        const lastClosed = localStorage.getItem('enquiryPopupClosed');
-        if (lastClosed && (Date.now() - parseInt(lastClosed) < RETRY_DELAY)) return;
-
-        setIsVisible(true);
-    };
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, [currentUser, location.pathname, isVisible, isSubmitted, isCoolingDown]);
 
     const handleClose = () => {
         setIsVisible(false);
-        localStorage.setItem('enquiryPopupClosed', Date.now().toString());
+        setIsCoolingDown(true);
+
+        // Re-show after RETRY_DELAY (150s)
+        setTimeout(() => {
+            if (!currentUser && !isSubmitted) {
+                setIsCoolingDown(false);
+                setIsVisible(true);
+            }
+        }, RETRY_DELAY);
     };
+
+    // Original submit logic remains, but we need to update to use handleClose logic or similar for post-submit behavior if needed.
+    // However, usually after submit we might not want to show it again immediately.
+    // User didn't specify post-submit behavior, assuming standard "don't show".
+    // But for handleSubmit success, we modify it slightly to not trigger the loop if we don't want to.
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Strict Email Validation
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!emailRegex.test(formData.email)) {
+            alert("Please enter a valid email address.");
+            return;
+        }
+
         setIsLoading(true);
 
         try {
             await addDoc(collection(db, 'enquiries'), {
                 ...formData,
+                fullMobile: `+${formData.mobile}`,
                 createdAt: serverTimestamp(),
                 source: window.location.pathname
             });
             setIsSubmitted(true);
             setTimeout(() => {
                 setIsVisible(false);
-                // Don't show again for a long time if submitted? Or standard 2 mins?
-                // Let's assume standard behavior or maybe longer.
-                // For now, standard behavior logic applies on next reload/check.
-                localStorage.setItem('enquiryPopupClosed', Date.now().toString());
+                // We do NOT set isCoolingDown here because we presumably don't want to spam them after they submitted.
+                // Or if we do, we'd add the timeout logic here too. Assuming staying silent after success.
             }, 3000);
         } catch (error) {
             console.error("Error submitting enquiry:", error);
@@ -113,7 +105,26 @@ const EnquiryPopup = () => {
     };
 
     const handleChange = (e) => {
-        setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+        const { name, value } = e.target;
+
+        // Name Validation: Allow only letters and spaces
+        if (name === 'firstName' || name === 'lastName') {
+            const onlyLetters = /^[A-Za-z\s]*$/;
+            if (!onlyLetters.test(value)) return;
+
+            // Capitalize first letter
+            if (value.length > 0) {
+                const capitalizedValue = value.charAt(0).toUpperCase() + value.slice(1);
+                setFormData(prev => ({ ...prev, [name]: capitalizedValue }));
+                return;
+            }
+        }
+
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handlePhoneChange = (value) => {
+        setFormData(prev => ({ ...prev, mobile: value }));
     };
 
     return (
@@ -173,7 +184,7 @@ const EnquiryPopup = () => {
                                                     value={formData.firstName}
                                                     onChange={handleChange}
                                                     placeholder="First Name"
-                                                    className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-blue-500 outline-none bg-slate-50"
+                                                    className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-blue-500 outline-none bg-slate-50 text-slate-900"
                                                 />
                                             </div>
                                             <div>
@@ -185,21 +196,40 @@ const EnquiryPopup = () => {
                                                     value={formData.lastName}
                                                     onChange={handleChange}
                                                     placeholder="Last Name"
-                                                    className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-blue-500 outline-none bg-slate-50"
+                                                    className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-blue-500 outline-none bg-slate-50 text-slate-900"
                                                 />
                                             </div>
                                         </div>
 
                                         <div>
                                             <label className="block text-sm font-medium text-slate-700 mb-1">Mobile No*</label>
-                                            <input
-                                                type="tel"
-                                                name="mobile"
-                                                required
+                                            <PhoneInput
+                                                country={'in'}
                                                 value={formData.mobile}
-                                                onChange={handleChange}
-                                                placeholder="Your mobile no"
-                                                className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-blue-500 outline-none bg-slate-50"
+                                                onChange={handlePhoneChange}
+                                                inputStyle={{
+                                                    width: '100%',
+                                                    height: '42px',
+                                                    fontSize: '16px',
+                                                    paddingLeft: '48px',
+                                                    borderRadius: '0.75rem',
+                                                    border: '1px solid #e2e8f0',
+                                                    backgroundColor: '#f8fafc',
+                                                    color: '#0f172a'
+                                                }}
+                                                containerStyle={{
+                                                    width: '100%'
+                                                }}
+                                                buttonStyle={{
+                                                    borderRadius: '0.75rem 0 0 0.75rem',
+                                                    border: '1px solid #e2e8f0',
+                                                    backgroundColor: '#f8fafc',
+                                                    color: '#0f172a'
+                                                }}
+                                                dropdownStyle={{
+                                                    color: '#0f172a'
+                                                }}
+                                                enableSearch={true}
                                             />
                                         </div>
 
@@ -209,10 +239,12 @@ const EnquiryPopup = () => {
                                                 type="email"
                                                 name="email"
                                                 required
+                                                pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+                                                title="Please enter a valid email address (e.g., user@example.com)"
                                                 value={formData.email}
                                                 onChange={handleChange}
-                                                placeholder="Your mail id"
-                                                className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-blue-500 outline-none bg-slate-50"
+                                                placeholder="Enter your email"
+                                                className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-blue-500 outline-none bg-slate-50 text-slate-900"
                                             />
                                         </div>
 

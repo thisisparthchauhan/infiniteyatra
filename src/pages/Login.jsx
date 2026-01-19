@@ -99,8 +99,8 @@ const Login = () => {
                             type="button"
                             onClick={() => setLoginMethod('email')}
                             className={`flex-1 py-2 px-4 rounded-md font-medium transition-all ${loginMethod === 'email'
-                                    ? 'bg-white text-blue-600 shadow-sm'
-                                    : 'text-slate-600 hover:text-slate-900'
+                                ? 'bg-white text-blue-600 shadow-sm'
+                                : 'text-slate-600 hover:text-slate-900'
                                 }`}
                         >
                             Email
@@ -109,8 +109,8 @@ const Login = () => {
                             type="button"
                             onClick={() => setLoginMethod('phone')}
                             className={`flex-1 py-2 px-4 rounded-md font-medium transition-all ${loginMethod === 'phone'
-                                    ? 'bg-white text-blue-600 shadow-sm'
-                                    : 'text-slate-600 hover:text-slate-900'
+                                ? 'bg-white text-blue-600 shadow-sm'
+                                : 'text-slate-600 hover:text-slate-900'
                                 }`}
                         >
                             Phone Number
@@ -127,7 +127,7 @@ const Login = () => {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 placeholder="Enter your email"
-                                className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                                className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all text-slate-900"
                             />
                         </div>
                     )}
@@ -146,8 +146,13 @@ const Login = () => {
                                     fontSize: '16px',
                                     paddingLeft: '48px',
                                     borderRadius: '0.5rem',
-                                    border: '1px solid #e2e8f0'
+                                    border: '1px solid #e2e8f0',
+                                    color: '#0f172a'
                                 }}
+                                dropdownStyle={{
+                                    color: '#0f172a'
+                                }}
+                                enableSearch={true}
                                 containerStyle={{
                                     width: '100%'
                                 }}
@@ -168,7 +173,7 @@ const Login = () => {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 placeholder="Enter your password"
-                                className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all pr-10"
+                                className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all pr-10 text-slate-900"
                             />
                             <button
                                 type="button"

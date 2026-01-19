@@ -5,6 +5,11 @@ const ScrollToTop = () => {
     const { pathname } = useLocation();
 
     useEffect(() => {
+        // Prevent browser from restoring scroll position on refresh
+        if ('scrollRestoration' in window.history) {
+            window.history.scrollRestoration = 'manual';
+        }
+
         window.scrollTo(0, 0);
     }, [pathname]);
 

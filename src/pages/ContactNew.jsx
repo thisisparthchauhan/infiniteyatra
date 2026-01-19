@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Mail, Phone, MapPin, Send, Instagram } from 'lucide-react';
+import PhoneInput from 'react-phone-input-2';
+import 'react-phone-input-2/lib/style.css';
 import { sendContactEmail } from '../services/email';
 import { useToast } from '../context/ToastContext';
 import { db } from '../firebase';
@@ -7,15 +9,17 @@ import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 const ContactNew = () => {
     const [formData, setFormData] = useState({
-        name: '',
+        firstName: '',
+        lastName: '',
         email: '',
-        subject: '',
+        mobile: '',
         message: ''
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitStatus, setSubmitStatus] = useState(null);
     const { addToast } = useToast();
 
+    // Handle generic text inputs
     const handleChange = (e) => {
         setFormData({
             ...formData,
@@ -23,26 +27,59 @@ const ContactNew = () => {
         });
     };
 
+    // Handle Name Inputs (Alphabets only, Title Case)
+    const handleNameChange = (e) => {
+        const { name, value } = e.target;
+        // Allow only alphabets and spaces
+        if (/^[a-zA-Z\s]*$/.test(value)) {
+            // Capitalize first letter, rest lowercase
+            const formattedValue = value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
+            setFormData({
+                ...formData,
+                [name]: formattedValue
+            });
+        }
+    };
+
+    const handlePhoneChange = (value) => {
+        setFormData({ ...formData, mobile: value });
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
 
+        const fullName = `${formData.firstName} ${formData.lastName}`.trim();
+        // Prepare data for submission
+        // Mapping mobile to 'subject' for email service compatibility as per previous logic, 
+        // or just sending it as part of the payload.
+        const submissionData = {
+            name: fullName,
+            email: formData.email,
+            subject: `Enquiry from ${fullName} (${formData.mobile})`, // Better subject than just phone
+            message: formData.message,
+            mobile: formData.mobile, // Store separate proper mobile too
+            firstName: formData.firstName,
+            lastName: formData.lastName
+        };
+
         try {
             // 1. Save to Firestore
             await addDoc(collection(db, 'enquiries'), {
-                ...formData,
+                ...submissionData,
                 timestamp: serverTimestamp(),
                 status: 'new'
             });
 
             // 2. Send Email
-            const result = await sendContactEmail(formData);
+            // email.js expects { name, email, subject, message }
+            const result = await sendContactEmail(submissionData);
 
             if (result.success) {
-                console.log('Form submitted:', formData);
+                console.log('Form submitted:', submissionData);
                 setSubmitStatus('success');
                 addToast('Message sent successfully!', 'success');
-                setFormData({ name: '', email: '', subject: '', message: '' });
+                setFormData({ firstName: '', lastName: '', email: '', mobile: '', message: '' });
                 setTimeout(() => setSubmitStatus(null), 5000);
             } else {
                 console.error('Email submission failed');
@@ -86,7 +123,7 @@ const ContactNew = () => {
                                 <span className="p-3 bg-white/10 rounded-xl text-blue-400">
                                     <Phone size={24} />
                                 </span>
-                                Contact Details
+                                Infinite Yatra Contact Details
                             </h3>
 
                             <div className="space-y-8">
@@ -161,51 +198,91 @@ const ContactNew = () => {
 
                             <form onSubmit={handleSubmit} className="space-y-8">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    {/* First Name */}
                                     <div className="space-y-3">
-                                        <label htmlFor="name" className="text-sm font-semibold text-slate-300 ml-1">Full Name <span className="text-blue-500">*</span></label>
-                                        <div className="relative group">
-                                            <input
-                                                type="text"
-                                                id="name"
-                                                name="name"
-                                                required
-                                                value={formData.name}
-                                                onChange={handleChange}
-                                                className="w-full pl-6 pr-4 py-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:border-blue-500 focus:bg-white/10 focus:ring-1 focus:ring-blue-500 transition-all outline-none"
-                                                placeholder="John Doe"
-                                            />
-                                        </div>
+                                        <label htmlFor="firstName" className="text-sm font-semibold text-slate-300 ml-1">First Name <span className="text-blue-500">*</span></label>
+                                        <input
+                                            type="text"
+                                            id="firstName"
+                                            name="firstName"
+                                            required
+                                            value={formData.firstName}
+                                            onChange={handleNameChange}
+                                            className="w-full pl-6 pr-4 py-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:border-blue-500 focus:bg-white/10 focus:ring-1 focus:ring-blue-500 transition-all outline-none"
+                                            placeholder="Enter your first name"
+                                        />
                                     </div>
+
+                                    {/* Last Name */}
                                     <div className="space-y-3">
-                                        <label htmlFor="email" className="text-sm font-semibold text-slate-300 ml-1">Email Address <span className="text-blue-500">*</span></label>
-                                        <div className="relative group">
-                                            <input
-                                                type="email"
-                                                id="email"
-                                                name="email"
-                                                required
-                                                value={formData.email}
-                                                onChange={handleChange}
-                                                className="w-full pl-6 pr-4 py-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:border-blue-500 focus:bg-white/10 focus:ring-1 focus:ring-blue-500 transition-all outline-none"
-                                                placeholder="john@example.com"
+                                        <label htmlFor="lastName" className="text-sm font-semibold text-slate-300 ml-1">Last Name <span className="text-blue-500">*</span></label>
+                                        <input
+                                            type="text"
+                                            id="lastName"
+                                            name="lastName"
+                                            required
+                                            value={formData.lastName}
+                                            onChange={handleNameChange}
+                                            className="w-full pl-6 pr-4 py-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:border-blue-500 focus:bg-white/10 focus:ring-1 focus:ring-blue-500 transition-all outline-none"
+                                            placeholder="Enter your last name"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    {/* Email */}
+                                    <div className="space-y-3">
+                                        <label htmlFor="email" className="text-sm font-semibold text-slate-300 ml-1">Email <span className="text-blue-500">*</span></label>
+                                        <input
+                                            type="email"
+                                            id="email"
+                                            name="email"
+                                            required
+                                            value={formData.email}
+                                            onChange={handleChange}
+                                            className="w-full pl-6 pr-4 py-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:border-blue-500 focus:bg-white/10 focus:ring-1 focus:ring-blue-500 transition-all outline-none"
+                                            placeholder="Enter your email"
+                                        />
+                                    </div>
+
+                                    {/* Mobile Number */}
+                                    <div className="space-y-3">
+                                        <label htmlFor="mobile" className="text-sm font-semibold text-slate-300 ml-1">Mobile Number</label>
+                                        <div className="phone-input-dark">
+                                            <PhoneInput
+                                                country={'in'}
+                                                value={formData.mobile}
+                                                onChange={handlePhoneChange}
+                                                enableSearch={true}
+                                                searchPlaceholder="Search country..."
+                                                inputStyle={{
+                                                    width: '100%',
+                                                    height: '58px', // Matching py-4 approx which is ~56-60px total height
+                                                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                                                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                                                    borderRadius: '0.75rem',
+                                                    color: 'white',
+                                                    paddingLeft: '48px',
+                                                    fontSize: '1rem'
+                                                }}
+                                                buttonStyle={{
+                                                    backgroundColor: 'transparent',
+                                                    border: 'none',
+                                                    borderRight: '1px solid rgba(255, 255, 255, 0.1)',
+                                                    borderRadius: '0.75rem 0 0 0.75rem',
+                                                    paddingLeft: '8px'
+                                                }}
+                                                dropdownStyle={{
+                                                    backgroundColor: '#1e293b',
+                                                    color: 'white',
+                                                    border: '1px solid rgba(255, 255, 255, 0.1)'
+                                                }}
                                             />
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="space-y-3">
-                                    <label htmlFor="subject" className="text-sm font-semibold text-slate-300 ml-1">Phone Number <span className="text-slate-500 font-normal">(Optional)</span></label>
-                                    <input
-                                        type="tel"
-                                        id="phone"
-                                        name="subject" // Using subject field for phone number based on intent, or rename it later
-                                        value={formData.subject}
-                                        onChange={handleChange}
-                                        className="w-full pl-6 pr-4 py-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:border-blue-500 focus:bg-white/10 focus:ring-1 focus:ring-blue-500 transition-all outline-none"
-                                        placeholder="+91 98765 43210"
-                                    />
-                                </div>
-
+                                {/* Message */}
                                 <div className="space-y-3">
                                     <label htmlFor="message" className="text-sm font-semibold text-slate-300 ml-1">Your Message <span className="text-blue-500">*</span></label>
                                     <textarea

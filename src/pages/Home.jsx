@@ -3,7 +3,7 @@ import Hero from '../components/Hero';
 import Destinations from '../components/Destinations';
 import About from '../components/About';
 import TravelStories from '../components/TravelStories';
-import Contact from '../components/Contact';
+
 import SEO from '../components/SEO';
 import InstagramFeed from '../components/InstagramFeed';
 import RevealOnScroll from '../components/RevealOnScroll';
@@ -54,9 +54,7 @@ const Home = () => {
                     <InstagramFeed />
                 </RevealOnScroll>
 
-                <RevealOnScroll width="100%">
-                    <Contact />
-                </RevealOnScroll>
+
             </div>
         </>
     );

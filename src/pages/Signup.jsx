@@ -183,8 +183,8 @@ const Signup = () => {
                                 required
                                 value={formData.firstName}
                                 onChange={(e) => handleNameChange(e, false)}
-                                placeholder="First name"
-                                className={`w-full px-4 py-3 rounded-lg border ${fieldErrors.firstName ? 'border-red-500 focus:border-red-500 focus:ring-red-200' : 'border-slate-200 focus:border-blue-500 focus:ring-blue-200'} focus:ring-2 outline-none transition-all`}
+                                placeholder="Enter first name"
+                                className={`w-full px-4 py-3 rounded-lg border ${fieldErrors.firstName ? 'border-red-500 focus:border-red-500 focus:ring-red-200' : 'border-slate-200 focus:border-blue-500 focus:ring-blue-200'} focus:ring-2 outline-none transition-all text-slate-900`}
                             />
                             {fieldErrors.firstName && (
                                 <p className="text-red-500 text-xs mt-1">{fieldErrors.firstName}</p>
@@ -198,8 +198,8 @@ const Signup = () => {
                                 required
                                 value={formData.lastName}
                                 onChange={(e) => handleNameChange(e, true)}
-                                placeholder="Last name"
-                                className={`w-full px-4 py-3 rounded-lg border ${fieldErrors.lastName ? 'border-red-500 focus:border-red-500 focus:ring-red-200' : 'border-slate-200 focus:border-blue-500 focus:ring-blue-200'} focus:ring-2 outline-none transition-all`}
+                                placeholder="Enter last name"
+                                className={`w-full px-4 py-3 rounded-lg border ${fieldErrors.lastName ? 'border-red-500 focus:border-red-500 focus:ring-red-200' : 'border-slate-200 focus:border-blue-500 focus:ring-blue-200'} focus:ring-2 outline-none transition-all text-slate-900`}
                             />
                             {fieldErrors.lastName && (
                                 <p className="text-red-500 text-xs mt-1">{fieldErrors.lastName}</p>
@@ -225,9 +225,14 @@ const Signup = () => {
                                 width: '100%'
                             }}
                             buttonStyle={{
-                                borderRadius: '0.5rem 0 0 0.5rem',
-                                border: fieldErrors.phone ? '1px solid #ef4444' : '1px solid #e2e8f0'
+                                borderRadius: '0.5rem',
+                                border: fieldErrors.phone ? '1px solid #ef4444' : '1px solid #e2e8f0',
+                                color: '#0f172a'
                             }}
+                            dropdownStyle={{
+                                color: '#0f172a'
+                            }}
+                            enableSearch={true}
                         />
                         {fieldErrors.phone && (
                             <p className="text-red-500 text-xs mt-1">{fieldErrors.phone}</p>
@@ -243,7 +248,7 @@ const Signup = () => {
                             value={formData.email}
                             onChange={handleEmailChange}
                             placeholder="Enter your email"
-                            className={`w-full px-4 py-3 rounded-lg border ${fieldErrors.email ? 'border-red-500 focus:border-red-500 focus:ring-red-200' : 'border-slate-200 focus:border-blue-500 focus:ring-blue-200'} focus:ring-2 outline-none transition-all`}
+                            className={`w-full px-4 py-3 rounded-lg border ${fieldErrors.email ? 'border-red-500 focus:border-red-500 focus:ring-red-200' : 'border-slate-200 focus:border-blue-500 focus:ring-blue-200'} focus:ring-2 outline-none transition-all text-slate-900`}
                         />
                         {fieldErrors.email && (
                             <p className="text-red-500 text-xs mt-1">{fieldErrors.email}</p>
@@ -260,7 +265,7 @@ const Signup = () => {
                                 value={formData.password}
                                 onChange={handleChange}
                                 placeholder="Create a password"
-                                className={`w-full px-4 py-3 rounded-lg border ${fieldErrors.password ? 'border-red-500 focus:border-red-500 focus:ring-red-200' : 'border-slate-200 focus:border-blue-500 focus:ring-blue-200'} focus:ring-2 outline-none transition-all pr-10`}
+                                className={`w-full px-4 py-3 rounded-lg border ${fieldErrors.password ? 'border-red-500 focus:border-red-500 focus:ring-red-200' : 'border-slate-200 focus:border-blue-500 focus:ring-blue-200'} focus:ring-2 outline-none transition-all pr-10 text-slate-900`}
                             />
                             <button
                                 type="button"
@@ -290,7 +295,7 @@ const Signup = () => {
                                 value={formData.confirmPassword}
                                 onChange={handleChange}
                                 placeholder="Re-enter your password"
-                                className={`w-full px-4 py-3 rounded-lg border ${fieldErrors.confirmPassword ? 'border-red-500 focus:border-red-500 focus:ring-red-200' : 'border-slate-200 focus:border-blue-500 focus:ring-blue-200'} focus:ring-2 outline-none transition-all pr-10`}
+                                className={`w-full px-4 py-3 rounded-lg border ${fieldErrors.confirmPassword ? 'border-red-500 focus:border-red-500 focus:ring-red-200' : 'border-slate-200 focus:border-blue-500 focus:ring-blue-200'} focus:ring-2 outline-none transition-all pr-10 text-slate-900`}
                             />
                             <button
                                 type="button"
