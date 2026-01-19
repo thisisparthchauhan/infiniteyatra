@@ -156,7 +156,7 @@ const Hero = () => {
                                 <div className="flex-1 flex items-center gap-3 px-6 py-4 w-full border-b lg:border-b-0 lg:border-r border-white/10">
                                     <MapPin className="text-blue-400 shrink-0" size={20} />
                                     <div className="text-left w-full">
-                                        <label htmlFor="location" className="block text-[10px] text-white/50 font-bold uppercase tracking-wider mb-1">Location</label>
+                                        <label htmlFor="location" className="block text-[10px] text-white/70 font-bold uppercase tracking-wider mb-1">Location</label>
                                         <input
                                             id="location"
                                             name="location"
@@ -165,7 +165,7 @@ const Hero = () => {
                                             onChange={handleChange}
                                             placeholder="Where to?"
                                             required
-                                            className="w-full outline-none text-white placeholder:text-white/30 font-medium text-lg bg-transparent"
+                                            className="w-full outline-none text-white placeholder:text-white/70 font-medium text-lg bg-transparent"
                                         />
                                     </div>
                                 </div>
@@ -174,7 +174,7 @@ const Hero = () => {
                                 <div className="flex-1 flex items-center gap-3 px-6 py-4 w-full border-b lg:border-b-0 lg:border-r border-white/10">
                                     <Calendar className="text-blue-400 shrink-0" size={20} />
                                     <div className="text-left w-full">
-                                        <label htmlFor="days" className="block text-[10px] text-white/50 font-bold uppercase tracking-wider mb-1">Duration</label>
+                                        <label htmlFor="days" className="block text-[10px] text-white/70 font-bold uppercase tracking-wider mb-1">Duration</label>
                                         <input
                                             id="days"
                                             name="days"
@@ -183,7 +183,7 @@ const Hero = () => {
                                             value={formData.days}
                                             onChange={handleChange}
                                             placeholder="Days"
-                                            className="w-full outline-none text-white placeholder:text-white/30 font-medium text-lg bg-transparent"
+                                            className="w-full outline-none text-white placeholder:text-white/70 font-medium text-lg bg-transparent"
                                         />
                                     </div>
                                 </div>
@@ -192,7 +192,7 @@ const Hero = () => {
                                 <div className="flex-1 flex items-center gap-3 px-6 py-4 w-full border-b lg:border-b-0 lg:border-r border-white/10">
                                     <Users className="text-blue-400 shrink-0" size={20} />
                                     <div className="text-left w-full">
-                                        <label htmlFor="persons" className="block text-[10px] text-white/50 font-bold uppercase tracking-wider mb-1">Travelers</label>
+                                        <label htmlFor="persons" className="block text-[10px] text-white/70 font-bold uppercase tracking-wider mb-1">Travelers</label>
                                         <input
                                             id="persons"
                                             name="persons"
@@ -201,7 +201,7 @@ const Hero = () => {
                                             value={formData.persons}
                                             onChange={handleChange}
                                             placeholder="Guests"
-                                            className="w-full outline-none text-white placeholder:text-white/30 font-medium text-lg bg-transparent"
+                                            className="w-full outline-none text-white placeholder:text-white/70 font-medium text-lg bg-transparent"
                                         />
                                     </div>
                                 </div>
@@ -210,7 +210,7 @@ const Hero = () => {
                                 <div className="flex-1 flex items-center gap-3 px-6 py-4 w-full">
                                     <Phone className="text-blue-400 shrink-0" size={20} />
                                     <div className="text-left w-full">
-                                        <label htmlFor="phone" className="block text-[10px] text-white/50 font-bold uppercase tracking-wider mb-1">Phone</label>
+                                        <label htmlFor="phone" className="block text-[10px] text-white/70 font-bold uppercase tracking-wider mb-1">Phone</label>
                                         <input
                                             id="phone"
                                             name="phone"
@@ -219,7 +219,7 @@ const Hero = () => {
                                             onChange={handleChange}
                                             placeholder="Number"
                                             required
-                                            className="w-full outline-none text-white placeholder:text-white/30 font-medium text-lg bg-transparent"
+                                            className="w-full outline-none text-white placeholder:text-white/70 font-medium text-lg bg-transparent"
                                         />
                                     </div>
                                 </div>
