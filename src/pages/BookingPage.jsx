@@ -342,7 +342,7 @@ const BookingPage = () => {
                                                         name="date"
                                                         value={bookingData.date}
                                                         onChange={handleInputChange}
-                                                        className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none appearance-none"
+                                                        className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none appearance-none text-slate-900"
                                                     >
                                                         <option value="">Select a departure date</option>
                                                         {pkg.availableDates?.map((date) => (
@@ -357,7 +357,7 @@ const BookingPage = () => {
                                                             name="date"
                                                             value={bookingData.date}
                                                             onChange={handleInputChange}
-                                                            className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none appearance-none"
+                                                            className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none appearance-none text-slate-900"
                                                         >
                                                             <option value="">Select a Group Departure</option>
                                                             {pkg.availableDates?.map((date) => (
@@ -374,7 +374,7 @@ const BookingPage = () => {
                                                             onChange={handleInputChange}
                                                             min={pkg.validDateRange?.start && pkg.validDateRange.start > new Date().toISOString().split('T')[0] ? pkg.validDateRange.start : new Date().toISOString().split('T')[0]}
                                                             max={pkg.validDateRange?.end}
-                                                            className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
+                                                            className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-slate-900"
                                                             placeholder="Choose Custom Date"
                                                         />
                                                     </div>
@@ -386,7 +386,7 @@ const BookingPage = () => {
                                                         onChange={handleInputChange}
                                                         min={pkg.validDateRange?.start && pkg.validDateRange.start > new Date().toISOString().split('T')[0] ? pkg.validDateRange.start : new Date().toISOString().split('T')[0]}
                                                         max={pkg.validDateRange?.end}
-                                                        className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
+                                                        className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-slate-900"
                                                     />
                                                 )}
                                             </div>
@@ -411,7 +411,7 @@ const BookingPage = () => {
                                                     min="1"
                                                     value={bookingData.travelers}
                                                     onChange={handleInputChange}
-                                                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
+                                                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-slate-900"
                                                 />
                                             </div>
                                         </div>
@@ -454,7 +454,7 @@ const BookingPage = () => {
                                                         placeholder="Full Name"
                                                         value={bookingData.name}
                                                         onChange={handleInputChange}
-                                                        className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                                        className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-slate-900"
                                                     />
                                                 </div>
                                                 <div className="relative">
@@ -465,7 +465,7 @@ const BookingPage = () => {
                                                         placeholder="Email Address"
                                                         value={bookingData.email}
                                                         onChange={handleInputChange}
-                                                        className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                                        className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-slate-900"
                                                     />
                                                 </div>
                                                 <div className="relative md:col-span-2">
@@ -479,7 +479,8 @@ const BookingPage = () => {
                                                             fontSize: '16px',
                                                             paddingLeft: '48px',
                                                             borderRadius: '0.5rem',
-                                                            border: '1px solid #e2e8f0'
+                                                            border: '1px solid #e2e8f0',
+                                                            color: '#0f172a'
                                                         }}
                                                         containerStyle={{
                                                             width: '100%'
@@ -506,7 +507,7 @@ const BookingPage = () => {
                                                             placeholder="Full Name"
                                                             value={traveler.name}
                                                             onChange={(e) => handleTravelerChange(index, 'name', e.target.value)}
-                                                            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                                            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-slate-900"
                                                         />
                                                         <div className="flex gap-4">
                                                             <input
@@ -514,12 +515,12 @@ const BookingPage = () => {
                                                                 placeholder="Age"
                                                                 value={traveler.age}
                                                                 onChange={(e) => handleTravelerChange(index, 'age', e.target.value)}
-                                                                className="w-1/2 px-4 py-3 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                                                className="w-1/2 px-4 py-3 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-slate-900"
                                                             />
                                                             <select
                                                                 value={traveler.gender}
                                                                 onChange={(e) => handleTravelerChange(index, 'gender', e.target.value)}
-                                                                className="w-1/2 px-4 py-3 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none appearance-none"
+                                                                className="w-1/2 px-4 py-3 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none appearance-none text-slate-900"
                                                             >
                                                                 <option value="">Gender</option>
                                                                 <option value="Male">Male</option>
@@ -538,7 +539,8 @@ const BookingPage = () => {
                                                                     fontSize: '16px',
                                                                     paddingLeft: '48px',
                                                                     borderRadius: '0.5rem',
-                                                                    border: '1px solid #e2e8f0'
+                                                                    border: '1px solid #e2e8f0',
+                                                                    color: '#0f172a'
                                                                 }}
                                                                 containerStyle={{
                                                                     width: '100%'
@@ -556,7 +558,7 @@ const BookingPage = () => {
                                                 placeholder="Any special requests? (Dietary, accessibility, etc.)"
                                                 value={bookingData.specialRequests}
                                                 onChange={handleInputChange}
-                                                className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none h-24 resize-none"
+                                                className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none h-24 resize-none text-slate-900"
                                             ></textarea>
                                         </div>
                                     </div>

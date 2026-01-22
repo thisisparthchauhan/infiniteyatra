@@ -1,4 +1,4 @@
-# 🚀 Infinite Yatra - 2026 Website Improvement Roadmap
+f# 🚀 Infinite Yatra - 2026 Website Improvement Roadmap
 
 > **Created:** January 5, 2026  
 > **Objective:** Transform Infinite Yatra into a cutting-edge travel platform with AI-powered features, enhanced UX, and modern monetization strategies
