@@ -126,6 +126,7 @@ const DestinationsPage = () => {
                     packages={filteredPackages}
                     showViewAll={false}
                     disableHeader={true}
+                    variant="light"
                 />
             </div>
         </div>

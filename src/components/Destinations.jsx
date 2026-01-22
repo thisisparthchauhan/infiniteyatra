@@ -5,11 +5,18 @@ import { usePackages } from '../context/PackageContext';
 import { useWishlist } from '../context/WishlistContext';
 
 
-const Destinations = ({ packages: propPackages, title = "Explore Infinite", subtitle, showViewAll = true, disableHeader = false }) => {
+const Destinations = ({ packages: propPackages, title = "Explore Infinite", subtitle, showViewAll = true, disableHeader = false, variant = 'dark' }) => {
     const { packages } = usePackages();
     const displayPackages = propPackages || packages;
     const { isInWishlist, toggleWishlist } = useWishlist();
     const navigate = useNavigate();
+
+    const isLight = variant === 'light';
+    const textPrimary = isLight ? 'text-slate-900' : 'text-white';
+    const textSecondary = isLight ? 'text-slate-600' : 'text-white/70';
+    const cardClass = isLight
+        ? 'bg-white border border-slate-100 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl'
+        : 'glass-card hover:bg-white/10 transition-colors';
 
     const handleWishlistClick = (e, pkg) => {
         e.preventDefault(); // Prevent navigating to package detail
@@ -23,8 +30,8 @@ const Destinations = ({ packages: propPackages, title = "Explore Infinite", subt
                 {!disableHeader && (
                     <div className="flex items-end justify-between mb-12">
                         <div>
-                            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight">{title}</h2>
-                            <p className="text-xl text-white/70 max-w-xl font-light">
+                            <h2 className={`text-4xl md:text-5xl font-bold mb-4 tracking-tight ${textPrimary}`}>{title}</h2>
+                            <p className={`text-xl max-w-xl font-light ${textSecondary}`}>
                                 {subtitle || "Curated journeys designed for explorers who want more than just a trip."}
                             </p>
                         </div>
@@ -44,7 +51,7 @@ const Destinations = ({ packages: propPackages, title = "Explore Infinite", subt
                                 to={`/package/${dest.id}`}
                                 className="group cursor-pointer block relative"
                             >
-                                <div className="glass-card p-3 h-full hover:bg-white/10 transition-colors">
+                                <div className={`${cardClass} p-3 h-full`}>
                                     <div className="relative aspect-[4/5] overflow-hidden rounded-2xl mb-4">
                                         <img
                                             src={dest.image}
@@ -78,17 +85,17 @@ const Destinations = ({ packages: propPackages, title = "Explore Infinite", subt
 
                                     <div className="space-y-2 px-1 pb-2">
                                         <div className="flex items-start justify-between">
-                                            <h3 className="text-xl font-bold text-white group-hover:text-blue-400 transition-colors font-handwritten tracking-wide leading-tight">
+                                            <h3 className={`text-xl font-bold group-hover:text-blue-500 transition-colors font-handwritten tracking-wide leading-tight ${textPrimary}`}>
                                                 {dest.title}
                                             </h3>
                                         </div>
 
                                         <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-1.5 text-slate-400 text-sm">
+                                            <div className={`flex items-center gap-1.5 text-sm ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
                                                 <MapPin size={14} className="text-blue-400" />
                                                 {dest.location}
                                             </div>
-                                            <span className="text-white font-bold text-lg">{dest.priceDisplay}</span>
+                                            <span className={`font-bold text-lg ${textPrimary}`}>{dest.priceDisplay}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -97,7 +104,7 @@ const Destinations = ({ packages: propPackages, title = "Explore Infinite", subt
                     </div>
                 ) : (
                     <div className="text-center py-12">
-                        <p className="text-xl text-white/50">No packages found matching your criteria.</p>
+                        <p className={`text-xl ${isLight ? 'text-slate-400' : 'text-white/50'}`}>No packages found matching your criteria.</p>
                         <button
                             onClick={() => window.location.reload()}
                             className="mt-4 text-blue-400 font-medium hover:underline"
@@ -109,7 +116,7 @@ const Destinations = ({ packages: propPackages, title = "Explore Infinite", subt
 
                 {showViewAll && (
                     <div className="mt-12 md:hidden text-center">
-                        <Link to="/destinations" className="glass-btn">
+                        <Link to="/destinations" className={`glass-btn ${isLight ? '!bg-blue-500 !text-white' : ''}`}>
                             View all <ArrowRight size={20} />
                         </Link>
                     </div>
