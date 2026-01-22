@@ -122,12 +122,50 @@ const DestinationsPage = () => {
                     maxPrice={maxPrice}
                 />
 
-                <Destinations
-                    packages={filteredPackages}
-                    showViewAll={false}
-                    disableHeader={true}
-                    variant="light"
-                />
+                {/* Show sections only when no filters are active */
+                    filters.search === '' && filters.category === 'All' && filters.duration === 'All' ? (
+                        <div className="space-y-16">
+                            {/* 1. Treks Section */}
+                            <Destinations
+                                packages={packages.filter(p => p.category === 'trek')}
+                                title="Trending Treks"
+                                subtitle="Conquer the heights and walk above the clouds."
+                                showViewAll={false}
+                                disableHeader={false}
+                                variant="light"
+                            />
+
+                            {/* 2. Spiritual Section */}
+                            <Destinations
+                                packages={packages.filter(p => p.category === 'spiritual')}
+                                title="Spiritual Journeys"
+                                subtitle="Find inner peace at the world's holiest shrines."
+                                showViewAll={false}
+                                disableHeader={false}
+                                variant="light"
+                            />
+
+                            {/* 3. International Section */}
+                            <Destinations
+                                packages={packages.filter(p => p.category === 'international')}
+                                title="International Getaways"
+                                subtitle="Explore iconic destinations beyond boundaries."
+                                showViewAll={false}
+                                disableHeader={false}
+                                variant="light"
+                            />
+                        </div>
+                    ) : (
+                        /* Show filtered results as single list */
+                        <Destinations
+                            packages={filteredPackages}
+                            title={filteredPackages.length > 0 ? "Search Results" : "No Results Found"}
+                            subtitle={`${filteredPackages.length} packages found matching your criteria`}
+                            showViewAll={false}
+                            disableHeader={false}
+                            variant="light"
+                        />
+                    )}
             </div>
         </div>
     );

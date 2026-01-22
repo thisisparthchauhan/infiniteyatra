@@ -20,8 +20,27 @@ export const PackageProvider = ({ children }) => {
                     id: doc.id,
                     ...doc.data()
                 }));
-                // Sort by ID or some specific order if needed
-                setPackages(firestorePackages);
+
+                // Smart Merge: Start with Firestore packages, but merge in static data (like proper images/categories) 
+                // if they match by ID.
+                const mergedPackages = firestorePackages.map(fp => {
+                    const staticPkg = staticPackages.find(sp => sp.id === fp.id);
+                    // Use staticPkg as base (for locally defined fields like category) and overlay Firestore data (for dynamic prices/dates)
+                    return staticPkg ? { ...staticPkg, ...fp } : fp;
+                });
+
+                // Add packages that exist ONLY in static (local)
+                staticPackages.forEach(staticPkg => {
+                    if (!mergedPackages.some(p => p.id === staticPkg.id)) {
+                        mergedPackages.push(staticPkg);
+                    }
+                });
+
+                // Explicitly remove 'kedarnath' (Price 12000) as requested by user
+                // This ensures it doesn't show up even if it exists in Firestore
+                const finalPackages = mergedPackages.filter(p => p.id !== 'kedarnath');
+
+                setPackages(finalPackages);
             } else {
                 // Fallback to static data if DB is empty
                 console.log('No packages in DB, using static data');

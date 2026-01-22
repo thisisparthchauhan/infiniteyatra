@@ -2,14 +2,89 @@ import kedarnathImg from '../assets/kedarnath.png';
 import kashmirImg from '../assets/kashmir_v2.jpg';
 import soulOfHimalayasImg from '../assets/soul_of_himalayas.png';
 import dubaiImg from '../assets/dubai1.jpg';
+import dayaraImg from '../assets/dayara_bugyal.jpg';
+import dayaraFrontImg from '../assets/IY_DAYARA_BUGYAL_FRONT.jpg';
+import dayara1 from '../assets/DAYARABUGYAL/IY_DB_1.jpeg';
+import dayara2 from '../assets/DAYARABUGYAL/IY_DB_2.jpeg';
+import dayara3 from '../assets/DAYARABUGYAL/IY_DB_3.jpeg';
+import dayara4 from '../assets/DAYARABUGYAL/IY_DB_4.jpeg';
 
 export const packages = [
+    {
+        id: 'dayara-bugyal',
+        title: "Dayara Bugyal Trek",
+        location: "Uttarakhand, India",
+        image: dayaraFrontImg,
+        category: "trek",
+        price: 5999,
+        priceDisplay: "₹5,999",
+        type: "custom",
+        rating: 4.8,
+        duration: "4 Days / 3 Nights",
+        difficulty: "Easy to Moderate",
+        bestTime: "Year Round",
+        maxAltitude: "11,181 ft",
+        maxGroupSize: 15,
+        description: "Dayara Bugyal is one of the most beautiful alpine meadows in India. Situated at an elevation of 3,408 meters, it offers breathtaking views of the Himalayas. Perfect for beginners and families.",
+        highlights: [
+            "Lush Green Meadows",
+            "Panoramic Mountain Views",
+            "Easy Trek for Beginners",
+            "Camping under Stars",
+            "Dehradun to Dehradun Transport"
+        ],
+        itinerary: [
+            {
+                day: 1,
+                title: "Dehradun to Raithal",
+                description: "Drive from Dehradun to Raithal (180 km, 7-8 hours). The base camp for the trek.",
+                activities: ["Scenic drive", "Base camp arrival"]
+            },
+            {
+                day: 2,
+                title: "Raithal toGui",
+                description: "Trek from Raithal to Gui (4 km, 4-5 hours). Easy ascent through forests.",
+                activities: ["Trek", "Camping"]
+            },
+            {
+                day: 3,
+                title: "Gui to Dayara Bugyal & Back",
+                description: "Trek to Dayara Bugyal top and explore the vast meadows. Return to Gui/Raithal.",
+                activities: ["Summit View", "Meadow walk"]
+            },
+            {
+                day: 4,
+                title: "Raithal to Dehradun",
+                description: "Drive back to Dehradun. Trip concludes.",
+                activities: ["Return journey"]
+            }
+        ],
+        inclusions: [
+            "Dehradun to Dehradun Transport",
+            "Meals during trek",
+            "Camping equipment",
+            "Permits",
+            "Trek Leader"
+        ],
+        exclusions: [
+            "Personal expenses",
+            "Rucksack offloading",
+            "Insurance"
+        ],
+        images: [
+            dayara1,
+            dayara2,
+            dayara3,
+            dayara4
+        ]
+    },
 
     {
         id: 'kedarkantha',
         title: "Kedarkantha Trek",
         location: "Uttarakhand, India",
         image: "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?q=80&w=2070&auto=format&fit=crop",
+        category: "trek",
         price: 2,
         priceDisplay: "₹2",
         tokenPrice: 1,
@@ -150,6 +225,7 @@ export const packages = [
         title: "Chardham Yatra 2026",
         location: "Uttarakhand, India",
         image: kedarnathImg,
+        category: "spiritual",
         price: 35000,
         priceDisplay: "₹35,000",
         type: "custom",
@@ -255,6 +331,7 @@ export const packages = [
         title: "The Soul of Himalayas",
         location: "Himalayas, India",
         image: soulOfHimalayasImg,
+        category: "spiritual",
         price: 18000,
         priceDisplay: "₹18,000",
         type: "custom",
@@ -331,75 +408,11 @@ When you return, you don’t just bring back photos — you bring back a new ver
         ]
     },
     {
-        id: 'kedarnath',
-        title: "Kedarnath Trek",
-        location: "Uttarakhand, India",
-        image: "https://images.unsplash.com/photo-1548013146-72479768bada?q=80&w=2076&auto=format&fit=crop",
-        price: 12000,
-        priceDisplay: "₹12,000",
-        type: "mixed",
-        availableDates: ["2026-05-15", "2026-05-22", "2026-05-29", "2026-06-05"],
-        rating: 4.9,
-        duration: "5 Days / 4 Nights",
-        difficulty: "Moderate to Difficult",
-        bestTime: "May to June, September to October",
-        maxAltitude: "11,755 ft",
-        maxGroupSize: 15,
-        description: "A spiritual journey to one of the holiest shrines of Lord Shiva. The Kedarnath trek offers a blend of spirituality and adventure, taking you through picturesque landscapes to the ancient temple standing tall amidst the Himalayas.",
-        highlights: [
-            "Darshan of Kedarnath Temple",
-            "Trek through scenic landscapes",
-            "Witness the majestic Himalayas",
-            "Experience the spiritual aura",
-            "Camping amidst nature"
-        ],
-        itinerary: [
-            {
-                day: 1,
-                title: "Haridwar to Guptkashi",
-                description: "Drive from Haridwar to Guptkashi. Check-in at hotel. Relax and prepare for the trek.",
-                activities: ["Scenic Drive", "Hotel Check-in"]
-            },
-            {
-                day: 2,
-                title: "Guptkashi to Kedarnath",
-                description: "Drive to Sonprayag/Gaurikund and start the trek to Kedarnath. Reach by evening and attend Aarti.",
-                activities: ["Trek start", "Evening Aarti"]
-            },
-            {
-                day: 3,
-                title: "Kedarnath Darshan & Return",
-                description: "Morning Darshan at temple. Trek down to Gaurikund and drive back to Guptkashi.",
-                activities: ["Temple Darshan", "Trek down"]
-            },
-            {
-                day: 4,
-                title: "Guptkashi to Rishikesh",
-                description: "Drive back towards Rishikesh. Explore the Yoga Capital.",
-                activities: ["Drive", "Rishikesh exploration"]
-            },
-            {
-                day: 5,
-                title: "Departure",
-                description: "Departure from Rishikesh/Haridwar.",
-                activities: ["Departure"]
-            }
-        ],
-        inclusions: ["Transport", "Meals", "Stay", "Guide"],
-        exclusions: ["Personal Expenses", "Pony/Palki charges"],
-        images: [
-            "https://images.unsplash.com/photo-1548013146-72479768bada?q=80&w=2076&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?q=80&w=2070&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=2070&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=2070&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1519904981063-b0cf448d479e?q=80&w=2070&auto=format&fit=crop"
-        ]
-    },
-    {
         id: 'thailand-tropical',
         title: "Tropical Thailand",
         location: "Phuket & Bangkok, Thailand",
         image: "https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?q=80&w=2039&auto=format&fit=crop",
+        category: "international",
         price: 35000,
         priceDisplay: "₹35,000",
         type: "mixed",
@@ -433,6 +446,7 @@ When you return, you don’t just bring back photos — you bring back a new ver
         title: "Dazzling Dubai",
         location: "Dubai, UAE",
         image: dubaiImg,
+        category: "international",
         price: 45000,
         priceDisplay: "₹45,000",
         type: "mixed",
@@ -469,6 +483,7 @@ When you return, you don’t just bring back photos — you bring back a new ver
         title: "USA Explorer",
         location: "New York & Las Vegas, USA",
         image: "https://images.unsplash.com/photo-1534430480872-3498386e7856?q=80&w=2070&auto=format&fit=crop",
+        category: "international",
         price: 150000,
         priceDisplay: "₹1,50,000",
         type: "mixed",
