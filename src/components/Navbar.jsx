@@ -19,12 +19,6 @@ const Navbar = () => {
 
     // Identify pages that need a light theme navbar (dark text)
     const isLightPage = [
-        '/destinations',
-        '/wishlist',
-        '/my-bookings',
-        '/my-trips',
-        '/profile',
-        '/stories',
         '/blog',
         '/careers'
     ].some(path => location.pathname.startsWith(path));
@@ -262,47 +256,61 @@ const Navbar = () => {
                                         </div>
 
                                         {/* Dropdown Menu */}
-                                        <div className="absolute right-0 top-full mt-2 w-48 glass-card !rounded-2xl !bg-black/80 !backdrop-blur-xl border border-white/10 overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform origin-top-right z-50">
+                                        <div className="absolute right-0 top-full mt-2 w-56 bg-[#0a0a0a]/95 backdrop-blur-3xl border border-white/10 rounded-xl shadow-2xl overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right z-50">
                                             <div className="p-3 border-b border-white/10">
                                                 <p className="text-sm font-bold text-white truncate">{currentUser.displayName || 'User'}</p>
                                                 <p className="text-xs text-white/50 truncate">{currentUser.email}</p>
                                             </div>
-                                            <div className="p-1">
+                                            <div className="p-1.5 space-y-0.5">
                                                 <Link
                                                     to="/my-bookings"
-                                                    className="flex items-center gap-2 px-3 py-2 text-sm text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                                                    className="flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
                                                 >
-                                                    <Package size={16} />
+                                                    <Package size={16} className="text-blue-400" />
                                                     My Bookings
                                                 </Link>
                                                 <Link
                                                     to="/my-trips"
-                                                    className="flex items-center gap-2 px-3 py-2 text-sm text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                                                    className="flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
                                                 >
-                                                    <Sparkles size={16} />
+                                                    <Sparkles size={16} className="text-purple-400" />
                                                     My Trips
                                                 </Link>
                                                 <Link
                                                     to="/profile"
-                                                    className="flex items-center gap-2 px-3 py-2 text-sm text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                                                    className="flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
                                                 >
-                                                    <User size={16} />
+                                                    <User size={16} className="text-green-400" />
                                                     My Profile
                                                 </Link>
                                                 <Link
                                                     to="/support"
-                                                    className="flex items-center gap-2 px-3 py-2 text-sm text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                                                    className="flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
                                                 >
-                                                    <Info size={16} />
+                                                    <Info size={16} className="text-yellow-400" />
                                                     Support
                                                 </Link>
+
+                                                {/* Admin Link inside Menu */}
+                                                {currentUser.isAdmin && (
+                                                    <Link
+                                                        to="/admin"
+                                                        className="flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
+                                                    >
+                                                        <LayoutDashboard size={16} className="text-indigo-400" />
+                                                        Admin Dashboard
+                                                    </Link>
+                                                )}
+
+                                                <div className="my-1.5 border-t border-white/10"></div>
+
                                                 <button
                                                     onClick={() => {
                                                         if (window.confirm('Are you sure you want to log out?')) {
                                                             handleLogout();
                                                         }
                                                     }}
-                                                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 rounded-lg transition-colors text-left"
+                                                    className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-all duration-200 text-left"
                                                 >
                                                     <LogOut size={16} />
                                                     Log Out
@@ -311,21 +319,6 @@ const Navbar = () => {
                                         </div>
                                     </div>
 
-                                    {/* Admin Link */}
-                                    {currentUser.isAdmin && (
-                                        <Link
-                                            to="/admin"
-                                            className={`
-                                                p-2.5 rounded-full transition-all duration-300
-                                                ${textColor === 'text-slate-900'
-                                                    ? 'hover:bg-purple-50 text-slate-600 hover:text-purple-600'
-                                                    : 'hover:bg-white/20 text-white hover:text-purple-200'}
-                                            `}
-                                            title="Admin Dashboard"
-                                        >
-                                            <LayoutDashboard size={20} />
-                                        </Link>
-                                    )}
                                 </div>
                             ) : (
                                 <>

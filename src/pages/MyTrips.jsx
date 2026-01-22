@@ -85,7 +85,7 @@ const MyTrips = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-slate-50">
+            <div className="min-h-screen flex items-center justify-center bg-black">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
             </div>
         );
@@ -93,10 +93,10 @@ const MyTrips = () => {
 
     if (!user) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-slate-50">
+            <div className="min-h-screen flex items-center justify-center bg-black">
                 <div className="text-center">
-                    <h2 className="text-2xl font-bold text-slate-900 mb-4">Please Login</h2>
-                    <p className="text-slate-600 mb-6">You need to be logged in to view your saved trips.</p>
+                    <h2 className="text-2xl font-bold text-white mb-4">Please Login</h2>
+                    <p className="text-slate-400 mb-6">You need to be logged in to view your saved trips.</p>
                     <Link to="/login" className="px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors">
                         Login Now
                     </Link>
@@ -106,22 +106,26 @@ const MyTrips = () => {
     }
 
     return (
-        <div className="min-h-screen bg-slate-50 pt-24 pb-16">
+        <div className="min-h-screen bg-black pt-24 pb-16 relative overflow-hidden">
+            {/* Background Glows */}
+            <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-600/20 rounded-full blur-[128px] pointer-events-none"></div>
+            <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-600/20 rounded-full blur-[128px] pointer-events-none"></div>
+
             <SEO title="My Trips" description="View your saved AI-generated itineraries." url="/my-trips" />
-            <div className="container mx-auto px-6 lg:px-8">
+            <div className="container mx-auto px-6 lg:px-8 relative z-10">
                 <div className="flex justify-between items-center mb-8">
-                    <h1 className="text-3xl font-bold text-slate-900">My Saved Trips</h1>
+                    <h1 className="text-3xl font-bold text-white">My Saved Trips</h1>
                     <Link to="/trip-planner" className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">
                         + New Trip
                     </Link>
                 </div>
 
                 {trips.length === 0 ? (
-                    <div className="text-center py-16 bg-white rounded-3xl shadow-sm border border-slate-100">
-                        <MapPin className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                        <h3 className="text-xl font-bold text-slate-900 mb-2">No Saved Trips Yet</h3>
-                        <p className="text-slate-500 mb-6">Start planning your next adventure with our AI.</p>
-                        <Link to="/trip-planner" className="text-blue-600 font-semibold hover:underline">
+                    <div className="text-center py-16 bg-white/5 backdrop-blur-sm rounded-3xl shadow-sm border border-white/10">
+                        <MapPin className="w-16 h-16 text-slate-500 mx-auto mb-4" />
+                        <h3 className="text-xl font-bold text-white mb-2">No Saved Trips Yet</h3>
+                        <p className="text-slate-400 mb-6">Start planning your next adventure with our AI.</p>
+                        <Link to="/trip-planner" className="text-blue-400 font-semibold hover:underline">
                             Go to Trip Planner
                         </Link>
                     </div>
@@ -132,27 +136,27 @@ const MyTrips = () => {
                                 key={trip.id}
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow border border-slate-100 overflow-hidden group flex flex-col"
+                                className="glass-card rounded-2xl shadow-sm hover:shadow-2xl transition-all border border-white/10 overflow-hidden group flex flex-col"
                             >
-                                <div className="h-32 bg-gradient-to-r from-blue-500 to-purple-600 p-6 flex items-end relative">
+                                <div className="h-32 bg-gradient-to-r from-blue-900/50 to-purple-900/50 p-6 flex items-end relative border-b border-white/5">
                                     <h3 className="text-2xl font-bold text-white">{trip.destination}</h3>
                                     <button
                                         onClick={() => handleDelete(trip.id)}
-                                        className="absolute top-4 right-4 p-2 bg-white/20 hover:bg-red-500/80 backdrop-blur-sm rounded-full text-white transition-colors"
+                                        className="absolute top-4 right-4 p-2 bg-black/40 hover:bg-red-500/80 backdrop-blur-sm rounded-full text-white transition-colors"
                                         title="Delete Trip"
                                     >
                                         <Trash2 size={16} />
                                     </button>
                                 </div>
                                 <div className="p-6 flex-grow flex flex-col justify-between">
-                                    <div className="flex items-center gap-2 text-slate-500 text-sm mb-4">
+                                    <div className="flex items-center gap-2 text-slate-400 text-sm mb-4">
                                         <Calendar className="w-4 h-4" />
                                         <span>{trip.days} Days Trip</span>
                                     </div>
                                     <div className="flex justify-between items-center mt-4">
                                         <Link
                                             to={`/trip/${trip.id}`}
-                                            className="flex items-center gap-2 text-blue-600 font-semibold group-hover:gap-3 transition-all"
+                                            className="flex items-center gap-2 text-blue-400 font-semibold group-hover:gap-3 transition-all"
                                         >
                                             View Itinerary <ArrowRight className="w-4 h-4" />
                                         </Link>

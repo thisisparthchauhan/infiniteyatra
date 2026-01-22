@@ -95,21 +95,25 @@ const DestinationsPage = () => {
     }, [filters]);
 
     return (
-        <div className="pt-24 pb-12 bg-slate-50 min-h-screen">
+        <div className="pt-24 pb-12 bg-black min-h-screen relative overflow-hidden">
             <SEO
                 title="Destinations"
                 description="Explore our curated collection of treks, tours, and spiritual journeys. Find your dream journey with Infinite Yatra."
                 url="/destinations"
             />
 
+            {/* Background Glows (matching ContactNew) */}
+            <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-600/20 rounded-full blur-[128px] pointer-events-none"></div>
+            <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-600/20 rounded-full blur-[128px] pointer-events-none"></div>
+
             <AnimatedBanner />
 
-            <div className="container mx-auto px-6">
+            <div className="container mx-auto px-6 relative z-10">
                 <div className="mb-10 text-center mt-12">
-                    <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">
+                    <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
                         Find Your Dream Journey
                     </h1>
-                    <p className="text-slate-600 text-lg max-w-2xl mx-auto">
+                    <p className="text-slate-400 text-lg max-w-2xl mx-auto">
                         Explore our curated collection of treks, tours, and spiritual journeys.
                         Use the filters below to find the perfect package for you.
                     </p>
@@ -120,6 +124,7 @@ const DestinationsPage = () => {
                     setFilters={setFilters}
                     minPrice={minPrice}
                     maxPrice={maxPrice}
+                    variant="dark"
                 />
 
                 {/* Show sections only when no filters are active */
@@ -132,7 +137,7 @@ const DestinationsPage = () => {
                                 subtitle="Conquer the heights and walk above the clouds."
                                 showViewAll={false}
                                 disableHeader={false}
-                                variant="light"
+                                variant="dark"
                             />
 
                             {/* 2. Spiritual Section */}
@@ -142,7 +147,7 @@ const DestinationsPage = () => {
                                 subtitle="Find inner peace at the world's holiest shrines."
                                 showViewAll={false}
                                 disableHeader={false}
-                                variant="light"
+                                variant="dark"
                             />
 
                             {/* 3. International Section */}
@@ -152,7 +157,7 @@ const DestinationsPage = () => {
                                 subtitle="Explore iconic destinations beyond boundaries."
                                 showViewAll={false}
                                 disableHeader={false}
-                                variant="light"
+                                variant="dark"
                             />
                         </div>
                     ) : (
@@ -163,7 +168,7 @@ const DestinationsPage = () => {
                             subtitle={`${filteredPackages.length} packages found matching your criteria`}
                             showViewAll={false}
                             disableHeader={false}
-                            variant="light"
+                            variant="dark"
                         />
                     )}
             </div>

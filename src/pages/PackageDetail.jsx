@@ -125,8 +125,8 @@ const PackageDetail = () => {
                         <h2>Summary</h2>
                         <div className="summary-grid">
                             <div className="summary-item">
-                                <span className="label">Pickup</span>
-                                <span className="value">{pkg.location.split(',')[0]}</span>
+                                <span className="label">Pickup & Drop</span>
+                                <span className="value">{pkg.pickupDrop || pkg.location.split(',')[0]}</span>
                             </div>
                             <div className="summary-item">
                                 <span className="label">Overall</span>
@@ -187,6 +187,44 @@ const PackageDetail = () => {
                                     {expandedDay === index && (
                                         <div className="itinerary-content">
                                             <p>{day.description}</p>
+
+                                            {/* Day Stats */}
+                                            {day.stats && (
+                                                <div className="day-stats">
+                                                    {day.stats.distance && (
+                                                        <div className="stat-item" title="Distance">
+                                                            <span>🚗/🥾</span> {day.stats.distance}
+                                                        </div>
+                                                    )}
+                                                    {day.stats.time && (
+                                                        <div className="stat-item" title="Time">
+                                                            <span>⏱</span> {day.stats.time}
+                                                        </div>
+                                                    )}
+                                                    {day.stats.altitude && (
+                                                        <div className="stat-item" title="Altitude">
+                                                            <span>⛰</span> {day.stats.altitude}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+
+                                            {/* Stay and Meals */}
+                                            {(day.stay || day.meals) && (
+                                                <div className="day-logistics">
+                                                    {day.stay && (
+                                                        <div className="logistics-item">
+                                                            <strong>Stay:</strong> {day.stay}
+                                                        </div>
+                                                    )}
+                                                    {day.meals && (
+                                                        <div className="logistics-item">
+                                                            <strong>Meals:</strong> {day.meals}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+
                                             {day.activities && day.activities.length > 0 && (
                                                 <div className="activities">
                                                     {day.activities.map((activity, actIndex) => (
@@ -205,7 +243,7 @@ const PackageDetail = () => {
                     <section className="inclusions-section">
                         <div className="inclusions-grid">
                             <div className="inclusions-column">
-                                <h3><Check className="icon-check" /> What's included</h3>
+                                <h3>What's included</h3>
                                 <ul>
                                     {pkg.inclusions.map((item, index) => (
                                         <li key={index}>
@@ -216,7 +254,7 @@ const PackageDetail = () => {
                                 </ul>
                             </div>
                             <div className="exclusions-column">
-                                <h3><X className="icon-x" /> What's not included</h3>
+                                <h3>What's not included</h3>
                                 <ul>
                                     {pkg.exclusions.map((item, index) => (
                                         <li key={index}>
@@ -228,6 +266,36 @@ const PackageDetail = () => {
                             </div>
                         </div>
                     </section>
+
+                    {/* Good to Know Section */}
+                    {pkg.goodToKnow && pkg.goodToKnow.length > 0 && (
+                        <section className="good-to-know-section">
+                            <h2>Good to Know</h2>
+                            <ul className="info-list">
+                                {pkg.goodToKnow.map((item, index) => (
+                                    <li key={index}>
+                                        <span className="info-bullet">•</span>
+                                        {item}
+                                    </li>
+                                ))}
+                            </ul>
+                        </section>
+                    )}
+
+                    {/* Who is this trek for Section */}
+                    {pkg.whoIsThisFor && pkg.whoIsThisFor.length > 0 && (
+                        <section className="who-is-this-for-section">
+                            <h2>Who is this trek for?</h2>
+                            <ul className="info-list">
+                                {pkg.whoIsThisFor.map((item, index) => (
+                                    <li key={index}>
+                                        <span className="info-bullet">•</span>
+                                        {item}
+                                    </li>
+                                ))}
+                            </ul>
+                        </section>
+                    )}
 
                     {/* Things to Carry */}
                     <section className="things-to-carry">
@@ -259,20 +327,29 @@ const PackageDetail = () => {
                     </section>
 
                     {/* Cancellation Policy */}
-                    <section className="policy-section">
-                        <button
-                            className="policy-header"
-                            onClick={() => toggleSection('cancellation')}
-                        >
-                            <span>Cancellation Policy</span>
-                            <ChevronDown className={`chevron ${expandedSection === 'cancellation' ? 'expanded' : ''}`} />
-                        </button>
-                        {expandedSection === 'cancellation' && (
-                            <div className="policy-content">
-                                <p>Cancellations made 15+ days before departure: 90% refund. 7-14 days: 50% refund. Less than 7 days: No refund.</p>
-                            </div>
-                        )}
-                    </section>
+                    {pkg.cancellationPolicy && pkg.cancellationPolicy.length > 0 && (
+                        <section className="policy-section">
+                            <button
+                                className="policy-header"
+                                onClick={() => toggleSection('cancellation')}
+                            >
+                                <span>Cancellation Policy</span>
+                                <ChevronDown className={`chevron ${expandedSection === 'cancellation' ? 'expanded' : ''}`} />
+                            </button>
+                            {expandedSection === 'cancellation' && (
+                                <div className="policy-content">
+                                    <ul className="info-list policy-list">
+                                        {pkg.cancellationPolicy.map((item, index) => (
+                                            <li key={index} style={{ alignItems: 'flex-start', display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                                                <span className="info-bullet" style={{ color: '#ef4444' }}>•</span>
+                                                <span>{item}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+                        </section>
+                    )}
 
                     {/* FAQs */}
                     {pkg.faqs && pkg.faqs.length > 0 && (

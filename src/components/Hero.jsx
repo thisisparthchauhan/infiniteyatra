@@ -5,6 +5,30 @@ import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '../context/ToastContext';
 import BackgroundSlider from './BackgroundSlider';
+import PhoneInput from 'react-phone-input-2';
+import 'react-phone-input-2/lib/style.css';
+
+const popularDestinations = [
+    "Agra, India", "Ahmedabad, India", "Amritsar, India", "Andaman & Nicobar", "Alleppey, Kerala",
+    "Bangalore, India", "Bangkok, Thailand", "Bali, Indonesia",
+    "Chennai, India", "Coorg, Karnataka",
+    "Darjeeling, West Bengal", "Dehradun, Uttarakhand", "Delhi, India", "Dubai, UAE",
+    "Gangtok, Sikkim", "Goa, India", "Gulmarg, Kashmir",
+    "Haridwar, Uttarakhand", "Hyderabad, India",
+    "Jaipur, Rajasthan", "Jaisalmer, Rajasthan", "Jodhpur, Rajasthan",
+    "Kochi, Kerala", "Kolkata, West Bengal", "Kullu Manali, Himachal",
+    "Ladakh, India", "Las Vegas, USA", "London, UK", "Lonavala, Maharashtra",
+    "Mumbai, Maharashtra", "Munnar, Kerala", "Mussoorie, Uttarakhand", "Mukteshwar, Uttarakhand",
+    "Nainital, Uttarakhand", "New York, USA",
+    "Ooty, Tamil Nadu",
+    "Paris, France", "Phuket, Thailand", "Pondicherry, India", "Pune, Maharashtra",
+    "Rishikesh, Uttarakhand", "Rome, Italy",
+    "Shimla, Himachal", "Singapore", "Srinagar, Kashmir", "Surat, Gujarat",
+    "Tokyo, Japan",
+    "Udaipur, Rajasthan",
+    "Varanasi, Uttar Pradesh",
+    "Wayanad, Kerala"
+];
 
 const Hero = () => {
     const [formData, setFormData] = useState({
@@ -13,6 +37,8 @@ const Hero = () => {
         persons: '',
         phone: ''
     });
+    const [suggestions, setSuggestions] = useState([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
     const { addToast } = useToast();
@@ -28,7 +54,30 @@ const Hero = () => {
     }, []);
 
     const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
+
+        if (name === 'location') {
+            if (value.length > 0) {
+                const filtered = popularDestinations.filter(city =>
+                    city.toLowerCase().includes(value.toLowerCase())
+                );
+                setSuggestions(filtered);
+                setShowSuggestions(true);
+            } else {
+                setSuggestions([]);
+                setShowSuggestions(false);
+            }
+        }
+    };
+
+    const handleSuggestionClick = (city) => {
+        setFormData({ ...formData, location: city });
+        setShowSuggestions(false);
+    };
+
+    const handlePhoneChange = (value) => {
+        setFormData({ ...formData, phone: value });
     };
 
     const handleSubmit = async (e) => {
@@ -129,7 +178,7 @@ const Hero = () => {
                 </motion.p>
 
                 {/* Glass Enquiry Form */}
-                <div className="w-full max-w-5xl mx-auto">
+                <div className="w-full max-w-7xl mx-auto">
                     <AnimatePresence mode="wait">
                         {isSubmitted ? (
                             <motion.div
@@ -152,26 +201,88 @@ const Hero = () => {
                                 onSubmit={handleSubmit}
                                 className="glass-card-dark p-2 rounded-[2rem] flex flex-col lg:flex-row items-center gap-2"
                             >
-                                {/* Location */}
-                                <div className="flex-1 flex items-center gap-3 px-6 py-4 w-full border-b lg:border-b-0 lg:border-r border-white/10">
+                                {/* Location - Wider */}
+                                <div className="flex-[2] flex items-center gap-3 px-6 py-4 w-full border-b lg:border-b-0 lg:border-r border-white/10">
                                     <MapPin className="text-blue-400 shrink-0" size={20} />
                                     <div className="text-left w-full">
                                         <label htmlFor="location" className="block text-[10px] text-white/70 font-bold uppercase tracking-wider mb-1">Location</label>
-                                        <input
-                                            id="location"
-                                            name="location"
-                                            type="text"
-                                            value={formData.location}
-                                            onChange={handleChange}
-                                            placeholder="Where to?"
-                                            required
-                                            className="w-full outline-none text-white placeholder:text-white/70 font-medium text-lg bg-transparent"
-                                        />
+                                        <div className="relative">
+                                            <input
+                                                id="location"
+                                                name="location"
+                                                type="text"
+                                                value={formData.location}
+                                                onChange={handleChange}
+                                                onFocus={() => { if (formData.location) setShowSuggestions(true); }}
+                                                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} // Delay to allow click
+                                                placeholder="Where to?"
+                                                required
+                                                autoComplete="off"
+                                                className="w-full outline-none text-white placeholder:text-white/70 font-medium text-lg bg-transparent"
+                                            />
+                                            {/* Autocomplete Dropdown */}
+                                            <AnimatePresence>
+                                                {showSuggestions && suggestions.length > 0 && (
+                                                    <motion.div
+                                                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                        transition={{ duration: 0.2 }}
+                                                        className="absolute top-full left-0 w-full mt-4 bg-[#0f1115] border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50"
+                                                    >
+                                                        {/* Header */}
+                                                        <div className="px-5 py-3 border-b border-white/5 bg-white/5">
+                                                            <h4 className="text-sm font-bold text-white/50 uppercase tracking-wider">Destinations</h4>
+                                                        </div>
+
+                                                        {/* List */}
+                                                        <div className="max-h-60 overflow-y-auto scroller p-2">
+                                                            {suggestions.map((city, idx) => (
+                                                                <div
+                                                                    key={idx}
+                                                                    className="px-4 py-3 rounded-xl hover:bg-white/10 cursor-pointer flex items-center gap-4 transition-all duration-200 group"
+                                                                    onClick={() => handleSuggestionClick(city)}
+                                                                >
+                                                                    <div className="w-10 h-10 rounded-lg bg-blue-500/10 group-hover:bg-blue-500/20 flex items-center justify-center shrink-0 border border-blue-500/20 transition-colors">
+                                                                        <img
+                                                                            src={`https://source.unsplash.com/100x100/?${city.split(',')[0]},travel`}
+                                                                            alt={city}
+                                                                            className="w-full h-full object-cover rounded-lg opacity-0"
+                                                                            onError={(e) => {
+                                                                                e.target.style.display = 'none';
+                                                                                e.target.nextSibling.style.display = 'block';
+                                                                            }}
+                                                                            onLoad={(e) => e.target.classList.remove('opacity-0')}
+                                                                        />
+                                                                        <MapPin size={18} className="text-blue-400 absolute" style={{ display: 'none' }} />
+                                                                        {/* Fallback to icon initially or on error. Actually unsplash source might be flaky, let's stick to icon for reliability and speed as requested "show amravati... " */}
+                                                                    </div>
+
+                                                                    {/* Simple Icon version per user request style */}
+                                                                    <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center shrink-0 border border-white/10">
+                                                                        <img
+                                                                            src="https://cdn-icons-png.flaticon.com/512/201/201623.png"
+                                                                            alt="map"
+                                                                            className="w-6 h-6 opacity-80"
+                                                                        />
+                                                                    </div>
+
+                                                                    <div className="flex-1 text-left">
+                                                                        <p className="text-base font-semibold text-white group-hover:text-blue-300 transition-colors">{city.split(',')[0]}</p>
+                                                                        <p className="text-xs text-white/40 group-hover:text-white/60 transition-colors">{city.split(',')[1] || 'India'}</p>
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
+                                        </div>
                                     </div>
                                 </div>
 
-                                {/* Days */}
-                                <div className="flex-1 flex items-center gap-3 px-6 py-4 w-full border-b lg:border-b-0 lg:border-r border-white/10">
+                                {/* Days - Compact */}
+                                <div className="flex-[0.7] flex items-center gap-3 px-6 py-4 w-full border-b lg:border-b-0 lg:border-r border-white/10">
                                     <Calendar className="text-blue-400 shrink-0" size={20} />
                                     <div className="text-left w-full">
                                         <label htmlFor="days" className="block text-[10px] text-white/70 font-bold uppercase tracking-wider mb-1">Duration</label>
@@ -188,8 +299,8 @@ const Hero = () => {
                                     </div>
                                 </div>
 
-                                {/* Travelers */}
-                                <div className="flex-1 flex items-center gap-3 px-6 py-4 w-full border-b lg:border-b-0 lg:border-r border-white/10">
+                                {/* Travelers - Compact */}
+                                <div className="flex-[0.7] flex items-center gap-3 px-6 py-4 w-full border-b lg:border-b-0 lg:border-r border-white/10">
                                     <Users className="text-blue-400 shrink-0" size={20} />
                                     <div className="text-left w-full">
                                         <label htmlFor="persons" className="block text-[10px] text-white/70 font-bold uppercase tracking-wider mb-1">Travelers</label>
@@ -206,21 +317,46 @@ const Hero = () => {
                                     </div>
                                 </div>
 
-                                {/* Phone */}
-                                <div className="flex-1 flex items-center gap-3 px-6 py-4 w-full">
+                                {/* Phone - Wider */}
+                                <div className="flex-[1.8] flex items-center gap-3 px-6 py-4 w-full">
                                     <Phone className="text-blue-400 shrink-0" size={20} />
                                     <div className="text-left w-full">
                                         <label htmlFor="phone" className="block text-[10px] text-white/70 font-bold uppercase tracking-wider mb-1">Phone</label>
-                                        <input
-                                            id="phone"
-                                            name="phone"
-                                            type="tel"
-                                            value={formData.phone}
-                                            onChange={handleChange}
-                                            placeholder="Number"
-                                            required
-                                            className="w-full outline-none text-white placeholder:text-white/70 font-medium text-lg bg-transparent"
-                                        />
+                                        <div className="phone-input-dark w-full">
+                                            <PhoneInput
+                                                country={'in'}
+                                                value={formData.phone}
+                                                onChange={handlePhoneChange}
+                                                enableSearch={true}
+                                                disableSearchIcon={false}
+                                                searchPlaceholder="Search country"
+                                                inputStyle={{
+                                                    width: '100%',
+                                                    height: '100%',
+                                                    background: 'transparent',
+                                                    border: 'none',
+                                                    color: 'white',
+                                                    fontSize: '1.125rem', // text-lg
+                                                    fontWeight: 500,
+                                                    paddingLeft: '48px'
+                                                }}
+                                                buttonStyle={{
+                                                    background: 'transparent',
+                                                    border: 'none',
+                                                    paddingLeft: '0px'
+                                                }}
+                                                dropdownStyle={{
+                                                    background: '#1e293b',
+                                                    color: 'white',
+                                                    border: '1px solid rgba(255,255,255,0.1)'
+                                                }}
+                                                containerStyle={{
+                                                    width: '100%',
+                                                    height: '100%'
+                                                }}
+                                                placeholder="Number"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
 

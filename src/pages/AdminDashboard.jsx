@@ -201,34 +201,38 @@ const AdminDashboard = () => {
     }
 
     return (
-        <div className="min-h-screen bg-slate-50 py-24 px-6">
+        <div className="min-h-screen bg-black py-24 px-6 relative overflow-hidden">
+            {/* Background Glows */}
+            <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-600/20 rounded-full blur-[128px] pointer-events-none"></div>
+            <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-600/20 rounded-full blur-[128px] pointer-events-none"></div>
+
             <SEO title="Admin Dashboard" description="Manage bookings" url="/admin" />
 
-            <div className="max-w-7xl mx-auto">
+            <div className="max-w-7xl mx-auto relative z-10">
                 <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-                    <h1 className="text-3xl font-bold text-slate-900">Admin Dashboard</h1>
-                    <div className="flex bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
+                    <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
+                    <div className="flex bg-white/10 p-1 rounded-xl border border-white/10 backdrop-blur-md">
                         <button
                             onClick={() => setActiveTab('bookings')}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'bookings' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-50'}`}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'bookings' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
                         >
                             Bookings
                         </button>
                         <button
                             onClick={() => setActiveTab('packages')}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'packages' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-50'}`}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'packages' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
                         >
                             Packages
                         </button>
                         <button
                             onClick={() => setActiveTab('stories')}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'stories' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-50'}`}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'stories' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
                         >
                             Stories
                         </button>
                         <button
                             onClick={() => setActiveTab('media')}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'media' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-50'}`}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'media' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
                         >
                             Media
                         </button>
@@ -236,13 +240,13 @@ const AdminDashboard = () => {
                 </div>
 
                 <div className="flex justify-between items-center mb-6">
-                    <p className="text-slate-500">
+                    <p className="text-slate-400">
                         {activeTab === 'bookings' ? 'Manage and track all customer bookings.' :
                             activeTab === 'packages' ? 'Manage tour packages, pricing, and availability.' :
                                 activeTab === 'stories' ? 'Manage user travel stories and featured content.' :
                                     'Upload and manage images for your website.'}
                     </p>
-                    <button onClick={fetchBookings} className="text-blue-600 hover:underline text-sm flex items-center gap-1">
+                    <button onClick={fetchBookings} className="text-blue-400 hover:underline text-sm flex items-center gap-1">
                         <Clock size={14} /> Last refreshed: {new Date().toLocaleTimeString()}
                     </button>
                 </div>
@@ -256,47 +260,47 @@ const AdminDashboard = () => {
                 {/* Stats Cards - Only for Bookings Tab */}
                 {activeTab === 'bookings' && (
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                        <div className="glass-card p-6 rounded-xl border border-white/10">
                             <div className="flex items-center gap-4">
-                                <div className="p-3 bg-blue-100 text-blue-600 rounded-lg">
+                                <div className="p-3 bg-blue-500/20 text-blue-400 rounded-lg">
                                     <Calendar size={24} />
                                 </div>
                                 <div>
-                                    <p className="text-sm text-slate-500">Total Bookings</p>
-                                    <p className="text-2xl font-bold text-slate-900">{stats.total}</p>
+                                    <p className="text-sm text-slate-400">Total Bookings</p>
+                                    <p className="text-2xl font-bold text-white">{stats.total}</p>
                                 </div>
                             </div>
                         </div>
-                        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                        <div className="glass-card p-6 rounded-xl border border-white/10">
                             <div className="flex items-center gap-4">
-                                <div className="p-3 bg-green-100 text-green-600 rounded-lg">
+                                <div className="p-3 bg-green-500/20 text-green-400 rounded-lg">
                                     <DollarSign size={24} />
                                 </div>
                                 <div>
-                                    <p className="text-sm text-slate-500">Total Revenue (Est.)</p>
-                                    <p className="text-2xl font-bold text-slate-900">₹{stats.revenue.toLocaleString()}</p>
+                                    <p className="text-sm text-slate-400">Total Revenue (Est.)</p>
+                                    <p className="text-2xl font-bold text-white">₹{stats.revenue.toLocaleString()}</p>
                                 </div>
                             </div>
                         </div>
-                        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                        <div className="glass-card p-6 rounded-xl border border-white/10">
                             <div className="flex items-center gap-4">
-                                <div className="p-3 bg-purple-100 text-purple-600 rounded-lg">
+                                <div className="p-3 bg-purple-500/20 text-purple-400 rounded-lg">
                                     <TrendingUp size={24} />
                                 </div>
                                 <div>
-                                    <p className="text-sm text-slate-500">Total Profit (Est.)</p>
-                                    <p className="text-2xl font-bold text-slate-900">₹{stats.profit.toLocaleString()}</p>
+                                    <p className="text-sm text-slate-400">Total Profit (Est.)</p>
+                                    <p className="text-2xl font-bold text-white">₹{stats.profit.toLocaleString()}</p>
                                 </div>
                             </div>
                         </div>
-                        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                        <div className="glass-card p-6 rounded-xl border border-white/10">
                             <div className="flex items-center gap-4">
-                                <div className="p-3 bg-yellow-100 text-yellow-600 rounded-lg">
+                                <div className="p-3 bg-yellow-500/20 text-yellow-400 rounded-lg">
                                     <Users size={24} />
                                 </div>
                                 <div>
-                                    <p className="text-sm text-slate-500">Pending Actions</p>
-                                    <p className="text-2xl font-bold text-slate-900">{stats.pending}</p>
+                                    <p className="text-sm text-slate-400">Pending Actions</p>
+                                    <p className="text-2xl font-bold text-white">{stats.pending}</p>
                                 </div>
                             </div>
                         </div>
@@ -305,13 +309,13 @@ const AdminDashboard = () => {
 
                 {/* Search Bar - Only for Bookings */}
                 {activeTab === 'bookings' && (
-                    <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6">
+                    <div className="glass-card p-4 rounded-xl border border-white/10 mb-6">
                         <div className="relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
                             <input
                                 type="text"
                                 placeholder="Search by name, email, or booking ID..."
-                                className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full pl-10 pr-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
@@ -321,45 +325,45 @@ const AdminDashboard = () => {
 
                 {/* Bookings Table */}
                 {activeTab === 'bookings' && (
-                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div className="glass-card rounded-xl border border-white/10 overflow-hidden">
                         <div className="overflow-x-auto">
-                            <table className="w-full text-left border-collapse">
+                            <table className="w-full text-left border-collapse text-slate-300">
                                 <thead>
-                                    <tr className="bg-slate-50 border-b border-slate-200">
-                                        <th className="p-4 font-semibold text-slate-600 text-sm">Booking ID</th>
-                                        <th className="p-4 font-semibold text-slate-600 text-sm">Customer</th>
-                                        <th className="p-4 font-semibold text-slate-600 text-sm">Booked On</th>
-                                        <th className="p-4 font-semibold text-slate-600 text-sm">Package</th>
-                                        <th className="p-4 font-semibold text-slate-600 text-sm">Amount</th>
-                                        <th className="p-4 font-semibold text-slate-600 text-sm">Status</th>
-                                        <th className="p-4 font-semibold text-slate-600 text-sm text-right">Actions</th>
+                                    <tr className="bg-white/5 border-b border-white/10">
+                                        <th className="p-4 font-semibold text-slate-200 text-sm">Booking ID</th>
+                                        <th className="p-4 font-semibold text-slate-200 text-sm">Customer</th>
+                                        <th className="p-4 font-semibold text-slate-200 text-sm">Booked On</th>
+                                        <th className="p-4 font-semibold text-slate-200 text-sm">Package</th>
+                                        <th className="p-4 font-semibold text-slate-200 text-sm">Amount</th>
+                                        <th className="p-4 font-semibold text-slate-200 text-sm">Status</th>
+                                        <th className="p-4 font-semibold text-slate-200 text-sm text-right">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {filteredBookings.map((booking) => (
-                                        <tr key={booking.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-                                            <td className="p-4 text-sm text-slate-500 font-mono">#{booking.id.slice(0, 6)}</td>
+                                        <tr key={booking.id} className="border-b border-white/10 hover:bg-white/5 transition-colors">
+                                            <td className="p-4 text-sm text-slate-400 font-mono">#{booking.id.slice(0, 6)}</td>
                                             <td className="p-4">
-                                                <p className="font-medium text-slate-900">{booking.contactName || 'N/A'}</p>
-                                                <p className="text-xs text-slate-500">{booking.contactEmail || 'N/A'}</p>
+                                                <p className="font-medium text-white">{booking.contactName || 'N/A'}</p>
+                                                <p className="text-xs text-slate-400">{booking.contactEmail || 'N/A'}</p>
                                             </td>
-                                            <td className="p-4 text-sm text-slate-500">
+                                            <td className="p-4 text-sm text-slate-400">
                                                 {formatDate(booking.createdAt)}
                                             </td>
-                                            <td className="p-4 text-sm text-slate-700">
+                                            <td className="p-4 text-sm text-slate-300">
                                                 <p className="font-medium">{booking.packageTitle}</p>
                                                 <p className="text-xs text-slate-500">Travel: {booking.bookingDate}</p>
                                             </td>
-                                            <td className="p-4 text-sm font-medium text-slate-900">
+                                            <td className="p-4 text-sm font-medium text-white">
                                                 ₹{booking.amountPaid ? booking.amountPaid.toLocaleString() : booking.totalPrice?.toLocaleString()}
                                                 {booking.balanceDue > 0 && (
-                                                    <div className="text-xs text-orange-600 font-normal">Pending: ₹{booking.balanceDue.toLocaleString()}</div>
+                                                    <div className="text-xs text-orange-400 font-normal">Pending: ₹{booking.balanceDue.toLocaleString()}</div>
                                                 )}
                                             </td>
                                             <td className="p-4">
-                                                <span className={`px-2 py-1 rounded-full text-xs font-bold uppercase ${booking.status === 'confirmed' ? 'bg-green-100 text-green-700' :
-                                                    booking.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                                                        'bg-red-100 text-red-700'
+                                                <span className={`px-2 py-1 rounded-full text-xs font-bold uppercase border ${booking.status === 'confirmed' ? 'bg-green-500/20 text-green-400 border-green-500/20' :
+                                                    booking.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/20' :
+                                                        'bg-red-500/20 text-red-400 border-red-500/20'
                                                     }`}>
                                                     {booking.status}
                                                 </span>
@@ -368,7 +372,7 @@ const AdminDashboard = () => {
                                                 <div className="flex items-center justify-end gap-2">
                                                     <button
                                                         onClick={() => setSelectedBooking(booking)}
-                                                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                                                        className="p-2 text-blue-400 hover:bg-blue-500/10 rounded-lg"
                                                         title="View Details"
                                                     >
                                                         <Eye size={18} />
@@ -376,7 +380,7 @@ const AdminDashboard = () => {
                                                     {booking.status !== 'confirmed' && (
                                                         <button
                                                             onClick={() => handleStatusUpdate(booking.id, 'confirmed')}
-                                                            className="p-2 text-green-600 hover:bg-green-50 rounded-lg"
+                                                            className="p-2 text-green-400 hover:bg-green-500/10 rounded-lg"
                                                             title="Mark Confirmed"
                                                         >
                                                             <CheckCircle size={18} />
@@ -385,7 +389,7 @@ const AdminDashboard = () => {
                                                     {booking.status !== 'cancelled' && (
                                                         <button
                                                             onClick={() => handleStatusUpdate(booking.id, 'cancelled')}
-                                                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                                                            className="p-2 text-red-400 hover:bg-red-500/10 rounded-lg"
                                                             title="Mark Cancelled"
                                                         >
                                                             <XCircle size={18} />
@@ -393,7 +397,7 @@ const AdminDashboard = () => {
                                                     )}
                                                     <button
                                                         onClick={() => handleDelete(booking.id)}
-                                                        className="p-2 text-slate-400 hover:text-red-600 hover:bg-slate-100 rounded-lg"
+                                                        className="p-2 text-slate-400 hover:text-red-400 hover:bg-white/5 rounded-lg"
                                                         title="Delete"
                                                     >
                                                         <Trash2 size={18} />
@@ -437,15 +441,15 @@ const AdminDashboard = () => {
                                     </button>
                                 </div>
                                 {packages.map(pkg => (
-                                    <div key={pkg.id} className="bg-white p-6 rounded-xl border border-slate-200 flex flex-col md:flex-row items-center gap-6 shadow-sm hover:shadow-md transition-shadow">
-                                        <img src={pkg.image} alt={pkg.title} className="w-24 h-24 object-cover rounded-lg bg-slate-100" />
+                                    <div key={pkg.id} className="glass-card p-6 rounded-xl border border-white/10 flex flex-col md:flex-row items-center gap-6 shadow-lg hover:border-white/20 transition-all">
+                                        <img src={pkg.image} alt={pkg.title} className="w-24 h-24 object-cover rounded-lg bg-white/5" />
                                         <div className="flex-1">
-                                            <h3 className="text-xl font-bold text-slate-900 mb-1">{pkg.title}</h3>
-                                            <p className="text-slate-500 text-sm mb-2">{pkg.location}</p>
+                                            <h3 className="text-xl font-bold text-white mb-1">{pkg.title}</h3>
+                                            <p className="text-slate-400 text-sm mb-2">{pkg.location}</p>
                                             <div className="flex items-center gap-4 text-sm">
-                                                <span className="font-bold text-slate-900">₹{pkg.price.toLocaleString()}</span>
+                                                <span className="font-bold text-blue-400">₹{pkg.price.toLocaleString()}</span>
                                                 {pkg.discount && (
-                                                    <span className="bg-red-100 text-red-600 px-2 py-0.5 rounded text-xs font-bold">{pkg.discount}</span>
+                                                    <span className="bg-red-500/20 text-red-400 px-2 py-0.5 rounded text-xs font-bold border border-red-500/20">{pkg.discount}</span>
                                                 )}
                                                 <span className="text-slate-500 flex items-center gap-1">
                                                     <Calendar size={14} />
@@ -455,7 +459,7 @@ const AdminDashboard = () => {
                                         </div>
                                         <button
                                             onClick={() => setCurrentPackage(pkg)}
-                                            className="px-6 py-2 border border-slate-200 rounded-lg text-slate-700 font-medium hover:bg-slate-50 flex items-center gap-2 transition-colors"
+                                            className="px-6 py-2 border border-white/10 rounded-lg text-slate-300 font-medium hover:bg-white/5 hover:text-white flex items-center gap-2 transition-colors"
                                         >
                                             <Edit size={16} />
                                             Edit Package
@@ -480,15 +484,15 @@ const AdminDashboard = () => {
 
             {/* Booking Details Modal */}
             {selectedBooking && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-                        <div className="p-6 border-b border-slate-100 flex justify-between items-center sticky top-0 bg-white z-10">
-                            <h2 className="text-2xl font-bold text-slate-900">Booking Details</h2>
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                    <div className="glass-card rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-white/10">
+                        <div className="p-6 border-b border-white/10 flex justify-between items-center sticky top-0 bg-black/50 backdrop-blur-md z-10">
+                            <h2 className="text-2xl font-bold text-white">Booking Details</h2>
                             <button
                                 onClick={() => setSelectedBooking(null)}
-                                className="p-2 hover:bg-slate-100 rounded-full transition-colors"
+                                className="p-2 hover:bg-white/10 rounded-full transition-colors"
                             >
-                                <X size={24} className="text-slate-500" />
+                                <X size={24} className="text-slate-400 hover:text-white" />
                             </button>
                         </div>
 
@@ -548,16 +552,16 @@ const AdminDashboard = () => {
 
                         {/* Detailed Traveler List */}
                         {selectedBooking.travelersList && selectedBooking.travelersList.length > 0 && (
-                            <div className="bg-slate-50 p-6 rounded-xl border border-slate-200">
+                            <div className="bg-white/5 p-6 rounded-xl border border-white/10">
                                 <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">Traveler Details</h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {selectedBooking.travelersList.map((traveler, index) => (
-                                        <div key={index} className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm relative">
-                                            <div className="absolute top-2 right-2 bg-blue-100 text-blue-600 text-xs font-bold px-2 py-1 rounded-full">
+                                        <div key={index} className="bg-black/40 p-4 rounded-lg border border-white/10 shadow-sm relative">
+                                            <div className="absolute top-2 right-2 bg-blue-500/20 text-blue-400 text-xs font-bold px-2 py-1 rounded-full border border-blue-500/20">
                                                 #{index + 1}
                                             </div>
-                                            <p className="font-semibold text-slate-800">{traveler.name}</p>
-                                            <div className="text-sm text-slate-500 mt-1 space-y-1">
+                                            <p className="font-semibold text-white">{traveler.name}</p>
+                                            <div className="text-sm text-slate-400 mt-1 space-y-1">
                                                 <p>Age: {traveler.age} • Gender: {traveler.gender}</p>
                                                 <p>Mobile: {traveler.mobile}</p>
                                             </div>
@@ -568,29 +572,29 @@ const AdminDashboard = () => {
                         )}
 
                         {/* Financials */}
-                        <div className="bg-slate-50 p-6 rounded-xl border border-slate-200">
+                        <div className="bg-white/5 p-6 rounded-xl border border-white/10">
                             <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">Payment Details</h3>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <p className="text-slate-500 text-sm">Total Package Cost</p>
-                                    <p className="text-xl font-bold text-slate-900">₹{selectedBooking.totalPrice?.toLocaleString()}</p>
+                                    <p className="text-slate-400 text-sm">Total Package Cost</p>
+                                    <p className="text-xl font-bold text-white">₹{selectedBooking.totalPrice?.toLocaleString()}</p>
                                 </div>
                                 <div className="text-right">
-                                    <p className="text-slate-500 text-sm">Amount Paid</p>
-                                    <p className="text-xl font-bold text-green-600">
+                                    <p className="text-slate-400 text-sm">Amount Paid</p>
+                                    <p className="text-xl font-bold text-green-400">
                                         ₹{selectedBooking.amountPaid ? selectedBooking.amountPaid.toLocaleString() : '0'}
                                     </p>
                                 </div>
-                                <div className="col-span-2 border-t border-slate-200 pt-4 flex justify-between items-center">
+                                <div className="col-span-2 border-t border-white/10 pt-4 flex justify-between items-center">
                                     <div>
-                                        <p className="text-slate-500 text-sm">Payment Type</p>
-                                        <p className="font-semibold text-slate-800 capitalize">
+                                        <p className="text-slate-400 text-sm">Payment Type</p>
+                                        <p className="font-semibold text-slate-200 capitalize">
                                             {selectedBooking.paymentType === 'token' ? 'Token Payment' : 'Full Payment'}
                                         </p>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-slate-500 text-sm">Balance Due</p>
-                                        <p className={`text-xl font-bold ${selectedBooking.balanceDue > 0 ? 'text-orange-600' : 'text-slate-900'}`}>
+                                        <p className="text-slate-400 text-sm">Balance Due</p>
+                                        <p className={`text-xl font-bold ${selectedBooking.balanceDue > 0 ? 'text-orange-400' : 'text-white'}`}>
                                             ₹{selectedBooking.balanceDue ? selectedBooking.balanceDue.toLocaleString() : '0'}
                                         </p>
                                     </div>
@@ -599,18 +603,18 @@ const AdminDashboard = () => {
                         </div>
 
                         {/* Profit Info (Admin Only) */}
-                        <div className="bg-purple-50 p-6 rounded-xl border border-purple-200">
-                            <h3 className="text-sm font-bold text-purple-800 uppercase tracking-wider mb-4">Profit Analysis</h3>
+                        <div className="bg-purple-500/10 p-6 rounded-xl border border-purple-500/20">
+                            <h3 className="text-sm font-bold text-purple-400 uppercase tracking-wider mb-4">Profit Analysis</h3>
                             <div className="flex justify-between items-center">
                                 <div>
-                                    <p className="text-purple-600 text-sm">Estimated Profit</p>
-                                    <p className="text-3xl font-bold text-purple-900">
+                                    <p className="text-purple-300 text-sm">Estimated Profit</p>
+                                    <p className="text-3xl font-bold text-white">
                                         ₹{calculateProfit(selectedBooking.totalPrice, selectedBooking.travelers).toLocaleString()}
                                     </p>
                                 </div>
                                 <div className="text-right">
-                                    <p className="text-purple-600 text-sm">Margin</p>
-                                    <p className="font-bold text-purple-900">
+                                    <p className="text-purple-300 text-sm">Margin</p>
+                                    <p className="font-bold text-purple-200 text-xl">
                                         {Math.round((calculateProfit(selectedBooking.totalPrice, selectedBooking.travelers) / selectedBooking.totalPrice) * 100)}%
                                     </p>
                                 </div>
@@ -621,7 +625,7 @@ const AdminDashboard = () => {
                         {selectedBooking.specialRequests && (
                             <div>
                                 <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Special Requests</h3>
-                                <div className="bg-blue-50 p-4 rounded-xl text-blue-800 text-sm border border-blue-100">
+                                <div className="bg-blue-500/10 p-4 rounded-xl text-blue-300 text-sm border border-blue-500/20">
                                     "{selectedBooking.specialRequests}"
                                 </div>
                             </div>
@@ -634,10 +638,10 @@ const AdminDashboard = () => {
                         </div>
                     </div>
 
-                    <div className="p-6 border-t border-slate-100 bg-slate-50 rounded-b-2xl flex justify-end gap-3">
+                    <div className="p-6 border-t border-white/10 bg-white/5 rounded-b-2xl flex justify-end gap-3">
                         <button
                             onClick={() => setSelectedBooking(null)}
-                            className="px-6 py-2 bg-white border border-slate-200 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-colors"
+                            className="px-6 py-2 bg-transparent border border-white/10 text-slate-300 font-semibold rounded-lg hover:bg-white/5 hover:text-white transition-colors"
                         >
                             Close
                         </button>
@@ -655,12 +659,12 @@ const AdminDashboard = () => {
 
             {/* Package Edit Modal */}
             {currentPackage && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
-                        <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-white sticky top-0 z-10">
-                            <h2 className="text-xl font-bold text-slate-900">Edit Package</h2>
-                            <button onClick={() => setCurrentPackage(null)} className="p-2 hover:bg-slate-100 rounded-full">
-                                <X size={20} className="text-slate-500" />
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                    <div className="glass-card rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto border border-white/10">
+                        <div className="p-6 border-b border-white/10 flex justify-between items-center bg-black/50 backdrop-blur-md sticky top-0 z-10">
+                            <h2 className="text-xl font-bold text-white">Edit Package</h2>
+                            <button onClick={() => setCurrentPackage(null)} className="p-2 hover:bg-white/10 rounded-full">
+                                <X size={20} className="text-slate-400 hover:text-white" />
                             </button>
                         </div>
 
@@ -672,11 +676,11 @@ const AdminDashboard = () => {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Price (₹)</label>
+                                    <label className="block text-sm font-medium text-slate-300 mb-1">Price (₹)</label>
                                     <input
                                         type="number"
                                         required
-                                        className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                        className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg focus:ring-2 focus:ring-blue-500 text-white"
                                         value={currentPackage.price}
                                         onChange={(e) => setCurrentPackage({ ...currentPackage, price: parseInt(e.target.value) })}
                                     />
@@ -734,11 +738,11 @@ const AdminDashboard = () => {
                                 </div>
                             </div>
 
-                            <div className="pt-4 border-t border-slate-100 flex justify-end gap-3">
+                            <div className="pt-4 border-t border-white/10 flex justify-end gap-3">
                                 <button
                                     type="button"
                                     onClick={() => setCurrentPackage(null)}
-                                    className="px-6 py-2 border border-slate-200 text-slate-700 font-medium rounded-lg hover:bg-slate-50"
+                                    className="px-6 py-2 border border-white/10 text-slate-300 font-medium rounded-lg hover:bg-white/5 hover:text-white transition-colors"
                                 >
                                     Cancel
                                 </button>

@@ -199,27 +199,31 @@ const TripPlanner = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 pt-24 pb-16">
+        <div className="min-h-screen bg-black pt-24 pb-16 relative overflow-hidden">
+            {/* Background Glows */}
+            <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-600/20 rounded-full blur-[128px] pointer-events-none"></div>
+            <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-600/20 rounded-full blur-[128px] pointer-events-none"></div>
+
             <SEO
                 title="Trip Planner"
                 description="Plan your perfect trip with our AI-powered itinerary generator. Customized travel plans based on your budget and preferences."
                 url="/trip-planner"
             />
-            <div className="container mx-auto px-6 lg:px-8">
+            <div className="container mx-auto px-6 lg:px-8 relative z-10">
                 {/* Header */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="text-center mb-12"
                 >
-                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-100 to-purple-100 rounded-full mb-4">
-                        <Sparkles className="w-5 h-5 text-purple-600" />
-                        <span className="text-sm font-semibold text-purple-900">AI-Powered Trip Planning</span>
+                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 rounded-full mb-4 border border-white/10">
+                        <Sparkles className="w-5 h-5 text-purple-400" />
+                        <span className="text-sm font-semibold text-purple-200">AI-Powered Trip Planning</span>
                     </div>
-                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
                         Plan Your Perfect Journey
                     </h1>
-                    <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+                    <p className="text-lg text-slate-400 max-w-2xl mx-auto">
                         Let our AI create a personalized itinerary tailored to your preferences, budget, and travel style
                     </p>
                 </motion.div>
@@ -231,12 +235,12 @@ const TripPlanner = () => {
                     transition={{ delay: 0.2 }}
                     className="max-w-4xl mx-auto mb-16"
                 >
-                    <form onSubmit={generateItinerary} className="bg-white/70 backdrop-blur-xl rounded-3xl shadow-2xl p-8 md:p-10 border border-white/50 relative">
+                    <form onSubmit={generateItinerary} className="glass-card rounded-3xl p-8 md:p-10 border border-white/10 relative">
 
                         {/* Destination */}
                         <div className="mb-8">
-                            <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 mb-3">
-                                <MapPin className="w-5 h-5 text-blue-600" />
+                            <label className="flex items-center gap-2 text-sm font-semibold text-slate-300 mb-3">
+                                <MapPin className="w-5 h-5 text-blue-400" />
                                 Where do you want to go?
                             </label>
                             <input
@@ -246,23 +250,23 @@ const TripPlanner = () => {
                                 onChange={handleInputChange}
                                 placeholder="e.g., Paris, Tokyo, Bali..."
                                 required
-                                className="w-full px-5 py-4 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all outline-none text-slate-900 placeholder-slate-400"
+                                className="w-full px-5 py-4 rounded-xl bg-white/5 border border-white/10 focus:border-blue-500/50 focus:bg-white/10 focus:ring-1 focus:ring-blue-500/50 transition-all outline-none text-white placeholder-slate-500"
                             />
                         </div>
 
                         {/* Date & Duration Section */}
                         <div className="mb-8 relative">
-                            <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 mb-3">
-                                <Calendar className="w-5 h-5 text-purple-600" />
+                            <label className="flex items-center gap-2 text-sm font-semibold text-slate-300 mb-3">
+                                <Calendar className="w-5 h-5 text-purple-400" />
                                 Date & Duration
                             </label>
 
                             <button
                                 type="button"
                                 onClick={() => setShowDatePicker(!showDatePicker)}
-                                className="w-full px-5 py-4 rounded-xl border-2 border-slate-200 hover:border-purple-400 bg-white text-left flex items-center justify-between transition-all"
+                                className="w-full px-5 py-4 rounded-xl border border-white/10 hover:border-purple-500/50 bg-white/5 text-left flex items-center justify-between transition-all"
                             >
-                                <span className="text-slate-700 font-medium">
+                                <span className="text-white font-medium">
                                     {formData.isFlexible
                                         ? `${formData.flexibleDays} Days in ${formData.flexibleMonth}`
                                         : (formData.startDate && formData.endDate
@@ -270,7 +274,7 @@ const TripPlanner = () => {
                                             : "Select Dates or Duration")
                                     }
                                 </span>
-                                <ChevronRight className={`w-5 h-5 text-slate-400 transition-transform ${showDatePicker ? 'rotate-90' : ''}`} />
+                                <ChevronRight className={`w-5 h-5 text-slate-500 transition-transform ${showDatePicker ? 'rotate-90' : ''}`} />
                             </button>
 
                             {/* Date Picker Popover */}

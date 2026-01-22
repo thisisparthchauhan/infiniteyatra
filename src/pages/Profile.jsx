@@ -2,12 +2,16 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { db } from '../firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
+import PhoneInput from 'react-phone-input-2';
+import 'react-phone-input-2/lib/style.css';
 import './Profile.css';
 
 const Profile = () => {
     const { currentUser } = useAuth();
     const [userData, setUserData] = useState({
-        fullName: '',
+        firstName: '',
+        middleName: '',
+        lastName: '',
         nickname: '',
         dateOfBirth: '',
         gender: '',
@@ -16,11 +20,21 @@ const Profile = () => {
         phone: '',
         credits: 0,
         travelPoints: 0,
-        interests: []
+        interests: [],
+        emergencyContacts: []
     });
     const [loading, setLoading] = useState(true);
     const [activeModal, setActiveModal] = useState(null);
     const [modalValue, setModalValue] = useState('');
+    const [editingContactId, setEditingContactId] = useState(null);
+    const [contactForm, setContactForm] = useState({
+        firstName: '',
+        middleName: '',
+        lastName: '',
+        relation: '',
+        email: '',
+        phoneNumbers: ['']
+    });
     const [saving, setSaving] = useState(false);
 
     const availableInterests = [
@@ -38,7 +52,19 @@ const Profile = () => {
                 try {
                     const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
                     if (userDoc.exists()) {
-                        setUserData({ ...userData, ...userDoc.data() });
+                        const data = userDoc.data();
+                        // Backfill helper: if full name exists but first name doesn't, split it
+                        if (data.fullName && !data.firstName) {
+                            const nameParts = data.fullName.split(' ');
+                            if (nameParts.length === 1) {
+                                data.firstName = nameParts[0];
+                                data.lastName = '';
+                            } else {
+                                data.firstName = nameParts[0];
+                                data.lastName = nameParts.slice(1).join(' '); // Join rest as last name roughly
+                            }
+                        }
+                        setUserData({ ...userData, ...data });
                     }
                 } catch (error) {
                     console.error('Error fetching user data:', error);
@@ -50,18 +76,52 @@ const Profile = () => {
         fetchUserData();
     }, [currentUser]);
 
-    const openModal = (field, currentValue) => {
+    const openModal = (field, currentValue, contactId = null) => {
         setActiveModal(field);
-        setModalValue(currentValue || '');
+        if (field === 'emergencyContact') {
+            if (contactId !== null) {
+                const contact = userData.emergencyContacts[contactId];
+                setContactForm({ ...contact });
+                setEditingContactId(contactId);
+            } else {
+                setContactForm({
+                    firstName: '',
+                    middleName: '',
+                    lastName: '',
+                    relation: '',
+                    email: '',
+                    phoneNumbers: ['']
+                });
+                setEditingContactId(null);
+            }
+        } else {
+            setModalValue(currentValue || '');
+        }
     };
 
     const closeModal = () => {
         setActiveModal(null);
         setModalValue('');
+        setEditingContactId(null);
     };
+
+    const validateName = (name) => /^[A-Za-z\s]+$/.test(name);
+    const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
     const saveField = async () => {
         if (!currentUser) return;
+
+        // Validation
+        if (['firstName', 'middleName', 'lastName'].includes(activeModal)) {
+            // Input is already restricted to alphabets via onChange
+        }
+
+        // Email validation (if email is editable via this modal, currently it's read-only in UI but good to have)
+        // User asked "in profile data user name and email", email is usually from Auth, but if editable:
+        if (activeModal === 'email' && !validateEmail(modalValue)) {
+            alert('Please enter a valid email address.');
+            return;
+        }
 
         setSaving(true);
         try {
@@ -92,16 +152,82 @@ const Profile = () => {
         }
     };
 
+    const saveEmergencyContact = async () => {
+        if (!currentUser) return;
+
+        // Basic validation
+        if (!contactForm.firstName || !contactForm.lastName || !contactForm.relation || !contactForm.phoneNumbers[0]) {
+            alert('Please fill in all mandatory fields.');
+            return;
+        }
+
+        // Email Validation
+        if (contactForm.email && !validateEmail(contactForm.email)) {
+            alert('Please enter a valid email address.');
+            return;
+        }
+
+        setSaving(true);
+        try {
+            let updatedContacts = [...(userData.emergencyContacts || [])];
+            if (editingContactId !== null) {
+                updatedContacts[editingContactId] = contactForm;
+            } else {
+                updatedContacts.push(contactForm);
+            }
+
+            const updatedData = { ...userData, emergencyContacts: updatedContacts };
+            await setDoc(doc(db, 'users', currentUser.uid), updatedData, { merge: true });
+            setUserData(updatedData);
+            closeModal();
+        } catch (error) {
+            console.error('Error saving emergency contact:', error);
+            alert('Failed to save contact.');
+        }
+        setSaving(false);
+    };
+
+    const deleteEmergencyContact = async (index, e) => {
+        e.stopPropagation();
+        if (!currentUser || !window.confirm('Are you sure you want to delete this contact?')) return;
+
+        try {
+            const updatedContacts = userData.emergencyContacts.filter((_, i) => i !== index);
+            const updatedData = { ...userData, emergencyContacts: updatedContacts };
+            await setDoc(doc(db, 'users', currentUser.uid), updatedData, { merge: true });
+            setUserData(updatedData);
+        } catch (error) {
+            console.error('Error deleting contact:', error);
+        }
+    };
+
+    const handleContactPhoneChange = (index, value) => {
+        const newPhones = [...contactForm.phoneNumbers];
+        newPhones[index] = '+' + value;
+        setContactForm({ ...contactForm, phoneNumbers: newPhones });
+    };
+
+    const addContactPhone = () => {
+        setContactForm({ ...contactForm, phoneNumbers: [...contactForm.phoneNumbers, ''] });
+    };
+
+    const removeContactPhone = (index) => {
+        const newPhones = contactForm.phoneNumbers.filter((_, i) => i !== index);
+        setContactForm({ ...contactForm, phoneNumbers: newPhones });
+    };
+
     const getInitials = () => {
-        if (userData.fullName) {
-            return userData.fullName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+        if (userData.firstName || userData.lastName) {
+            return ((userData.firstName?.[0] || '') + (userData.lastName?.[0] || '')).toUpperCase();
         }
         return 'IY';
     };
 
     const getFieldConfig = (field) => {
         const configs = {
-            fullName: { label: 'Full Name', placeholder: 'Enter your full name', type: 'text' },
+            firstName: { label: 'First Name', placeholder: 'Enter first name', type: 'text' },
+            middleName: { label: 'Middle Name (Optional)', placeholder: 'Enter middle name', type: 'text' },
+            lastName: { label: 'Last Name', placeholder: 'Enter last name', type: 'text' },
             nickname: {
                 label: 'What do you want to be called?',
                 placeholder: 'Nickname *',
@@ -132,7 +258,7 @@ const Profile = () => {
                     <div className="passport-header">IY PASSPORT</div>
                     <div className="passport-avatar">
                         <div className="avatar-circle">
-                            {userData.fullName ? (
+                            {userData.firstName ? (
                                 <span className="avatar-initials">{getInitials()}</span>
                             ) : (
                                 <span className="avatar-emoji">😎</span>
@@ -149,11 +275,27 @@ const Profile = () => {
                     <section className="profile-section">
                         <h2 className="section-title">General Information</h2>
                         <div className="info-list">
-                            <div className="info-item" onClick={() => openModal('fullName', userData.fullName)}>
+                            <div className="info-item" onClick={() => openModal('firstName', userData.firstName)}>
                                 <div className="info-icon">✏️</div>
                                 <div className="info-content">
-                                    <div className="info-label">Full Name</div>
-                                    <div className="info-value">{userData.fullName || 'Not set'}</div>
+                                    <div className="info-label">First Name</div>
+                                    <div className="info-value">{userData.firstName || 'Not set'}</div>
+                                </div>
+                                <div className="info-arrow">›</div>
+                            </div>
+                            <div className="info-item" onClick={() => openModal('middleName', userData.middleName)}>
+                                <div className="info-icon">✏️</div>
+                                <div className="info-content">
+                                    <div className="info-label">Middle Name</div>
+                                    <div className="info-value">{userData.middleName || 'Not set'}</div>
+                                </div>
+                                <div className="info-arrow">›</div>
+                            </div>
+                            <div className="info-item" onClick={() => openModal('lastName', userData.lastName)}>
+                                <div className="info-icon">✏️</div>
+                                <div className="info-content">
+                                    <div className="info-label">Last Name</div>
+                                    <div className="info-value">{userData.lastName || 'Not set'}</div>
                                 </div>
                                 <div className="info-arrow">›</div>
                             </div>
@@ -171,7 +313,11 @@ const Profile = () => {
                                 <div className="info-icon">🎂</div>
                                 <div className="info-content">
                                     <div className="info-label">Set Date of Birth</div>
-                                    <div className="info-value">{userData.dateOfBirth || 'Not set'}</div>
+                                    <div className="info-value">
+                                        {userData.dateOfBirth
+                                            ? userData.dateOfBirth.split('-').reverse().join('/')
+                                            : 'Not set'}
+                                    </div>
                                 </div>
                                 <div className="info-arrow">›</div>
                             </div>
@@ -217,6 +363,46 @@ const Profile = () => {
                                 </div>
                                 <div className="info-arrow">›</div>
                             </div>
+                        </div>
+                    </section>
+
+                    {/* Emergency Contacts */}
+                    <section className="profile-section">
+                        <div className="flex items-center justify-between mb-4">
+                            <h2 className="section-title mb-0">Emergency Contacts</h2>
+                            <button
+                                onClick={() => openModal('emergencyContact')}
+                                className="add-contact-btn"
+                            >
+                                + Add Contact
+                            </button>
+                        </div>
+                        <div className="info-list">
+                            {(!userData.emergencyContacts || userData.emergencyContacts.length === 0) ? (
+                                <div className="no-data-placeholder">
+                                    No emergency contacts added yet.
+                                </div>
+                            ) : (
+                                userData.emergencyContacts.map((contact, index) => (
+                                    <div key={index} className="info-item" onClick={() => openModal('emergencyContact', null, index)}>
+                                        <div className="info-icon">🆘</div>
+                                        <div className="info-content">
+                                            <div className="info-label">{contact.relation}</div>
+                                            <div className="info-value">{contact.firstName} {contact.lastName}</div>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <button
+                                                className="delete-icon-btn"
+                                                onClick={(e) => deleteEmergencyContact(index, e)}
+                                                title="Delete Contact"
+                                            >
+                                                🗑️
+                                            </button>
+                                            <div className="info-arrow">›</div>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
                         </div>
                     </section>
                 </div>
@@ -276,48 +462,179 @@ const Profile = () => {
                 <div className="modal-overlay" onClick={closeModal}>
                     <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
                         <button className="modal-close" onClick={closeModal}>×</button>
-                        <h3 className="modal-title">{getFieldConfig(activeModal).label}</h3>
+                        <h3 className="modal-title">{activeModal === 'emergencyContact' ? (editingContactId !== null ? 'Edit Emergency Contact' : 'Add Emergency Contact') : getFieldConfig(activeModal).label}</h3>
 
-                        {getFieldConfig(activeModal).type === 'select' ? (
-                            <select
-                                className="modal-input"
-                                value={modalValue}
-                                onChange={(e) => setModalValue(e.target.value)}
-                            >
-                                <option value="">Select...</option>
-                                {getFieldConfig(activeModal).options.map(option => (
-                                    <option key={option} value={option}>{option}</option>
-                                ))}
-                            </select>
-                        ) : (
-                            <input
-                                type={getFieldConfig(activeModal).type}
-                                className="modal-input"
-                                placeholder={getFieldConfig(activeModal).placeholder}
-                                value={modalValue}
-                                onChange={(e) => setModalValue(e.target.value)}
-                                autoFocus
-                            />
-                        )}
-
-                        {getFieldConfig(activeModal).rules && (
-                            <div className="modal-rules">
-                                {getFieldConfig(activeModal).rules.map((rule, index) => (
-                                    <div key={index} className="rule-item">
-                                        <span className="rule-icon">✓</span>
-                                        <span className="rule-text">{rule}</span>
+                        {activeModal === 'emergencyContact' ? (
+                            <div className="emergency-form space-y-4">
+                                <div className="grid grid-cols-3 gap-2">
+                                    <div className="relative">
+                                        <input
+                                            type="text"
+                                            className="modal-input"
+                                            placeholder="First Name *"
+                                            value={contactForm.firstName}
+                                            onChange={(e) => setContactForm({ ...contactForm, firstName: e.target.value.replace(/[^A-Za-z\s]/g, '') })}
+                                        />
                                     </div>
-                                ))}
+                                    <div className="relative">
+                                        <input
+                                            type="text"
+                                            className="modal-input"
+                                            placeholder="Middle Name"
+                                            value={contactForm.middleName}
+                                            onChange={(e) => setContactForm({ ...contactForm, middleName: e.target.value.replace(/[^A-Za-z\s]/g, '') })}
+                                        />
+                                    </div>
+                                    <div className="relative">
+                                        <input
+                                            type="text"
+                                            className="modal-input"
+                                            placeholder="Last Name *"
+                                            value={contactForm.lastName}
+                                            onChange={(e) => setContactForm({ ...contactForm, lastName: e.target.value.replace(/[^A-Za-z\s]/g, '') })}
+                                        />
+                                    </div>
+                                </div>
+                                <p className="text-[10px] text-slate-500 pl-1 -mt-2">Only alphabets allowed for names</p>
+                                <select
+                                    className="modal-input"
+                                    value={contactForm.relation}
+                                    onChange={(e) => setContactForm({ ...contactForm, relation: e.target.value })}
+                                >
+                                    <option value="">Select Relation *</option>
+                                    <option value="Father">Father</option>
+                                    <option value="Mother">Mother</option>
+                                    <option value="Brother / Sister">Brother / Sister</option>
+                                    <option value="Friend">Friend</option>
+                                    <option value="Colleague">Colleague</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                                <input
+                                    type="email"
+                                    className="modal-input"
+                                    placeholder="Email Address"
+                                    value={contactForm.email}
+                                    onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
+                                />
+                                <div>
+                                    <label className="text-xs text-slate-400 mb-1 block">Mobile Number(s) *</label>
+                                    {contactForm.phoneNumbers.map((phone, index) => (
+                                        <div key={index} className="mb-2 relative">
+                                            <PhoneInput
+                                                country={'in'}
+                                                value={phone}
+                                                onChange={(value) => handleContactPhoneChange(index, value)}
+                                                enableSearch={true}
+                                                containerClass="glass-phone-container"
+                                                inputClass="glass-phone-input"
+                                                buttonClass="glass-phone-button"
+                                                dropdownClass="glass-phone-dropdown"
+                                                searchClass="glass-phone-search"
+                                            />
+                                            {index > 0 && (
+                                                <button
+                                                    onClick={() => removeContactPhone(index)}
+                                                    className="absolute -right-8 top-2 text-red-500 hover:text-red-400"
+                                                >
+                                                    ×
+                                                </button>
+                                            )}
+                                        </div>
+                                    ))}
+                                    <button
+                                        onClick={addContactPhone}
+                                        className="text-xs text-blue-400 hover:text-blue-300 font-medium"
+                                    >
+                                        + Add Another Number
+                                    </button>
+                                </div>
+                                <button
+                                    className="modal-save-btn"
+                                    onClick={saveEmergencyContact}
+                                    disabled={saving}
+                                >
+                                    {saving ? 'Saving...' : 'Save Contact'}
+                                </button>
                             </div>
+                        ) : activeModal === 'phone' ? (
+                            <div className="phone-input-container">
+                                <PhoneInput
+                                    country={'in'}
+                                    value={modalValue}
+                                    onChange={(phone) => setModalValue('+' + phone)}
+                                    enableSearch={true}
+                                    containerClass="glass-phone-container"
+                                    inputClass="glass-phone-input"
+                                    buttonClass="glass-phone-button"
+                                    dropdownClass="glass-phone-dropdown"
+                                    searchClass="glass-phone-search"
+                                />
+                                <button
+                                    className="modal-save-btn mt-4"
+                                    onClick={saveField}
+                                    disabled={saving || !modalValue}
+                                >
+                                    {saving ? 'Saving...' : 'Save'}
+                                </button>
+                            </div>
+                        ) : getFieldConfig(activeModal).type === 'select' ? (
+                            <>
+                                <select
+                                    className="modal-input"
+                                    value={modalValue}
+                                    onChange={(e) => setModalValue(e.target.value)}
+                                >
+                                    <option value="">Select...</option>
+                                    {getFieldConfig(activeModal).options.map(option => (
+                                        <option key={option} value={option}>{option}</option>
+                                    ))}
+                                </select>
+                                <button
+                                    className="modal-save-btn mt-4"
+                                    onClick={saveField}
+                                    disabled={saving || !modalValue}
+                                >
+                                    {saving ? 'Saving...' : 'Save'}
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <input
+                                    type={getFieldConfig(activeModal).type}
+                                    className="modal-input"
+                                    placeholder={getFieldConfig(activeModal).placeholder}
+                                    value={modalValue}
+                                    onChange={(e) => {
+                                        let val = e.target.value;
+                                        if (['firstName', 'middleName', 'lastName'].includes(activeModal)) {
+                                            val = val.replace(/[^A-Za-z\s]/g, '');
+                                        }
+                                        setModalValue(val);
+                                    }}
+                                    autoFocus
+                                />
+                                {['firstName', 'middleName', 'lastName'].includes(activeModal) && (
+                                    <p className="text-[10px] text-slate-500 mt-1">Only alphabets allowed</p>
+                                )}
+                                {getFieldConfig(activeModal).rules && (
+                                    <div className="modal-rules">
+                                        {getFieldConfig(activeModal).rules.map((rule, index) => (
+                                            <div key={index} className="rule-item">
+                                                <span className="rule-icon">✓</span>
+                                                <span className="rule-text">{rule}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                                <button
+                                    className="modal-save-btn mt-4"
+                                    onClick={saveField}
+                                    disabled={saving || !modalValue}
+                                >
+                                    {saving ? 'Saving...' : 'Save'}
+                                </button>
+                            </>
                         )}
-
-                        <button
-                            className="modal-save-btn"
-                            onClick={saveField}
-                            disabled={saving || !modalValue}
-                        >
-                            {saving ? 'Saving...' : 'Save'}
-                        </button>
                     </div>
                 </div>
             )}

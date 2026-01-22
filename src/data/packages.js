@@ -14,6 +14,7 @@ export const packages = [
         id: 'dayara-bugyal',
         title: "Dayara Bugyal Trek",
         location: "Uttarakhand, India",
+        pickupDrop: "Dehradun",
         image: dayaraFrontImg,
         category: "trek",
         price: 5999,
@@ -25,7 +26,13 @@ export const packages = [
         bestTime: "Year Round",
         maxAltitude: "11,181 ft",
         maxGroupSize: 15,
-        description: "Dayara Bugyal is one of the most beautiful alpine meadows in India. Situated at an elevation of 3,408 meters, it offers breathtaking views of the Himalayas. Perfect for beginners and families.",
+        description: `Dayara Bugyal is one of the most beautiful high-altitude meadows in the Himalayas, offering wide open grasslands, snow-covered trails, and breathtaking mountain views. This trek is perfect for beginners as well as nature lovers who want a peaceful yet adventurous Himalayan experience.
+
+The journey takes you through dense forests, traditional villages, and vast alpine meadows with panoramic views of peaks like Bandarpoonch and Draupadi Ka Danda. Whether covered in snow during winter or lush green in summer, Dayara Bugyal feels magical in every season.
+
+With Infinite Yatra, this trek is designed to be safe, well-guided, and memorable — balancing adventure, comfort, and natural beauty.
+
+Explore Infinite. 🏔️`,
         highlights: [
             "Lush Green Meadows",
             "Panoramic Mountain Views",
@@ -37,27 +44,64 @@ export const packages = [
             {
                 day: 1,
                 title: "Dehradun to Raithal",
-                description: "Drive from Dehradun to Raithal (180 km, 7-8 hours). The base camp for the trek.",
-                activities: ["Scenic drive", "Base camp arrival"]
+                description: "Scenic drive from Dehradun to Raithal village via Uttarkashi. Raithal serves as the base camp of the trek, surrounded by oak forests and mountain views.",
+                activities: ["Scenic mountain drive", "Base camp arrival", "Village stay"],
+                stats: {
+                    distance: "180 km",
+                    time: "7–8 hours",
+                    altitude: "7,070 ft"
+                },
+                stay: "Homestay / Guesthouse",
+                meals: "Dinner included"
             },
             {
                 day: 2,
-                title: "Raithal toGui",
-                description: "Trek from Raithal to Gui (4 km, 4-5 hours). Easy ascent through forests.",
-                activities: ["Trek", "Camping"]
+                title: "Raithal to Gui Campsite",
+                description: "Begin the trek from Raithal to Gui campsite through dense oak and rhododendron forests. A gradual ascent ideal for acclimatization.",
+                activities: ["Forest trails", "First campsite", "Acclimatization walk"],
+                stats: {
+                    distance: "5 km",
+                    time: "2–3 hours",
+                    altitude: "~9,800 ft"
+                },
+                stay: "Camping at Gui",
+                meals: "Breakfast, Lunch & Dinner"
             },
             {
                 day: 3,
                 title: "Gui to Dayara Bugyal & Back",
-                description: "Trek to Dayara Bugyal top and explore the vast meadows. Return to Gui/Raithal.",
-                activities: ["Summit View", "Meadow walk"]
+                description: "Summit day trek to the vast alpine meadows of Dayara Bugyal. Enjoy panoramic Himalayan views before returning to Gui campsite.",
+                activities: ["Dayara Bugyal meadows", "Himalayan peaks views", "Photography & snow (winter)"],
+                stats: {
+                    distance: "~4.3 km",
+                    time: "~3 hours",
+                    altitude: "~12,100 ft"
+                },
+                stay: "Camping at Gui",
+                meals: "Breakfast, Packed Lunch & Dinner"
             },
             {
                 day: 4,
                 title: "Raithal to Dehradun",
-                description: "Drive back to Dehradun. Trip concludes.",
-                activities: ["Return journey"]
+                description: "Descend from Gui to Raithal and drive back to Dehradun via Uttarkashi, marking the end of the trek.",
+                activities: ["Easy downhill trek", "Scenic return drive", "Trek completion"],
+                stats: {
+                    distance: "~4 km (descent)",
+                    driveDistance: "~180 km",
+                    time: "7–8 hours total"
+                },
+                meals: "Breakfast included"
             }
+        ],
+        goodToKnow: [
+            "Mobile network limited after Raithal",
+            "ATM available only in Dehradun/Uttarkashi",
+            "Weather changes quickly"
+        ],
+        whoIsThisFor: [
+            "Beginners",
+            "First-time trekkers",
+            "Fitness level: basic"
         ],
         inclusions: [
             "Dehradun to Dehradun Transport",
@@ -76,6 +120,12 @@ export const packages = [
             dayara2,
             dayara3,
             dayara4
+        ],
+        cancellationPolicy: [
+            "Token Amount: ₹1,000 per person (Non-Refundable & Non-Transferable)",
+            "More than 7 days before trip: Full refund minus token amount",
+            "4–7 days before trip: 50% refund only",
+            "Less than 72 hours / No Show: No refund"
         ]
     },
 
@@ -83,6 +133,7 @@ export const packages = [
         id: 'kedarkantha',
         title: "Kedarkantha Trek",
         location: "Uttarakhand, India",
+        pickupDrop: "Dehradun",
         image: "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?q=80&w=2070&auto=format&fit=crop",
         category: "trek",
         price: 2,
@@ -168,6 +219,12 @@ export const packages = [
             "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=2070&auto=format&fit=crop",
             "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=2070&auto=format&fit=crop"
         ],
+        cancellationPolicy: [
+            "Token Amount: ₹1,000 per person (Non-Refundable & Non-Transferable)",
+            "More than 7 days before trip: Full refund minus token amount",
+            "4–7 days before trip: 50% refund only",
+            "Less than 72 hours / No Show: No refund"
+        ],
         gallery: [
             { id: 1, url: '/images/gallery/kedarkantha-1.png', alt: 'Stunning sunrise view from Kedarkantha summit with golden snow-covered peaks' },
             { id: 2, url: '/images/gallery/kedarkantha-2.png', alt: 'Trekkers hiking on snowy trail with Himalayan mountains in background' },
@@ -224,6 +281,7 @@ export const packages = [
         id: 'chardham-2026',
         title: "Chardham Yatra 2026",
         location: "Uttarakhand, India",
+        pickupDrop: "Haridwar & Rishikesh",
         image: kedarnathImg,
         category: "spiritual",
         price: 35000,
@@ -324,12 +382,19 @@ export const packages = [
         images: [
             kedarnathImg,
             "https://images.unsplash.com/photo-1548013146-72479768bada?q=80&w=2076&auto=format&fit=crop"
+        ],
+        cancellationPolicy: [
+            "Token Amount: ₹1,000 per person (Non-Refundable & Non-Transferable)",
+            "More than 7 days before trip: Full refund minus token amount",
+            "4–7 days before trip: 50% refund only",
+            "Less than 72 hours / No Show: No refund"
         ]
     },
     {
         id: 'soul-of-himalayas',
         title: "The Soul of Himalayas",
         location: "Himalayas, India",
+        pickupDrop: "Haridwar & Rishikesh",
         image: soulOfHimalayasImg,
         category: "spiritual",
         price: 18000,
@@ -405,12 +470,19 @@ When you return, you don’t just bring back photos — you bring back a new ver
         ],
         images: [
             soulOfHimalayasImg
+        ],
+        cancellationPolicy: [
+            "Token Amount: ₹1,000 per person (Non-Refundable & Non-Transferable)",
+            "More than 7 days before trip: Full refund minus token amount",
+            "4–7 days before trip: 50% refund only",
+            "Less than 72 hours / No Show: No refund"
         ]
     },
     {
         id: 'thailand-tropical',
         title: "Tropical Thailand",
         location: "Phuket & Bangkok, Thailand",
+        pickupDrop: "Phuket Airport",
         image: "https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?q=80&w=2039&auto=format&fit=crop",
         category: "international",
         price: 35000,
@@ -439,12 +511,18 @@ When you return, you don’t just bring back photos — you bring back a new ver
         ],
         inclusions: ["Hotels", "Breakfast", "Airport Transfers", "Phi Phi Tour"],
         exclusions: ["Flights (International/Domestic)", "Visa on Arrival", "Lunch & Dinner"],
-        images: ["https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?q=80&w=2039&auto=format&fit=crop"]
+        images: ["https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?q=80&w=2039&auto=format&fit=crop"],
+        cancellationPolicy: [
+            "Cancellations made 15+ days before departure: 90% refund",
+            "7-14 days before departure: 50% refund",
+            "Less than 7 days: No refund"
+        ]
     },
     {
         id: 'dazzling-dubai',
         title: "Dazzling Dubai",
         location: "Dubai, UAE",
+        pickupDrop: "Dubai Airport",
         image: dubaiImg,
         category: "international",
         price: 45000,
@@ -476,12 +554,18 @@ When you return, you don’t just bring back photos — you bring back a new ver
             "https://images.unsplash.com/photo-1512453979798-5ea904ac6605?q=80&w=2070&auto=format&fit=crop",
             "https://images.unsplash.com/photo-1546412414-e1885259563a?q=80&w=1974&auto=format&fit=crop",
             "https://images.unsplash.com/photo-1582672060674-bc2bd808a8b5?q=80&w=1935&auto=format&fit=crop"
+        ],
+        cancellationPolicy: [
+            "Cancellations made 15+ days before departure: 90% refund",
+            "7-14 days before departure: 50% refund",
+            "Less than 7 days: No refund"
         ]
     },
     {
         id: 'usa-explorer',
         title: "USA Explorer",
         location: "New York & Las Vegas, USA",
+        pickupDrop: "JFK Airport, NY",
         image: "https://images.unsplash.com/photo-1534430480872-3498386e7856?q=80&w=2070&auto=format&fit=crop",
         category: "international",
         price: 150000,
@@ -518,6 +602,11 @@ When you return, you don’t just bring back photos — you bring back a new ver
             "https://images.unsplash.com/photo-1534430480872-3498386e7856?q=80&w=2070&auto=format&fit=crop",
             "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=2070&auto=format&fit=crop",
             "https://images.unsplash.com/photo-1605833556294-ea5c7a74f57d?q=80&w=2074&auto=format&fit=crop"
+        ],
+        cancellationPolicy: [
+            "Cancellations made 15+ days before departure: 90% refund",
+            "7-14 days before departure: 50% refund",
+            "Less than 7 days: No refund"
         ]
     }
 ];

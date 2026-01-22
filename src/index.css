@@ -60,7 +60,7 @@ body::before {
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     position: relative;
-    overflow: hidden;
+    /* overflow: hidden; */
 }
 
 /* Dark Glass Card Utility (High Contrast) */
@@ -73,7 +73,7 @@ body::before {
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     position: relative;
-    overflow: hidden;
+    /* overflow: hidden; */
 }
 
 /* Glass inner glow on hover */
@@ -136,6 +136,7 @@ body::before {
 ::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.3);
 }
+
 /* React Phone Input 2 Overrides for Dark Mode */
 .react-tel-input .country-list {
     background-color: #1e293b !important;
@@ -156,17 +157,76 @@ body::before {
 
 .react-tel-input .country-list .search {
     background-color: #0f172a !important;
-    padding: 10px !important;
+    padding: 12px 14px !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 10 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .react-tel-input .country-list .search-box {
     background-color: #1e293b !important;
     color: white !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    border-radius: 6px !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 8px !important;
     margin-left: 0 !important;
     width: 100% !important;
-    padding: 8px 12px !important; 
+    padding: 10px 14px !important;
+    font-size: 14px !important;
+    outline: none !important;
+    transition: all 0.2s ease;
+}
+
+.react-tel-input .country-list .search-box:focus {
+    border-color: #3b82f6 !important;
+    background-color: #334155 !important;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.react-tel-input .country-list .search-box::placeholder {
+    color: #94a3b8 !important;
+}
+
+/* Custom Search Icon for Phone Input */
+.react-tel-input .country-list .search::before {
+    content: '';
+    position: absolute;
+    left: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 14px;
+    height: 14px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'%3E%3C/path%3E%3C/svg%3E");
+    background-size: contain;
+    background-repeat: no-repeat;
+    z-index: 20;
+    pointer-events: none;
+}
+
+.react-tel-input .country-list .search-box {
+    padding-left: 36px !important;
+    /* Make room for icon */
+}
+
+/* Custom Search Icon for Phone Input */
+.react-tel-input .country-list .search::before {
+    content: '';
+    position: absolute;
+    left: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 14px;
+    height: 14px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'%3E%3C/path%3E%3C/svg%3E");
+    background-size: contain;
+    background-repeat: no-repeat;
+    z-index: 20;
+    pointer-events: none;
+}
+
+.react-tel-input .country-list .search-box {
+    padding-left: 36px !important;
+    /* Make room for icon */
 }
 
 .react-tel-input .selected-flag:hover,
@@ -180,10 +240,114 @@ body::before {
 
 /* Ensure Dial Codes in Phone Dropdown are Visible */
 .react-tel-input .country-list .country .dial-code {
-    color: #94a3b8 !important; /* Slate-400 equivalent for good contrast */
+    color: #94a3b8 !important;
+    /* Slate-400 equivalent for good contrast */
 }
 
 .react-tel-input .country-list .country:hover .dial-code,
 .react-tel-input .country-list .country.highlight .dial-code {
-    color: #cbd5e1 !important; /* Lighter slate on hover */
+    color: #cbd5e1 !important;
+    /* Lighter slate on hover */
+}
+
+/* Global Text Selection Styling */
+::selection {
+    background-color: #3b82f6;
+    /* Blue-500 matches theme */
+    color: #ffffff;
+}
+
+/* Override Chrome/Webkit Autofill Yellow Background */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px #1a1a1a inset !important;
+    -webkit-text-fill-color: white !important;
+    transition: background-color 5000s ease-in-out 0s;
+    caret-color: white;
+}
+
+/* React DatePicker Dark Theme Overrides */
+.react-datepicker-wrapper {
+    width: 100%;
+}
+
+.react-datepicker {
+    font-family: var(--font-primary) !important;
+    background-color: rgba(20, 20, 20, 0.95) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: white !important;
+    border-radius: 16px !important;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5) !important;
+    overflow: hidden;
+}
+
+.react-datepicker__header {
+    background-color: rgba(30, 30, 30, 0.9) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-top-left-radius: 16px !important;
+    border-top-right-radius: 16px !important;
+    padding-top: 12px;
+}
+
+.react-datepicker__current-month {
+    color: white !important;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.react-datepicker__day-name {
+    color: #94a3b8 !important;
+    /* slate-400 */
+    font-weight: 600;
+}
+
+.react-datepicker__day {
+    color: white !important;
+    border-radius: 8px !important;
+    transition: all 0.2s ease;
+}
+
+.react-datepicker__day:hover {
+    background-color: rgba(59, 130, 246, 0.2) !important;
+    /* blue-500/20 */
+    color: #60a5fa !important;
+    /* blue-400 */
+}
+
+.react-datepicker__day--selected,
+.react-datepicker__day--keyboard-selected {
+    background-color: #2563eb !important;
+    /* blue-600 */
+    color: white !important;
+    font-weight: bold;
+    box-shadow: 0 0 15px rgba(37, 99, 235, 0.4);
+}
+
+.react-datepicker__day--today {
+    border: 1px solid #2563eb !important;
+    background-color: transparent !important;
+    font-weight: bold;
+    color: #60a5fa !important;
+}
+
+.react-datepicker__day--disabled {
+    color: #475569 !important;
+    /* slate-600 */
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.react-datepicker__navigation-icon::before {
+    border-color: white !important;
+}
+
+.react-datepicker__triangle {
+    display: none !important;
+}
+
+.react-datepicker-popper {
+    z-index: 9999 !important;
 }

@@ -1,6 +1,8 @@
 import React, { useRef } from 'react';
-import { Heart, Compass, Mountain } from 'lucide-react';
+import { Heart, Compass, Mountain, Shield, Globe, Users, Rocket, ArrowRight } from 'lucide-react';
 import { motion, useMotionValue, useTransform, useSpring } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import parthImg from '../assets/parth-chauhan.jpg';
 
 const About = () => {
     const ref = useRef(null);
@@ -13,19 +15,6 @@ const About = () => {
     const springConfig = { damping: 25, stiffness: 150 };
     const mouseX = useSpring(x, springConfig);
     const mouseY = useSpring(y, springConfig);
-
-    // Transforms for different images to create depth
-    // Image 1: Moves opposite to mouse
-    const x1 = useTransform(mouseX, [-500, 500], [15, -15]);
-    const y1 = useTransform(mouseY, [-500, 500], [15, -15]);
-
-    // Image 2: Moves with mouse
-    const x2 = useTransform(mouseX, [-500, 500], [-15, 15]);
-    const y2 = useTransform(mouseY, [-500, 500], [-15, 15]);
-
-    // Image 3: Subtle movement
-    const x3 = useTransform(mouseX, [-500, 500], [10, -10]);
-    const y3 = useTransform(mouseY, [-500, 500], [10, -10]);
 
     const handleMouseMove = (e) => {
         const rect = ref.current.getBoundingClientRect();
@@ -44,85 +33,118 @@ const About = () => {
             className="py-24 relative z-10 overflow-hidden scroll-mt-28"
         >
             <div className="container mx-auto px-6">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-                    {/* Content */}
-                    <div className="space-y-8">
-                        <div>
-                            <h2 className="text-4xl font-bold text-white mb-6">
-                                About Infinite Yatra 🌎
-                            </h2>
-                            <p className="text-lg text-white/80 leading-relaxed font-light">
-                                Infinite Yatra is a travel community built by real travelers, for real travelers.
-                                We create journeys that feel personal — spiritual yatras, Himalayan treks, cultural trips,
-                                and experiences that touch the heart.
-                            </p>
+                {/* Founder Section */}
+                <div className="flex flex-col lg:flex-row gap-12 items-center mb-24">
+                    <div className="w-full lg:w-1/3 flex justify-center lg:justify-end">
+                        <div className="relative group">
+                            <div className="absolute inset-0 bg-blue-600 rounded-full blur-[50px] opacity-20 group-hover:opacity-40 transition-opacity duration-500"></div>
+                            <img
+                                src={parthImg}
+                                alt="Parth Chauhan"
+                                className="relative z-10 w-48 h-48 lg:w-64 lg:h-64 rounded-full object-cover border-4 border-white/5 shadow-2xl transition-transform duration-500 group-hover:scale-105"
+                            />
+                            <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 z-20 bg-black/80 backdrop-blur-md border border-white/10 px-4 py-2 rounded-full whitespace-nowrap">
+                                <p className="text-white font-bold text-sm">Parth Chauhan</p>
+                                <p className="text-blue-400 text-xs text-center">Founder</p>
+                            </div>
                         </div>
-
-                        <div className="space-y-6">
-                            <div className="flex gap-4 glass-card p-4 items-center">
-                                <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center flex-shrink-0">
-                                    <Compass className="text-blue-400" size={24} />
-                                </div>
+                    </div>
+                    <div className="w-full lg:w-2/3 text-center lg:text-left">
+                        <h2 className="text-3xl lg:text-4xl font-bold text-white mb-6">
+                            Founder's Note 📝
+                        </h2>
+                        <div className="glass-card p-8 relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-purple-600/10 rounded-full blur-[50px]"></div>
+                            <p className="text-lg text-slate-300 leading-relaxed mb-6 italic relative z-10">
+                                "I started Infinite Yatra with a simple belief — travel should do more than take you to places; it should change the way you see life. What began as a love for exploration and meaningful journeys turned into a mission to create travel experiences that feel personal, safe, and truly unforgettable."
+                            </p>
+                            <div className="flex flex-col md:flex-row items-center justify-between gap-6 border-t border-white/5 pt-6">
                                 <div>
-                                    <h3 className="text-xl font-bold text-white mb-1">Our Goal</h3>
-                                    <p className="text-white/70 text-sm">
-                                        To help people explore, feel alive, and collect unforgettable memories — safely and authentically.
+                                    <h3 className="text-white font-bold text-lg mb-1">Our Vision 🚀</h3>
+                                    <p className="text-slate-400 text-sm">
+                                        From local treks to global journeys — and in the future, to pioneer new frontiers including space travel.
                                     </p>
                                 </div>
-                            </div>
-
-                            <div className="flex gap-4 glass-card p-4 items-center">
-                                <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center flex-shrink-0">
-                                    <Mountain className="text-orange-400" size={24} />
-                                </div>
-                                <div>
-                                    <h3 className="text-xl font-bold text-white mb-1">Himalayan Calm to Indian Culture</h3>
-                                    <p className="text-white/70 text-sm">
-                                        We combine spirituality, adventure, and comfort to make every trip meaningful.
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div className="flex gap-4 glass-card p-4 items-center">
-                                <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center flex-shrink-0">
-                                    <Heart className="text-red-400" size={24} />
-                                </div>
-                                <div>
-                                    <h3 className="text-xl font-bold text-white mb-1">More Than Just Tours</h3>
-                                    <p className="text-white/70 text-sm">
-                                        We don’t just plan tours — we guide you on journeys that stay with you forever.
-                                    </p>
+                                <div className="text-2xl font-bold font-handwritten text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">
+                                    Explore Infinite.
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
 
-                        <div className="pt-4">
-                            <p className="text-2xl font-handwritten text-blue-400 font-bold">
-                                Explore Infinite... 🚀
-                            </p>
+                {/* Why Trust Us & Differences Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
+                    {/* Why Trust Infinite Yatra */}
+                    <div className="space-y-6">
+                        <h3 className="text-2xl font-bold text-white mb-8 flex items-center gap-3">
+                            <Shield className="text-green-400" /> Why Trust Infinite Yatra
+                        </h3>
+
+                        <div className="grid gap-4">
+                            <div className="glass-card p-4 flex items-center gap-4 hover:bg-white/5 transition-colors">
+                                <div className="p-3 bg-blue-500/10 rounded-lg text-blue-400">
+                                    <Users size={20} />
+                                </div>
+                                <p className="text-slate-200 font-medium">Local & Global Experts</p>
+                            </div>
+
+                            <div className="glass-card p-4 flex items-center gap-4 hover:bg-white/5 transition-colors">
+                                <div className="p-3 bg-green-500/10 rounded-lg text-green-400">
+                                    <Shield size={20} />
+                                </div>
+                                <p className="text-slate-200 font-medium">Safety-First Trips (India & International)</p>
+                            </div>
+
+                            <div className="glass-card p-4 flex items-center gap-4 hover:bg-white/5 transition-colors">
+                                <div className="p-3 bg-orange-500/10 rounded-lg text-orange-400">
+                                    <Compass size={20} />
+                                </div>
+                                <p className="text-slate-200 font-medium">Authentic, Real Experiences</p>
+                            </div>
+
+                            <div className="glass-card p-4 flex items-center gap-4 hover:bg-white/5 transition-colors">
+                                <div className="p-3 bg-purple-500/10 rounded-lg text-purple-400">
+                                    <Globe size={20} />
+                                </div>
+                                <p className="text-slate-200 font-medium">Seamless International Travel Support</p>
+                            </div>
                         </div>
                     </div>
 
-                    {/* Image Grid */}
-                    <div className="grid grid-cols-2 gap-4">
-                        <motion.img
-                            style={{ x: x1, y: y1 }}
-                            src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=2070&auto=format&fit=crop"
-                            alt="Mountain"
-                            className="rounded-2xl shadow-lg w-full h-64 object-cover mt-8"
-                        />
-                        <motion.img
-                            style={{ x: x2, y: y2 }}
-                            src="https://images.unsplash.com/photo-1548013146-72479768bada?q=80&w=1776&auto=format&fit=crop"
-                            alt="Temple"
-                            className="rounded-2xl shadow-lg w-full h-64 object-cover"
-                        />
-                        <motion.img
-                            style={{ x: x3, y: y3 }}
-                            src="https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?q=80&w=2070&auto=format&fit=crop"
-                            alt="Harshil Valley"
-                            className="rounded-2xl shadow-lg w-full h-64 object-cover col-span-2"
-                        />
+                    {/* What Makes Us Different */}
+                    <div className="space-y-6">
+                        <h3 className="text-2xl font-bold text-white mb-8 flex items-center gap-3">
+                            <Rocket className="text-purple-400" /> What Makes Us Different
+                        </h3>
+
+                        <div className="grid gap-4">
+                            <div className="glass-card p-4 flex items-center gap-4 hover:bg-white/5 transition-colors">
+                                <div className="w-2 h-2 rounded-full bg-blue-400 shadow-[0_0_10px_rgba(96,165,250,0.5)]"></div>
+                                <p className="text-slate-200 font-medium">Community-based travel</p>
+                            </div>
+
+                            <div className="glass-card p-4 flex items-center gap-4 hover:bg-white/5 transition-colors">
+                                <div className="w-2 h-2 rounded-full bg-purple-400 shadow-[0_0_10px_rgba(192,132,252,0.5)]"></div>
+                                <p className="text-slate-200 font-medium">Spiritual + adventure balance</p>
+                            </div>
+
+                            <div className="glass-card p-4 flex items-center gap-4 hover:bg-white/5 transition-colors">
+                                <div className="w-2 h-2 rounded-full bg-red-400 shadow-[0_0_10px_rgba(248,113,113,0.5)]"></div>
+                                <p className="text-slate-200 font-medium">Not mass tourism — curated for you</p>
+                            </div>
+                        </div>
+
+                        {/* CTA */}
+                        <div className="mt-8 pt-4">
+                            <Link
+                                to="/destinations"
+                                className="w-full group relative flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl font-bold text-white shadow-lg shadow-blue-600/30 hover:shadow-blue-600/50 hover:scale-[1.02] transition-all duration-300"
+                            >
+                                <span>Explore Our Journeys</span>
+                                <ArrowRight className="group-hover:translate-x-1 transition-transform" />
+                            </Link>
+                        </div>
                     </div>
                 </div>
             </div>

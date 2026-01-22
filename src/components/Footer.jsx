@@ -63,17 +63,17 @@ const Footer = () => {
 
             <div className="relative z-10 container mx-auto px-6 py-20">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-12 lg:gap-16 mb-16">
-                    <div className="space-y-6">
-                        <div className="flex flex-col">
-                            <h3 className="text-3xl font-bold tracking-widest text-white leading-tight" style={{ fontFamily: "'Raleway', sans-serif", fontWeight: 700 }}>
+                    <div className="space-y-6 flex flex-col items-center text-center">
+                        <div className="flex flex-col items-center">
+                            <h3 className="text-2xl font-black tracking-[0.2em] text-white drop-shadow-sm whitespace-nowrap" style={{ fontFamily: "'Raleway', sans-serif" }}>
                                 INFINITE YATRA
                             </h3>
-                            <span className="text-[10px] tracking-[0.3em] font-medium text-white/50" style={{ fontFamily: "'Raleway', sans-serif" }}>EXPLORE INFINITE</span>
+                            <span className="text-[10px] tracking-[0.3em] font-extrabold text-white/90" style={{ fontFamily: "'Raleway', sans-serif" }}>EXPLORE INFINITE</span>
                         </div>
-                        <p className="text-white/60 leading-relaxed text-sm font-light">
+                        <p className="text-white/60 leading-relaxed text-sm font-light text-center">
                             Discover breathtaking destinations and create unforgettable memories with Infinite Yatra.
                         </p>
-                        <div className="flex items-center gap-3 pt-2">
+                        <div className="flex items-center justify-center gap-3 pt-2">
                             <div className="h-1 w-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
                             <span className="text-xs text-slate-500 font-medium">Explore Infinite</span>
                         </div>

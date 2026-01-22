@@ -118,7 +118,7 @@ Answer questions about our treks, packages, booking process, what to pack, diffi
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => setIsOpen(true)}
-                        className="fixed bottom-6 right-6 z-50 bg-gradient-to-br from-blue-600 to-purple-600 text-white p-4 rounded-full shadow-2xl hover:shadow-blue-500/50 transition-all duration-300 group"
+                        className="fixed bottom-20 right-6 z-[110] bg-gradient-to-br from-blue-600 to-purple-600 text-white p-4 rounded-full shadow-2xl hover:shadow-blue-500/50 transition-all duration-300 group"
                     >
                         <div className="relative">
                             <MessageCircle size={28} />
@@ -148,7 +148,7 @@ Answer questions about our treks, packages, booking process, what to pack, diffi
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 20, scale: 0.95 }}
                         transition={{ duration: 0.2 }}
-                        className="fixed bottom-6 right-6 z-50 w-[380px] max-w-[calc(100vw-3rem)] h-[600px] max-h-[calc(100vh-3rem)] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-slate-200"
+                        className="fixed bottom-24 right-6 z-[110] w-[380px] max-w-[calc(100vw-3rem)] h-[600px] max-h-[calc(100vh-6rem)] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-slate-200"
                     >
                         {/* Header */}
                         <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 flex items-center justify-between">
@@ -181,8 +181,8 @@ Answer questions about our treks, packages, booking process, what to pack, diffi
                                 >
                                     <div
                                         className={`max-w-[80%] rounded-2xl px-4 py-3 ${message.role === 'user'
-                                                ? 'bg-gradient-to-br from-blue-600 to-purple-600 text-white'
-                                                : 'bg-white text-slate-900 shadow-sm border border-slate-200'
+                                            ? 'bg-gradient-to-br from-blue-600 to-purple-600 text-white'
+                                            : 'bg-white text-slate-900 shadow-sm border border-slate-200'
                                             }`}
                                     >
                                         <p className="text-sm leading-relaxed whitespace-pre-wrap">
