@@ -10,7 +10,7 @@ import {
     addDoc,
     serverTimestamp
 } from 'firebase/firestore';
-import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+// import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'; // REMOVED
 import { db } from '../firebase';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -91,16 +91,13 @@ const AdminBlogManagement = () => {
         if (!window.confirm('Are you sure you want to delete this story?')) return;
 
         try {
-            // Delete image from storage if exists
+            // NOTE: Image deletion from Cloudinary (client-side unsigned) is restricted.
+            // We just delete the reference in Firestore. The image will remain in Cloudinary.
+            /*
             if (imageUrl) {
-                try {
-                    const storage = getStorage();
-                    const imageRef = ref(storage, imageUrl);
-                    await deleteObject(imageRef);
-                } catch (error) {
-                    console.log('Image deletion failed or already deleted:', error);
-                }
+               // ... (Firebase Storage deletion removed)
             }
+            */
 
             // Delete document from Firestore
             await deleteDoc(doc(db, 'travelStories', storyId));

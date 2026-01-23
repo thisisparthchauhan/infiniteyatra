@@ -12,8 +12,8 @@ import { sendBookingEmails } from '../services/email';
 import { Upload, FileText, X } from 'lucide-react';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { storage } from '../firebase';
+// import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'; // REMOVED
+// import { storage } from '../firebase'; // REMOVED
 
 const BookingPage = () => {
     const { id } = useParams();
@@ -422,10 +422,23 @@ const BookingPage = () => {
                             hasUploads = true;
                             travelerHasUploads = true;
                             // File path: booking_docs/{bookingId}/traveler_{index}/{docType}_{timestamp}_{filename}
-                            const fileRef = ref(storage, `booking_docs/${bookingRef.id}/traveler_${index + 1}/${key}_${Date.now()}_${file.name}`);
-                            await uploadBytes(fileRef, file);
-                            const url = await getDownloadURL(fileRef);
-                            uploadedLinks[key] = url;
+                            // const fileRef = ref(storage, `booking_docs/${bookingRef.id}/traveler_${index + 1}/${key}_${Date.now()}_${file.name}`);
+                            // await uploadBytes(fileRef, file);
+                            // const url = await getDownloadURL(fileRef);
+
+                            // CLOUDINARY UPLOAD
+                            const formData = new FormData();
+                            formData.append("file", file);
+                            formData.append("upload_preset", "infinite_unsigned"); // Hardcoded preset
+
+                            const response = await fetch(
+                                "https://api.cloudinary.com/v1_1/infiniteyatra/image/upload",
+                                { method: "POST", body: formData }
+                            );
+
+                            if (!response.ok) throw new Error("ID Proof upload failed");
+                            const data = await response.json();
+                            uploadedLinks[key] = data.secure_url;
                         }
                     }
 

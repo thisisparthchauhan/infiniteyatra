@@ -1,21 +1,26 @@
 import React, { useEffect, useState } from 'react';
 import { db } from '../firebase';
 import { collection, query, getDocs, doc, updateDoc, deleteDoc, setDoc, orderBy, limit } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL, listAll } from 'firebase/storage';
-import { storage } from '../firebase';
+// import { ref, uploadBytes, getDownloadURL, listAll } from 'firebase/storage'; // REMOVED
+// import { storage } from '../firebase'; // REMOVED
 import { Loader, CheckCircle, XCircle, Trash2, Search, Calendar, DollarSign, Users, Eye, X, Clock, TrendingUp, Package, Edit, Save, Plus, Database, CloudUpload } from 'lucide-react';
 import { usePackages } from '../context/PackageContext';
 import { packages as staticPackages } from '../data/packages';
 import SEO from '../components/SEO';
 import AdminBlogManagement from '../components/AdminBlogManagement';
 import AdminImageUpload from '../components/AdminImageUpload';
+import AdminPackageForm from '../components/AdminPackageForm';
 
 const AdminDashboard = () => {
-    const { packages, refreshPackages } = usePackages();
+    const { allPackages, refreshPackages } = usePackages();
+    // Use allPackages instead of public packages
+    const packages = allPackages || [];
+
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('bookings'); // 'bookings' | 'packages' | 'stories'
-    const [currentPackage, setCurrentPackage] = useState(null); // For Edit Modal
+    const [currentPackage, setCurrentPackage] = useState(null); // For Edit Modal within Form
+    const [showPackageForm, setShowPackageForm] = useState(false); // For Add/Edit Form visibility
     const [searchTerm, setSearchTerm] = useState('');
     const [error, setError] = useState('');
     const [selectedBooking, setSelectedBooking] = useState(null); // For Modal
@@ -128,20 +133,36 @@ const AdminDashboard = () => {
         }
     };
 
-    const handleSavePackage = async (e) => {
-        e.preventDefault();
+    const handleSavePackage = async (packageData) => {
         setLoading(true);
         try {
-            await setDoc(doc(db, 'packages', currentPackage.id), currentPackage, { merge: true });
+            // If ID exists, update. If not, create new ID from title
+            let pkgId = packageData.id;
+            if (!pkgId) {
+                pkgId = packageData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+            }
+
+            await setDoc(doc(db, 'packages', pkgId), { ...packageData, id: pkgId }, { merge: true });
             await refreshPackages();
+            setShowPackageForm(false);
             setCurrentPackage(null);
-            alert("Package updated successfully!");
+            alert("Package saved successfully!");
         } catch (err) {
             console.error(err);
-            alert("Failed to update package.");
+            alert("Failed to save package.");
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleEditPackage = (pkg) => {
+        setCurrentPackage(pkg);
+        setShowPackageForm(true);
+    };
+
+    const handleAddNewPackage = () => {
+        setCurrentPackage(null);
+        setShowPackageForm(true);
     };
 
     const handleDateChange = (dateString, action) => {
@@ -435,7 +456,13 @@ const AdminDashboard = () => {
                             </div>
                         ) : (
                             <div className="grid grid-cols-1 gap-4">
-                                <div className="flex justify-end mb-2">
+                                <div className="flex justify-between items-center mb-4">
+                                    <button
+                                        onClick={handleAddNewPackage}
+                                        className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 hover:bg-blue-700 transition"
+                                    >
+                                        <Plus size={20} /> Add New Package
+                                    </button>
                                     <button onClick={handleMigratePackages} className="text-xs text-slate-400 hover:text-slate-600 underline">
                                         Re-run Migration (Reset Data)
                                     </button>
@@ -457,13 +484,20 @@ const AdminDashboard = () => {
                                                 </span>
                                             </div>
                                         </div>
-                                        <button
-                                            onClick={() => setCurrentPackage(pkg)}
-                                            className="px-6 py-2 border border-white/10 rounded-lg text-slate-300 font-medium hover:bg-white/5 hover:text-white flex items-center gap-2 transition-colors"
-                                        >
-                                            <Edit size={16} />
-                                            Edit Package
-                                        </button>
+                                        <div className="flex flex-col gap-2">
+                                            {!pkg.isVisible && (
+                                                <span className="px-3 py-1 bg-yellow-500/10 text-yellow-500 text-xs font-bold rounded-full border border-yellow-500/20 text-center">
+                                                    Hidden
+                                                </span>
+                                            )}
+                                            <button
+                                                onClick={() => handleEditPackage(pkg)}
+                                                className="px-6 py-2 border border-white/10 rounded-lg text-slate-300 font-medium hover:bg-white/5 hover:text-white flex items-center gap-2 transition-colors"
+                                            >
+                                                <Edit size={16} />
+                                                Edit Package
+                                            </button>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
@@ -657,106 +691,16 @@ const AdminDashboard = () => {
                 </div>
             )}
 
-            {/* Package Edit Modal */}
-            {currentPackage && (
-                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-                    <div className="glass-card rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto border border-white/10">
-                        <div className="p-6 border-b border-white/10 flex justify-between items-center bg-black/50 backdrop-blur-md sticky top-0 z-10">
-                            <h2 className="text-xl font-bold text-white">Edit Package</h2>
-                            <button onClick={() => setCurrentPackage(null)} className="p-2 hover:bg-white/10 rounded-full">
-                                <X size={20} className="text-slate-400 hover:text-white" />
-                            </button>
-                        </div>
-
-                        <form onSubmit={handleSavePackage} className="p-6 space-y-6">
-                            <div>
-                                <h3 className="font-bold text-slate-900 mb-2">{currentPackage.title}</h3>
-                                <p className="text-sm text-slate-500">{currentPackage.location}</p>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-300 mb-1">Price (₹)</label>
-                                    <input
-                                        type="number"
-                                        required
-                                        className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg focus:ring-2 focus:ring-blue-500 text-white"
-                                        value={currentPackage.price}
-                                        onChange={(e) => setCurrentPackage({ ...currentPackage, price: parseInt(e.target.value) })}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Discount Text</label>
-                                    <input
-                                        type="text"
-                                        className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                        placeholder="e.g. 10% OFF"
-                                        value={currentPackage.discount || ''}
-                                        onChange={(e) => setCurrentPackage({ ...currentPackage, discount: e.target.value })}
-                                    />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-2">Available Dates (YYYY-MM-DD)</label>
-                                <div className="space-y-2 mb-3 max-h-40 overflow-y-auto border border-slate-100 rounded-lg p-2">
-                                    {(currentPackage.availableDates || []).map(date => (
-                                        <div key={date} className="flex justify-between items-center bg-slate-50 px-3 py-2 rounded">
-                                            <span className="text-sm text-slate-700">{date}</span>
-                                            <button
-                                                type="button"
-                                                onClick={() => handleDateChange(date, 'remove')}
-                                                className="text-red-500 hover:bg-red-50 p-1 rounded"
-                                            >
-                                                <X size={14} />
-                                            </button>
-                                        </div>
-                                    ))}
-                                    {(!currentPackage.availableDates || currentPackage.availableDates.length === 0) && (
-                                        <p className="text-sm text-slate-400 text-center py-2">No dates added yet.</p>
-                                    )}
-                                </div>
-                                <div className="flex gap-2">
-                                    <input
-                                        type="date"
-                                        id="newDateInput"
-                                        className="flex-1 px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            const input = document.getElementById('newDateInput');
-                                            if (input.value) {
-                                                handleDateChange(input.value, 'add');
-                                                input.value = '';
-                                            }
-                                        }}
-                                        className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700"
-                                    >
-                                        Add
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div className="pt-4 border-t border-white/10 flex justify-end gap-3">
-                                <button
-                                    type="button"
-                                    onClick={() => setCurrentPackage(null)}
-                                    className="px-6 py-2 border border-white/10 text-slate-300 font-medium rounded-lg hover:bg-white/5 hover:text-white transition-colors"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={loading}
-                                    className="px-6 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 disabled:opacity-50"
-                                >
-                                    {loading ? 'Saving...' : 'Save Changes'}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
+            {/* Admin Package Form Modal */}
+            {showPackageForm && (
+                <AdminPackageForm
+                    initialData={currentPackage}
+                    onSave={handleSavePackage}
+                    onCancel={() => {
+                        setShowPackageForm(false);
+                        setCurrentPackage(null);
+                    }}
+                />
             )}
         </div>
     );

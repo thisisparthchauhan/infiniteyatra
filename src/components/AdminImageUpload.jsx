@@ -1,56 +1,59 @@
 import React, { useState, useEffect } from 'react';
-import { storage } from '../firebase';
-import { ref, uploadBytes, getDownloadURL, listAll } from 'firebase/storage';
+// import { storage } from '../firebase'; // REMOVED: Causing crash
+// import { ref, uploadBytes, getDownloadURL, listAll } from 'firebase/storage'; // REMOVED
 import { Upload, Copy, Check, Image as ImageIcon, Loader, Trash2 } from 'lucide-react';
-import { toast } from 'react-hot-toast'; // Assuming toast context/library is available, based on Package.json
+import { toast } from 'react-hot-toast';
 
 const AdminImageUpload = () => {
     const [uploading, setUploading] = useState(false);
-    const [images, setImages] = useState([]);
-    const [loadingImages, setLoadingImages] = useState(true);
+    const [images, setImages] = useState([]); // Store local session uploads
+    const [loadingImages, setLoadingImages] = useState(false);
     const [copiedUrl, setCopiedUrl] = useState('');
 
+    const CLOUD_NAME = "infiniteyatra";
+    const UPLOAD_PRESET = "infinite_unsigned";
+
     useEffect(() => {
-        fetchImages();
+        // fetchImages(); // Cloudinary Client-Side listing requires signed API. disabling for now.
     }, []);
 
+    /* 
     const fetchImages = async () => {
-        setLoadingImages(true);
-        try {
-            const listRef = ref(storage, 'uploads');
-            const res = await listAll(listRef);
-
-            const urlPromises = res.items.map(async (itemRef) => {
-                const url = await getDownloadURL(itemRef);
-                const metadata = { name: itemRef.name, fullPath: itemRef.fullPath };
-                return { url, ...metadata };
-            });
-
-            const imageUrls = await Promise.all(urlPromises);
-            setImages(imageUrls);
-        } catch (error) {
-            console.error("Error fetching images:", error);
-            // toast.error("Failed to load gallery"); // Commented out if toast not setup perfectly yet
-        } finally {
-            setLoadingImages(false);
-        }
-    };
+       // ... (Firebase logic removed)
+    }; 
+    */
 
     const handleUpload = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
+        // Validation
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error("File size too large (Max 5MB)");
+            return;
+        }
+
         setUploading(true);
         try {
-            const storageRef = ref(storage, `uploads/${Date.now()}_${file.name}`);
-            await uploadBytes(storageRef, file);
-            const url = await getDownloadURL(storageRef);
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("upload_preset", UPLOAD_PRESET);
+
+            const response = await fetch(
+                `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+                { method: "POST", body: formData }
+            );
+
+            if (!response.ok) throw new Error("Upload failed");
+
+            const data = await response.json();
+            const url = data.secure_url;
 
             setImages(prev => [{ url, name: file.name }, ...prev]);
             toast.success("Image uploaded successfully!");
         } catch (error) {
             console.error("Error uploading image:", error);
-            alert("Upload failed: " + error.message);
+            toast.error("Upload failed: " + error.message);
         } finally {
             setUploading(false);
             e.target.value = null; // Reset input
@@ -92,7 +95,7 @@ const AdminImageUpload = () => {
                             {uploading ? 'Uploading...' : 'Click to Upload Image'}
                         </h3>
                         <p className="text-slate-500 text-sm mt-1">
-                            Supported formats: JPG, PNG, WEBP
+                            Supported formats: JPG, PNG, WEBP (Max 5MB)
                         </p>
                     </div>
                 </label>
@@ -102,7 +105,7 @@ const AdminImageUpload = () => {
             <div>
                 <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
                     <ImageIcon size={20} />
-                    Recent Uploads
+                    Current Session Uploads
                 </h3>
 
                 {loadingImages ? (
@@ -111,7 +114,7 @@ const AdminImageUpload = () => {
                     </div>
                 ) : images.length === 0 ? (
                     <div className="bg-slate-50 p-8 rounded-xl text-center text-slate-500">
-                        No images uploaded yet.
+                        No images uploaded in this session.
                     </div>
                 ) : (
                     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">

@@ -21,15 +21,12 @@ export const PackageProvider = ({ children }) => {
                     ...doc.data()
                 }));
 
-                // Smart Merge: Start with Firestore packages, but merge in static data (like proper images/categories) 
-                // if they match by ID.
                 const mergedPackages = firestorePackages.map(fp => {
                     const staticPkg = staticPackages.find(sp => sp.id === fp.id);
-                    // Use staticPkg as base (for locally defined fields like category) and overlay Firestore data (for dynamic prices/dates)
                     return staticPkg ? { ...staticPkg, ...fp } : fp;
                 });
 
-                // Add packages that exist ONLY in static (local)
+                // Add static-only packages
                 staticPackages.forEach(staticPkg => {
                     if (!mergedPackages.some(p => p.id === staticPkg.id)) {
                         mergedPackages.push(staticPkg);
@@ -37,18 +34,15 @@ export const PackageProvider = ({ children }) => {
                 });
 
                 // Explicitly remove 'kedarnath' (Price 12000) as requested by user
-                // This ensures it doesn't show up even if it exists in Firestore
                 const finalPackages = mergedPackages.filter(p => p.id !== 'kedarnath');
 
                 setPackages(finalPackages);
             } else {
-                // Fallback to static data if DB is empty
-                console.log('No packages in DB, using static data');
                 setPackages(staticPackages);
             }
         } catch (error) {
             console.error("Error fetching packages:", error);
-            setPackages(staticPackages); // Fallback on error
+            setPackages(staticPackages);
         } finally {
             setLoading(false);
         }
@@ -62,12 +56,17 @@ export const PackageProvider = ({ children }) => {
         return fetchPackages();
     };
 
+    // Public getter returns valid visible packages
+    const getVisiblePackages = () => {
+        return packages.filter(p => p.isVisible !== false); // Default to true if undefined
+    };
+
     const getPackageById = (id) => {
         return packages.find(pkg => pkg.id === id);
     };
 
     return (
-        <PackageContext.Provider value={{ packages, loading, refreshPackages, getPackageById }}>
+        <PackageContext.Provider value={{ packages: getVisiblePackages(), allPackages: packages, loading, refreshPackages, getPackageById }}>
             {children}
         </PackageContext.Provider>
     );
