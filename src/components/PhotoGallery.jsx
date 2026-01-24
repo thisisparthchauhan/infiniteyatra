@@ -64,10 +64,13 @@ const PhotoGallery = ({ images }) => {
                         ›
                     </button>
 
+
+                    <button className="lightbox-close" onClick={closeLightbox}>
+                        ✕
+                    </button>
+
                     <div className="lightbox-content" onClick={(e) => e.stopPropagation()}>
-                        <button className="lightbox-close" onClick={closeLightbox}>
-                            ✕
-                        </button>
+
 
                         <img
                             src={images[currentImageIndex].url}
@@ -75,9 +78,10 @@ const PhotoGallery = ({ images }) => {
                             className="lightbox-image"
                         />
 
-                        <div className="lightbox-counter">
-                            {currentImageIndex + 1} / {images.length}
-                        </div>
+                    </div>
+
+                    <div className="lightbox-counter">
+                        {currentImageIndex + 1} / {images.length}
                     </div>
                 </div>
             )}

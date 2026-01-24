@@ -109,24 +109,32 @@
 }
 
 .lightbox-close {
-    position: absolute;
-    top: -3rem;
-    right: 0;
-    background: none;
-    border: none;
+    position: fixed;
+    top: 2rem;
+    right: 2rem;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     color: white;
-    font-size: 2.5rem;
+    font-size: 1.5rem;
+    /* Adjusted font size */
     cursor: pointer;
     width: 3rem;
     height: 3rem;
+    border-radius: 50%;
+    /* Make it circular */
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: transform 0.2s ease;
+    transition: all 0.3s ease;
+    z-index: 1010;
+    /* Ensure active above everything */
 }
 
 .lightbox-close:hover {
-    transform: scale(1.2);
+    background: rgba(255, 255, 255, 0.2);
+    transform: rotate(90deg) scale(1.1);
+    /* Added rotation effect */
 }
 
 .lightbox-prev,
@@ -170,8 +178,8 @@
 }
 
 .lightbox-counter {
-    position: absolute;
-    bottom: -3rem;
+    position: fixed;
+    bottom: 2rem;
     left: 50%;
     transform: translateX(-50%);
     color: white;
