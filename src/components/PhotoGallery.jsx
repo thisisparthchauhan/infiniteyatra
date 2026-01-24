@@ -56,13 +56,17 @@ const PhotoGallery = ({ images }) => {
 
             {lightboxOpen && (
                 <div className="lightbox" onClick={closeLightbox}>
+                    <button className="lightbox-prev" onClick={(e) => { e.stopPropagation(); prevImage(); }}>
+                        ‹
+                    </button>
+
+                    <button className="lightbox-next" onClick={(e) => { e.stopPropagation(); nextImage(); }}>
+                        ›
+                    </button>
+
                     <div className="lightbox-content" onClick={(e) => e.stopPropagation()}>
                         <button className="lightbox-close" onClick={closeLightbox}>
                             ✕
-                        </button>
-
-                        <button className="lightbox-prev" onClick={prevImage}>
-                            ‹
                         </button>
 
                         <img
@@ -70,10 +74,6 @@ const PhotoGallery = ({ images }) => {
                             alt={images[currentImageIndex].alt}
                             className="lightbox-image"
                         />
-
-                        <button className="lightbox-next" onClick={nextImage}>
-                            ›
-                        </button>
 
                         <div className="lightbox-counter">
                             {currentImageIndex + 1} / {images.length}

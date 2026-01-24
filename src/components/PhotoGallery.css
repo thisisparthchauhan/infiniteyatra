@@ -131,10 +131,12 @@
 
 .lightbox-prev,
 .lightbox-next {
-    position: absolute;
+    position: fixed;
+    /* Changed from absolute to fixed */
     top: 50%;
     transform: translateY(-50%);
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.5);
+    /* Make it more visible/standard */
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
     color: white;
@@ -147,6 +149,8 @@
     align-items: center;
     justify-content: center;
     transition: all 0.3s ease;
+    z-index: 1010;
+    /* Ensure above image */
 }
 
 .lightbox-prev:hover,
@@ -156,11 +160,13 @@
 }
 
 .lightbox-prev {
-    left: -5rem;
+    left: 2rem;
+    /* Fixed distance from screen edge */
 }
 
 .lightbox-next {
-    right: -5rem;
+    right: 2rem;
+    /* Fixed distance from screen edge */
 }
 
 .lightbox-counter {
