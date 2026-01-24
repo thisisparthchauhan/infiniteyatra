@@ -3,17 +3,14 @@ import { X, Plus, Trash2, Save, Upload, Image as ImageIcon } from 'lucide-react'
 // Firebase Storage imports removed
 // import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 // import { storage } from '../firebase'; 
+import { uploadMultipleToCloudinary, uploadToCloudinary } from '../services/cloudinary';
 
 const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
     // ... [Rest of state remains same]
 
-    // Cloudinary Configuration
-    // TODO: Replace these with your actual Cloudinary details
-    const CLOUD_NAME = "infiniteyatra";
-    const UPLOAD_PRESET = "infinite_unsigned";
-
     const [formData, setFormData] = useState({
         title: '',
+        image: '', // Main Thumbnail
         location: '',
         pickupDrop: '',
         price: '',
@@ -149,8 +146,33 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
             return;
         }
 
-        if (CLOUD_NAME === "YOUR_CLOUD_NAME" || UPLOAD_PRESET === "YOUR_UPLOAD_PRESET") {
-            alert("Please set your Cloudinary Cloud Name and Upload Preset in the code!");
+        setUploading(true);
+        setUploadError(null);
+
+        try {
+            // Use the centralized utility service
+            const uploadedUrls = await uploadMultipleToCloudinary(files);
+
+            setFormData(prev => ({
+                ...prev,
+                images: [...(prev.images || []), ...uploadedUrls]
+            }));
+        } catch (error) {
+            console.error("UPLOAD ERROR:", error);
+            setUploadError(`Upload Failed: ${error.message}`);
+            alert(`Failed to upload: ${error.message}`);
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    // Thumbnail Upload Helper
+    const handleThumbnailUpload = async (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+
+        if (file.size > 5 * 1024 * 1024) {
+            setUploadError("Thumbnail size must be less than 5MB");
             return;
         }
 
@@ -158,38 +180,11 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
         setUploadError(null);
 
         try {
-            const uploadedUrls = await Promise.all(
-                files.map(async (file) => {
-                    const formData = new FormData();
-                    formData.append("file", file);
-                    formData.append("upload_preset", UPLOAD_PRESET);
-
-                    const response = await fetch(
-                        `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
-                        {
-                            method: "POST",
-                            body: formData,
-                        }
-                    );
-
-                    if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(errorData.error?.message || "Upload failed");
-                    }
-
-                    const data = await response.json();
-                    return data.secure_url; // Return the secure Cloudinary URL
-                })
-            );
-
-            setFormData(prev => ({
-                ...prev,
-                images: [...(prev.images || []), ...uploadedUrls]
-            }));
+            const url = await uploadToCloudinary(file);
+            setFormData(prev => ({ ...prev, image: url }));
         } catch (error) {
-            console.error("CLOUDINARY UPLOAD ERROR:", error);
-            setUploadError(`Upload Failed: ${error.message}`);
-            alert(`Failed to upload: ${error.message}`);
+            console.error("THUMBNAIL UPLOAD ERROR:", error);
+            setUploadError(`Thumbnail Upload Failed: ${error.message}`);
         } finally {
             setUploading(false);
         }
@@ -353,7 +348,38 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
                         </div>
                     </div>
 
-                    {/* Images Section */}
+                    {/* Thumbnail Image Section */}
+                    <div className="space-y-4 pt-6 border-t border-white/10">
+                        <h3 className="text-lg font-bold text-blue-400">Thumbnail Image (Main Display)</h3>
+                        <div className="flex items-start gap-6">
+                            {formData.image ? (
+                                <div className="relative group w-48 aspect-[4/5] rounded-lg overflow-hidden border border-white/10">
+                                    <img src={formData.image} alt="Thumbnail" className="w-full h-full object-cover" />
+                                    <button
+                                        type="button"
+                                        onClick={() => setFormData(prev => ({ ...prev, image: '' }))}
+                                        className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                    >
+                                        <X size={14} />
+                                    </button>
+                                </div>
+                            ) : (
+                                <label className="w-48 aspect-[4/5] border-2 border-dashed border-white/10 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-blue-500/50 hover:bg-blue-500/5 transition-all">
+                                    <Upload className="text-slate-400 mb-2" />
+                                    <span className="text-xs text-slate-400 text-center px-4">
+                                        Upload Main Thumbnail
+                                    </span>
+                                    <input type="file" accept="image/*" className="hidden" onChange={handleThumbnailUpload} disabled={uploading} />
+                                </label>
+                            )}
+                            <div className="flex-1 text-sm text-slate-400">
+                                <p>This is the main image displayed on the card in the "Destinations" list.</p>
+                                <p className="mt-2">Recommended aspect ratio: 4:5 (Portrait)</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Images Section (Gallery) */}
                     <div className="space-y-4 pt-6 border-t border-white/10">
                         <h3 className="text-lg font-bold text-blue-400">Images</h3>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

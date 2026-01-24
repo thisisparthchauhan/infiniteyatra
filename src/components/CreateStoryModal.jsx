@@ -4,6 +4,7 @@ import { X, Upload, MapPin, Image as ImageIcon, Loader } from 'lucide-react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 // import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage'; // REMOVED
 import { db } from '../firebase';
+import { uploadToCloudinary } from '../services/cloudinary';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 
@@ -20,9 +21,7 @@ const CreateStoryModal = ({ onClose, onStoryCreated }) => {
     const { currentUser } = useAuth();
     const { showToast } = useToast();
 
-    // Cloudinary Config
-    const CLOUD_NAME = "infiniteyatra";
-    const UPLOAD_PRESET = "infinite_unsigned";
+    // Cloudinary constants removed - using service
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
@@ -59,28 +58,10 @@ const CreateStoryModal = ({ onClose, onStoryCreated }) => {
         try {
             let imageUrl = '';
 
-            // Upload image if selected (Cloudinary)
+            // Upload image if selected (Cloudinary Service)
             if (imageFile) {
                 try {
-                    const uploadData = new FormData();
-                    uploadData.append("file", imageFile);
-                    uploadData.append("upload_preset", UPLOAD_PRESET);
-
-                    const response = await fetch(
-                        `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
-                        {
-                            method: "POST",
-                            body: uploadData,
-                        }
-                    );
-
-                    if (!response.ok) {
-                        const err = await response.json();
-                        throw new Error(err.error?.message || "Image upload failed");
-                    }
-
-                    const data = await response.json();
-                    imageUrl = data.secure_url;
+                    imageUrl = await uploadToCloudinary(imageFile);
                 } catch (storageError) {
                     console.error("Storage Error:", storageError);
                     showToast(`Image upload failed: ${storageError.message}`, 'error');

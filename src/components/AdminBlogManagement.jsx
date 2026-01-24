@@ -11,6 +11,7 @@ import {
     serverTimestamp
 } from 'firebase/firestore';
 // import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'; // REMOVED
+import { uploadToCloudinary } from '../services/cloudinary';
 import { db } from '../firebase';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';

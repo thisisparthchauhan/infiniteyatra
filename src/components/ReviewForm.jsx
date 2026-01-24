@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '../context/ToastContext';
+import { uploadToCloudinary } from '../services/cloudinary';
 
 const ReviewForm = ({ packageId, packageTitle, onClose, onReviewSubmitted }) => {
     const [rating, setRating] = useState(0);
@@ -13,15 +14,24 @@ const ReviewForm = ({ packageId, packageTitle, onClose, onReviewSubmitted }) => 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { addToast } = useToast();
 
-    // Mock photo upload state - in real implementation this would go to Cloudinary/Firebase Storage
-    const [photos, setPhotos] = useState([]);
+    // Cloudinary Upload for Photos
+    const handlePhotoChange = async (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
 
-    const handlePhotoChange = (e) => {
-        // For demo, we just read the file name or show a placeholder. 
-        // Real implementation would upload here.
-        if (e.target.files && e.target.files[0]) {
-            // In a real app, upload logic here.
-            addToast("Photo upload simulation: File selected", "info");
+        if (file.size > 5 * 1024 * 1024) {
+            addToast("Photo size should be less than 5MB", "error");
+            return;
+        }
+
+        addToast("Uploading photo...", "info");
+        try {
+            const uploadedUrl = await uploadToCloudinary(file);
+            setPhotos(prev => [...prev, uploadedUrl]);
+            addToast("Photo uploaded successfully!", "success");
+        } catch (error) {
+            console.error("Photo upload error:", error);
+            addToast("Failed to upload photo", "error");
         }
     };
 
@@ -43,7 +53,7 @@ const ReviewForm = ({ packageId, packageTitle, onClose, onReviewSubmitted }) => 
                 date: new Date().toISOString(),
                 createdAt: serverTimestamp(),
                 verified: false, // Default to false, admin can verify
-                photos: [] // Placeholder for now
+                photos: photos // Include uploaded Cloudinary URLs
             });
 
             addToast("Review submitted successfully!", "success");
@@ -95,8 +105,8 @@ const ReviewForm = ({ packageId, packageTitle, onClose, onReviewSubmitted }) => 
                                     <Star
                                         size={32}
                                         className={`${star <= (hoveredRating || rating)
-                                                ? 'fill-yellow-400 text-yellow-400'
-                                                : 'text-slate-200'
+                                            ? 'fill-yellow-400 text-yellow-400'
+                                            : 'text-slate-200'
                                             } transition-colors`}
                                     />
                                 </button>
