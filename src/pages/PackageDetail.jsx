@@ -448,10 +448,12 @@ const PackageDetail = () => {
                             <X size={24} />
                         </button>
                     </div>
-                    <div className="flex-1 flex items-center justify-center p-4">
-                        <PhotoGallery
-                            images={pkg.images.map((url, i) => ({ id: i, url: url, alt: `${pkg.title} ${i + 1}` }))}
-                        />
+                    <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
+                        <div className="max-w-6xl mx-auto w-full pt-16">
+                            <PhotoGallery
+                                images={pkg.images.map((url, i) => ({ id: i, url: url, alt: `${pkg.title} ${i + 1}` }))}
+                            />
+                        </div>
                     </div>
                 </div>
             )}
