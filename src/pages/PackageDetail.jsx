@@ -18,6 +18,7 @@ const PackageDetail = () => {
     const [selectedDate, setSelectedDate] = useState(null);
     const [showFullDescription, setShowFullDescription] = useState(false);
     const [showGallery, setShowGallery] = useState(false);
+    const [showFullPackingList, setShowFullPackingList] = useState(false);
     const { getPackageById, loading } = usePackages();
 
     useEffect(() => {
@@ -302,7 +303,7 @@ const PackageDetail = () => {
                         <h2>Things to carry</h2>
                         {pkg.packingList ? (
                             <div className="packing-list-container">
-                                {pkg.packingList.map((category, index) => (
+                                {pkg.packingList.slice(0, showFullPackingList ? undefined : 2).map((category, index) => (
                                     <div key={index} className="packing-category">
                                         <h3 className="text-lg font-semibold mb-2 text-slate-800 dark:text-slate-200 flex items-center gap-2">
                                             {category.icon && <span>{category.icon}</span>}
@@ -315,6 +316,23 @@ const PackageDetail = () => {
                                         </ul>
                                     </div>
                                 ))}
+                                {pkg.packingList.length > 2 && (
+                                    <button
+                                        className="view-more-btn"
+                                        onClick={() => setShowFullPackingList(!showFullPackingList)}
+                                        style={{ marginTop: '1rem', width: 'auto', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
+                                    >
+                                        {showFullPackingList ? (
+                                            <>
+                                                View Less <Minus size={16} />
+                                            </>
+                                        ) : (
+                                            <>
+                                                View More <Plus size={16} />
+                                            </>
+                                        )}
+                                    </button>
+                                )}
                             </div>
                         ) : (
                             <div className="carry-tags">
