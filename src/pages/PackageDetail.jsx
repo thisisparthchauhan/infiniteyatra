@@ -300,14 +300,32 @@ const PackageDetail = () => {
                     {/* Things to Carry */}
                     <section className="things-to-carry">
                         <h2>Things to carry</h2>
-                        <div className="carry-tags">
-                            {thingsToCarry.map((item, index) => (
-                                <span key={index} className="carry-tag">
-                                    <span className="carry-icon">{item.icon}</span>
-                                    {item.category}
-                                </span>
-                            ))}
-                        </div>
+                        {pkg.packingList ? (
+                            <div className="packing-list-container">
+                                {pkg.packingList.map((category, index) => (
+                                    <div key={index} className="packing-category">
+                                        <h3 className="text-lg font-semibold mb-2 text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                                            {category.icon && <span>{category.icon}</span>}
+                                            {category.category}
+                                        </h3>
+                                        <ul className="list-disc pl-5 space-y-1 text-slate-600 dark:text-slate-400">
+                                            {category.items.map((item, i) => (
+                                                <li key={i}>{item}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="carry-tags">
+                                {(pkg.thingsToCarry || thingsToCarry).map((item, index) => (
+                                    <span key={index} className="carry-tag">
+                                        <span className="carry-icon">{item.icon}</span>
+                                        {item.category}
+                                    </span>
+                                ))}
+                            </div>
+                        )}
                     </section>
 
                     {/* General Policy */}

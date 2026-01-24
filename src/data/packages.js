@@ -136,83 +136,162 @@ Explore Infinite. 🏔️`,
         pickupDrop: "Dehradun",
         image: "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?q=80&w=2070&auto=format&fit=crop",
         category: "trek",
-        price: 2,
-        priceDisplay: "₹2",
-        tokenPrice: 1,
+        price: 5999,
+        priceDisplay: "₹5,999",
+        tokenPrice: 1000,
         type: "custom",
         rating: 5.0,
-        duration: "6 Days / 5 Nights",
-        difficulty: "Moderate",
-        bestTime: "December to April",
+        duration: "5 Days / 4 Nights",
+        difficulty: "Easy to Moderate",
+        bestTime: "November to April",
         maxAltitude: "12,500 ft",
         maxGroupSize: 12,
-        description: "Kedarkantha is one of the most popular winter treks in India, offering stunning views of the Himalayan peaks. This trek takes you through beautiful pine forests, frozen lakes, and snow-covered meadows, culminating in a breathtaking summit climb.",
+        description: `If you’re searching for a winter trek that combines snowy trails, dense pine forests, a frozen alpine lake, and an exciting summit climb, the Kedarkantha Trek is an excellent choice. Located in the Garhwal Himalayas of Uttarakhand, this trek offers stunning 360° views of iconic peaks such as Swargarohini, Bandarpoonch, and Black Peak.
+
+Kedarkantha is one of the most popular beginner-friendly winter treks in India, making it ideal for first-time trekkers, families, and adventure lovers.`,
         highlights: [
-            "Summit climb to 12,500 ft",
-            "Panoramic views of Himalayan peaks",
-            "Walk through pristine pine forests",
-            "Experience camping in snow",
-            "Visit ancient temples"
+            "Sankri Village",
+            "Juda Ka Talab",
+            "Kedarkantha Base Camp",
+            "Kedarkantha Summit",
+            "Snow-capped forests & alpine meadows"
         ],
         itinerary: [
             {
                 day: 1,
-                title: "Dehradun to Sankri",
-                description: "Drive from Dehradun to Sankri village (220 km, 8-10 hours). Enjoy scenic views of the Himalayas and Tons river. Overnight stay in Sankri.",
-                activities: ["Scenic drive", "Village exploration", "Acclimatization"],
-                image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=2070&auto=format&fit=crop"
+                title: "Dehradun to Sankri (6,400 ft)",
+                description: "Pickup from Dehradun Railway Station at 7:00 AM. Scenic drive via Mussoorie, Naugaon, Purola. Arrival at Sankri by evening. Overnight stay in guesthouse.",
+                activities: ["Scenic drive", "Arrival at Sankri"],
+                stats: {
+                    distance: "210 km",
+                    time: "8–9 hours"
+                },
+                stay: "Guesthouse",
+                meals: "Tea, Snacks & Dinner"
             },
             {
                 day: 2,
-                title: "Sankri to Juda Ka Talab",
-                description: "Trek from Sankri to Juda Ka Talab (4 km, 4-5 hours). Walk through dense pine forests and reach the beautiful frozen lake. Camp overnight.",
-                activities: ["Forest trek", "Lake visit", "Camping"],
-                image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=2070&auto=format&fit=crop"
+                title: "Sankri to Juda Ka Talab (9,100 ft)",
+                description: "Gradual ascent through pine and maple forests. Views of meadows and streams. Camp setup near Juda Ka Talab.",
+                activities: ["Trek start", "Forest trail", "Camping"],
+                stats: {
+                    distance: "3 km",
+                    time: "~4 hours"
+                },
+                stay: "Tents",
+                meals: "Breakfast, Lunch, Evening Snacks & Dinner"
             },
             {
                 day: 3,
-                title: "Juda Ka Talab to Kedarkantha Base",
-                description: "Trek to Kedarkantha base camp (4 km, 3-4 hours). Gradual ascent through oak forests with stunning mountain views. Overnight camping.",
-                activities: ["Mountain trek", "Photography", "Base camp setup"],
-                image: "https://images.unsplash.com/photo-1519904981063-b0cf448d479e?q=80&w=2070&auto=format&fit=crop"
+                title: "Juda Ka Talab to Kedarkantha Base Camp (11,250 ft)",
+                description: "Expansive snow meadows and mountain views. Gradual ascent with a few steep sections. Reach Kedarkantha Base Camp and set up camp.",
+                activities: ["Snow meadows", "Base Camp arrival"],
+                stats: {
+                    distance: "4 km",
+                    time: "3–4 hours"
+                },
+                stay: "Tents",
+                meals: "Breakfast, Lunch, Evening Snacks & Dinner"
             },
             {
                 day: 4,
-                title: "Summit Day - Kedarkantha Peak",
-                description: "Early morning summit push to Kedarkantha peak (6 km, 6-7 hours round trip). Witness spectacular sunrise and 360-degree views. Descend to Hargaon camp.",
-                activities: ["Summit climb", "Sunrise viewing", "Descent to Hargaon"],
-                image: "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?q=80&w=2070&auto=format&fit=crop"
+                title: "Summit Day (12,500 ft) & Descent to Hargaon",
+                description: "Early morning summit climb. Panoramic Himalayan views. Descend to Hargaon/Juda Ka Talab.",
+                activities: ["Summit Climb", "Panoramic Views", "Descent"],
+                stats: {
+                    distance: "3 km (ascent)",
+                    time: "~3 hours ascent"
+                },
+                stay: "Tents",
+                meals: "Breakfast, Lunch, Evening Snacks & Dinner"
             },
             {
                 day: 5,
-                title: "Hargaon to Sankri",
-                description: "Trek back to Sankri village (6 km, 4-5 hours). Descend through forests and meadows. Celebrate the successful trek. Overnight in Sankri.",
-                activities: ["Descent trek", "Village stay", "Celebration"],
-                image: "https://images.unsplash.com/photo-1486870591958-9b9d0d1dda99?q=80&w=2070&auto=format&fit=crop"
-            },
-            {
-                day: 6,
-                title: "Sankri to Dehradun",
-                description: "Drive back to Dehradun (220 km, 8-10 hours). Trip concludes with beautiful memories of the Himalayas.",
-                activities: ["Return journey", "Trip conclusion"],
-                image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=2070&auto=format&fit=crop"
+                title: "Descend to Sankri & Drive to Dehradun",
+                description: "Descend via the same route to Sankri. Freshen up and lunch. Drive back to Dehradun. Drop-off at Dehradun Railway Station in the evening.",
+                activities: ["Descent Details", "Return Drive"],
+                stats: {
+                    distance: "4 km trek + 210 km drive"
+                },
+                meals: "Breakfast"
             }
         ],
         inclusions: [
-            "Accommodation in tents and guesthouse",
-            "All meals during the trek (breakfast, lunch, dinner)",
-            "Experienced trek leader and support staff",
-            "First aid medical kits and oxygen cylinder",
-            "Trekking equipment (tents, sleeping bags, etc.)",
-            "Forest permits and camping charges",
+            "Stay in guesthouses and camps on a quad-sharing basis",
+            "Nutritious pure vegetarian meals (Dinner Day 1 to Breakfast Day 5)",
+            "Morning tea, evening refreshments & hot soup during camping nights",
+            "Certified trek leader, experienced guides & support staff",
+            "Forest permits, entry fees & trekking approvals",
+            "Kitchen, dining & toilet tents",
+            "First-aid kit with oxygen cylinder",
             "Transportation from Dehradun to Dehradun"
         ],
         exclusions: [
-            "Personal expenses and tips",
-            "Insurance of any kind",
-            "Cost of any additional activities",
-            "Anything not mentioned in inclusions",
-            "Personal trekking gear (shoes, backpack, etc.)"
+            "Personal expenses (laundry, calls, tips, etc.)",
+            "Meals during transit",
+            "Travel insurance & personal trekking gear",
+            "Emergency evacuation or medical expenses",
+            "Anything not mentioned in inclusions"
+        ],
+        packingList: [
+            {
+                category: "Clothing",
+                icon: "👕",
+                items: [
+                    "2–3 quick-dry t-shirts",
+                    "2 trekking pants",
+                    "Fleece jacket & padded/down jacket",
+                    "Thermal innerwear (top & bottom)",
+                    "Woolen socks, cap & gloves",
+                    "Raincoat or poncho"
+                ]
+            },
+            {
+                category: "Footwear",
+                icon: "👟",
+                items: [
+                    "Sturdy trekking shoes with ankle support",
+                    "Lightweight slippers/sandals"
+                ]
+            },
+            {
+                category: "Trek Essentials",
+                icon: "🎒",
+                items: [
+                    "Sunglasses with UV protection",
+                    "Torch/headlamp with extra batteries",
+                    "Trekking pole",
+                    "2L water bottle or hydration pack",
+                    "Lip balm, sunscreen & moisturizer"
+                ]
+            },
+            {
+                category: "Personal Care",
+                icon: "🧴",
+                items: [
+                    "Wet wipes, hand sanitizer & toiletries",
+                    "Toilet paper & sanitary items"
+                ]
+            },
+            {
+                category: "Medical & Snacks",
+                icon: "💊",
+                items: [
+                    "Personal medicines & basic first-aid kit",
+                    "Energy bars, chocolates & dry fruits",
+                    "Government-issued ID proof (mandatory)"
+                ]
+            }
+        ],
+        goodToKnow: [
+            "Certified trek leaders & skilled local guides",
+            "Safety-first approach with medical kits & oxygen",
+            "Start early: Do light cardio & stretching before the trek",
+            "Stay hydrated and layer clothing properly",
+            "Additional charges due to transport or government changes are payable by participants",
+            "Itinerary may change due to weather or road conditions",
+            "Documents: Government-issued ID (Aadhaar / Driving License)",
+            "How to Reach: Fly to Jolly Grant Airport, or take a train/bus to Rishikesh/Dehradun"
         ],
         images: [
             "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?q=80&w=2070&auto=format&fit=crop",
@@ -220,10 +299,10 @@ Explore Infinite. 🏔️`,
             "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=2070&auto=format&fit=crop"
         ],
         cancellationPolicy: [
-            "Token Amount: ₹1,000 per person (Non-Refundable & Non-Transferable)",
-            "More than 7 days before trip: Full refund minus token amount",
-            "4–7 days before trip: 50% refund only",
-            "Less than 72 hours / No Show: No refund"
+            "₹1,000 per person to reserve the seat (non-refundable)",
+            "Remaining amount to be paid 7 days before trek start or on arrival",
+            "No responsibility for delays or cancellations due to natural calamities",
+            "Extra expenses due to unforeseen events are participant’s responsibility"
         ],
         gallery: [
             { id: 1, url: '/images/gallery/kedarkantha-1.png', alt: 'Stunning sunrise view from Kedarkantha summit with golden snow-covered peaks' },
@@ -443,7 +522,16 @@ Ride the waves of adventure as the Ganga flows wild and free — a thrilling rem
 Because this route isn’t just scenic — it is sacred.
 It carries the essence of Shiva, the peace of the sages, the raw beauty of untouched mountains, and the energy that transforms a person from within.
 
-When you return, you don’t just bring back photos — you bring back a new version of yourself.`,
+When you return, you don’t just bring back photos — you bring back a new version of yourself.
+
+### Short Itinerary
+• **Day 01:** Rishikesh → Devprayag → Dhari Devi → Rudraprayag → Phata
+• **Day 02:** Phata → Gaurikund → Kedarnath
+• **Day 03:** Kedarnath → Gaurikund → Phata
+• **Day 04:** Phata → Guptkashi → Ukhimath → Tungnath
+• **Day 05:** Tungnath → Shri Vriddha Badri → Vishnuprayag → Badrinath
+• **Day 06:** Badrinath → Mana → Vasudhara → Badrinath
+• **Day 07:** Badrinath → Nandprayag → Karnprayag → Rishikesh`,
         highlights: [
             "Kedarnath - Divine Jyotirlinga",
             "Tungnath - Highest Shiva Temple",
@@ -455,18 +543,123 @@ When you return, you don’t just bring back photos — you bring back a new ver
         itinerary: [
             {
                 day: 1,
-                title: "Arrival",
-                description: "Arrival description.",
-                activities: ["Arrival"]
+                title: "Rishikesh to Phata (Departure from Rishikesh)",
+                description: "Depart from Rishikesh in the afternoon. Visit Devprayag, Dhari Devi, and Rudraprayag on the way. Reach Sonprayag and stay overnight.",
+                activities: ["Devprayag", "Dhari Devi", "Rudraprayag", "Sonprayag Stay"],
+                stay: "Sonprayag",
+                meals: "Dinner"
+            },
+            {
+                day: 2,
+                title: "Phata to Kedarnath",
+                description: "Early morning start. Check into Phata/Gaurikund, then start the 22 KM trek to Kedarnath. En-route Himalayan views. Darshan at Shri Kedarnath Jyotirlinga, Evening Aarti, and celebrate Diwali in Kedarnath.",
+                activities: ["Trek (22 KM)", "Kedarnath Darshan", "Evening Aarti", "Diwali Celebration"],
+                stay: "Kedarnath",
+                meals: "Breakfast & Dinner"
+            },
+            {
+                day: 3,
+                title: "Kedarnath to Gaurikund/Phata",
+                description: "Morning Darshan, visit Shankaracharya Samadhi, Modi Gufa, Bhimshila, and Bhairav Baba. Afternoon trek down to Gaurikund (22 KM).",
+                activities: ["Morning Darshan", "Sightseeing", "Trek Down (22 KM)"],
+                stay: "Gaurikund",
+                meals: "Breakfast & Dinner"
+            },
+            {
+                day: 4,
+                title: "Phata to Tungnath",
+                description: "Drive to Guptkashi (Vishwanath Temple), Ukhimath (Omkareshwar Temple). Reach Chopta base and trek to Tungnath (5 KM) and Chandrashila (2 KM) for 360° Himalayan views.",
+                activities: ["Temple Visits", "Tungnath Trek (5 KM)", "Chandrashila Trek (2 KM)", "Himalayan Views"],
+                stay: "Tungnath Himalayan Valley",
+                meals: "Breakfast & Dinner"
+            },
+            {
+                day: 5,
+                title: "Tungnath to Badrinath",
+                description: "Drive to Shri Vriddha Badri (Kalpeshwar) via Vishnuprayag. Proceed to Badrinath. Attend Evening Aarti.",
+                activities: ["Vriddha Badri", "Vishnuprayag", "Badrinath Aarti"],
+                stay: "Badrinath",
+                meals: "Breakfast & Dinner"
+            },
+            {
+                day: 6,
+                title: "Badrinath Sightseeing",
+                description: "Morning Badrinath Aarti. Drive to Mana Village (India's first village) and trek to Vasudhara Waterfall (8 KM).",
+                activities: ["Badrinath Aarti", "Mana Village", "Vasudhara Waterfall Trek (8 KM)"],
+                stay: "Badrinath",
+                meals: "Breakfast & Dinner"
+            },
+            {
+                day: 7,
+                title: "Badrinath to Rishikesh",
+                description: "Drive to Nandprayag and Karnprayag. Reach Rishikesh for 12 KM River Rafting and Evening Ganga Aarti at Triveni Ghat. Departure.",
+                activities: ["Nandprayag", "Karnprayag", "River Rafting", "Ganga Aarti", "Departure"],
+                meals: "Breakfast & Lunch"
             }
         ],
         inclusions: [
-            "Accommodation",
-            "Meals",
-            "Transport"
+            "Rishikesh sightseeing & Ganga Aarti at Triveni Ghat",
+            "Internal transportation",
+            "Permits and entrance fees",
+            "Experienced driver & instructor",
+            "River rafting at Rishikesh (12 KM)",
+            "Team building games",
+            "Accommodation on sharing basis"
         ],
         exclusions: [
-            "Personal Expenses"
+            "Transportation tickets (Hometown to Rishikesh)",
+            "Personal toiletry items & personal medicine kit",
+            "Meals during transit",
+            "Charges for mules/porters/yak carrying extra luggage",
+            "Any cost arising due to unforeseen circumstances (bad weather, road blocks, landslides, etc.)",
+            "Anything not mentioned under Inclusions"
+        ],
+        packingList: [
+            {
+                category: "Footwear",
+                icon: "👟",
+                items: [
+                    "Non-skid deep-treaded hiking shoes – Quantity: 1",
+                    "Lightweight slippers/sandals – Quantity: 1 pair"
+                ]
+            },
+            {
+                category: "Clothing",
+                icon: "👕",
+                items: [
+                    "Track pants",
+                    "Full-sleeve T-shirts (1 for every 2 days of trekking)",
+                    "Undergarments (1 per day of trekking)",
+                    "Rainwear (jacket & pants), raincoat, umbrella",
+                    "Sun-shielding hat – Quantity: 1"
+                ]
+            },
+            {
+                category: "Toiletries",
+                icon: "🧴",
+                items: [
+                    "Personal toiletry kit (small towel, toilet paper, paper soap/bar soap, toothbrush, toothpaste, cold cream, etc.)"
+                ]
+            },
+            {
+                category: "Electronics",
+                icon: "🔋",
+                items: [
+                    "Power bank",
+                    "Camera with extra batteries (optional)"
+                ]
+            },
+            {
+                category: "Others",
+                icon: "🍫",
+                items: [
+                    "Dry fruits, nuts, chocolate bars",
+                    "Carry sufficient personal medicines (if required)",
+                    "Consult your doctor before joining the trek",
+                    "Sunscreen lotion, lip balm",
+                    "Newspaper and plastic bags"
+                ]
+            }
         ],
         images: [
             soulOfHimalayasImg
