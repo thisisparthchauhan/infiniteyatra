@@ -115,6 +115,56 @@ Explore Infinite. 🏔️`,
             "Rucksack offloading",
             "Insurance"
         ],
+        packingList: [
+            {
+                category: "Clothing",
+                icon: "👕",
+                items: [
+                    "2–3 quick-dry t-shirts",
+                    "2 trekking pants",
+                    "Fleece jacket & padded/down jacket",
+                    "Thermal innerwear (top & bottom)",
+                    "Woolen socks, cap & gloves",
+                    "Raincoat or poncho"
+                ]
+            },
+            {
+                category: "Footwear",
+                icon: "👟",
+                items: [
+                    "Sturdy trekking shoes with ankle support",
+                    "Lightweight slippers/sandals"
+                ]
+            },
+            {
+                category: "Trek Essentials",
+                icon: "🎒",
+                items: [
+                    "Sunglasses with UV protection",
+                    "Torch/headlamp with extra batteries",
+                    "Trekking pole",
+                    "2L water bottle or hydration pack",
+                    "Lip balm, sunscreen & moisturizer"
+                ]
+            },
+            {
+                category: "Personal Care",
+                icon: "🧴",
+                items: [
+                    "Wet wipes, hand sanitizer & toiletries",
+                    "Toilet paper & sanitary items"
+                ]
+            },
+            {
+                category: "Medical & Snacks",
+                icon: "💊",
+                items: [
+                    "Personal medicines & basic first-aid kit",
+                    "Energy bars, chocolates & dry fruits",
+                    "Government-issued ID proof (mandatory)"
+                ]
+            }
+        ],
         images: [
             dayara1,
             dayara2,
