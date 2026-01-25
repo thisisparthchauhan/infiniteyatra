@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { CheckCircle, Download, MessageCircle, Mail, ArrowRight, Home, Smartphone, Copy } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -9,6 +9,112 @@ const BookingSuccess = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const { bookingId, packageTitle, amountPaid, totalAmount, date } = location.state || {};
+    const hasDownloaded = useRef(false);
+
+    const balanceDue = totalAmount - amountPaid;
+
+    const handleDownloadInvoice = () => {
+        try {
+            const doc = new jsPDF();
+
+            // Brand Colors
+            const primaryColor = [30, 41, 59]; // Slate 900
+            const accentColor = [22, 163, 74]; // Green 600
+
+            // Header Background
+            doc.setFillColor(...primaryColor);
+            doc.rect(0, 0, 210, 40, 'F');
+
+            // Header Text
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(22);
+            doc.setFont('helvetica', 'bold');
+            doc.text('INFINITE YATRA', 20, 25);
+
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            doc.text('Invoice & Booking Receipt', 190, 25, { align: 'right' });
+
+            // Booking Details Section
+            let yPos = 60;
+            doc.setTextColor(30, 41, 59);
+
+            // Left Column
+            doc.setFontSize(10);
+            doc.text('Booking Reference:', 20, yPos);
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.text(bookingId || 'N/A', 20, yPos + 7);
+
+            // Right Column
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            doc.text('Date Issued:', 190, yPos, { align: 'right' });
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.text(new Date().toLocaleDateString(), 190, yPos + 7, { align: 'right' });
+
+            yPos += 25;
+
+            // Trip Details
+            doc.setFontSize(14);
+            doc.setTextColor(...primaryColor);
+            doc.text(`Trip: ${packageTitle}`, 20, yPos);
+
+            doc.setFontSize(10);
+            doc.setTextColor(100);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`Travel Date: ${new Date(date).toLocaleDateString()}`, 20, yPos + 7);
+
+            // Financial Table
+            const tableData = [
+                ['Description', 'Amount (INR)'],
+                ['Total Package Cost', totalAmount?.toLocaleString()],
+                ['Amount Paid', amountPaid?.toLocaleString()],
+                ['Balance Due', balanceDue?.toLocaleString()]
+            ];
+
+            doc.autoTable({
+                startY: yPos + 20,
+                head: [tableData[0]],
+                body: tableData.slice(1),
+                theme: 'grid',
+                headStyles: {
+                    fillColor: primaryColor,
+                    textColor: 255,
+                    fontStyle: 'bold'
+                },
+                columnStyles: {
+                    0: { cellWidth: 'auto' },
+                    1: { halign: 'right', fontStyle: 'bold' }
+                },
+                styles: {
+                    fontSize: 10,
+                    cellPadding: 6
+                }
+            });
+
+            // Footer
+            const finalY = doc.lastAutoTable.finalY + 20;
+            doc.setFontSize(10);
+            doc.setTextColor(100);
+            doc.text('Thank you for choosing Infinite Yatra!', 105, finalY, { align: 'center' });
+            doc.text('Need help? Contact us at infiniteyatra@gmail.com', 105, finalY + 7, { align: 'center' });
+
+            doc.save(`Invoice_${bookingId}.pdf`);
+        } catch (err) {
+            console.error("Failed to generate PDF:", err);
+            // Optionally alert user, but since this is auto-triggered, maybe silent fail or specific UI feedback
+        }
+    };
+
+    // Auto-generate invoice on mount
+    useEffect(() => {
+        if (bookingId && !hasDownloaded.current) {
+            handleDownloadInvoice();
+            hasDownloaded.current = true;
+        }
+    }, [bookingId]);
 
     if (!bookingId) {
         return (
@@ -19,61 +125,7 @@ const BookingSuccess = () => {
         );
     }
 
-    const handleDownloadInvoice = () => {
-        const doc = new jsPDF();
-
-        // Header
-        doc.setFillColor(30, 41, 59); // Slate 900
-        doc.rect(0, 0, 210, 40, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(22);
-        doc.text('INFINITE YATRA', 20, 25);
-
-        doc.setFontSize(10);
-        doc.text('Invoice & Booking Receipt', 150, 25);
-
-        // Booking Info
-        doc.setTextColor(30, 41, 59);
-        doc.setFontSize(12);
-        doc.text(`Booking ID: ${bookingId}`, 20, 60);
-        doc.text(`Date: ${new Date().toLocaleDateString()}`, 150, 60);
-
-        doc.setFontSize(16);
-        doc.text(`Trip: ${packageTitle}`, 20, 80);
-
-        doc.setFontSize(12);
-        doc.text(`Travel Date: ${new Date(date).toLocaleDateString()}`, 20, 90);
-
-        // Payment Details Table
-        const tableData = [
-            ['Description', 'Amount'],
-            ['Package Cost', `INR ${totalAmount?.toLocaleString()}`],
-            ['Total Amount', `INR ${totalAmount?.toLocaleString()}`],
-            ['Amount Paid', `INR ${amountPaid?.toLocaleString()}`],
-            ['Balance Due', `INR ${balanceDue?.toLocaleString()}`]
-        ];
-
-        doc.autoTable({
-            startY: 110,
-            head: [['Description', 'Amount']],
-            body: tableData.slice(1),
-            theme: 'grid',
-            headStyles: { fillColor: [30, 41, 59] },
-        });
-
-        // Footer
-        const finalY = doc.lastAutoTable.finalY || 150;
-        doc.setFontSize(10);
-        doc.setTextColor(100);
-        doc.text('Thank you for choosing Infinite Yatra!', 20, finalY + 20);
-        doc.text('For support: infiniteyatra@gmail.com', 20, finalY + 30);
-
-        doc.save(`Invoice_${bookingId}.pdf`);
-    };
-
     const whatsappLink = `https://wa.me/919265799325?text=Hello%20Infinite%20Yatra%2C%20I%20have%20booked%20${encodeURIComponent(packageTitle)}%20(ID%3A%20${bookingId}).`;
-
-    const balanceDue = totalAmount - amountPaid;
 
     return (
         <div className="min-h-screen bg-slate-50 pt-28 pb-20 px-6">

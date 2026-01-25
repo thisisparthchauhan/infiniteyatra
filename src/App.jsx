@@ -9,7 +9,7 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
 import ProtectedRoute from './components/ProtectedRoute';
-import AdminRoute from './components/AdminRoute';
+import RoleRoute from './components/RoleRoute';
 import EnquiryPopup from './components/EnquiryPopup';
 import AIChatbot from './components/AIChatbot';
 import MaintenanceBanner from './components/MaintenanceBanner';
@@ -46,16 +46,18 @@ import TermsConditions from './pages/TermsConditions';
 const Layout = ({ children }) => {
   const location = useLocation();
   const isConnectPage = location.pathname === '/connect';
+  const isAdminPage = location.pathname.startsWith('/admin');
+  const shouldHideLayout = isConnectPage || isAdminPage;
 
   return (
     <>
       <MaintenanceBanner />
       <ScrollToTop />
-      {!isConnectPage && <Navbar />}
+      {!shouldHideLayout && <Navbar />}
       <main>
         {children}
       </main>
-      {!isConnectPage && (
+      {!shouldHideLayout && (
         <>
           <Footer />
           <EnquiryPopup />
@@ -132,9 +134,9 @@ function App() {
                     <Route
                       path="/admin"
                       element={
-                        <AdminRoute>
+                        <RoleRoute allowedRoles={['admin', 'ops', 'finance']}>
                           <AdminDashboard />
-                        </AdminRoute>
+                        </RoleRoute>
                       }
                     />
                     <Route path="/connect" element={<QRLanding />} />

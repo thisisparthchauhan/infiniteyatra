@@ -9,6 +9,7 @@ import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
 import { sendBookingEmails } from '../services/email';
+import { RazorpayService } from '../services/razorpayService';
 import { Upload, FileText, X } from 'lucide-react';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
@@ -460,25 +461,40 @@ const BookingPage = () => {
                 // Optionally show a warning? For now proceeding.
             }
 
-            // 4. Initialize Razorpay
+            // 4. Initialize Razorpay (Backend Driven)
+            const isLoaded = await RazorpayService.loadRazorpayScript();
+            if (!isLoaded) {
+                setError('Razorpay SDK failed to load. Check your internet connection.');
+                setSubmitting(false);
+                return;
+            }
+
+            // Call Backend to Create Order
+            const orderData = await RazorpayService.createOrder(bookingRef.id, amountToPay);
+
             const options = {
-                key: "rzp_live_S2yg6cwyGDfgjI", // Live Key ID
-                amount: amountToPay * 100, // Amount in paise
-                currency: "INR",
+                key: import.meta.env.VITE_RAZORPAY_KEY || "rzp_live_S2yg6cwyGDfgjI",
+                amount: orderData.amount,
+                currency: orderData.currency,
                 name: "Infinite Yatra",
                 description: `Booking ID: ${bookingRef.id}`,
-                image: "https://your-logo-url.com/logo.png", // Optional: Add your logo URL here
+                image: "https://your-logo-url.com/logo.png",
+                order_id: orderData.id, // THE CRITICAL PART: Backend Order ID
                 handler: async function (response) {
-                    // 5. On Payment Success
                     try {
-                        const paymentId = response.razorpay_payment_id;
+                        // 5. Verify Payment (Backend)
+                        await RazorpayService.verifyPayment(response, bookingRef.id);
 
-                        // Update Booking in Firestore
+                        // Note: Backend Webhook will also update status, but we do optimistic update here for UI speed
+
+                        // Update Booking in Firestore (Optimistic UI update)
                         await updateDoc(doc(db, 'bookings', bookingRef.id), {
                             status: 'confirmed',
+                            bookingStatus: 'confirmed', // Schema v2 sync
+                            paymentStatus: 'paid',     // Schema v2 sync
                             amountPaid: amountToPay,
                             balanceDue: paymentOption === 'token' ? (totalAmount - amountToPay) : 0,
-                            paymentId: paymentId,
+                            paymentId: response.razorpay_payment_id,
                             paymentDate: serverTimestamp()
                         });
 
@@ -510,9 +526,12 @@ const BookingPage = () => {
                             }
                         });
 
+
                     } catch (err) {
-                        console.error("Error updating booking after payment:", err);
-                        setError("Payment successful but failed to update booking. Please contact support.");
+                        console.error("Payment Verification Failed:", err);
+                        // Even if UI verification fails, Webhook might save us. 
+                        // But we show error to be safe.
+                        setError("Payment verification failed. If money was deducted, it will be refunded or confirmed shortly.");
                         setSubmitting(false);
                     }
                 },
@@ -530,7 +549,7 @@ const BookingPage = () => {
                 modal: {
                     ondismiss: function () {
                         setSubmitting(false);
-                        // Optional: Delete the pending booking or mark as cancelled
+                        console.log("Payment modal closed");
                     }
                 }
             };
@@ -545,7 +564,7 @@ const BookingPage = () => {
 
         } catch (error) {
             console.error("Error initiating booking:", error);
-            setError("Failed to initiate booking. Please try again or contact support.");
+            setError(`Booking Error: ${error.message}`);
             setSubmitting(false);
         }
     };

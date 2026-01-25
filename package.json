@@ -27,6 +27,7 @@
     "react-hot-toast": "^2.6.0",
     "react-phone-input-2": "^2.15.1",
     "react-router-dom": "^7.9.6",
+    "recharts": "^3.7.0",
     "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {

@@ -20,7 +20,7 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     // Sign Up Function
-    const signup = async (email, password, name, phone) => {
+    const signup = async (email, password, name, phone, role = 'customer') => {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
@@ -34,6 +34,7 @@ export const AuthProvider = ({ children }) => {
             name: name,
             email: email,
             phone: phone,
+            role: role,
             createdAt: new Date().toISOString()
         });
 
@@ -110,13 +111,30 @@ export const AuthProvider = ({ children }) => {
                     const userDocRef = doc(db, "users", user.uid);
                     const userDocSnap = await import('firebase/firestore').then(module => module.getDoc(userDocRef));
 
+                    const ADMIN_EMAILS = [
+                        'infiniteyatra@gmail.com',
+                        'chauhanparth165@gmail.com',
+                        'universetcenter@gmail.com'
+                    ];
+
+                    let userData = {};
                     if (userDocSnap.exists()) {
-                        const userData = userDocSnap.data();
-                        // Merge auth user with firestore data
-                        setCurrentUser({ ...user, ...userData });
-                    } else {
-                        setCurrentUser(user);
+                        userData = userDocSnap.data();
                     }
+
+                    // Force isAdmin for hardcoded emails
+                    const isHardcodedAdmin = ADMIN_EMAILS.includes(user.email);
+
+                    // Determine Role
+                    let role = userData.role || 'customer';
+                    if (isHardcodedAdmin) role = 'admin';
+
+                    setCurrentUser({
+                        ...user,
+                        ...userData,
+                        isAdmin: isHardcodedAdmin || userData.isAdmin,
+                        role: role
+                    });
                 } catch (error) {
                     console.error("Error fetching user profile:", error);
                     setCurrentUser(user);
