@@ -59,7 +59,7 @@ const TripDetails = () => {
     const { itinerary } = trip;
 
     return (
-        <div className="min-h-screen bg-slate-50 pt-24 pb-16">
+        <div className="min-h-screen bg-black pt-24 pb-16">
             <SEO
                 title={`${trip.destination} Itinerary`}
                 description={`Check out this ${trip.days}-day trip to ${trip.destination} planned by AI.`}
@@ -67,7 +67,7 @@ const TripDetails = () => {
             />
 
             <div className="container mx-auto px-6 lg:px-8">
-                <Link to="/my-trips" className="inline-flex items-center gap-2 text-slate-500 hover:text-blue-600 mb-8 transition-colors">
+                <Link to="/my-trips" className="inline-flex items-center gap-2 text-slate-400 hover:text-blue-400 mb-8 transition-colors">
                     <ArrowLeft className="w-4 h-4" /> Back to My Trips
                 </Link>
 
@@ -77,7 +77,7 @@ const TripDetails = () => {
                     className="max-w-4xl mx-auto"
                 >
                     {/* Header */}
-                    <div className="bg-white rounded-3xl shadow-xl overflow-hidden mb-8">
+                    <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl overflow-hidden mb-8">
                         <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 p-8 md:p-12 text-white text-center">
                             <h1 className="text-4xl md:text-5xl font-bold mb-4">{trip.destination}</h1>
                             <div className="flex justify-center items-center gap-6 text-white/90">
@@ -85,14 +85,14 @@ const TripDetails = () => {
                                 <span className="flex items-center gap-2"><Sparkles className="w-5 h-5" /> AI Curated</span>
                             </div>
                         </div>
-                        <div className="p-6 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
-                            <span className="text-slate-500 text-sm">Created on {trip.createdAt?.toDate().toLocaleDateString()}</span>
+                        <div className="p-6 bg-black/20 border-t border-white/5 flex justify-between items-center">
+                            <span className="text-slate-400 text-sm">Created on {trip.createdAt?.toDate().toLocaleDateString()}</span>
                             <button
                                 onClick={() => {
                                     navigator.clipboard.writeText(window.location.href);
                                     addToast("Link copied to clipboard!", "success");
                                 }}
-                                className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg shadow-sm hover:border-blue-300 text-blue-600 font-medium transition-all"
+                                className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-lg shadow-sm hover:bg-white/10 hover:border-white/20 text-white font-medium transition-all"
                             >
                                 <Share2 className="w-4 h-4" /> Share Trip
                             </button>
@@ -107,21 +107,21 @@ const TripDetails = () => {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: index * 0.1 }}
-                                className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden"
+                                className="bg-[#0a0a0a] rounded-2xl shadow-lg border border-white/10 overflow-hidden"
                             >
-                                <div className="bg-slate-50 p-4 border-b border-slate-100 flex justify-between items-center">
-                                    <h3 className="text-xl font-bold text-slate-900">Day {day.day}</h3>
-                                    <span className="text-slate-600 font-medium">{day.title}</span>
+                                <div className="bg-white/5 p-4 border-b border-white/5 flex justify-between items-center">
+                                    <h3 className="text-xl font-bold text-white">Day {day.day}</h3>
+                                    <span className="text-slate-400 font-medium">{day.title}</span>
                                 </div>
                                 <div className="p-6 space-y-6">
                                     {day.activities.map((activity, actIndex) => (
                                         <div key={actIndex} className="flex gap-4">
                                             <div className="w-16 flex-shrink-0 text-center pt-1">
-                                                <span className="block text-sm font-bold text-slate-900">{activity.time}</span>
+                                                <span className="block text-sm font-bold text-blue-400">{activity.time}</span>
                                             </div>
-                                            <div className="flex-grow border-l-2 border-slate-100 pl-4 pb-2">
-                                                <h4 className="font-bold text-slate-900 text-lg mb-1">{activity.title}</h4>
-                                                <p className="text-slate-600 text-sm leading-relaxed">{activity.description}</p>
+                                            <div className="flex-grow border-l-2 border-white/10 pl-4 pb-2">
+                                                <h4 className="font-bold text-white text-lg mb-1">{activity.title}</h4>
+                                                <p className="text-slate-400 text-sm leading-relaxed">{activity.description}</p>
                                             </div>
                                         </div>
                                     ))}
@@ -131,20 +131,20 @@ const TripDetails = () => {
                     </div>
 
                     {/* Budget Section */}
-                    <div className="mt-12 bg-white rounded-2xl shadow-sm border border-slate-100 p-8">
-                        <h3 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3">
-                            <TrendingUp className="w-6 h-6 text-green-600" />
+                    <div className="mt-12 bg-[#0a0a0a] rounded-2xl shadow-lg border border-white/10 p-8">
+                        <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                            <TrendingUp className="w-6 h-6 text-green-500" />
                             Estimated Budget
                         </h3>
                         <div className="grid md:grid-cols-2 gap-8">
                             <div className="space-y-3">
-                                <div className="flex justify-between p-3 bg-slate-50 rounded-lg">
-                                    <span className="text-slate-600">Daily Cost</span>
-                                    <span className="font-bold text-slate-900">${itinerary.costBreakdown?.daily}</span>
+                                <div className="flex justify-between p-3 bg-white/5 rounded-lg border border-white/5">
+                                    <span className="text-slate-400">Daily Cost</span>
+                                    <span className="font-bold text-white">${itinerary.costBreakdown?.daily}</span>
                                 </div>
-                                <div className="flex justify-between p-3 bg-slate-50 rounded-lg">
-                                    <span className="text-slate-600">Total per Person</span>
-                                    <span className="font-bold text-slate-900">${itinerary.costBreakdown?.perPerson}</span>
+                                <div className="flex justify-between p-3 bg-white/5 rounded-lg border border-white/5">
+                                    <span className="text-slate-400">Total per Person</span>
+                                    <span className="font-bold text-white">${itinerary.costBreakdown?.perPerson}</span>
                                 </div>
                             </div>
                         </div>

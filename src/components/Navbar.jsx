@@ -263,6 +263,13 @@ const Navbar = () => {
                                             </div>
                                             <div className="p-1.5 space-y-0.5">
                                                 <Link
+                                                    to="/profile"
+                                                    className="flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
+                                                >
+                                                    <User size={16} className="text-green-400" />
+                                                    My Profile
+                                                </Link>
+                                                <Link
                                                     to="/my-bookings"
                                                     className="flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
                                                 >
@@ -274,22 +281,9 @@ const Navbar = () => {
                                                     className="flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
                                                 >
                                                     <Sparkles size={16} className="text-purple-400" />
-                                                    My Trips
+                                                    AI Trips
                                                 </Link>
-                                                <Link
-                                                    to="/profile"
-                                                    className="flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
-                                                >
-                                                    <User size={16} className="text-green-400" />
-                                                    My Profile
-                                                </Link>
-                                                <Link
-                                                    to="/support"
-                                                    className="flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
-                                                >
-                                                    <Info size={16} className="text-yellow-400" />
-                                                    Support
-                                                </Link>
+
 
                                                 {/* Admin Link inside Menu */}
                                                 {currentUser.isAdmin && (
@@ -507,13 +501,13 @@ const Navbar = () => {
                                     to="/my-trips"
                                     onClick={() => setIsMobileMenuOpen(false)}
                                     className="
-                                        w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-medium
-                                        text-blue-600 bg-blue-50 hover:bg-blue-100
-                                        transition-all duration-300
-                                    "
+                                            w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-medium
+                                            text-blue-600 bg-blue-50 hover:bg-blue-100
+                                            transition-all duration-300
+                                        "
                                 >
                                     <Sparkles size={18} />
-                                    My Trips
+                                    AI Trips
                                 </Link>
                                 <button
                                     onClick={() => {
