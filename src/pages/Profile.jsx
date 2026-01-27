@@ -473,7 +473,11 @@ const Profile = () => {
                                             className="modal-input"
                                             placeholder="First Name *"
                                             value={contactForm.firstName}
-                                            onChange={(e) => setContactForm({ ...contactForm, firstName: e.target.value.replace(/[^A-Za-z\s]/g, '') })}
+                                            onChange={(e) => {
+                                                let val = e.target.value.replace(/[^A-Za-z\s]/g, '');
+                                                val = val.charAt(0).toUpperCase() + val.slice(1).toLowerCase();
+                                                setContactForm({ ...contactForm, firstName: val });
+                                            }}
                                         />
                                     </div>
                                     <div className="relative">
@@ -482,7 +486,11 @@ const Profile = () => {
                                             className="modal-input"
                                             placeholder="Middle Name"
                                             value={contactForm.middleName}
-                                            onChange={(e) => setContactForm({ ...contactForm, middleName: e.target.value.replace(/[^A-Za-z\s]/g, '') })}
+                                            onChange={(e) => {
+                                                let val = e.target.value.replace(/[^A-Za-z\s]/g, '');
+                                                val = val.charAt(0).toUpperCase() + val.slice(1).toLowerCase();
+                                                setContactForm({ ...contactForm, middleName: val });
+                                            }}
                                         />
                                     </div>
                                     <div className="relative">
@@ -491,7 +499,11 @@ const Profile = () => {
                                             className="modal-input"
                                             placeholder="Last Name *"
                                             value={contactForm.lastName}
-                                            onChange={(e) => setContactForm({ ...contactForm, lastName: e.target.value.replace(/[^A-Za-z\s]/g, '') })}
+                                            onChange={(e) => {
+                                                let val = e.target.value.replace(/[^A-Za-z\s]/g, '');
+                                                val = val.charAt(0).toUpperCase() + val.slice(1).toLowerCase();
+                                                setContactForm({ ...contactForm, lastName: val });
+                                            }}
                                         />
                                     </div>
                                 </div>
@@ -607,7 +619,9 @@ const Profile = () => {
                                     onChange={(e) => {
                                         let val = e.target.value;
                                         if (['firstName', 'middleName', 'lastName'].includes(activeModal)) {
+                                            // Allow only alphabets and spaces, then apply Title Case
                                             val = val.replace(/[^A-Za-z\s]/g, '');
+                                            val = val.charAt(0).toUpperCase() + val.slice(1).toLowerCase();
                                         }
                                         setModalValue(val);
                                     }}

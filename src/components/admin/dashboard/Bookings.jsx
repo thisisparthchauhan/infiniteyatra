@@ -1,8 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import { Search, Filter, Eye, Trash2, MoreHorizontal, Calendar, Download, RefreshCw, X, CheckCircle, AlertCircle, FileText, MessageCircle, Mail } from 'lucide-react';
+import React, { useEffect, useState, useRef } from 'react';
+import { Search, Filter, Eye, Trash2, MoreHorizontal, Calendar, Download, RefreshCw, X, CheckCircle, AlertCircle, FileText, MessageCircle, Mail, ChevronDown } from 'lucide-react';
 import { collection, query, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../../../firebase';
 import { motion, AnimatePresence } from 'framer-motion';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
+import { generateInvoicePDF } from '../../../services/InvoiceGenerator';
 
 const Bookings = () => {
     const [bookings, setBookings] = useState([]);
@@ -66,6 +71,138 @@ const Bookings = () => {
         return matchesSearch && matchesFilter;
     });
 
+    // Export functionality
+    const [showExportMenu, setShowExportMenu] = useState(false);
+    const exportRef = useRef(null);
+
+    // Invoice Generation
+    const handleDownloadInvoice = () => {
+        if (!selectedBooking) return;
+
+        const booking = {
+            id: selectedBooking.id,
+            packageTitle: selectedBooking.packageTitle,
+            travelDate: selectedBooking.travelDate || selectedBooking.bookingDate,
+            category: selectedBooking.category || 'Trek/Tour',
+            totalPrice: selectedBooking.totalPrice,
+            travelers: selectedBooking.travelers || 1,
+            tripName: selectedBooking.packageTitle,
+            pickup: selectedBooking.pickupLocation,
+            drop: selectedBooking.dropLocation,
+            status: selectedBooking.status
+        };
+
+        const payment = {
+            amount: selectedBooking.amountPaid || 1000,
+            method: 'Online',
+            id: selectedBooking.razorpayOrderId || 'N/A',
+            status: selectedBooking.paymentStatus || 'success'
+        };
+
+        const customer = {
+            name: selectedBooking.contactName,
+            email: selectedBooking.contactEmail,
+            phone: selectedBooking.phone,
+            age: selectedBooking.age,
+            gender: selectedBooking.gender,
+            address: selectedBooking.address,
+            emergencyContact: selectedBooking.emergencyContact
+        };
+
+        const doc = generateInvoicePDF(booking, payment, customer);
+        doc.save(`IY_Invoice_${selectedBooking.id}.pdf`);
+    };
+
+    // Close export menu when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (exportRef.current && !exportRef.current.contains(event.target)) {
+                setShowExportMenu(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    // Prepare data for export
+    const getExportData = () => {
+        return filtered.map(b => ({
+            'Booking ID': b.id,
+            'Customer Name': b.contactName || 'N/A',
+            'Email': b.contactEmail || 'N/A',
+            'Phone': b.phone || 'N/A',
+            'Package': b.packageTitle || 'N/A',
+            'Travel Date': b.travelDate || 'N/A',
+            'Travelers': b.travelers || 1,
+            'Total Amount': b.totalAmount ? `₹${b.totalAmount}` : 'N/A',
+            'Amount Paid': b.amountPaid ? `₹${b.amountPaid}` : 'N/A',
+            'Status': b.status || 'pending',
+            'Booked On': b.createdAt?.seconds ? new Date(b.createdAt.seconds * 1000).toLocaleDateString() : 'N/A'
+        }));
+    };
+
+    const exportToPDF = () => {
+        const doc = new jsPDF();
+        const data = getExportData();
+
+        doc.setFontSize(18);
+        doc.text('Booking Management Report', 14, 22);
+        doc.setFontSize(10);
+        doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 30);
+        doc.text(`Total Records: ${data.length}`, 14, 36);
+
+        autoTable(doc, {
+            head: [Object.keys(data[0] || {})],
+            body: data.map(row => Object.values(row)),
+            startY: 42,
+            styles: { fontSize: 8, cellPadding: 2 },
+            headStyles: { fillColor: [59, 130, 246] }
+        });
+
+        doc.save('bookings_export.pdf');
+        setShowExportMenu(false);
+    };
+
+    const exportToExcel = () => {
+        const data = getExportData();
+        const worksheet = XLSX.utils.json_to_sheet(data);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Bookings');
+        const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+        const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        saveAs(blob, 'bookings_export.xlsx');
+        setShowExportMenu(false);
+    };
+
+    const exportToCSV = () => {
+        const data = getExportData();
+        const worksheet = XLSX.utils.json_to_sheet(data);
+        const csv = XLSX.utils.sheet_to_csv(worksheet);
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+        saveAs(blob, 'bookings_export.csv');
+        setShowExportMenu(false);
+    };
+
+    const exportToText = () => {
+        const data = getExportData();
+        let text = 'BOOKING MANAGEMENT REPORT\n';
+        text += `Generated: ${new Date().toLocaleString()}\n`;
+        text += `Total Records: ${data.length}\n\n`;
+        text += '='.repeat(80) + '\n\n';
+
+        data.forEach((row, idx) => {
+            text += `--- Booking #${idx + 1} ---\n`;
+            Object.entries(row).forEach(([key, value]) => {
+                text += `${key}: ${value}\n`;
+            });
+            text += '\n';
+        });
+
+        const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+        saveAs(blob, 'bookings_export.txt');
+        setShowExportMenu(false);
+    };
+
     if (loading) return <div className="p-12 text-center text-slate-500 animate-pulse">Loading Bookings...</div>;
 
     return (
@@ -99,9 +236,38 @@ const Bookings = () => {
                     <button onClick={fetchBookings} className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 transition-colors">
                         <RefreshCw size={18} />
                     </button>
-                    <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-medium transition-colors shadow-lg shadow-blue-500/20">
-                        <Download size={18} /> Export
-                    </button>
+                    <div className="relative" ref={exportRef}>
+                        <button
+                            onClick={() => setShowExportMenu(!showExportMenu)}
+                            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-medium transition-colors shadow-lg shadow-blue-500/20"
+                        >
+                            <Download size={18} /> Export <ChevronDown size={16} className={`transition-transform ${showExportMenu ? 'rotate-180' : ''}`} />
+                        </button>
+                        <AnimatePresence>
+                            {showExportMenu && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                    transition={{ duration: 0.15 }}
+                                    className="absolute right-0 top-full mt-2 w-48 bg-slate-900 border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50"
+                                >
+                                    <button onClick={exportToPDF} className="w-full px-4 py-3 text-left text-white hover:bg-white/10 flex items-center gap-3 transition-colors">
+                                        <FileText size={18} className="text-red-400" /> PDF Document
+                                    </button>
+                                    <button onClick={exportToExcel} className="w-full px-4 py-3 text-left text-white hover:bg-white/10 flex items-center gap-3 transition-colors">
+                                        <FileText size={18} className="text-green-400" /> Excel Spreadsheet
+                                    </button>
+                                    <button onClick={exportToCSV} className="w-full px-4 py-3 text-left text-white hover:bg-white/10 flex items-center gap-3 transition-colors">
+                                        <FileText size={18} className="text-yellow-400" /> CSV File
+                                    </button>
+                                    <button onClick={exportToText} className="w-full px-4 py-3 text-left text-white hover:bg-white/10 flex items-center gap-3 transition-colors">
+                                        <FileText size={18} className="text-blue-400" /> Text File
+                                    </button>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
                 </div>
             </div>
 
@@ -306,7 +472,7 @@ const Bookings = () => {
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-3">
-                                        <button className="flex items-center justify-center gap-2 py-2.5 bg-white/5 hover:bg-white/10 rounded-lg text-sm font-medium transition-colors border border-white/10">
+                                        <button onClick={handleDownloadInvoice} className="flex items-center justify-center gap-2 py-2.5 bg-white/5 hover:bg-white/10 rounded-lg text-sm font-medium transition-colors border border-white/10">
                                             <FileText size={14} className="text-slate-400" /> Generate Invoice
                                         </button>
                                         <button className="flex items-center justify-center gap-2 py-2.5 bg-green-600/10 hover:bg-green-600/20 text-green-400 rounded-lg text-sm font-medium transition-colors border border-green-600/20">

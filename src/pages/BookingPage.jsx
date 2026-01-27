@@ -10,9 +10,10 @@ import { collection, addDoc, serverTimestamp, query, where, getDocs, updateDoc, 
 import { useAuth } from '../context/AuthContext';
 import { sendBookingEmails } from '../services/email';
 import { RazorpayService } from '../services/razorpayService';
-import { Upload, FileText, X } from 'lucide-react';
+import { Upload, FileText, X, Download } from 'lucide-react';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
+import { generateInvoicePDF } from '../services/InvoiceGenerator';
 // import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'; // REMOVED
 // import { storage } from '../firebase'; // REMOVED
 
@@ -461,10 +462,43 @@ const BookingPage = () => {
                 // Optionally show a warning? For now proceeding.
             }
 
-            // 4. Initialize Razorpay (Backend Driven)
+            // 4. Payment Handling
+            if (amountToPay <= 0) {
+                // FREE BOOKING BYPASS
+                await updateDoc(doc(db, 'bookings', bookingRef.id), {
+                    status: 'confirmed',
+                    bookingStatus: 'confirmed',
+                    paymentStatus: 'paid',
+                    amountPaid: 0,
+                    balanceDue: 0,
+                    paymentId: 'FREE',
+                    paymentDate: serverTimestamp()
+                });
+
+                setConfirmedBookingId(bookingRef.id);
+
+                sendBookingEmails({
+                    id: bookingRef.id,
+                    contactName: bookingData.name,
+                    contactEmail: bookingData.email,
+                    contactPhone: bookingData.phone,
+                    travelersList: bookingData.travelersList,
+                    packageTitle: pkg.title,
+                    bookingDate: bookingData.date,
+                    travelers: Number(bookingData.travelers),
+                    totalPrice: pkg.price * Number(bookingData.travelers),
+                    specialRequests: bookingData.specialRequests
+                });
+
+                setStep(4);
+                setSubmitting(false);
+                return;
+            }
+
+            // 5. Initialize Razorpay (Backend Driven)
             const isLoaded = await RazorpayService.loadRazorpayScript();
             if (!isLoaded) {
-                setError('Razorpay SDK failed to load. Check your internet connection.');
+                setError('Razorpay SDK failed to load.');
                 setSubmitting(false);
                 return;
             }
@@ -875,21 +909,33 @@ const BookingPage = () => {
                                                                 type="text"
                                                                 placeholder="First Name *"
                                                                 value={traveler.firstName}
-                                                                onChange={(e) => handleTravelerChange(index, 'firstName', e.target.value.replace(/[^A-Za-z\s]/g, ''))}
+                                                                onChange={(e) => {
+                                                                    let val = e.target.value.replace(/[^A-Za-z\s]/g, '');
+                                                                    val = val.charAt(0).toUpperCase() + val.slice(1).toLowerCase();
+                                                                    handleTravelerChange(index, 'firstName', val);
+                                                                }}
                                                                 className="w-full px-4 py-4 bg-black/20 border border-white/10 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-white placeholder-slate-500 transition-all hover:border-white/20"
                                                             />
                                                             <input
                                                                 type="text"
                                                                 placeholder="Middle Name"
                                                                 value={traveler.middleName}
-                                                                onChange={(e) => handleTravelerChange(index, 'middleName', e.target.value.replace(/[^A-Za-z\s]/g, ''))}
+                                                                onChange={(e) => {
+                                                                    let val = e.target.value.replace(/[^A-Za-z\s]/g, '');
+                                                                    val = val.charAt(0).toUpperCase() + val.slice(1).toLowerCase();
+                                                                    handleTravelerChange(index, 'middleName', val);
+                                                                }}
                                                                 className="w-full px-4 py-4 bg-black/20 border border-white/10 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-white placeholder-slate-500 transition-all hover:border-white/20"
                                                             />
                                                             <input
                                                                 type="text"
                                                                 placeholder="Last Name *"
                                                                 value={traveler.lastName}
-                                                                onChange={(e) => handleTravelerChange(index, 'lastName', e.target.value.replace(/[^A-Za-z\s]/g, ''))}
+                                                                onChange={(e) => {
+                                                                    let val = e.target.value.replace(/[^A-Za-z\s]/g, '');
+                                                                    val = val.charAt(0).toUpperCase() + val.slice(1).toLowerCase();
+                                                                    handleTravelerChange(index, 'lastName', val);
+                                                                }}
                                                                 className="w-full px-4 py-4 bg-black/20 border border-white/10 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-white placeholder-slate-500 transition-all hover:border-white/20"
                                                             />
                                                         </div>
@@ -1316,16 +1362,48 @@ const BookingPage = () => {
                                         </div>
                                         <div className="flex justify-between mt-4 pt-4 border-t border-white/10">
                                             <span className="text-slate-400">Amount Due</span>
-                                            <span className="font-bold text-blue-400 text-lg">₹{(pkg.price * Number(bookingData.travelers)).toLocaleString()}</span>
+                                            <span className="font-bold text-blue-400 text-lg">₹{(pkg.price * Number(bookingData.travelers) - (paymentOption === 'token' ? (pkg.tokenAmount || 1000) : pkg.price * Number(bookingData.travelers))).toLocaleString()}</span>
                                         </div>
                                     </div>
 
-                                    <button
-                                        onClick={handleWhatsAppShare}
-                                        className="bg-green-600 hover:bg-green-500 text-white px-8 py-4 rounded-xl font-bold transition-all shadow-lg shadow-green-600/30 hover:shadow-green-600/50 hover:-translate-y-1 transform duration-200 flex items-center gap-2 mx-auto"
-                                    >
-                                        <span className="text-xl">📱</span> Get Ticket on WhatsApp
-                                    </button>
+                                    <div className="flex flex-col md:flex-row gap-4 justify-center">
+                                        <button
+                                            onClick={() => {
+                                                const amountPaid = paymentOption === 'token' ? (pkg.tokenAmount || 1000) : (pkg.price * bookingData.travelers);
+                                                const booking = {
+                                                    id: confirmedBookingId,
+                                                    packageTitle: pkg.title,
+                                                    travelDate: bookingData.date,
+                                                    category: pkg.category || 'Trip',
+                                                    totalPrice: pkg.price * bookingData.travelers,
+                                                    travelers: bookingData.travelers
+                                                };
+                                                const payment = {
+                                                    amount: amountPaid,
+                                                    method: 'Online',
+                                                    id: 'TXN-' + Math.random().toString(36).substr(2, 9).toUpperCase(), // Placeholder or use state if captured
+                                                    status: 'Success'
+                                                };
+                                                const customer = {
+                                                    name: bookingData.name,
+                                                    email: bookingData.email,
+                                                    phone: bookingData.phone
+                                                };
+                                                const doc = generateInvoicePDF(booking, payment, customer);
+                                                doc.save(`IY_Invoice_${confirmedBookingId}.pdf`);
+                                            }}
+                                            className="bg-white/10 hover:bg-white/20 text-white px-8 py-4 rounded-xl font-bold transition-all border border-white/10 flex items-center justify-center gap-2"
+                                        >
+                                            <Download size={20} /> Download Invoice
+                                        </button>
+
+                                        <button
+                                            onClick={handleWhatsAppShare}
+                                            className="bg-green-600 hover:bg-green-500 text-white px-8 py-4 rounded-xl font-bold transition-all shadow-lg shadow-green-600/30 hover:shadow-green-600/50 hover:-translate-y-1 transform duration-200 flex items-center justify-center gap-2"
+                                        >
+                                            <span>📱</span> Get Ticket on WhatsApp
+                                        </button>
+                                    </div>
                                 </motion.div>
                             )}
                         </AnimatePresence>

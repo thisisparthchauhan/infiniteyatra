@@ -18,14 +18,34 @@ const CustomerCRM = () => {
 
                 bookingsSnap.docs.forEach(doc => {
                     const b = doc.data();
-                    const uid = b.userId || b.contactEmail; // Fallback
+                    const uid = b.userId || b.contactEmail || b.id; // Use userId, email, or booking id as fallback
                     if (!uid) return;
 
-                    if (!bookingMap[uid]) bookingMap[uid] = { count: 0, revenue: 0, lastDate: 0 };
+                    if (!bookingMap[uid]) {
+                        bookingMap[uid] = {
+                            count: 0,
+                            revenue: 0,
+                            lastDate: 0,
+                            name: b.contactName || 'Unknown',
+                            email: b.contactEmail || 'N/A',
+                            phone: b.phone || 'N/A'
+                        };
+                    }
 
                     bookingMap[uid].count += 1;
                     if (b.status === 'confirmed') {
                         bookingMap[uid].revenue += parseFloat(b.totalPrice || b.amountPaid || 0);
+                    }
+
+                    // Update name/email if we have better data
+                    if (b.contactName && bookingMap[uid].name === 'Unknown') {
+                        bookingMap[uid].name = b.contactName;
+                    }
+                    if (b.contactEmail && bookingMap[uid].email === 'N/A') {
+                        bookingMap[uid].email = b.contactEmail;
+                    }
+                    if (b.phone && bookingMap[uid].phone === 'N/A') {
+                        bookingMap[uid].phone = b.phone;
                     }
 
                     const dateSeconds = b.createdAt?.seconds || 0;
@@ -42,9 +62,9 @@ const CustomerCRM = () => {
                     const stats = bookingMap[uid];
                     return {
                         id: uid,
-                        name: uid.includes('@') ? uid.split('@')[0] : 'Guest User', // Placeholder
-                        email: uid.includes('@') ? uid : 'N/A',
-                        phone: 'N/A',
+                        name: stats.name,
+                        email: stats.email,
+                        phone: stats.phone,
                         totalBookings: stats.count,
                         ltv: stats.revenue,
                         lastActive: new Date(stats.lastDate * 1000).toLocaleDateString(),
@@ -118,8 +138,8 @@ const CustomerCRM = () => {
                 </div>
             </div>
 
-            {/* TABLE */}
-            <div className="glass-card rounded-2xl border border-white/10 overflow-hidden">
+            {/* TABLE - Desktop Only */}
+            <div className="hidden md:block glass-card rounded-2xl border border-white/10 overflow-hidden">
                 <table className="w-full text-left border-collapse">
                     <thead className="bg-white/5 border-b border-white/10">
                         <tr>
@@ -150,8 +170,8 @@ const CustomerCRM = () => {
                                 </td>
                                 <td className="p-4">
                                     <span className={`px-2 py-1 rounded text-[10px] font-bold border flex w-fit items-center gap-1 ${c.segment === 'VIP' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' :
-                                            c.segment === 'Loyal' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
-                                                'bg-slate-500/10 text-slate-400 border-slate-500/20'
+                                        c.segment === 'Loyal' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
+                                            'bg-slate-500/10 text-slate-400 border-slate-500/20'
                                         }`}>
                                         {c.segment === 'VIP' && <Award size={10} />}
                                         {c.segment}
@@ -164,6 +184,51 @@ const CustomerCRM = () => {
                         ))}
                     </tbody>
                 </table>
+            </div>
+
+            {/* CARDS - Mobile Only */}
+            <div className="md:hidden space-y-4">
+                {loading ? (
+                    <div className="p-8 text-center text-slate-500 animate-pulse">Analyzing Customer Data...</div>
+                ) : filtered.length === 0 ? (
+                    <div className="p-8 text-center text-slate-500">No customers found.</div>
+                ) : filtered.map((c, i) => (
+                    <div key={i} className="glass-card p-4 rounded-xl border border-white/10 space-y-4">
+                        <div className="flex justify-between items-start">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-700 to-slate-600 flex items-center justify-center text-white text-sm font-bold uppercase">
+                                    {c.name[0]}
+                                </div>
+                                <div>
+                                    <p className="font-medium text-white">{c.name}</p>
+                                    <p className="text-xs text-slate-500">{c.email}</p>
+                                </div>
+                            </div>
+                            <span className={`px-2 py-1 rounded text-[10px] font-bold border flex items-center gap-1 ${c.segment === 'VIP' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' :
+                                c.segment === 'Loyal' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
+                                    'bg-slate-500/10 text-slate-400 border-slate-500/20'
+                                }`}>
+                                {c.segment === 'VIP' && <Award size={10} />}
+                                {c.segment}
+                            </span>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/5">
+                            <div>
+                                <p className="text-slate-500 text-xs uppercase tracking-wider mb-1">Bookings</p>
+                                <p className="text-lg font-mono text-white">{c.totalBookings}</p>
+                            </div>
+                            <div>
+                                <p className="text-slate-500 text-xs uppercase tracking-wider mb-1">LTV</p>
+                                <p className="text-lg font-bold text-green-400">₹{c.ltv.toLocaleString()}</p>
+                            </div>
+                            <div className="col-span-2">
+                                <p className="text-slate-500 text-xs uppercase tracking-wider mb-1">Last Active</p>
+                                <p className="text-sm text-slate-300">{c.lastActive}</p>
+                            </div>
+                        </div>
+                    </div>
+                ))}
             </div>
         </div>
     );

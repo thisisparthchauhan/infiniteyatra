@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infinite Yatra Invoice</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-print-color-adjust: exact;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            padding: 20px;
+            color: #111;
+        }
+
+        /* A4 Page Styling */
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 15mm;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        /* Invoice Container (Bordered) */
+        .invoice-border {
+            border: 1px solid #333;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+
+        /* Helpers */
+        .flex {
+            display: flex;
+        }
+
+        .justify-between {
+            justify-content: space-between;
+        }
+
+        .items-center {
+            align-items: center;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .font-bold {
+            font-weight: 700;
+        }
+
+        .uppercase {
+            text-transform: uppercase;
+        }
+
+        .text-sm {
+            font-size: 14px;
+        }
+
+        .text-xs {
+            font-size: 12px;
+        }
+
+        .mt-2 {
+            margin-top: 8px;
+        }
+
+        .mb-4 {
+            margin-bottom: 16px;
+        }
+
+        .p-4 {
+            padding: 16px;
+        }
+
+        .border-b {
+            border-bottom: 1px solid #333;
+        }
+
+        .border-r {
+            border-right: 1px solid #333;
+        }
+
+        .border-t {
+            border-top: 1px solid #333;
+        }
+
+        /* Header */
+        .header {
+            padding: 20px;
+            border-bottom: 1px solid #333;
+            position: relative;
+        }
+
+        .invoice-title {
+            text-align: center;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .logo-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 40%;
+        }
+
+        .logo-box {
+            background: #000;
+            color: #fff;
+            padding: 10px 20px;
+            text-transform: uppercase;
+            font-weight: 800;
+            font-size: 18px;
+            margin-bottom: 5px;
+            border-radius: 4px;
+            /* Optional for cleaner look */
+        }
+
+        .tagline {
+            font-size: 10px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #555;
+            font-weight: 600;
+        }
+
+        .company-details {
+            width: 50%;
+            text-align: right;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        /* Billing Section */
+        .billing-section {
+            display: flex;
+            border-bottom: 1px solid #333;
+        }
+
+        .bill-to,
+        .invoice-details {
+            padding: 15px;
+            width: 50%;
+        }
+
+        .bill-to {
+            border-right: 1px solid #333;
+        }
+
+        .section-title {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .billing-content {
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .invoice-details .billing-content {
+            text-align: right;
+        }
+
+        /* Table */
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .items-table th {
+            background-color: #f8f8f8;
+            border-bottom: 1px solid #333;
+            border-right: 1px solid #333;
+            padding: 10px;
+            text-transform: uppercase;
+            font-size: 11px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .items-table th:last-child {
+            border-right: none;
+            text-align: right;
+        }
+
+        .items-table td {
+            padding: 12px 10px;
+            font-size: 13px;
+            border-bottom: 1px solid #eee;
+            border-right: 1px solid #333;
+            vertical-align: top;
+        }
+
+        .items-table td:last-child {
+            border-right: none;
+            text-align: right;
+        }
+
+        /* Remove bottom border for last row to avoid double border with summary */
+        .items-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Summary Section */
+        .summary-container {
+            display: flex;
+            border-top: 1px solid #333;
+            border-bottom: 1px solid #333;
+        }
+
+        .booking-info {
+            width: 60%;
+            padding: 15px;
+            border-right: 1px solid #333;
+            font-size: 12px;
+        }
+
+        .info-row {
+            display: flex;
+            margin-bottom: 6px;
+        }
+
+        .info-label {
+            width: 140px;
+            color: #555;
+        }
+
+        .info-value {
+            font-weight: 600;
+            flex: 1;
+        }
+
+        .totals {
+            width: 40%;
+            padding: 15px;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .total-row.highlight {
+            font-weight: 700;
+            font-size: 14px;
+            border-top: 1px dashed #ccc;
+            padding-top: 8px;
+            margin-top: 8px;
+        }
+
+        .amount-in-words {
+            padding: 10px 15px;
+            border-bottom: 1px solid #333;
+            background: #f9fafb;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        /* Footer / Terms */
+        .bottom-section {
+            display: flex;
+            flex: 1;
+            /* Pushes content to fill space */
+            /* min-height: 150px; */
+        }
+
+        .description {
+            width: 50%;
+            padding: 15px;
+            border-right: 1px solid #333;
+            font-size: 12px;
+        }
+
+        .terms {
+            width: 50%;
+            padding: 15px;
+            font-size: 11px;
+            color: #444;
+            line-height: 1.5;
+        }
+
+        .terms li {
+            margin-bottom: 4px;
+            margin-left: 12px;
+        }
+
+        /* Footer Bar */
+        .footer {
+            border-top: 1px solid #333;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .social-contact {
+            font-size: 12px;
+        }
+
+        .social-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 4px;
+        }
+
+        .thank-you {
+            font-weight: 600;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .signature-box {
+            text-align: right;
+            width: 200px;
+        }
+
+        .signature-line {
+            height: 40px;
+            /* border-bottom: 1px solid #333; */
+            /* Optional underline style */
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-end;
+            margin-bottom: 5px;
+        }
+
+        .signature-img {
+            max-height: 40px;
+        }
+
+        /* Print Settings */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .page {
+                box-shadow: none;
+                margin: 0;
+                width: 100%;
+                min-height: auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="page">
+        <div class="invoice-border">
+
+            <!-- HEADER -->
+            <div class="header">
+                <div class="invoice-title">IY Invoice – Booking Amount Received</div>
+
+                <div class="header-content">
+                    <div class="logo-section">
+                        <!-- Logo Placeholder -->
+                        <div class="logo-box">INFINITE YATRA</div>
+                        <div class="tagline">EXPLORE INFINITE</div>
+                    </div>
+
+                    <div class="company-details">
+                        <div class="mb-4">
+                            <strong>Contact Us</strong><br>
+                            Phone: +91 9265799325<br>
+                            Email: infiniteyatra@gmail.com
+                        </div>
+                        <div>
+                            <strong>Office Address</strong><br>
+                            Satellite, Ahmedabad<br>
+                            Gujarat – 3800015
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BILLING -->
+            <div class="billing-section">
+                <div class="bill-to">
+                    <div class="section-title">Bill To</div>
+                    <div class="billing-content">
+                        <strong>Rahul Sharma</strong><br>
+                        +91 9876543210<br>
+                        rahul.sharma@example.com
+                    </div>
+                </div>
+                <div class="invoice-details">
+                    <div class="section-title text-right">Invoice Details</div>
+                    <div class="billing-content">
+                        <strong>Invoice No:</strong> IY-TR-2026-001<br>
+                        <strong>Date:</strong> 26/01/2026<br>
+                        <strong>Time:</strong> 04:30 PM
+                    </div>
+                </div>
+            </div>
+
+            <!-- TABLE -->
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th style="width: 40px; text-align: center;">#</th>
+                        <th>Item Name</th>
+                        <th style="width: 60px; text-align: center;">Qty</th>
+                        <th style="width: 100px; text-align: right;">Price / Unit</th>
+                        <th style="width: 100px; text-align: right;">Discount</th>
+                        <th style="width: 100px; text-align: right;">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="text-center">1</td>
+                        <td>
+                            <strong>Kedarkantha Trek (New Year Special)</strong><br>
+                            <span style="font-size: 11px; color: #666;">Package includes stay, meals, and guide.</span>
+                        </td>
+                        <td class="text-center">1</td>
+                        <td class="text-right">₹6,000</td>
+                        <td class="text-right">₹0</td>
+                        <td class="text-right">₹6,000</td>
+                    </tr>
+                    <!-- Extra empty rows to maintain height if needed -->
+                    <tr>
+                        <td style="border-bottom: none;">&nbsp;</td>
+                        <td style="border-bottom: none;"></td>
+                        <td style="border-bottom: none;"></td>
+                        <td style="border-bottom: none;"></td>
+                        <td style="border-bottom: none;"></td>
+                        <td style="border-bottom: none;"></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- SUMMARY -->
+            <div class="summary-container">
+                <div class="booking-info">
+                    <div class="info-row">
+                        <div class="info-label">Booking Status:</div>
+                        <div class="info-value" style="color: #2e7d32;">Confirmed (Token Received)</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Tour Departure:</div>
+                        <div class="info-value">15th Feb, 2026</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Route:</div>
+                        <div class="info-value">Dehradun – Dehradun</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Payment Mode:</div>
+                        <div class="info-value">UPI (Google Pay)</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Transaction ID:</div>
+                        <div class="info-value">UPI-234567890123</div>
+                    </div>
+                </div>
+
+                <div class="totals">
+                    <div class="total-row">
+                        <span>Sub Total</span>
+                        <span>₹6,000</span>
+                    </div>
+                    <div class="total-row" style="color: #2e7d32;">
+                        <span>Discount / Offer</span>
+                        <span>- ₹0</span>
+                    </div>
+                    <div class="total-row highlight">
+                        <span>Total Trip Cost</span>
+                        <span>₹6,000</span>
+                    </div>
+                    <div class="total-row" style="margin-top: 15px;">
+                        <span>Token Paid</span>
+                        <span style="font-weight: 700;">₹1,000</span>
+                    </div>
+                    <div class="total-row" style="color: #d32f2f; font-weight: 700;">
+                        <span>Balance Due</span>
+                        <span>₹5,000</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- WORDS -->
+            <div class="amount-in-words">
+                Invoice Amount in Words: <strong>Rupees One Thousand Only</strong>
+            </div>
+
+            <!-- BOTTOM INFO -->
+            <div class="bottom-section">
+                <div class="description">
+                    <div class="section-title">Traveler Description</div>
+                    <div class="mb-4">
+                        <strong>Tourist Age:</strong> 24 Years<br>
+                        <strong>Gender:</strong> Male
+                    </div>
+                    <div class="mb-4">
+                        <strong>Emergency Contact:</strong><br>
+                        Mr. Suresh Sharma (+91 9988776655)
+                    </div>
+                    <div>
+                        <strong>Address:</strong><br>
+                        101, Galaxy Apartments,<br>
+                        Navrangpura, Ahmedabad.
+                    </div>
+                </div>
+                <div class="terms">
+                    <div class="section-title">Terms & Conditions</div>
+                    <ol>
+                        <li>Booking / Token amount is <strong>NON-REFUNDABLE</strong> & Non-Transferable.</li>
+                        <li>Remaining balance must be cleared at least <strong>7 days</strong> before departure.</li>
+                        <li>Trip schedule is subject to change due to weather or safety conditions.</li>
+                        <li>Infinite Yatra reserves the right to cancel or modify elements of the itinerary if
+                            necessary.</li>
+                        <li>Participants must carry valid Government ID proof.</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- FOOTER -->
+            <div class="footer">
+                <div class="social-contact">
+                    <div class="thank-you">Thank you for choosing Infinite Yatra</div>
+
+                    <div class="social-item">
+                        <span>📸</span> infinite.yatra
+                    </div>
+                    <div class="social-item">
+                        <span>💬</span> Infinite Yatra (WhatsApp)
+                    </div>
+                    <div class="social-item">
+                        <span>✉️</span> infiniteyatra@gmail.com
+                    </div>
+                    <div class="mt-2" style="font-size: 10px; color: #777;">
+                        Explore Infinite 🌍
+                    </div>
+                </div>
+
+                <div class="signature-box">
+                    <div class="signature-line">
+                        <!-- <img src="signature_placeholder.png" class="signature-img" alt="Signature"> -->
+                        <span style="font-family: 'Cursive', serif; font-size: 24px; color: #333;">InfiniteYatra</span>
+                    </div>
+                    <div
+                        style="font-size: 11px; font-weight: 600; border-top: 1px solid #333; padding-top: 5px; display: inline-block; width: 100%;">
+                        Authorized Signatory
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+
+</html>

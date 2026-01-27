@@ -23,7 +23,10 @@ export const PackageProvider = ({ children }) => {
 
                 const mergedPackages = firestorePackages.map(fp => {
                     const staticPkg = staticPackages.find(sp => sp.id === fp.id);
-                    return staticPkg ? { ...staticPkg, ...fp } : fp;
+                    const merged = staticPkg ? { ...staticPkg, ...fp } : fp;
+                    // Force priceDisplay to match numeric price
+                    merged.priceDisplay = `₹${(merged.price || 0).toLocaleString('en-IN')}`;
+                    return merged;
                 });
 
                 // Add static-only packages

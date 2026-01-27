@@ -98,22 +98,65 @@ const PackageDetail = () => {
                 <div className="hero-title">
                     <h1>Experience <span className="font-handwritten text-yellow-400">{pkg.title}</span></h1>
                 </div>
-                <div className="image-gallery">
-                    {pkg.images && pkg.images.slice(0, 3).map((image, index) => (
-                        <div
-                            key={index}
-                            className={`gallery-item item-${index + 1}`}
-                            onClick={() => setShowGallery(true)}
-                        >
-                            <img src={image} alt={`${pkg.title} - ${index + 1}`} />
-                            {index === 2 && (
-                                <button className="see-all-btn">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-image"><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></svg>
-                                    See all
-                                </button>
-                            )}
-                        </div>
-                    ))}
+                <div className="image-gallery group">
+                    {/* Mobile: Horizontal Scroll Snap */}
+                    <div className="md:hidden flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 scrollbar-hide">
+                        {pkg.images && pkg.images.map((image, index) => (
+                            <div
+                                key={index}
+                                className="snap-center shrink-0 w-[90vw] h-80 rounded-2xl overflow-hidden relative shadow-lg"
+                                onClick={() => setShowGallery(true)}
+                            >
+                                <img src={image} alt={`${pkg.title} - ${index + 1}`} className="w-full h-full object-cover" />
+                                <div className="absolute inset-0 bg-black/10"></div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Desktop: Grid Layout (Dynamic) */}
+                    <div className="hidden md:grid grid-cols-4 grid-rows-2 gap-4 h-[500px]">
+                        {pkg.images && pkg.images.slice(0, 5).map((image, index) => {
+                            const total = Math.min(pkg.images.length, 5);
+                            let spanClass = '';
+
+                            if (total === 1) spanClass = 'col-span-4 row-span-2';
+                            else if (total === 2) spanClass = 'col-span-2 row-span-2';
+                            else if (total === 3) {
+                                spanClass = index === 0 ? 'col-span-2 row-span-2' : 'col-span-1 row-span-2';
+                            }
+                            else if (total === 4) {
+                                if (index === 0) spanClass = 'col-span-2 row-span-2';
+                                else spanClass = 'col-span-1 row-span-2'; // 1 Big, 3 Strips
+                            }
+                            else {
+                                // Default 5+ (Bento Grid)
+                                spanClass = index === 0 ? 'col-span-2 row-span-2' : 'col-span-1 row-span-1';
+                            }
+
+                            return (
+                                <div
+                                    key={index}
+                                    className={`relative overflow-hidden rounded-2xl cursor-pointer group/item ${spanClass}`}
+                                    onClick={() => setShowGallery(true)}
+                                >
+                                    <img
+                                        src={image}
+                                        alt={`${pkg.title}`}
+                                        className="w-full h-full object-cover transition-transform duration-700 group-hover/item:scale-110"
+                                    />
+                                    <div className="absolute inset-0 bg-black/0 group-hover/item:bg-black/10 transition-colors"></div>
+
+                                    {index === total - 1 && (
+                                        <div className="absolute inset-0 bg-black/0 hover:bg-black/40 transition-all flex items-center justify-center opacity-0 group-hover/item:opacity-100">
+                                            <button className="flex items-center gap-2 text-white font-bold bg-white/20 hover:bg-white/30 px-6 py-3 rounded-full backdrop-blur-md transition-all">
+                                                <Plus size={20} /> View Gallery
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
                 </div>
             </div>
 

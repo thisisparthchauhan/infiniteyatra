@@ -107,17 +107,15 @@ const EnquiryPopup = () => {
     const handleChange = (e) => {
         const { name, value } = e.target;
 
-        // Name Validation: Allow only letters and spaces
+        // Name Validation: Allow only letters and spaces, Title Case
         if (name === 'firstName' || name === 'lastName') {
             const onlyLetters = /^[A-Za-z\s]*$/;
             if (!onlyLetters.test(value)) return;
 
-            // Capitalize first letter
-            if (value.length > 0) {
-                const capitalizedValue = value.charAt(0).toUpperCase() + value.slice(1);
-                setFormData(prev => ({ ...prev, [name]: capitalizedValue }));
-                return;
-            }
+            // Capitalize first letter, rest lowercase
+            const formattedValue = value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
+            setFormData(prev => ({ ...prev, [name]: formattedValue }));
+            return;
         }
 
         setFormData(prev => ({ ...prev, [name]: value }));

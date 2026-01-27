@@ -12,6 +12,7 @@ import Operations from '../components/admin/dashboard/Operations';
 import Financials from '../components/admin/dashboard/Financials';
 import CustomerCRM from '../components/admin/dashboard/CustomerCRM';
 import Content from '../components/admin/dashboard/Content';
+import InfluencerROI from '../components/admin/dashboard/InfluencerROI';
 import AdminImageUpload from '../components/AdminImageUpload';
 import AddStaffModal from '../components/admin/AddStaffModal';
 
@@ -31,7 +32,8 @@ const AdminDashboard = () => {
             operations: 'Trip Operations Center',
             staff: 'Team & Permissions',
             stories: 'Stories & Content',
-            media: 'Media Library'
+            media: 'Media Library',
+            influencers: 'Influencer ROI'
         };
         return titles[activeTab] || 'Admin Panel';
     };
@@ -50,7 +52,7 @@ const AdminDashboard = () => {
             <div className="flex h-screen relative z-10">
 
                 {/* Sidebar */}
-                <AdminSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+                <AdminSidebar activeTab={activeTab} setActiveTab={setActiveTab} isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
                 {/* Main Content Area */}
                 <div className="flex-1 flex flex-col h-screen overflow-hidden lg:ml-64 relative transition-all duration-300">
@@ -102,6 +104,7 @@ const AdminDashboard = () => {
                                 {activeTab === 'crm' && <CustomerCRM />}
                                 {activeTab === 'stories' && <Content />}
                                 {activeTab === 'media' && <AdminImageUpload />}
+                                {activeTab === 'influencers' && <InfluencerROI />}
                                 {activeTab === 'staff' && (
                                     <div className="text-center py-20">
                                         <button onClick={() => setShowStaffModal(true)} className="px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-500 transition-colors">

@@ -361,9 +361,9 @@ const Navbar = () => {
             </nav >
 
             {/* Mobile Menu Overlay */}
-            < div
+            <div
                 className={`
-                    fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden 
+                    fixed inset-0 bg-black/80 backdrop-blur-sm z-[9990] md:hidden 
                     transition-opacity duration-300
                     ${isMobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}
                 `}
@@ -373,12 +373,23 @@ const Navbar = () => {
             {/* Mobile Menu */}
             <div
                 className={`
-                    fixed top-20 right-0 bottom-0 w-80 max-w-[85vw] glass-card !rounded-2xl !rounded-r-none !bg-black/90 !backdrop-blur-xl z-40 md:hidden
-                    shadow-2xl transform transition-transform duration-300 ease-out border-l border-white/10
+                    fixed top-0 right-0 bottom-0 w-[85vw] max-w-sm bg-[#0a0a0a] shadow-2xl z-[9999] md:hidden
+                    transform transition-transform duration-300 cubic-bezier(0.4, 0, 0.2, 1) border-l border-white/10
                     ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}
                 `}
             >
-                <div className="flex flex-col h-full overflow-y-auto">
+                <div className="flex flex-col h-full overflow-y-auto custom-scrollbar">
+                    {/* Header with Close Button */}
+                    <div className="p-6 flex items-center justify-between border-b border-white/5">
+                        <span className="text-lg font-bold text-white tracking-widest">MENU</span>
+                        <button
+                            onClick={() => setIsMobileMenuOpen(false)}
+                            className="p-2 rounded-full bg-white/5 hover:bg-white/10 text-white transition-colors"
+                        >
+                            <X size={20} />
+                        </button>
+                    </div>
+
                     {/* Navigation Items */}
                     <div className="p-6 space-y-2">
                         {!isAuthPage && navItems.map((item, index) => {
@@ -407,20 +418,19 @@ const Navbar = () => {
                                             }
                                         }}
                                         className={`
-                                            flex items-center gap-3 px-4 py-3 rounded-xl font-medium
+                                            flex items-center gap-4 px-4 py-3.5 rounded-xl font-medium text-sm
                                             transition-all duration-300
                                             ${isActive
-                                                ? 'bg-white/10 text-blue-300'
-                                                : 'text-white/80 hover:bg-white/5'
+                                                ? 'bg-gradient-to-r from-blue-600/20 to-purple-600/20 text-blue-300 border border-blue-500/20'
+                                                : 'text-slate-400 hover:text-white hover:bg-white/5'
                                             }
-                                            transform hover:translate-x-1
                                         `}
                                         style={{
                                             animationDelay: `${index * 50}ms`,
-                                            animation: isMobileMenuOpen ? 'slideInRight 0.3s ease-out forwards' : 'none'
+                                            animation: isMobileMenuOpen ? 'slideInRight 0.4s ease-out forwards' : 'none'
                                         }}
                                     >
-                                        <Icon size={20} />
+                                        <Icon size={18} />
                                         <span>{item.name}</span>
                                     </Link>
                                 );
@@ -432,20 +442,19 @@ const Navbar = () => {
                                     href={item.href}
                                     onClick={(e) => handleNavClick(e, item.href)}
                                     className={`
-                                        flex items-center gap-3 px-4 py-3 rounded-xl font-medium
+                                        flex items-center gap-4 px-4 py-3.5 rounded-xl font-medium text-sm
                                         transition-all duration-300
                                         ${isActive
-                                            ? 'bg-white/10 text-blue-300'
-                                            : 'text-white/80 hover:bg-white/5'
+                                            ? 'bg-gradient-to-r from-blue-600/20 to-purple-600/20 text-blue-300 border border-blue-500/20'
+                                            : 'text-slate-400 hover:text-white hover:bg-white/5'
                                         }
-                                        transform hover:translate-x-1
                                     `}
                                     style={{
                                         animationDelay: `${index * 50}ms`,
-                                        animation: isMobileMenuOpen ? 'slideInRight 0.3s ease-out forwards' : 'none'
+                                        animation: isMobileMenuOpen ? 'slideInRight 0.4s ease-out forwards' : 'none'
                                     }}
                                 >
-                                    <Icon size={20} />
+                                    <Icon size={18} />
                                     <span>{item.name}</span>
                                 </a>
                             );
@@ -455,13 +464,13 @@ const Navbar = () => {
                         {!isAuthPage && (
                             <Link
                                 to="/wishlist"
-                                className="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-white/80 hover:bg-white/5 transition-all duration-300"
+                                className="flex items-center gap-4 px-4 py-3.5 rounded-xl font-medium text-sm text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-300"
                                 onClick={() => setIsMobileMenuOpen(false)}
                             >
-                                <Heart size={20} className={wishlist.length > 0 ? "text-red-500 fill-red-500" : ""} />
+                                <Heart size={18} className={wishlist.length > 0 ? "text-red-500 fill-red-500" : ""} />
                                 <span>My Wishlist</span>
                                 {wishlist.length > 0 && (
-                                    <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                                    <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[1.25rem] text-center">
                                         {wishlist.length}
                                     </span>
                                 )}
@@ -473,42 +482,65 @@ const Navbar = () => {
                     <div className="border-t border-white/10 mx-6"></div>
 
                     {/* Auth Actions */}
-                    <div className="p-6 space-y-3 mt-auto">
+                    <div className="p-6 space-y-3 mt-auto mb-6">
                         {currentUser ? (
                             <>
-                                <div className="flex items-center gap-3 px-4 py-3 bg-white/5 rounded-xl border border-white/5">
-                                    <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white font-bold">
+                                <Link
+                                    to="/profile"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    className="flex items-center gap-3 px-4 py-3 bg-white/5 rounded-2xl border border-white/5 hover:border-white/10 transition-colors"
+                                >
+                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-lg">
                                         {currentUser.displayName ? currentUser.displayName[0].toUpperCase() : currentUser.email[0].toUpperCase()}
                                     </div>
-                                    <div>
-                                        <p className="font-medium text-white">{currentUser.displayName || 'User'}</p>
-                                        <p className="text-xs text-white/50">{currentUser.email}</p>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="font-bold text-white truncate">{currentUser.displayName || 'User'}</p>
+                                        <p className="text-xs text-slate-400 truncate">{currentUser.email}</p>
                                     </div>
-                                </div>
-                                <Link
-                                    to="/my-bookings"
-                                    onClick={() => setIsMobileMenuOpen(false)}
-                                    className="
-                                        w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-medium
-                                        text-blue-600 bg-blue-50 hover:bg-blue-100
-                                        transition-all duration-300
-                                    "
-                                >
-                                    <Package size={18} />
-                                    My Bookings
                                 </Link>
-                                <Link
-                                    to="/my-trips"
-                                    onClick={() => setIsMobileMenuOpen(false)}
-                                    className="
+
+                                {currentUser.isAdmin && (
+                                    <Link
+                                        to="/admin"
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                        className="
                                             w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-medium
-                                            text-blue-600 bg-blue-50 hover:bg-blue-100
+                                            text-indigo-300 bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20
                                             transition-all duration-300
                                         "
-                                >
-                                    <Sparkles size={18} />
-                                    AI Trips
-                                </Link>
+                                    >
+                                        <LayoutDashboard size={18} />
+                                        Admin Dashboard
+                                    </Link>
+                                )}
+
+                                <div className="grid grid-cols-2 gap-3">
+                                    <Link
+                                        to="/my-bookings"
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                        className="
+                                            flex flex-col items-center justify-center gap-2 p-3 rounded-xl
+                                            bg-white/5 hover:bg-white/10 border border-white/5 transition-all
+                                            text-xs font-medium text-slate-300 hover:text-white
+                                        "
+                                    >
+                                        <Package size={20} className="text-blue-400" />
+                                        Bookings
+                                    </Link>
+                                    <Link
+                                        to="/my-trips"
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                        className="
+                                            flex flex-col items-center justify-center gap-2 p-3 rounded-xl
+                                            bg-white/5 hover:bg-white/10 border border-white/5 transition-all
+                                            text-xs font-medium text-slate-300 hover:text-white
+                                        "
+                                    >
+                                        <Sparkles size={20} className="text-purple-400" />
+                                        AI Trips
+                                    </Link>
+                                </div>
+
                                 <button
                                     onClick={() => {
                                         if (window.confirm('Are you sure you want to log out?')) {
@@ -516,12 +548,12 @@ const Navbar = () => {
                                         }
                                     }}
                                     className="
-                                        w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-medium
+                                        w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-medium text-sm
                                         text-red-400 bg-red-500/10 hover:bg-red-500/20 border border-red-500/10
-                                        transition-all duration-300
+                                        transition-all duration-300 mt-2
                                     "
                                 >
-                                    <LogOut size={18} />
+                                    <LogOut size={16} />
                                     Log Out
                                 </button>
                             </>

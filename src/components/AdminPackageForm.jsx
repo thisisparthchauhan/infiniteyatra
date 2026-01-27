@@ -203,6 +203,7 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
         const cleanedData = {
             ...formData,
             price: Number(formData.price),
+            priceDisplay: `₹${Number(formData.price).toLocaleString('en-IN')}`,  // Sync priceDisplay
             maxGroupSize: Number(formData.maxGroupSize),
             highlights: formData.highlights.filter(i => i.trim()),
             inclusions: formData.inclusions.filter(i => i.trim()),

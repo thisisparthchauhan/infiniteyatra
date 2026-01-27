@@ -133,7 +133,7 @@ const Hero = () => {
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8 }}
-                    className="glass-card px-6 py-2 rounded-full mb-8 flex items-center gap-2 inline-flex"
+                    className="glass-card px-6 py-2 rounded-full mt-16 md:mt-0 mb-8 flex items-center gap-2 inline-flex"
                     style={{ background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)' }}
                 >
                     <span className="text-sm font-medium tracking-wider uppercase text-white/90">Follow Your</span>

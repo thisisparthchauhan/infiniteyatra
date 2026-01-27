@@ -119,10 +119,7 @@ const ContactNew = () => {
                     <div className="space-y-6">
                         {/* Contact Details */}
                         <div className="bg-white/5 backdrop-blur-xl rounded-3xl p-8 border border-white/10 shadow-2xl">
-                            <h3 className="text-xl font-bold text-white mb-8 flex items-center gap-3">
-                                <span className="p-3 bg-white/10 rounded-xl text-blue-400">
-                                    <Phone size={24} />
-                                </span>
+                            <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-8">
                                 Infinite Yatra Contact Details
                             </h3>
 

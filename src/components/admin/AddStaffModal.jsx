@@ -3,16 +3,30 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, UserPlus, Shield, Mail, Phone, Loader } from 'lucide-react';
 import { db } from '../../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import PhoneInput from 'react-phone-input-2';
+import 'react-phone-input-2/lib/style.css';
 
 const AddStaffModal = ({ onClose, onSuccess }) => {
     const [formData, setFormData] = useState({
-        name: '',
+        firstName: '',
+        lastName: '',
         email: '',
         phone: '',
         role: 'operations' // internal default
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+
+    // Handle name inputs: only alphabets, Title Case
+    const handleNameChange = (e) => {
+        const { name, value } = e.target;
+        // Allow only alphabets and spaces
+        if (/^[a-zA-Z\s]*$/.test(value)) {
+            // Capitalize first letter, rest lowercase
+            const formattedValue = value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
+            setFormData({ ...formData, [name]: formattedValue });
+        }
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -31,7 +45,12 @@ const AddStaffModal = ({ onClose, onSuccess }) => {
             // await createStaff(formData);
 
             await addDoc(collection(db, 'staff_invites'), {
-                ...formData,
+                name: `${formData.firstName} ${formData.lastName}`.trim(),
+                firstName: formData.firstName,
+                lastName: formData.lastName,
+                email: formData.email,
+                phone: formData.phone,
+                role: formData.role,
                 status: 'pending',
                 invitedBy: 'Admin', // In real app, use currentUser.uid
                 createdAt: serverTimestamp()
@@ -75,18 +94,36 @@ const AddStaffModal = ({ onClose, onSuccess }) => {
                         </div>
                     )}
 
-                    <div className="space-y-1">
-                        <label className="text-xs font-semibold text-slate-400 uppercase">Full Name</label>
-                        <div className="relative">
-                            <input
-                                type="text"
-                                required
-                                value={formData.name}
-                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                className="w-full bg-white/5 border border-white/10 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-blue-500 transition-colors pl-10"
-                                placeholder="e.g. Rahul Sharma"
-                            />
-                            <UserPlus size={16} className="absolute left-3 top-3.5 text-slate-500" />
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                            <label className="text-xs font-semibold text-slate-400 uppercase">First Name</label>
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    name="firstName"
+                                    required
+                                    value={formData.firstName}
+                                    onChange={handleNameChange}
+                                    className="w-full bg-white/5 border border-white/10 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-blue-500 transition-colors pl-10"
+                                    placeholder="Enter First Name"
+                                />
+                                <UserPlus size={16} className="absolute left-3 top-3.5 text-slate-500" />
+                            </div>
+                        </div>
+                        <div className="space-y-1">
+                            <label className="text-xs font-semibold text-slate-400 uppercase">Last Name</label>
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    name="lastName"
+                                    required
+                                    value={formData.lastName}
+                                    onChange={handleNameChange}
+                                    className="w-full bg-white/5 border border-white/10 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-blue-500 transition-colors pl-10"
+                                    placeholder="Enter Last Name"
+                                />
+                                <UserPlus size={16} className="absolute left-3 top-3.5 text-slate-500" />
+                            </div>
                         </div>
                     </div>
 
@@ -99,7 +136,7 @@ const AddStaffModal = ({ onClose, onSuccess }) => {
                                 value={formData.email}
                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                 className="w-full bg-white/5 border border-white/10 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-blue-500 transition-colors pl-10"
-                                placeholder="staff@infiniteyatra.com"
+                                placeholder="Enter your email"
                             />
                             <Mail size={16} className="absolute left-3 top-3.5 text-slate-500" />
                         </div>
@@ -107,15 +144,36 @@ const AddStaffModal = ({ onClose, onSuccess }) => {
 
                     <div className="space-y-1">
                         <label className="text-xs font-semibold text-slate-400 uppercase">Phone (Optional)</label>
-                        <div className="relative">
-                            <input
-                                type="tel"
+                        <div className="phone-input-dark">
+                            <PhoneInput
+                                country={'in'}
                                 value={formData.phone}
-                                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                className="w-full bg-white/5 border border-white/10 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-blue-500 transition-colors pl-10"
-                                placeholder="+91 98765..."
+                                onChange={(value) => setFormData({ ...formData, phone: value })}
+                                enableSearch={true}
+                                searchPlaceholder="Search country..."
+                                inputStyle={{
+                                    width: '100%',
+                                    height: '48px',
+                                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                                    borderRadius: '0.5rem',
+                                    color: 'white',
+                                    paddingLeft: '48px',
+                                    fontSize: '1rem'
+                                }}
+                                buttonStyle={{
+                                    backgroundColor: 'transparent',
+                                    border: 'none',
+                                    borderRight: '1px solid rgba(255, 255, 255, 0.1)',
+                                    borderRadius: '0.5rem 0 0 0.5rem',
+                                    paddingLeft: '8px'
+                                }}
+                                dropdownStyle={{
+                                    backgroundColor: '#1e293b',
+                                    color: 'white',
+                                    border: '1px solid rgba(255, 255, 255, 0.1)'
+                                }}
                             />
-                            <Phone size={16} className="absolute left-3 top-3.5 text-slate-500" />
                         </div>
                     </div>
 
@@ -128,8 +186,8 @@ const AddStaffModal = ({ onClose, onSuccess }) => {
                                     type="button"
                                     onClick={() => setFormData({ ...formData, role })}
                                     className={`py-2 px-3 rounded-lg border text-sm font-medium capitalize transition-all ${formData.role === role
-                                            ? 'bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-500/25'
-                                            : 'bg-white/5 border-white/10 text-slate-400 hover:bg-white/10'
+                                        ? 'bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-500/25'
+                                        : 'bg-white/5 border-white/10 text-slate-400 hover:bg-white/10'
                                         }`}
                                 >
                                     {role}
