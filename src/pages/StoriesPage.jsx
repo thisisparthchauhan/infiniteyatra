@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { MapPin, Plus, Filter, TrendingUp, Clock, Heart, Sparkles } from 'lucide-react';
+import { MapPin, Plus, Filter, TrendingUp, Clock, Heart, Sparkles, User } from 'lucide-react';
 import { collection, query, orderBy, getDocs, doc, updateDoc, increment, where } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../context/AuthContext';
@@ -13,42 +13,86 @@ const StoriesPage = () => {
     const [stories, setStories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showCreateModal, setShowCreateModal] = useState(false);
-    const [filter, setFilter] = useState('recent'); // recent, popular, trending
+    const [editStory, setEditStory] = useState(null); // Story being edited
+    const [filter, setFilter] = useState('recent'); // recent, popular, trending, my_stories
     const [category, setCategory] = useState('All');
     const { currentUser } = useAuth();
 
-
-
+    // Refresh on user change too (for My Stories)
     useEffect(() => {
         fetchStories();
-    }, [filter]);
+    }, [filter, currentUser, category]); // Added category to dependencies
 
     const fetchStories = async () => {
         setLoading(true);
         try {
             const storiesRef = collection(db, 'travelStories');
             let q;
+            let fetchedStories = [];
 
-            switch (filter) {
-                case 'popular':
-                    q = query(storiesRef, orderBy('likes', 'desc'));
-                    break;
-                case 'trending':
-                    q = query(storiesRef, orderBy('views', 'desc'));
-                    break;
-                default:
-                    q = query(storiesRef, orderBy('createdAt', 'desc'));
-            }
+            // FETCH ALL STORIES (Client-side filtering to avoid Index issues)
+            // Note: In production with thousands of stories, you would enable indexing.
+            // For now, to guarantee visibility, we fetch all and filter in JS.
+            console.log("Starting fetch...");
+            const allStoriesSnapshot = await getDocs(collection(db, 'travelStories'));
 
-            const querySnapshot = await getDocs(q);
-            const storiesData = querySnapshot.docs.map(doc => ({
+            console.log("Total docs fetched:", allStoriesSnapshot.size);
+
+            let rawStories = allStoriesSnapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data()
             }));
 
-            setStories([...storiesData, ...seededStories]);
+            // Filter Logic
+            if (filter === 'my_stories') {
+                if (!currentUser) {
+                    setStories([]);
+                    setLoading(false);
+                    return;
+                }
+                fetchedStories = rawStories.filter(s => s.authorId === currentUser.uid);
+            } else {
+                // Check for 'Approved' (case insensitive just in case)
+                fetchedStories = rawStories.filter(s =>
+                    s.status && s.status.toLowerCase() === 'approved'
+                );
+            }
+            console.log(`Filtered stories for ${filter}:`, fetchedStories.length);
+
+            // Client-side Sorting
+            fetchedStories.sort((a, b) => {
+                // Safe date handling
+                const getMillis = (d) => {
+                    if (!d) return 0;
+                    if (d.toMillis) return d.toMillis();
+                    if (d instanceof Date) return d.getTime();
+                    return 0;
+                };
+                const dateA = getMillis(a.createdAt);
+                const dateB = getMillis(b.createdAt);
+
+                if (filter === 'popular') {
+                    return (b.likes || 0) - (a.likes || 0);
+                } else if (filter === 'trending') {
+                    return (b.views || 0) - (a.views || 0);
+                } else {
+                    return dateB - dateA;
+                }
+            });
+
+            if (category !== 'All') {
+                const filtered = fetchedStories.filter(story =>
+                    story.tags?.includes(category) ||
+                    story.location?.includes(category)
+                );
+                setStories(filtered);
+            } else {
+                setStories(fetchedStories);
+            }
         } catch (error) {
             console.error('Error fetching stories:', error);
+            // Fallback: Show empty list instead of loading forever
+            setStories([]);
         } finally {
             setLoading(false);
         }
@@ -73,10 +117,16 @@ const StoriesPage = () => {
         }
     };
 
+    const handleEditStory = (story) => {
+        setEditStory(story);
+        setShowCreateModal(true);
+    };
+
     const filterOptions = [
-        { id: 'recent', label: 'Recent', icon: Clock },
-        { id: 'popular', label: 'Most Liked', icon: Heart },
-        { id: 'trending', label: 'Trending', icon: TrendingUp }
+        { id: 'recent', label: 'Newest Experiences', icon: Clock },
+        { id: 'popular', label: 'Most Felt', icon: Heart },
+        { id: 'trending', label: 'People Are Reading', icon: TrendingUp },
+        ...(currentUser ? [{ id: 'my_stories', label: 'My Experiences', icon: User }] : [])
     ];
 
     const categories = ['All', 'Treks', 'Spiritual', 'Solo Travel', 'First-Time Trekkers', 'Safety Tips'];
@@ -110,14 +160,14 @@ const StoriesPage = () => {
                             </div>
 
                             <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold text-white mb-6 leading-tight">
-                                Stories That <br className="hidden md:block" />
+                                Real journeys. Real emotions. <br className="hidden md:block" />
                                 <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-                                    Inspire Wanderlust
+                                    Real people.
                                 </span>
                             </h1>
 
                             <p className="text-lg md:text-xl text-slate-400 mb-8 leading-relaxed max-w-2xl mx-auto">
-                                Discover real experiences from real travelers. Get inspired, learn tips, and share your own adventures.
+                                Moments that no itinerary can capture.
                             </p>
 
                             <button
@@ -200,12 +250,7 @@ const StoriesPage = () => {
                             </div>
                         ) : stories.length === 0 ? (
                             <div className="flex flex-col items-center">
-                                {/* Seeded Empty State Cards */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full mb-12 opacity-50 pointer-events-none grayscale-[0.5] hover:grayscale-0 transition-all duration-500">
-                                    {seededStories.map((story, index) => (
-                                        <StoryCard key={story.id} story={story} onLike={() => { }} />
-                                    ))}
-                                </div>
+                                {/* Seeded Empty State Cards - REMOVED */}
 
                                 <motion.div
                                     initial={{ opacity: 0, scale: 0.9 }}
@@ -271,7 +316,11 @@ const StoriesPage = () => {
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: index * 0.1 }}
                                     >
-                                        <StoryCard story={story} onLike={handleLike} />
+                                        <StoryCard
+                                            story={story}
+                                            onLike={handleLike}
+                                            onEdit={(currentUser?.uid === story.authorId || currentUser?.email === 'chauhanparth165@gmail.com') ? () => handleEditStory(story) : undefined}
+                                        />
                                     </motion.div>
                                 ))}
                             </motion.div>
@@ -283,8 +332,12 @@ const StoriesPage = () => {
             {/* Create Story Modal */}
             {showCreateModal && (
                 <CreateStoryModal
-                    onClose={() => setShowCreateModal(false)}
+                    onClose={() => {
+                        setShowCreateModal(false);
+                        setEditStory(null);
+                    }}
                     onStoryCreated={fetchStories}
+                    storyToEdit={editStory}
                 />
             )}
         </>

@@ -15,8 +15,7 @@ const Financials = () => {
     const [metrics, setMetrics] = useState({
         totalRevenue: 0,
         netProfit: 0,
-        pendingPayments: 0,
-        gstCollected: 0
+        pendingPayments: 0
     });
 
     useEffect(() => {
@@ -36,7 +35,6 @@ const Financials = () => {
 
                     if (b.status === 'confirmed') {
                         revenue += amount;
-                        // GST Calculation (Assuming 5% included)
                         // Group by Month
                         const date = b.createdAt?.seconds ? new Date(b.createdAt.seconds * 1000) : new Date();
                         const monthKey = date.toLocaleString('default', { month: 'short' });
@@ -59,8 +57,7 @@ const Financials = () => {
                 setMetrics({
                     totalRevenue: revenue,
                     netProfit: revenue * 0.20, // 20% Margin
-                    pendingPayments: pending,
-                    gstCollected: revenue * 0.05 // 5% GST
+                    pendingPayments: pending
                 });
             } catch (err) {
                 console.error("Error calculating financials:", err);
@@ -80,7 +77,6 @@ const Financials = () => {
             { Metric: 'Total Revenue', Value: `₹${metrics.totalRevenue.toLocaleString()}` },
             { Metric: 'Net Profit (Est)', Value: `₹${metrics.netProfit.toLocaleString()}` },
             { Metric: 'Pending Collection', Value: `₹${metrics.pendingPayments.toLocaleString()}` },
-            { Metric: 'GST Liability (5%)', Value: `₹${metrics.gstCollected.toLocaleString()}` },
             {},
             { Metric: 'Monthly Breakdown', Value: '' },
             ...monthlyData.map(m => ({
@@ -95,45 +91,7 @@ const Financials = () => {
         saveAs(blob, 'financial_report.csv');
     };
 
-    // Export GST Report as PDF
-    const exportGSTReport = () => {
-        const doc = new jsPDF();
 
-        doc.setFontSize(18);
-        doc.text('GST Report - Infinite Yatra', 14, 22);
-        doc.setFontSize(10);
-        doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 30);
-
-        autoTable(doc, {
-            head: [['Description', 'Amount']],
-            body: [
-                ['Total Revenue', `₹${metrics.totalRevenue.toLocaleString()}`],
-                ['GST Rate', '5%'],
-                ['GST Liability', `₹${metrics.gstCollected.toLocaleString()}`],
-                ['Net Revenue (excl. GST)', `₹${(metrics.totalRevenue - metrics.gstCollected).toLocaleString()}`]
-            ],
-            startY: 38,
-            styles: { fontSize: 11, cellPadding: 4 },
-            headStyles: { fillColor: [59, 130, 246] }
-        });
-
-        doc.text('Monthly GST Breakdown:', 14, doc.lastAutoTable.finalY + 15);
-
-        autoTable(doc, {
-            head: [['Month', 'Revenue', 'GST (5%)']],
-            body: monthlyData.map(m => [
-                m.name,
-                `₹${m.revenue.toLocaleString()}`,
-                `₹${(m.revenue * 0.05).toLocaleString()}`
-            ]),
-            startY: doc.lastAutoTable.finalY + 20,
-            styles: { fontSize: 10, cellPadding: 3 },
-            headStyles: { fillColor: [16, 185, 129] }
-        });
-
-        doc.save('gst_report.pdf');
-        setShowExportMenu(false);
-    };
 
     // Export dropdown state
     const [showExportMenu, setShowExportMenu] = useState(false);
@@ -164,8 +122,7 @@ const Financials = () => {
             body: [
                 ['Total Revenue', `₹${metrics.totalRevenue.toLocaleString()}`],
                 ['Net Profit (Est)', `₹${metrics.netProfit.toLocaleString()}`],
-                ['Pending Collection', `₹${metrics.pendingPayments.toLocaleString()}`],
-                ['GST Liability (5%)', `₹${metrics.gstCollected.toLocaleString()}`]
+                ['Pending Collection', `₹${metrics.pendingPayments.toLocaleString()}`]
             ],
             startY: 38,
             styles: { fontSize: 11, cellPadding: 4 },
@@ -196,8 +153,7 @@ const Financials = () => {
         const summaryData = [
             { Metric: 'Total Revenue', Value: metrics.totalRevenue },
             { Metric: 'Net Profit (Est)', Value: metrics.netProfit },
-            { Metric: 'Pending Collection', Value: metrics.pendingPayments },
-            { Metric: 'GST Liability (5%)', Value: metrics.gstCollected }
+            { Metric: 'Pending Collection', Value: metrics.pendingPayments }
         ];
         const monthlyExport = monthlyData.map(m => ({
             Month: m.name,
@@ -224,8 +180,7 @@ const Financials = () => {
         text += '='.repeat(50) + '\n\n';
         text += `Total Revenue: ₹${metrics.totalRevenue.toLocaleString()}\n`;
         text += `Net Profit (Est): ₹${metrics.netProfit.toLocaleString()}\n`;
-        text += `Pending Collection: ₹${metrics.pendingPayments.toLocaleString()}\n`;
-        text += `GST Liability (5%): ₹${metrics.gstCollected.toLocaleString()}\n\n`;
+        text += `Pending Collection: ₹${metrics.pendingPayments.toLocaleString()}\n\n`;
         text += '--- Monthly Breakdown ---\n\n';
         monthlyData.forEach(m => {
             text += `${m.name}: Revenue ₹${m.revenue.toLocaleString()}, Profit ₹${m.profit.toLocaleString()}\n`;
@@ -252,12 +207,9 @@ const Financials = () => {
                     <h3 className="text-xl font-bold text-white flex items-center gap-2">
                         <TrendingUp className="text-green-400" /> Financial Intelligence
                     </h3>
-                    <p className="text-slate-400 text-sm">Real-time P&L, GST Reports & Revenue Analysis</p>
+                    <p className="text-slate-400 text-sm">Real-time P&L & Revenue Analysis</p>
                 </div>
                 <div className="flex gap-3">
-                    <button onClick={exportGSTReport} className="px-4 py-2 bg-white/5 hover:bg-white/10 text-slate-300 rounded-lg text-sm font-medium transition-colors border border-white/10 flex items-center gap-2">
-                        <FileText size={16} /> GST Report
-                    </button>
                     <div className="relative" ref={exportRef}>
                         <button
                             onClick={() => setShowExportMenu(!showExportMenu)}
@@ -294,7 +246,7 @@ const Financials = () => {
             </div>
 
             {/* KPI CARDS */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="glass-card p-6 rounded-2xl border border-white/10 relative overflow-hidden group hover:border-green-500/30 transition-colors">
                     <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                         <DollarSign size={64} className="text-green-500" />
@@ -325,17 +277,6 @@ const Financials = () => {
                     <p className="text-2xl font-bold text-white mt-1">{formatCurrency(metrics.pendingPayments)}</p>
                     <p className="text-orange-400 text-xs mt-2">
                         Due from bookings
-                    </p>
-                </div>
-
-                <div className="glass-card p-6 rounded-2xl border border-white/10 relative overflow-hidden group hover:border-blue-500/30 transition-colors">
-                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                        <FileText size={64} className="text-blue-500" />
-                    </div>
-                    <p className="text-slate-500 text-xs font-bold uppercase tracking-wider">GST Liability</p>
-                    <p className="text-2xl font-bold text-white mt-1">{formatCurrency(metrics.gstCollected)}</p>
-                    <p className="text-blue-400 text-xs mt-2">
-                        @ 5% on Revenue
                     </p>
                 </div>
             </div>

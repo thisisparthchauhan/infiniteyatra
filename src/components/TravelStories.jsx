@@ -23,7 +23,8 @@ const TravelStories = () => {
     const fetchStories = async () => {
         try {
             const storiesRef = collection(db, 'travelStories');
-            const q = query(storiesRef, orderBy('createdAt', 'desc'), limit(20));
+            // Only fetch APPROVED stories
+            const q = query(storiesRef, where('status', '==', 'approved'), orderBy('createdAt', 'desc'), limit(20));
             const querySnapshot = await getDocs(q);
 
             const allStories = querySnapshot.docs.map(doc => ({
@@ -35,13 +36,11 @@ const TravelStories = () => {
             const featuredStories = allStories.filter(story => story.isFeatured || story.isAdmin);
             const communityStories = allStories.filter(story => !story.isFeatured && !story.isAdmin);
 
-            // Combine fetched stories with seeded stories
-            // Show featured stories first, then community stories (limit to 3 for homepage)
-            const combinedStories = [...featuredStories, ...communityStories, ...seededStories];
-            // Remove duplicates based on ID if real stories start flowing in that might match seeds (unlikely with random IDs but good practice)
-            const uniqueStories = Array.from(new Map(combinedStories.map(item => [item.id, item])).values());
+            // Combine: Featured first
+            const combinedStories = [...featuredStories, ...communityStories];
 
-            const sortedStories = uniqueStories.slice(0, 3);
+            // Limit to 6 for homepage
+            const sortedStories = combinedStories.slice(0, 6);
             setStories(sortedStories);
         } catch (error) {
             console.error('Error fetching stories:', error);

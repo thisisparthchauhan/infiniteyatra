@@ -34,6 +34,7 @@ import WishlistPage from './pages/WishlistPage';
 import ContactNew from './pages/ContactNew';
 import UserDashboard from './pages/UserDashboard';
 import StoriesPage from './pages/StoriesPage';
+import StoryDetail from './pages/StoryDetail';
 import Profile from './pages/Profile';
 
 import AdminDashboard from './pages/AdminDashboard';
@@ -104,6 +105,7 @@ function App() {
                     <Route path="/blog" element={<BlogPage />} />
                     <Route path="/blog/:id" element={<BlogPost />} />
                     <Route path="/stories" element={<StoriesPage />} />
+                    <Route path="/story/:id" element={<StoryDetail />} />
                     <Route path="/contact" element={<ContactNew />} />
                     <Route path="/careers" element={<Careers />} />
                     <Route

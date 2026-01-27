@@ -11,7 +11,8 @@ const Overview = () => {
         total: 0,
         revenue: 0,
         profit: 0,
-        pending: 0
+        pending: 0,
+        liveTrips: 0
     });
     const [recentBookings, setRecentBookings] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -30,12 +31,17 @@ const Overview = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const q = query(collection(db, 'bookings'));
-                const querySnapshot = await getDocs(q);
-                const bookingsData = querySnapshot.docs.map(doc => ({
+                // Bookings
+                const bookingsQ = query(collection(db, 'bookings'));
+                const bookingsSnapshot = await getDocs(bookingsQ);
+                const bookingsData = bookingsSnapshot.docs.map(doc => ({
                     id: doc.id,
                     ...doc.data()
                 }));
+
+                // Packages (Live Trips)
+                const packagesSnapshot = await getDocs(collection(db, 'packages'));
+                const liveTripsCount = packagesSnapshot.size;
 
                 // Sort by date desc
                 bookingsData.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
@@ -55,7 +61,7 @@ const Overview = () => {
 
                 const pending = bookingsData.filter(b => b.status === 'pending').length;
 
-                setStats({ total, revenue, profit, pending });
+                setStats({ total, revenue, profit, pending, liveTrips: liveTripsCount });
                 setRecentBookings(bookingsData.slice(0, 5)); // Only top 5 for overview
 
             } catch (err) {
@@ -93,9 +99,9 @@ const Overview = () => {
                                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                                     <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
                                 </span>
-                                <p className="text-3xl font-bold text-white">3</p>
+                                <p className="text-3xl font-bold text-white">{stats.liveTrips}</p>
                             </div>
-                            <p className="text-xs text-green-400 font-bold uppercase tracking-wider mt-1">Live Trips</p>
+                            <p className="text-xs text-green-400 font-bold uppercase tracking-wider mt-1">Active Packages</p>
                         </div>
 
                         <div className="text-center">
@@ -140,8 +146,8 @@ const Overview = () => {
                                     <td className="p-4 font-mono text-white">₹{booking.totalPrice}</td>
                                     <td className="p-4">
                                         <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${booking.status === 'confirmed' ? 'bg-green-500/10 text-green-400' :
-                                                booking.status === 'pending' ? 'bg-yellow-500/10 text-yellow-400' :
-                                                    'bg-red-500/10 text-red-400'
+                                            booking.status === 'pending' ? 'bg-yellow-500/10 text-yellow-400' :
+                                                'bg-red-500/10 text-red-400'
                                             }`}>
                                             {booking.status}
                                         </span>

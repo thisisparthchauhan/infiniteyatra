@@ -6,10 +6,7 @@ const AdminStats = ({ stats }) => {
     // Calculate real metrics where possible
     const avgBookingValue = stats.total > 0 ? Math.round(stats.revenue / stats.total) : 0;
 
-    // Mocked Investor Metrics (for demo/MVP until data is available)
-    const cac = 450; // Customer Acquisition Cost
-    const ltv = 12500; // Lifetime Value
-    const utilization = "85%";
+
 
     const cards = [
         {
@@ -54,12 +51,7 @@ const AdminStats = ({ stats }) => {
         }
     ];
 
-    const investorMetrics = [
-        { label: "CAC (Cost Per Acq.)", value: `₹${cac}`, icon: Target, color: "text-red-400" },
-        { label: "LTV (Lifetime Value)", value: `₹${ltv}`, icon: Users, color: "text-blue-400" },
-        { label: "Seat Utilization", value: utilization, icon: PieChart, color: "text-green-400" },
-        { label: "Repeat Cust. %", value: "24%", icon: Activity, color: "text-purple-400" }
-    ];
+
 
     return (
         <div className="space-y-6 mb-8">
@@ -97,26 +89,7 @@ const AdminStats = ({ stats }) => {
                 })}
             </div>
 
-            {/* Investor Metrics Strip */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {investorMetrics.map((metric, index) => (
-                    <motion.div
-                        key={index}
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.4 + (index * 0.1) }}
-                        className="bg-white/5 border border-white/10 rounded-xl p-4 flex items-center gap-4 hover:bg-white/10 transition-colors"
-                    >
-                        <div className={`p-2 rounded-lg bg-black/20 ${metric.color}`}>
-                            <metric.icon size={20} />
-                        </div>
-                        <div>
-                            <p className="text-xs text-slate-500 uppercase tracking-widest font-bold">{metric.label}</p>
-                            <p className="text-lg font-bold text-white">{metric.value}</p>
-                        </div>
-                    </motion.div>
-                ))}
-            </div>
+
         </div>
     );
 };

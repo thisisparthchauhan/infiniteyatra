@@ -12,6 +12,7 @@ import Operations from '../components/admin/dashboard/Operations';
 import Financials from '../components/admin/dashboard/Financials';
 import CustomerCRM from '../components/admin/dashboard/CustomerCRM';
 import Content from '../components/admin/dashboard/Content';
+import AdminExperiences from '../components/admin/experiences/AdminExperiences';
 import InfluencerROI from '../components/admin/dashboard/InfluencerROI';
 import AdminImageUpload from '../components/AdminImageUpload';
 import AddStaffModal from '../components/admin/AddStaffModal';
@@ -103,6 +104,7 @@ const AdminDashboard = () => {
                                 {activeTab === 'finance' && <Financials />}
                                 {activeTab === 'crm' && <CustomerCRM />}
                                 {activeTab === 'stories' && <Content />}
+                                {activeTab === 'experiences' && <AdminExperiences />}
                                 {activeTab === 'media' && <AdminImageUpload />}
                                 {activeTab === 'influencers' && <InfluencerROI />}
                                 {activeTab === 'staff' && (

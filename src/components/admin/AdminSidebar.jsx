@@ -25,7 +25,8 @@ const AdminSidebar = ({ activeTab, setActiveTab, isOpen, setIsOpen }) => {
         { id: 'packages', label: 'Packages', icon: Briefcase },
         { id: 'operations', label: 'Operations', icon: Map },
         { id: 'staff', label: 'Staff & Roles', icon: Users },
-        { id: 'stories', label: 'Stories', icon: BookOpen },
+        { id: 'experiences', label: 'Experiences', icon: BookOpen },
+        { id: 'stories', label: 'News & Blog', icon: Briefcase }, // Renaming old Stories to News/Blog for clarity if that's what it was
         { id: 'media', label: 'Media Library', icon: Image },
         { id: 'influencers', label: 'Influencer ROI', icon: TrendingUp },
     ];
