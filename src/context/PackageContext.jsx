@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, doc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { packages as staticPackages } from '../data/packages';
 
@@ -68,8 +68,26 @@ export const PackageProvider = ({ children }) => {
         return packages.find(pkg => pkg.id === id);
     };
 
+    const updatePackageHomepageSettings = async (packageId, settings) => {
+        try {
+            const packageRef = doc(db, 'packages', packageId);
+            await setDoc(packageRef, settings, { merge: true });
+            await fetchPackages(); // Refresh packages after update
+            return { success: true };
+        } catch (error) {
+            console.error('Error updating package homepage settings:', error);
+            return { success: false, error };
+        }
+    };
+
+    const getFeaturedPackages = () => {
+        return packages
+            .filter(pkg => pkg.featuredOnHomepage === true)
+            .sort((a, b) => (a.displayOrder || 999) - (b.displayOrder || 999));
+    };
+
     return (
-        <PackageContext.Provider value={{ packages: getVisiblePackages(), allPackages: packages, loading, refreshPackages, getPackageById }}>
+        <PackageContext.Provider value={{ packages: getVisiblePackages(), allPackages: packages, loading, refreshPackages, getPackageById, updatePackageHomepageSettings, getFeaturedPackages }}>
             {children}
         </PackageContext.Provider>
     );

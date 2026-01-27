@@ -23,6 +23,7 @@ const AdminSidebar = ({ activeTab, setActiveTab, isOpen, setIsOpen }) => {
         { id: 'finance', label: 'Financials', icon: TrendingUp },
         { id: 'crm', label: 'Customers', icon: Users },
         { id: 'packages', label: 'Packages', icon: Briefcase },
+        { id: 'homepage', label: 'Homepage Manager', icon: Home },
         { id: 'operations', label: 'Operations', icon: Map },
         { id: 'staff', label: 'Staff & Roles', icon: Users },
         { id: 'experiences', label: 'Experiences', icon: BookOpen },

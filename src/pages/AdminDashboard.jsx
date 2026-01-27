@@ -16,6 +16,7 @@ import AdminExperiences from '../components/admin/experiences/AdminExperiences';
 import InfluencerROI from '../components/admin/dashboard/InfluencerROI';
 import AdminImageUpload from '../components/AdminImageUpload';
 import AddStaffModal from '../components/admin/AddStaffModal';
+import AdminHomepageManager from '../components/admin/dashboard/AdminHomepageManager';
 
 const AdminDashboard = () => {
     const [activeTab, setActiveTab] = useState('overview');
@@ -30,6 +31,7 @@ const AdminDashboard = () => {
             finance: 'Financial Intelligence',
             crm: 'Customer Relationships',
             packages: 'Package Inventory',
+            homepage: 'Homepage Manager',
             operations: 'Trip Operations Center',
             staff: 'Team & Permissions',
             stories: 'Stories & Content',
@@ -100,6 +102,7 @@ const AdminDashboard = () => {
                                 {activeTab === 'overview' && <Overview />}
                                 {activeTab === 'bookings' && <Bookings />}
                                 {activeTab === 'packages' && <Inventory />}
+                                {activeTab === 'homepage' && <AdminHomepageManager />}
                                 {activeTab === 'operations' && <Operations />}
                                 {activeTab === 'finance' && <Financials />}
                                 {activeTab === 'crm' && <CustomerCRM />}
