@@ -46,9 +46,9 @@ const Destinations = ({ packages: propPackages, title = "Explore Infinite", subt
                 {displayPackages.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                         {displayPackages.map((dest) => (
-                            <Link
+                            <div
                                 key={dest.id}
-                                to={`/package/${dest.id}`}
+                                onClick={() => navigate(`/package/${dest.id}`)}
                                 className="group cursor-pointer block relative"
                             >
                                 <div className={`${cardClass} p-3 h-full`}>
@@ -59,7 +59,7 @@ const Destinations = ({ packages: propPackages, title = "Explore Infinite", subt
                                             loading="lazy"
                                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                         />
-                                        <div className="absolute top-4 right-4 flex gap-2">
+                                        <div className="absolute top-4 right-4 flex gap-2 z-10">
                                             <button
                                                 onClick={(e) => handleWishlistClick(e, dest)}
                                                 className="bg-black/40 backdrop-blur-md p-2 rounded-full hover:scale-110 transition-transform group/heart border border-white/10"
@@ -99,7 +99,7 @@ const Destinations = ({ packages: propPackages, title = "Explore Infinite", subt
                                         </div>
                                     </div>
                                 </div>
-                            </Link>
+                            </div>
                         ))}
                     </div>
                 ) : (

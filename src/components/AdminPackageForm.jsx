@@ -14,12 +14,14 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
         location: '',
         pickupDrop: '',
         price: '',
+        tokenPrice: '',
+        costPrice: '',
         discount: '',
         duration: '',
         difficulty: 'Moderate',
         bestTime: '',
         maxGroupSize: '',
-        category: 'trek',
+        category: ['trek'],
         description: '',
         isVisible: true,
         highlights: [''],
@@ -35,7 +37,11 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
             { day: 1, title: '', description: '', activities: [''] }
         ],
         images: [], // Array of URLs
-        ...initialData
+        ...initialData,
+        // Ensure category is always an array
+        category: initialData?.category
+            ? (Array.isArray(initialData.category) ? initialData.category : [initialData.category])
+            : ['trek']
     });
 
     const [uploading, setUploading] = useState(false);
@@ -203,6 +209,8 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
         const cleanedData = {
             ...formData,
             price: Number(formData.price),
+            tokenPrice: Number(formData.tokenPrice) || 0,
+            costPrice: Number(formData.costPrice),
             priceDisplay: `₹${Number(formData.price).toLocaleString('en-IN')}`,  // Sync priceDisplay
             maxGroupSize: Number(formData.maxGroupSize),
             highlights: formData.highlights.filter(i => i.trim()),
@@ -275,7 +283,7 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm text-slate-400 mb-1">Price (₹) *</label>
+                                <label className="block text-sm text-slate-400 mb-1">Selling Price (₹) *</label>
                                 <input
                                     type="number"
                                     name="price"
@@ -283,6 +291,28 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
                                     onChange={handleChange}
                                     className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-blue-500 outline-none"
                                     required
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm text-slate-400 mb-1">Token Price (₹) *</label>
+                                <input
+                                    type="number"
+                                    name="tokenPrice"
+                                    value={formData.tokenPrice}
+                                    onChange={handleChange}
+                                    placeholder="e.g. 1000"
+                                    className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm text-slate-400 mb-1">Cost Price (₹) *</label>
+                                <input
+                                    type="number"
+                                    name="costPrice"
+                                    value={formData.costPrice || ''}
+                                    onChange={handleChange}
+                                    placeholder="For profit calculation"
+                                    className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-purple-500 outline-none"
                                 />
                             </div>
                             <div>
@@ -297,20 +327,30 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm text-slate-400 mb-1">Category</label>
-                                <select
-                                    name="category"
-                                    value={formData.category}
-                                    onChange={handleChange}
-                                    className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                >
-                                    <option value="trek">Trek</option>
-                                    <option value="spiritual">Spiritual</option>
-                                    <option value="international">International</option>
-                                    <option value="leisure">Leisure</option>
-                                </select>
+                                <label className="block text-sm text-slate-400 mb-1">Categories</label>
+                                <div className="flex flex-wrap gap-2">
+                                    {['Trek', 'Spiritual', 'International', 'Leisure', 'Honeymoon', 'Backpacking'].map(cat => (
+                                        <button
+                                            key={cat}
+                                            type="button"
+                                            onClick={() => {
+                                                const currentCats = Array.isArray(formData.category) ? formData.category : [];
+                                                const newCats = currentCats.includes(cat.toLowerCase())
+                                                    ? currentCats.filter(c => c !== cat.toLowerCase())
+                                                    : [...currentCats, cat.toLowerCase()];
+                                                setFormData(prev => ({ ...prev, category: newCats }));
+                                            }}
+                                            className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${(Array.isArray(formData.category) ? formData.category : []).includes(cat.toLowerCase())
+                                                    ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-500/20'
+                                                    : 'bg-black/40 border-white/10 text-slate-400 hover:border-white/30 hover:text-white'
+                                                }`}
+                                        >
+                                            {cat}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
-                            <div>
+                            <div className="col-span-1 md:col-span-2">
                                 <label className="block text-sm text-slate-400 mb-1">Visibility</label>
                                 <div className="flex items-center gap-3 h-[42px]">
                                     <label className="relative inline-flex items-center cursor-pointer">

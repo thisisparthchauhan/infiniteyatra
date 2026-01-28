@@ -172,7 +172,7 @@ Explore Infinite. 🏔️`,
             dayara4
         ],
         cancellationPolicy: [
-            "Token Amount: ₹1,000 per person (Non-Refundable & Non-Transferable)",
+            "Token Amount is Non-Refundable & Non-Transferable",
             "More than 7 days before trip: Full refund minus token amount",
             "4–7 days before trip: 50% refund only",
             "Less than 72 hours / No Show: No refund"
@@ -513,7 +513,7 @@ Kedarkantha is one of the most popular beginner-friendly winter treks in India, 
             "https://images.unsplash.com/photo-1548013146-72479768bada?q=80&w=2076&auto=format&fit=crop"
         ],
         cancellationPolicy: [
-            "Token Amount: ₹1,000 per person (Non-Refundable & Non-Transferable)",
+            "Token Amount is Non-Refundable & Non-Transferable",
             "More than 7 days before trip: Full refund minus token amount",
             "4–7 days before trip: 50% refund only",
             "Less than 72 hours / No Show: No refund"
@@ -715,7 +715,7 @@ When you return, you don’t just bring back photos — you bring back a new ver
             soulOfHimalayasImg
         ],
         cancellationPolicy: [
-            "Token Amount: ₹1,000 per person (Non-Refundable & Non-Transferable)",
+            "Token Amount is Non-Refundable & Non-Transferable",
             "More than 7 days before trip: Full refund minus token amount",
             "4–7 days before trip: 50% refund only",
             "Less than 72 hours / No Show: No refund"

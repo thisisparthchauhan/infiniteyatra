@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Search, Filter, Eye, Trash2, MoreHorizontal, Calendar, Download, RefreshCw, X, CheckCircle, AlertCircle, FileText, MessageCircle, Mail, ChevronDown } from 'lucide-react';
+import { Search, Filter, Eye, Trash2, MoreHorizontal, Calendar, Download, RefreshCw, X, CheckCircle, AlertCircle, FileText, MessageCircle, Mail, ChevronDown, Users, MapPin } from 'lucide-react';
 import { collection, query, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../../../firebase';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -439,19 +439,112 @@ const Bookings = () => {
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="p-4 rounded-xl bg-white/5 border border-white/5 space-y-1">
-                                        <label className="text-xs text-slate-500 uppercase block">Customer</label>
-                                        <p className="text-white font-medium truncat">{selectedBooking.contactName}</p>
-                                        <div className="flex items-center gap-2 text-xs text-blue-400 mt-1 cursor-pointer hover:underline">
-                                            <Mail size={12} /> {selectedBooking.contactEmail}
+                                <div className="space-y-4">
+                                    {/* Primary Customer Info */}
+                                    <div className="p-4 rounded-xl bg-white/5 border border-white/5 space-y-3">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <Users size={16} className="text-blue-400" />
+                                            <label className="text-xs text-blue-400 uppercase font-bold tracking-wider">Primary Traveler</label>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="text-[10px] text-slate-500 uppercase block mb-1">Full Name</label>
+                                                <p className="text-white font-medium text-sm">{selectedBooking.contactName}</p>
+                                            </div>
+                                            <div>
+                                                <label className="text-[10px] text-slate-500 uppercase block mb-1">Contact</label>
+                                                <p className="text-white text-sm font-mono">{selectedBooking.phone || 'N/A'}</p>
+                                            </div>
+                                            <div className="col-span-2">
+                                                <label className="text-[10px] text-slate-500 uppercase block mb-1">Email Address</label>
+                                                <div className="flex items-center gap-2 text-sm text-slate-300">
+                                                    <Mail size={12} /> {selectedBooking.contactEmail}
+                                                </div>
+                                            </div>
+                                            {(selectedBooking.age || selectedBooking.gender) && (
+                                                <div className="col-span-2 flex gap-4">
+                                                    <div>
+                                                        <label className="text-[10px] text-slate-500 uppercase block mb-1">Age</label>
+                                                        <p className="text-white text-sm">{selectedBooking.age || 'N/A'}</p>
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-[10px] text-slate-500 uppercase block mb-1">Gender</label>
+                                                        <p className="text-white text-sm capitalize">{selectedBooking.gender || 'N/A'}</p>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {selectedBooking.address && (
+                                                <div className="col-span-2">
+                                                    <label className="text-[10px] text-slate-500 uppercase block mb-1">Address</label>
+                                                    <div className="flex items-start gap-2 text-sm text-slate-300 bg-black/20 p-2 rounded-lg border border-white/5">
+                                                        <MapPin size={14} className="mt-0.5 shrink-0 text-slate-500" />
+                                                        {selectedBooking.address}
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
-                                    <div className="p-4 rounded-xl bg-white/5 border border-white/5 space-y-1">
-                                        <label className="text-xs text-slate-500 uppercase block">Trip Info</label>
-                                        <p className="text-white font-medium truncate">{selectedBooking.packageTitle}</p>
-                                        <div className="flex items-center gap-2 text-xs text-slate-400 mt-1">
-                                            <Calendar size={12} /> {selectedBooking.bookingDate}
+
+                                    {/* Emergency Contact */}
+                                    {selectedBooking.emergencyContact && (
+                                        <div className="p-3 rounded-xl bg-red-500/5 border border-red-500/10">
+                                            <label className="text-[10px] text-red-400 uppercase block mb-1 font-bold">Emergency Contact</label>
+                                            <p className="text-slate-300 text-sm">
+                                                {typeof selectedBooking.emergencyContact === 'object'
+                                                    ? `${selectedBooking.emergencyContact.name} (${selectedBooking.emergencyContact.phone})`
+                                                    : selectedBooking.emergencyContact}
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    {/* Trip Logistics */}
+                                    <div className="p-4 rounded-xl bg-white/5 border border-white/5 space-y-3">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <Calendar size={16} className="text-purple-400" />
+                                            <label className="text-xs text-purple-400 uppercase font-bold tracking-wider">Trip Details</label>
+                                        </div>
+
+                                        <div className="space-y-3">
+                                            <div>
+                                                <label className="text-[10px] text-slate-500 uppercase block mb-1">Package</label>
+                                                <p className="text-white font-medium text-sm">{selectedBooking.packageTitle}</p>
+                                            </div>
+
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <label className="text-[10px] text-slate-500 uppercase block mb-1">Travel Date</label>
+                                                    <p className="text-white text-sm">{selectedBooking.bookingDate || selectedBooking.travelDate}</p>
+                                                </div>
+                                                <div>
+                                                    <label className="text-[10px] text-slate-500 uppercase block mb-1">Travelers</label>
+                                                    <p className="text-white text-sm">{selectedBooking.travelers || 1} Person(s)</p>
+                                                </div>
+                                            </div>
+
+                                            {(selectedBooking.pickupLocation || selectedBooking.dropLocation) && (
+                                                <div className="border-t border-white/5 pt-3 mt-2 space-y-3">
+                                                    {selectedBooking.pickupLocation && (
+                                                        <div>
+                                                            <div className="flex items-center gap-2 text-[10px] text-slate-500 uppercase mb-1">
+                                                                <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                                                                Pickup Point
+                                                            </div>
+                                                            <p className="text-slate-300 text-sm pl-3.5 border-l border-white/10 ml-0.5">{selectedBooking.pickupLocation}</p>
+                                                        </div>
+                                                    )}
+                                                    {selectedBooking.dropLocation && (
+                                                        <div>
+                                                            <div className="flex items-center gap-2 text-[10px] text-slate-500 uppercase mb-1">
+                                                                <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                                                                Drop Point
+                                                            </div>
+                                                            <p className="text-slate-300 text-sm pl-3.5 border-l border-white/10 ml-0.5">{selectedBooking.dropLocation}</p>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 </div>

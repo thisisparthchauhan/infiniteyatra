@@ -52,7 +52,7 @@ const Layout = ({ children }) => {
 
   return (
     <>
-      <MaintenanceBanner />
+      {!isAdminPage && <MaintenanceBanner />}
       <ScrollToTop />
       {!shouldHideLayout && <Navbar />}
       <main>

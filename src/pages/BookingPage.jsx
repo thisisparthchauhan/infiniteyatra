@@ -6,7 +6,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { motion, AnimatePresence } from 'framer-motion';
 import { db } from '../firebase';
-import { collection, addDoc, serverTimestamp, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, where, getDocs, updateDoc, doc, getDoc } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
 import { sendBookingEmails } from '../services/email';
 import { RazorpayService } from '../services/razorpayService';
@@ -85,22 +85,49 @@ const BookingPage = () => {
     }, [bookingData.travelers]);
 
     useEffect(() => {
-        const packageData = getPackageById(id);
-        if (packageData) {
-            setPkg(packageData);
-            setLoading(false);
-            // Pre-fill user data if available
-            if (currentUser) {
-                setBookingData(prev => ({
-                    ...prev,
-                    email: currentUser.email || '',
-                    name: currentUser.name || currentUser.displayName || '',
-                    phone: currentUser.phone || ''
-                }));
+        const fetchPackage = async () => {
+            try {
+                // 1. Try fetching from Firestore first (for updated prices/details)
+                const docRef = doc(db, 'packages', id);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    setPkg({ id: docSnap.id, ...docSnap.data() });
+                } else {
+                    // 2. Fallback to static data if not in Firestore
+                    const packageData = getPackageById(id);
+                    if (packageData) {
+                        setPkg(packageData);
+                    } else {
+                        navigate('/'); // Not found anywhere
+                        return;
+                    }
+                }
+
+                setLoading(false);
+                // Pre-fill user data if available
+                if (currentUser) {
+                    setBookingData(prev => ({
+                        ...prev,
+                        email: currentUser.email || '',
+                        name: currentUser.name || currentUser.displayName || '',
+                        phone: currentUser.phone || ''
+                    }));
+                }
+            } catch (err) {
+                console.error("Error fetching package:", err);
+                // Fallback on error
+                const packageData = getPackageById(id);
+                if (packageData) {
+                    setPkg(packageData);
+                    setLoading(false);
+                } else {
+                    navigate('/');
+                }
             }
-        } else {
-            navigate('/');
-        }
+        };
+
+        fetchPackage();
     }, [id, navigate, currentUser]);
 
     const handleInputChange = (e) => {
@@ -1176,6 +1203,10 @@ const BookingPage = () => {
                                                 <span className="text-slate-400">Package Base Price</span>
                                                 <span className="font-medium text-white">₹{pkg.price.toLocaleString()} x {bookingData.travelers}</span>
                                             </div>
+                                            <div className="flex justify-between items-center p-4 bg-black/20 rounded-xl border border-white/10">
+                                                <span className="text-slate-400">Token Amount (Per Person)</span>
+                                                <span className="font-medium text-white">₹{(pkg.tokenPrice || 1000).toLocaleString()}</span>
+                                            </div>
                                             {bookingData.discount > 0 && (
                                                 <div className="flex justify-between items-center p-4 bg-green-500/10 rounded-xl border border-green-500/20 text-green-400">
                                                     <span className="flex items-center gap-2"><CheckCircle size={16} /> Referral Discount</span>
@@ -1212,7 +1243,7 @@ const BookingPage = () => {
                                                 <div className="flex-1">
                                                     <div className="flex justify-between">
                                                         <div className="font-bold text-white">Pay Token Amount</div>
-                                                        <div className="font-bold text-blue-400">₹{(1000 * bookingData.travelers).toLocaleString()}</div>
+                                                        <div className="font-bold text-blue-400">₹{((pkg.tokenPrice || 1000) * bookingData.travelers).toLocaleString()}</div>
                                                     </div>
                                                     <div className="text-sm text-slate-400 mt-1">
                                                         Mandatory to secure your slots.
@@ -1256,7 +1287,7 @@ const BookingPage = () => {
                                                 <div className="text-slate-400 text-sm">Amount Payable Now</div>
                                                 <div className="text-3xl font-bold mt-1 text-white">
                                                     ₹{paymentOption === 'token'
-                                                        ? (1000 * bookingData.travelers).toLocaleString()
+                                                        ? ((pkg.tokenPrice || 1000) * bookingData.travelers).toLocaleString()
                                                         : (pkg.price * Number(bookingData.travelers) - (bookingData.discount || 0)).toLocaleString()
                                                     }
                                                 </div>
@@ -1265,7 +1296,7 @@ const BookingPage = () => {
                                                 <div className="text-right">
                                                     <div className="text-slate-400 text-xs">Balance Due</div>
                                                     <div className="font-medium text-slate-200">
-                                                        ₹{((pkg.price * Number(bookingData.travelers) - (bookingData.discount || 0)) - (1000 * bookingData.travelers)).toLocaleString()}
+                                                        ₹{((pkg.price * Number(bookingData.travelers) - (bookingData.discount || 0)) - ((pkg.tokenPrice || 1000) * bookingData.travelers)).toLocaleString()}
                                                     </div>
                                                 </div>
                                             )}
@@ -1277,11 +1308,15 @@ const BookingPage = () => {
                                             <ul className="list-disc pl-4 space-y-1">
                                                 {pkg.cancellationPolicy && pkg.cancellationPolicy.length > 0 ? (
                                                     pkg.cancellationPolicy.map((item, index) => (
-                                                        <li key={index}>{item}</li>
+                                                        <li key={index}>
+                                                            {item.includes("Token Amount: ₹1,000 per person")
+                                                                ? "Token Amount is Non-Refundable & Non-Transferable"
+                                                                : item}
+                                                        </li>
                                                     ))
                                                 ) : (
                                                     <>
-                                                        <li><strong>Token Amount (₹1000/person):</strong> Non-Refundable & Non-Transferable.</li>
+                                                        <li><strong>Token Amount is Non-Refundable & Non-Transferable</strong></li>
                                                         <li><strong>Full Payment Refund:</strong>
                                                             <ul className="list-[circle] pl-4 mt-1 space-y-1">
                                                                 <li>Cancelled <strong>&gt;7 days</strong> before trip: Full Refund minus token charges.</li>
@@ -1362,14 +1397,14 @@ const BookingPage = () => {
                                         </div>
                                         <div className="flex justify-between mt-4 pt-4 border-t border-white/10">
                                             <span className="text-slate-400">Amount Due</span>
-                                            <span className="font-bold text-blue-400 text-lg">₹{(pkg.price * Number(bookingData.travelers) - (paymentOption === 'token' ? (pkg.tokenAmount || 1000) : pkg.price * Number(bookingData.travelers))).toLocaleString()}</span>
+                                            <span className="font-bold text-blue-400 text-lg">₹{(pkg.price * Number(bookingData.travelers) - (paymentOption === 'token' ? ((pkg.tokenPrice || 1000) * bookingData.travelers) : pkg.price * Number(bookingData.travelers))).toLocaleString()}</span>
                                         </div>
                                     </div>
 
                                     <div className="flex flex-col md:flex-row gap-4 justify-center">
                                         <button
                                             onClick={() => {
-                                                const amountPaid = paymentOption === 'token' ? (pkg.tokenAmount || 1000) : (pkg.price * bookingData.travelers);
+                                                const amountPaid = paymentOption === 'token' ? ((pkg.tokenPrice || 1000) * bookingData.travelers) : (pkg.price * bookingData.travelers);
                                                 const booking = {
                                                     id: confirmedBookingId,
                                                     packageTitle: pkg.title,

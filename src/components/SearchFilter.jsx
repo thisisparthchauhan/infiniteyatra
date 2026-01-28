@@ -14,7 +14,7 @@ const SearchFilter = ({ filters, setFilters, minPrice, maxPrice, variant = 'ligh
     const labelClass = isDark ? 'text-slate-300' : 'text-slate-700';
     const subTextClass = isDark ? 'text-slate-500' : 'text-slate-400';
 
-    const categories = ['All', 'Trek', 'Tour', 'Spiritual', 'Adventure', 'International'];
+    const categories = ['All', 'Trek', 'Spiritual', 'International', 'Leisure'];
     const durations = ['All', 'Short (< 5 days)', 'Medium (5-8 days)', 'Long (> 8 days)'];
     const sortOptions = ['Recommended', 'Price: Low to High', 'Price: High to Low', 'Duration: Shortest', 'Duration: Longest'];
 

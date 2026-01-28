@@ -80,36 +80,12 @@ export const AuthProvider = ({ children }) => {
     };
 
     useEffect(() => {
-        let logoutTimer;
-
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // Check if session has expired (1 week = 7 days)
-                const lastSignInTime = new Date(user.metadata.lastSignInTime).getTime();
-                const currentTime = Date.now();
-                const sessionDuration = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
-
-                if (currentTime - lastSignInTime > sessionDuration) {
-                    await signOut(auth);
-                    setCurrentUser(null);
-                    setLoading(false);
-                    return;
-                }
-
-                // Set a timer to auto-logout when the session expires
-                const timeRemaining = sessionDuration - (currentTime - lastSignInTime);
-                logoutTimer = setTimeout(async () => {
-                    await signOut(auth);
-                    setCurrentUser(null);
-                    // Optionally alert the user
-                    // alert("Your session has expired. Please log in again.");
-                    window.location.reload(); // Force reload to clear state/redirect
-                }, timeRemaining);
-
                 // User is signed in, fetch their profile from Firestore
                 try {
                     const userDocRef = doc(db, "users", user.uid);
-                    const userDocSnap = await import('firebase/firestore').then(module => module.getDoc(userDocRef));
+                    const userDocSnap = await getDoc(userDocRef);
 
                     const ADMIN_EMAILS = [
                         'infiniteyatra@gmail.com',
@@ -141,14 +117,12 @@ export const AuthProvider = ({ children }) => {
                 }
             } else {
                 setCurrentUser(null);
-                if (logoutTimer) clearTimeout(logoutTimer);
             }
             setLoading(false);
         });
 
         return () => {
             unsubscribe();
-            if (logoutTimer) clearTimeout(logoutTimer);
         };
     }, []);
 

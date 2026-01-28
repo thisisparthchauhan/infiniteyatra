@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Package, Plus, Edit, Calendar, Users, Database, Zap } from 'lucide-react';
+import { Package, Plus, Edit, Calendar, Users, Database, Zap, Copy } from 'lucide-react';
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '../../../firebase';
 
@@ -86,9 +86,12 @@ const Inventory = () => {
                             </div>
                             <div className="absolute bottom-4 left-4 right-4 flex justify-between items-end">
                                 <h3 className="text-lg font-bold text-white leading-tight drop-shadow-md">{pkg.title}</h3>
-                                <span className="bg-blue-600/90 backdrop-blur-md px-2 py-1 rounded-md text-xs font-bold text-white shadow-lg">
-                                    ₹{pkg.price?.toLocaleString()}
-                                </span>
+                                <div className="flex flex-col items-end">
+                                    <span className="text-[10px] text-slate-300 mb-0.5">Selling Price</span>
+                                    <span className="bg-blue-600/90 backdrop-blur-md px-2 py-1 rounded-md text-xs font-bold text-white shadow-lg">
+                                        ₹{pkg.price?.toLocaleString()}
+                                    </span>
+                                </div>
                             </div>
                         </div>
                         <div className="p-4 bg-white/5 space-y-3">
@@ -96,12 +99,30 @@ const Inventory = () => {
                                 <span className="flex items-center gap-1"><Calendar size={14} /> {pkg.availableDates?.length || 0} Dates</span>
                                 <span className="flex items-center gap-1"><Users size={14} /> {pkg.maxSeats || 12} Seats</span>
                             </div>
+                            {pkg.costPrice && (
+                                <div className="text-xs text-slate-500 flex justify-between border-t border-white/5 pt-2">
+                                    <span>Cost: ₹{parseInt(pkg.costPrice).toLocaleString()}</span>
+                                    <span className="text-green-500">Margin: {Math.round(((pkg.price - pkg.costPrice) / pkg.price) * 100)}%</span>
+                                </div>
+                            )}
                             <div className="pt-3 border-t border-white/5 flex gap-2">
                                 <button
                                     onClick={() => { setCurrentPackage(pkg); setShowDepartureManager(true); }}
                                     className="flex-1 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-sm font-medium text-white transition-colors flex items-center justify-center gap-2 border border-white/5"
                                 >
                                     <Calendar size={14} /> Dates
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        const pkgCopy = { ...pkg, title: `${pkg.title} (Copy)`, id: null };
+                                        delete pkgCopy.id;
+                                        setCurrentPackage(pkgCopy);
+                                        setShowPackageForm(true);
+                                    }}
+                                    className="px-3 py-2 bg-purple-600/10 hover:bg-purple-600/20 text-purple-400 border border-purple-600/20 rounded-lg transition-colors flex items-center justify-center"
+                                    title="Duplicate Package"
+                                >
+                                    <Copy size={14} />
                                 </button>
                                 <button
                                     onClick={() => { setCurrentPackage(pkg); setShowPackageForm(true); }}

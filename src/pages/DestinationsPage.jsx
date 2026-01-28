@@ -50,17 +50,20 @@ const DestinationsPage = () => {
             // 3. Category
             let categoryMatch = true;
             if (filters.category !== 'All') {
-                const isTrek = pkg.title.toLowerCase().includes('trek');
-                const isSpiritual = pkg.title.toLowerCase().includes('yatra') || pkg.title.toLowerCase().includes('temple') || pkg.id === 'kedarnath' || pkg.id === 'tungnath';
-                const isTour = !isTrek && !isSpiritual; // Fallback for tours
-                const isAdventure = isTrek || pkg.difficulty === 'Moderate' || pkg.difficulty === 'Hard';
-                const isInternational = !pkg.location.includes('India');
+                // Use explicit category field if available
+                if (pkg.category) {
+                    const cats = Array.isArray(pkg.category) ? pkg.category : [pkg.category];
+                    categoryMatch = cats.map(c => c.toLowerCase()).includes(filters.category.toLowerCase());
+                } else {
+                    const isTrek = pkg.title.toLowerCase().includes('trek');
+                    const isSpiritual = pkg.title.toLowerCase().includes('yatra') || pkg.title.toLowerCase().includes('temple') || pkg.id === 'kedarnath' || pkg.id === 'tungnath';
+                    const isInternational = !pkg.location.includes('India');
 
-                if (filters.category === 'Trek') categoryMatch = isTrek;
-                else if (filters.category === 'Tour') categoryMatch = isTour;
-                else if (filters.category === 'Spiritual') categoryMatch = isSpiritual;
-                else if (filters.category === 'Adventure') categoryMatch = isAdventure;
-                else if (filters.category === 'International') categoryMatch = isInternational;
+                    if (filters.category === 'Trek') categoryMatch = isTrek;
+                    else if (filters.category === 'Spiritual') categoryMatch = isSpiritual;
+                    else if (filters.category === 'International') categoryMatch = isInternational;
+                    else categoryMatch = false;
+                }
             }
 
             // 4. Duration
@@ -132,7 +135,7 @@ const DestinationsPage = () => {
                         <div className="space-y-16">
                             {/* 1. Treks Section */}
                             <Destinations
-                                packages={packages.filter(p => p.category === 'trek')}
+                                packages={packages.filter(p => p.category && (Array.isArray(p.category) ? p.category.includes('trek') : p.category === 'trek'))}
                                 title="Trending Treks"
                                 subtitle="Conquer the heights and walk above the clouds."
                                 showViewAll={false}
@@ -142,7 +145,7 @@ const DestinationsPage = () => {
 
                             {/* 2. Spiritual Section */}
                             <Destinations
-                                packages={packages.filter(p => p.category === 'spiritual')}
+                                packages={packages.filter(p => p.category && (Array.isArray(p.category) ? p.category.includes('spiritual') : p.category === 'spiritual'))}
                                 title="Spiritual Journeys"
                                 subtitle="Find inner peace at the world's holiest shrines."
                                 showViewAll={false}
@@ -152,7 +155,7 @@ const DestinationsPage = () => {
 
                             {/* 3. International Section */}
                             <Destinations
-                                packages={packages.filter(p => p.category === 'international')}
+                                packages={packages.filter(p => p.category && (Array.isArray(p.category) ? p.category.includes('international') : p.category === 'international'))}
                                 title="International Getaways"
                                 subtitle="Explore iconic destinations beyond boundaries."
                                 showViewAll={false}
