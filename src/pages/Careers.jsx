@@ -53,16 +53,16 @@ const Careers = () => {
     ];
 
     return (
-        <div className="pt-20 min-h-screen bg-slate-50">
+        <div className="pt-20 min-h-screen bg-[#0A0A0A]">
             <SEO
                 title="Careers"
                 description="Join the Infinite Yatra team. We are looking for passionate individuals to help us build the future of travel."
                 url="/careers"
             />
             {/* Hero Section */}
-            <div className="relative bg-slate-900 text-white py-24 overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-900 to-purple-900 opacity-90"></div>
-                <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center mix-blend-overlay"></div>
+            <div className="relative bg-black text-white py-24 overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-900/80 to-purple-900/80 opacity-90"></div>
+                <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center mix-blend-overlay opacity-40"></div>
 
                 <div className="relative container mx-auto px-6 text-center max-w-4xl">
                     <motion.h1
@@ -96,8 +96,8 @@ const Careers = () => {
             {/* Values / Benefits Section */}
             <div className="py-24 container mx-auto px-6">
                 <div className="text-center max-w-3xl mx-auto mb-16">
-                    <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Why Work With Us?</h2>
-                    <p className="text-lg text-slate-600">
+                    <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Why Work With Us?</h2>
+                    <p className="text-lg text-slate-400">
                         We believe in a culture of freedom, responsibility, and adventure. Here's what you can expect when you join Infinite Yatra.
                     </p>
                 </div>
@@ -110,24 +110,24 @@ const Careers = () => {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ delay: index * 0.1 }}
-                            className="bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100"
+                            className="bg-white/5 p-8 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-white/10 hover:border-white/20"
                         >
-                            <div className="bg-slate-50 w-16 h-16 rounded-2xl flex items-center justify-center mb-6">
+                            <div className="bg-white/5 w-16 h-16 rounded-2xl flex items-center justify-center mb-6">
                                 {benefit.icon}
                             </div>
-                            <h3 className="text-xl font-bold text-slate-900 mb-3">{benefit.title}</h3>
-                            <p className="text-slate-600 leading-relaxed">{benefit.description}</p>
+                            <h3 className="text-xl font-bold text-white mb-3">{benefit.title}</h3>
+                            <p className="text-slate-400 leading-relaxed">{benefit.description}</p>
                         </motion.div>
                     ))}
                 </div>
             </div>
 
             {/* Open Positions Section */}
-            <div id="openings" className="py-24 bg-white">
+            <div id="openings" className="py-24 bg-[#0A0A0A] border-t border-white/10">
                 <div className="container mx-auto px-6 max-w-5xl">
                     <div className="text-center mb-16">
-                        <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Current Openings</h2>
-                        <p className="text-lg text-slate-600">
+                        <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Current Openings</h2>
+                        <p className="text-lg text-slate-400">
                             Ready to start your journey? Check out our open roles below.
                         </p>
                     </div>
@@ -140,21 +140,21 @@ const Careers = () => {
                                 whileInView={{ opacity: 1, x: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ delay: index * 0.1 }}
-                                className="group flex flex-col md:flex-row items-center justify-between bg-slate-50 hover:bg-white p-8 rounded-2xl border border-slate-200 hover:border-blue-200 hover:shadow-lg transition-all duration-300"
+                                className="group flex flex-col md:flex-row items-center justify-between bg-white/5 hover:bg-white/10 p-8 rounded-2xl border border-white/10 hover:border-blue-500/30 transition-all duration-300"
                             >
                                 <div className="mb-4 md:mb-0 text-center md:text-left">
-                                    <h3 className="text-xl font-bold text-slate-900 group-hover:text-blue-600 transition-colors">{job.title}</h3>
-                                    <div className="flex items-center justify-center md:justify-start gap-4 text-slate-500 mt-2 text-sm font-medium">
+                                    <h3 className="text-xl font-bold text-white group-hover:text-blue-400 transition-colors">{job.title}</h3>
+                                    <div className="flex items-center justify-center md:justify-start gap-4 text-slate-400 mt-2 text-sm font-medium">
                                         <span>{job.department}</span>
-                                        <span className="w-1.5 h-1.5 bg-slate-300 rounded-full"></span>
+                                        <span className="w-1.5 h-1.5 bg-slate-600 rounded-full"></span>
                                         <span>{job.type}</span>
-                                        <span className="w-1.5 h-1.5 bg-slate-300 rounded-full"></span>
+                                        <span className="w-1.5 h-1.5 bg-slate-600 rounded-full"></span>
                                         <span>{job.location}</span>
                                     </div>
                                 </div>
                                 <a
                                     href="mailto:infiniteyatra@gmail.com"
-                                    className="inline-flex items-center gap-2 bg-white group-hover:bg-blue-600 text-slate-700 group-hover:text-white px-6 py-3 rounded-xl font-semibold border border-slate-200 group-hover:border-blue-600 transition-all duration-300"
+                                    className="inline-flex items-center gap-2 bg-white/10 group-hover:bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold border border-white/10 group-hover:border-blue-600 transition-all duration-300"
                                 >
                                     Apply Now
                                     <ArrowRight size={18} />
@@ -163,14 +163,14 @@ const Careers = () => {
                         ))}
                     </div>
 
-                    <div className="mt-12 text-center bg-blue-50 p-8 rounded-2xl border border-blue-100">
-                        <h4 className="text-xl font-bold text-slate-900 mb-2">Don't see the right role?</h4>
-                        <p className="text-slate-600 mb-6">
-                            We are always looking for talented people. Send your resume to <span className="font-semibold text-blue-600">infiniteyatra@gmail.com</span>
+                    <div className="mt-12 text-center bg-blue-900/20 p-8 rounded-2xl border border-blue-500/20">
+                        <h4 className="text-xl font-bold text-white mb-2">Don't see the right role?</h4>
+                        <p className="text-slate-400 mb-6">
+                            We are always looking for talented people. Send your resume to <span className="font-semibold text-blue-400">infiniteyatra@gmail.com</span>
                         </p>
                         <a
                             href="mailto:infiniteyatra@gmail.com"
-                            className="inline-flex items-center gap-2 text-blue-600 font-bold hover:underline"
+                            className="inline-flex items-center gap-2 text-blue-400 font-bold hover:underline"
                         >
                             <Mail size={20} />
                             Email Us

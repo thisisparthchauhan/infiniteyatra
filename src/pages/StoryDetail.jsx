@@ -132,7 +132,7 @@ const StoryDetail = () => {
                                             <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-0.5">Published On</div>
                                             <div className="text-white font-medium">
                                                 {story.createdAt?.toDate
-                                                    ? story.createdAt.toDate().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+                                                    ? story.createdAt.toDate().toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })
                                                     : 'Recently'}
                                             </div>
                                         </div>

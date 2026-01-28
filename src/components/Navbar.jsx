@@ -19,8 +19,7 @@ const Navbar = () => {
 
     // Identify pages that need a light theme navbar (dark text)
     const isLightPage = [
-        '/blog',
-        '/careers'
+        '/blog'
     ].some(path => location.pathname.startsWith(path));
 
     // Also handle dynamic routes if needed, or stick to this list.

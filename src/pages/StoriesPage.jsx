@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { MapPin, Plus, Filter, TrendingUp, Clock, Heart, Sparkles, User } from 'lucide-react';
-import { collection, query, orderBy, getDocs, doc, updateDoc, increment, where } from 'firebase/firestore';
+import { collection, query, orderBy, getDocs, doc, updateDoc, increment, where, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../context/AuthContext';
 import StoryCard from '../components/StoryCard';
 import CreateStoryModal from '../components/CreateStoryModal';
 import SEO from '../components/SEO';
 import { seededStories } from '../data/seededStories';
+import parthImg from '../assets/parth-chauhan.jpg';
 
 const StoriesPage = () => {
     const [stories, setStories] = useState([]);
@@ -129,7 +130,28 @@ const StoriesPage = () => {
         ...(currentUser ? [{ id: 'my_stories', label: 'My Experiences', icon: User }] : [])
     ];
 
-    const categories = ['All', 'Treks', 'Spiritual', 'Solo Travel', 'First-Time Trekkers', 'Safety Tips'];
+    // Categories State
+    const [categories, setCategories] = useState(['All']);
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const docRef = doc(db, 'settings', 'storyCategories');
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists() && docSnap.data().categories) {
+                    const fetchedCats = docSnap.data().categories.map(c => c.label);
+                    setCategories(['All', ...fetchedCats]);
+                } else {
+                    // Fallback
+                    setCategories(['All', 'Trek', 'Spiritual', 'Solo Travel', 'First-Time Trekkers', 'Safety Tips']);
+                }
+            } catch (error) {
+                console.error("Error fetching categories:", error);
+            }
+        };
+
+        fetchCategories();
+    }, []);
 
     return (
         <>
@@ -178,6 +200,44 @@ const StoriesPage = () => {
                                 Share Your Story
                             </button>
                         </motion.div>
+                    </div>
+                </section>
+
+                {/* Our Story / Founder's Note Section */}
+                <section className="py-20 relative border-b border-white/10 bg-white/5 backdrop-blur-sm">
+                    <div className="container mx-auto px-6">
+                        <div className="flex flex-col lg:flex-row gap-12 items-center">
+                            <div className="w-full lg:w-1/3 flex justify-center lg:justify-end">
+                                <div className="relative group">
+                                    <div className="absolute inset-0 bg-purple-600 rounded-full blur-[50px] opacity-20 group-hover:opacity-40 transition-opacity duration-500"></div>
+                                    <img
+                                        src={parthImg}
+                                        alt="Parth Chauhan"
+                                        className="relative z-10 w-40 h-40 lg:w-56 lg:h-56 rounded-full object-cover border-4 border-white/5 shadow-2xl transition-transform duration-500 group-hover:scale-105"
+                                    />
+                                    <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 z-20 bg-black/80 backdrop-blur-md border border-white/10 px-4 py-2 rounded-full whitespace-nowrap">
+                                        <p className="text-white font-bold text-sm">Parth Chauhan</p>
+                                        <p className="text-blue-400 text-xs text-center">Founder</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="w-full lg:w-2/3 text-center lg:text-left">
+                                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 text-purple-400 text-xs font-bold uppercase tracking-wider mb-4 border border-purple-500/20">
+                                    Our Story
+                                </div>
+                                <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
+                                    Why We Created This Platform
+                                </h2>
+                                <p className="text-lg text-slate-300 leading-relaxed mb-6 italic max-w-2xl mx-auto lg:mx-0">
+                                    "I started Infinite Yatra with a belief that travel changes the way we see life. This stories platform is an extension of that belief—a space for you to share the moments that changed you, the journeys that defined you, and the memories that will last forever."
+                                </p>
+                                <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-6">
+                                    <div className="text-2xl font-bold font-handwritten text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">
+                                        Explore Infinite.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
@@ -327,19 +387,21 @@ const StoriesPage = () => {
                         )}
                     </div>
                 </section>
-            </div>
+            </div >
 
             {/* Create Story Modal */}
-            {showCreateModal && (
-                <CreateStoryModal
-                    onClose={() => {
-                        setShowCreateModal(false);
-                        setEditStory(null);
-                    }}
-                    onStoryCreated={fetchStories}
-                    storyToEdit={editStory}
-                />
-            )}
+            {
+                showCreateModal && (
+                    <CreateStoryModal
+                        onClose={() => {
+                            setShowCreateModal(false);
+                            setEditStory(null);
+                        }}
+                        onStoryCreated={fetchStories}
+                        storyToEdit={editStory}
+                    />
+                )
+            }
         </>
     );
 };

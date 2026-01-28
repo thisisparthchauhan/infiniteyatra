@@ -25,10 +25,10 @@ const StoryCard = ({ story, onLike, onEdit }) => {
     return (
         <motion.div
             whileHover={{ y: -8 }}
-            className="group glass-card rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 relative"
+            className="group glass-card rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 relative h-full flex flex-col"
         >
             {/* Image Container */}
-            <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-blue-100 to-purple-100">
+            <Link to={`/story/${story.id}`} className="block relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-blue-100 to-purple-100 cursor-pointer shrink-0">
                 {story.imageUrl ? (
                     <img
                         src={story.imageUrl}
@@ -56,21 +56,31 @@ const StoryCard = ({ story, onLike, onEdit }) => {
                 {/* Owner Status Badge (Only visible if onEdit/Owner) */}
                 {onEdit && (
                     <div className={`absolute top-4 right-4 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider shadow-lg ${story.status === 'approved' ? 'bg-green-500/90 text-white' :
-                            story.status === 'rejected' ? 'bg-red-500/90 text-white' :
-                                'bg-yellow-500/90 text-white'
+                        story.status === 'rejected' ? 'bg-red-500/90 text-white' :
+                            'bg-yellow-500/90 text-white'
                         }`}>
                         {story.status || 'Pending'}
                     </div>
                 )}
-            </div>
+            </Link>
 
             {/* Content */}
-            <div className="p-6">
+            <div className="p-6 flex flex-col flex-1">
 
                 {/* Title */}
-                <h3 className="text-xl font-bold text-white mb-2 line-clamp-2 leading-tight group-hover:text-blue-400 transition-colors">
-                    {story.title}
-                </h3>
+                <Link to={`/story/${story.id}`}>
+                    <h3 className="text-xl font-bold text-white mb-2 line-clamp-2 leading-tight group-hover:text-blue-400 transition-colors cursor-pointer">
+                        {story.title}
+                    </h3>
+                </Link>
+
+                {/* Date & Time */}
+                <div className="flex items-center gap-2 mb-3 text-[10px] text-slate-500 font-medium uppercase tracking-wide">
+                    <Calendar size={12} className="text-slate-600" />
+                    {story.createdAt?.toDate
+                        ? story.createdAt.toDate().toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                        : 'Recently'}
+                </div>
 
                 {/* Description - Emotional Preview */}
                 <p className="text-white/60 text-sm leading-relaxed mb-4 line-clamp-2 font-light">

@@ -3,6 +3,7 @@ import { Heart, Compass, Mountain, Shield, Globe, Users, Rocket, ArrowRight } fr
 import { motion, useMotionValue, useTransform, useSpring } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import parthImg from '../assets/parth-chauhan.jpg';
+import msmeLogo from '../assets/msme-logo.png';
 
 const About = () => {
     const ref = useRef(null);
@@ -51,7 +52,7 @@ const About = () => {
                     </div>
                     <div className="w-full lg:w-2/3 text-center lg:text-left">
                         <h2 className="text-3xl lg:text-4xl font-bold text-white mb-6">
-                            Founder's Note 📝
+                            Founder's Note
                         </h2>
                         <div className="glass-card p-8 relative overflow-hidden group">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-purple-600/10 rounded-full blur-[50px]"></div>
@@ -67,6 +68,19 @@ const About = () => {
                                 </div>
                                 <div className="text-2xl font-bold font-handwritten text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">
                                     Explore Infinite.
+                                </div>
+                            </div>
+
+                            {/* MSME Badge */}
+                            <div className="mt-6 pt-6 border-t border-white/5 flex items-center gap-4">
+                                <div className="h-10 w-fit bg-white rounded p-1 flex items-center justify-center shadow-lg">
+                                    <img src={msmeLogo} alt="MSME" className="h-full w-auto object-contain" />
+                                </div>
+                                <div>
+                                    <p className="text-white text-xs font-bold uppercase tracking-wider">Officially Registered</p>
+                                    <p className="text-slate-400 text-xs mt-0.5">
+                                        Infinite Yatra is registered under <span className="text-blue-400 font-medium">MSME (Udyam)</span>, Government of India, ensuring trust & compliance.
+                                    </p>
                                 </div>
                             </div>
                         </div>

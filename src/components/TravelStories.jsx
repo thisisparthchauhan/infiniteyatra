@@ -9,7 +9,7 @@ import StoryCard from './StoryCard';
 import CreateStoryModal from './CreateStoryModal';
 import { seededStories } from '../data/seededStories';
 
-const TravelStories = () => {
+const TravelStories = ({ featuredOnly = false, limitCount = 6 }) => {
     const navigate = useNavigate();
     const [stories, setStories] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -18,35 +18,63 @@ const TravelStories = () => {
 
     useEffect(() => {
         fetchStories();
-    }, []);
+    }, [featuredOnly, limitCount]);
 
     const fetchStories = async () => {
         try {
             const storiesRef = collection(db, 'travelStories');
-            // Only fetch APPROVED stories
-            const q = query(storiesRef, where('status', '==', 'approved'), orderBy('createdAt', 'desc'), limit(20));
-            const querySnapshot = await getDocs(q);
 
-            const allStories = querySnapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
+            // Fetch last 50 stories ordered by date (Simple query, no index needed typically)
+            // If this fails, we fall back to unsorted
+            let q = query(storiesRef, orderBy('createdAt', 'desc'), limit(50));
 
-            // Separate featured/admin stories from community stories
-            const featuredStories = allStories.filter(story => story.isFeatured || story.isAdmin);
-            const communityStories = allStories.filter(story => !story.isFeatured && !story.isAdmin);
+            try {
+                // Try sorted query
+                const snapshot = await getDocs(q);
+                processStories(snapshot);
+            } catch (sortError) {
+                console.warn("Index missing for sort, fetching unsorted fallback", sortError);
+                // Fallback: Fetch without sort (if index error)
+                const fallbackQ = query(storiesRef, limit(50));
+                const fallbackSnapshot = await getDocs(fallbackQ);
+                processStories(fallbackSnapshot);
+            }
 
-            // Combine: Featured first
-            const combinedStories = [...featuredStories, ...communityStories];
-
-            // Limit to 6 for homepage
-            const sortedStories = combinedStories.slice(0, 6);
-            setStories(sortedStories);
         } catch (error) {
             console.error('Error fetching stories:', error);
-        } finally {
             setLoading(false);
         }
+    };
+
+    const processStories = (snapshot) => {
+        const allDocs = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+
+        // Client-side Filter: Approved Only
+        let displayStories = allDocs.filter(s => s.status === 'approved');
+
+        // Filter by Featured if requested
+        if (featuredOnly) {
+            displayStories = displayStories.filter(s => s.isFeatured);
+        }
+
+        // Client-side Sort: Featured first, then Date
+        displayStories.sort((a, b) => {
+            // 1. Priority: Featured
+            if (a.isFeatured && !b.isFeatured) return -1;
+            if (!a.isFeatured && b.isFeatured) return 1;
+
+            // 2. Priority: Date Descending
+            const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0);
+            const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0);
+            return dateB - dateA;
+        });
+
+        // Limit
+        setStories(displayStories.slice(0, limitCount));
+        setLoading(false);
     };
 
     const handleLike = async (storyId) => {
@@ -196,10 +224,10 @@ const TravelStories = () => {
                             initial="hidden"
                             whileInView="visible"
                             viewport={{ once: true, margin: "-100px" }}
-                            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+                            className={`grid grid-cols-1 md:grid-cols-2 ${limitCount === 4 ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-6`}
                         >
                             {stories.map(story => (
-                                <motion.div key={story.id} variants={itemVariants}>
+                                <motion.div key={story.id} variants={itemVariants} className="h-full">
                                     <StoryCard story={story} onLike={handleLike} />
                                 </motion.div>
                             ))}

@@ -116,10 +116,13 @@ src/
     *   **Packages**: Create/Update/Delete travel packages.
     *   **Bookings**: View all bookings, verify documents, download PDFs.
     *   **Users**: Manage registered users.
+    *   **Experience Manager**: Review, approve/reject user stories, and manage dynamic story categories.
 
 ### 4. Travel Stories
 *   A community feature where users can post travel blogs with images.
-*   Supports "Hearts" (likes) and views.
+*   **Dynamic Categories**: Filter stories by interests (e.g., Trek, Spiritual, Solo) managed by admins.
+*   **Rich Details**: Full date/time stamps, author profiles, and emotional tags.
+*   Supports "Hearts" (likes), views, and social sharing.
 
 ---
 

@@ -59,7 +59,7 @@ const Home = () => {
                 </RevealOnScroll>
 
                 <RevealOnScroll width="100%">
-                    <TravelStories />
+                    <TravelStories featuredOnly={true} limitCount={4} />
                 </RevealOnScroll>
 
                 <RevealOnScroll width="100%">

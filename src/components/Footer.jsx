@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Instagram, Mail, Send, Phone, CheckCircle, AlertCircle } from 'lucide-react';
 import logo from '../assets/logo-new.png';
+import msmeLogo from '../assets/msme-logo.png';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '../context/ToastContext';
@@ -200,9 +201,22 @@ const Footer = () => {
                     <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
 
                     <div className="pt-10 flex flex-col md:flex-row items-center justify-between gap-6">
-                        <p className="text-white/40 text-sm font-light">
-                            © {new Date().getFullYear()} Infinite Yatra. All rights reserved.
-                        </p>
+                        <div className="flex flex-col md:flex-row items-center gap-6">
+                            <p className="text-white/40 text-sm font-light">
+                                © {new Date().getFullYear()} Infinite Yatra. All rights reserved.
+                            </p>
+
+                            {/* MSME Badge - Bottom Placement */}
+                            <div className="flex items-center gap-3 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:border-white/20 transition-all group cursor-default backdrop-blur-sm">
+                                <div className="h-6 w-fit bg-white rounded p-0.5 flex items-center justify-center">
+                                    <img src={msmeLogo} alt="MSME" className="h-full w-auto object-contain" />
+                                </div>
+                                <div className="flex flex-col text-left">
+                                    <span className="text-[10px] font-bold text-white uppercase tracking-wider leading-tight">MSME Registered</span>
+                                    <span className="text-[9px] text-white/50 leading-tight">Government of India</span>
+                                </div>
+                            </div>
+                        </div>
 
                         {/* Social Media Icons */}
                         <div className="flex items-center gap-4">

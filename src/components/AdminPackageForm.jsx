@@ -21,7 +21,7 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
         difficulty: 'Moderate',
         bestTime: '',
         maxGroupSize: '',
-        category: ['trek'],
+
         description: '',
         isVisible: true,
         highlights: [''],
@@ -341,8 +341,8 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
                                                 setFormData(prev => ({ ...prev, category: newCats }));
                                             }}
                                             className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${(Array.isArray(formData.category) ? formData.category : []).includes(cat.toLowerCase())
-                                                    ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-500/20'
-                                                    : 'bg-black/40 border-white/10 text-slate-400 hover:border-white/30 hover:text-white'
+                                                ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-500/20'
+                                                : 'bg-black/40 border-white/10 text-slate-400 hover:border-white/30 hover:text-white'
                                                 }`}
                                         >
                                             {cat}

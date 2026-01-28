@@ -14,6 +14,7 @@ import { Upload, FileText, X, Download } from 'lucide-react';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
 import { generateInvoicePDF } from '../services/InvoiceGenerator';
+import msmeLogo from '../assets/msme-logo.png';
 // import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'; // REMOVED
 // import { storage } from '../firebase'; // REMOVED
 
@@ -1222,6 +1223,19 @@ const BookingPage = () => {
                                         </div>
 
                                         <div className="grid gap-4">
+                                            {/* Trust Badge */}
+                                            <div className="flex items-center gap-3 p-3 bg-blue-500/5 border border-blue-500/10 rounded-xl mb-2">
+                                                <div className="h-8 w-fit bg-white rounded p-1 flex items-center justify-center">
+                                                    <img src={msmeLogo} alt="MSME" className="h-full w-auto object-contain" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-white text-xs font-bold uppercase">Verified MSME Registered Company</p>
+                                                    <p className="text-[10px] text-slate-400 flex items-center gap-1">
+                                                        <CheckCircle size={10} className="text-green-500" /> Secure Payments by Razorpay
+                                                    </p>
+                                                </div>
+                                            </div>
+
                                             <h4 className="font-semibold text-slate-300 mb-2">Select Payment Option</h4>
 
                                             {/* Token Amount Option */}
