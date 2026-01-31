@@ -1,6 +1,6 @@
-@import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Kalam:wght@300;400;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
 
 :root {
     /* Apple Vision / Glassmorphism Variables */
@@ -17,6 +17,19 @@
 
     /* Colors */
     --accent-glow: 0 0 20px rgba(255, 107, 0, 0.4);
+}
+
+/* Global Text Selection Styling */
+::selection {
+    background-color: #3b82f6 !important;
+    /* Blue-500 matches theme */
+    color: #ffffff !important;
+}
+
+/* Reset default mark styling */
+mark {
+    background-color: transparent;
+    color: inherit;
 }
 
 body {
