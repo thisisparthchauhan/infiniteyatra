@@ -84,6 +84,7 @@ const Navbar = () => {
     const navItems = [
         { name: 'Home', icon: Home, href: '/', type: 'link' },
         { name: 'Destinations', icon: MapPin, href: '/destinations', type: 'link' },
+        { name: 'Hotels', icon: Home, href: '/hotels', type: 'link' }, // Added Hotels link
         { name: 'AI Trip Planner', icon: Sparkles, href: '/trip-planner', type: 'link', highlight: true },
         { name: 'Stories', icon: BookOpen, href: '/stories', type: 'link' },
         { name: 'About Us', icon: Info, href: '#about', type: 'scroll' },

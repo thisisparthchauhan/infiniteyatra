@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, Bell, Settings, Search } from 'lucide-react';
+import { Menu, Bell, Search, ShieldAlert } from 'lucide-react';
 import SEO from '../components/SEO';
 import AdminSidebar from '../components/admin/AdminSidebar';
+import { useRole } from '../context/RoleContext';
 
 // Sub-Modules
 import Overview from '../components/admin/dashboard/Overview';
@@ -17,28 +18,80 @@ import InfluencerROI from '../components/admin/dashboard/InfluencerROI';
 import AdminImageUpload from '../components/AdminImageUpload';
 import AddStaffModal from '../components/admin/AddStaffModal';
 import AdminHomepageManager from '../components/admin/dashboard/AdminHomepageManager';
+import AdminHotelManager from '../components/admin/hotels/AdminHotelManager';
+import AdminHotelFinance from '../components/admin/hotels/AdminHotelFinance';
 
 const AdminDashboard = () => {
-    const [activeTab, setActiveTab] = useState('overview');
+    const { hasPermission, getFirstAllowedTab, currentRole } = useRole();
+    const [activeTab, setActiveTab] = useState(getFirstAllowedTab());
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [showStaffModal, setShowStaffModal] = useState(false);
+
+    // Reset active tab when role changes
+    useEffect(() => {
+        const firstTab = getFirstAllowedTab();
+        setActiveTab(firstTab);
+    }, [currentRole]);
 
     // Dynamic Title based on active tab
     const getTitle = () => {
         const titles = {
             overview: 'Dashboard Overview',
-            bookings: 'Booking Management',
-            finance: 'Financial Intelligence',
-            crm: 'Customer Relationships',
+            bookings: 'Tour Booking Management',
+            finance: 'Tour Financial Intelligence',
+            crm: 'Tour Customer Relationships',
             packages: 'Package Inventory',
-            homepage: 'Homepage Manager',
+            homepage: 'Home Package Manager',
             operations: 'Trip Operations Center',
             staff: 'Team & Permissions',
-            stories: 'Stories & Content',
+            stories: 'Story Management',
             media: 'Media Library',
-            influencers: 'Influencer ROI'
+            influencers: 'Influencer ROI',
+            hotels: 'Hotel Management',
+            'hotel-finance': 'Hotel Financials'
         };
         return titles[activeTab] || 'Admin Panel';
+    };
+
+    // Render logic for content
+    const renderContent = () => {
+        if (!hasPermission(activeTab)) {
+            return (
+                <div className="flex flex-col items-center justify-center h-[60vh] text-center">
+                    <ShieldAlert size={64} className="text-red-500 mb-6" />
+                    <h2 className="text-3xl font-bold text-white mb-2">Access Denied</h2>
+                    <p className="text-slate-400 max-w-md">
+                        Your role as <strong>{currentRole}</strong> does not have permission to view this section.
+                    </p>
+                </div>
+            );
+        }
+
+        switch (activeTab) {
+            case 'overview': return <Overview />;
+            case 'bookings': return <Bookings />;
+            case 'packages': return <Inventory />;
+            case 'homepage': return <AdminHomepageManager />;
+            case 'hotels': return <AdminHotelManager />;
+            case 'hotel-finance': return <AdminHotelFinance />;
+            case 'operations': return <Operations />;
+            case 'finance': return <Financials />;
+            case 'crm': return <CustomerCRM />;
+            case 'stories': return <Content />;
+            case 'experiences': return <AdminExperiences />;
+            case 'media': return <AdminImageUpload />;
+            case 'influencers': return <InfluencerROI />;
+            case 'staff':
+                return (
+                    <div className="text-center py-20">
+                        <button onClick={() => setShowStaffModal(true)} className="px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-500 transition-colors">
+                            Open Staff Manager
+                        </button>
+                        <p className="mt-4 text-slate-500">Staff module refactor pending...</p>
+                    </div>
+                );
+            default: return null;
+        }
     };
 
     return (
@@ -99,25 +152,7 @@ const AdminDashboard = () => {
                                 transition={{ duration: 0.3, ease: "easeOut" }}
                                 className="max-w-7xl mx-auto h-full"
                             >
-                                {activeTab === 'overview' && <Overview />}
-                                {activeTab === 'bookings' && <Bookings />}
-                                {activeTab === 'packages' && <Inventory />}
-                                {activeTab === 'homepage' && <AdminHomepageManager />}
-                                {activeTab === 'operations' && <Operations />}
-                                {activeTab === 'finance' && <Financials />}
-                                {activeTab === 'crm' && <CustomerCRM />}
-                                {activeTab === 'stories' && <Content />}
-                                {activeTab === 'experiences' && <AdminExperiences />}
-                                {activeTab === 'media' && <AdminImageUpload />}
-                                {activeTab === 'influencers' && <InfluencerROI />}
-                                {activeTab === 'staff' && (
-                                    <div className="text-center py-20">
-                                        <button onClick={() => setShowStaffModal(true)} className="px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-500 transition-colors">
-                                            Open Staff Manager
-                                        </button>
-                                        <p className="mt-4 text-slate-500">Staff module refactor pending...</p>
-                                    </div>
-                                )}
+                                {renderContent()}
                             </motion.div>
                         </AnimatePresence>
                     </main>

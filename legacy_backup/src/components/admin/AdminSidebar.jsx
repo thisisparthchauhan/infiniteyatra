@@ -1,36 +1,15 @@
 import React from 'react';
-import {
-    LayoutDashboard,
-    CalendarRange,
-    Users,
-    Briefcase,
-    Settings,
-    LogOut,
-    TrendingUp,
-    Map,
-    Image,
-    BookOpen,
-    Home
-} from 'lucide-react';
 import { motion } from 'framer-motion';
-
 import { Link } from 'react-router-dom';
+import { Home, LogOut, ChevronDown } from 'lucide-react';
+import { useRole } from '../../context/RoleContext';
+import { MENU_ITEMS } from '../../config/roles';
 
 const AdminSidebar = ({ activeTab, setActiveTab, isOpen, setIsOpen }) => {
-    const menuItems = [
-        { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-        { id: 'bookings', label: 'Bookings', icon: CalendarRange },
-        { id: 'finance', label: 'Financials', icon: TrendingUp },
-        { id: 'crm', label: 'Customers', icon: Users },
-        { id: 'packages', label: 'Packages', icon: Briefcase },
-        { id: 'homepage', label: 'Homepage Manager', icon: Home },
-        { id: 'operations', label: 'Operations', icon: Map },
-        { id: 'staff', label: 'Staff & Roles', icon: Users },
-        { id: 'experiences', label: 'Experiences', icon: BookOpen },
-        { id: 'stories', label: 'News & Blog', icon: Briefcase }, // Renaming old Stories to News/Blog for clarity if that's what it was
-        { id: 'media', label: 'Media Library', icon: Image },
-        { id: 'influencers', label: 'Influencer ROI', icon: TrendingUp },
-    ];
+    const { currentRole, setCurrentRole, hasPermission, roles } = useRole();
+
+    // Filter menu items based on permissions
+    const visibleMenuItems = MENU_ITEMS.filter(item => hasPermission(item.id));
 
     return (
         <>
@@ -70,12 +49,33 @@ const AdminSidebar = ({ activeTab, setActiveTab, isOpen, setIsOpen }) => {
                     </Link>
                 </div>
 
+                {/* Role Switcher (For Dev/Demo) */}
+                <div className="px-4 mb-6">
+                    <div className="relative group">
+                        <button className="w-full text-left px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-xs font-bold text-slate-400 uppercase tracking-wider hover:bg-white/10 transition-colors flex items-center justify-between">
+                            {currentRole}
+                            <ChevronDown size={14} />
+                        </button>
+                        <div className="absolute top-full left-0 w-full bg-[#111] border border-white/10 rounded-lg shadow-xl overflow-hidden hidden group-hover:block z-50">
+                            {Object.values(roles).map(role => (
+                                <button
+                                    key={role}
+                                    onClick={() => setCurrentRole(role)}
+                                    className={`w-full text-left px-4 py-2 text-xs hover:bg-blue-600/20 hover:text-blue-400 transition-colors ${currentRole === role ? 'text-blue-500 font-bold bg-blue-500/10' : 'text-slate-400'}`}
+                                >
+                                    {role}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
                 <div className="flex-1 px-4 space-y-2 overflow-y-auto custom-scrollbar">
                     <div className="mb-2 px-4">
-                        <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Main Menu</h2>
+                        <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Workspace</h2>
                     </div>
 
-                    {menuItems.map((item) => {
+                    {visibleMenuItems.map((item) => {
                         const Icon = item.icon;
                         const isActive = activeTab === item.id;
 
@@ -116,7 +116,7 @@ const AdminSidebar = ({ activeTab, setActiveTab, isOpen, setIsOpen }) => {
                             </div>
                             <div>
                                 <p className="text-sm font-bold text-white">Infinite Yatra</p>
-                                <p className="text-xs text-white/50">Admin Panel v2.0</p>
+                                <p className="text-xs text-white/50">{currentRole}</p>
                             </div>
                         </div>
                     </div>

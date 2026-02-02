@@ -4,6 +4,7 @@ import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider } from './context/AuthContext';
 import { WishlistProvider } from './context/WishlistContext';
 import { ToastProvider } from './context/ToastContext';
+import { RoleProvider } from './context/RoleContext';
 import { PackageProvider } from './context/PackageContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -36,6 +37,11 @@ import UserDashboard from './pages/UserDashboard';
 import StoriesPage from './pages/StoriesPage';
 import StoryDetail from './pages/StoryDetail';
 import Profile from './pages/Profile';
+import Hotels from './pages/Hotels';
+import HotelDetail from './pages/HotelDetail';
+import HotelBookingPage from './pages/HotelBookingPage';
+import HotelBookingSuccess from './pages/HotelBookingSuccess';
+import HotelPartnerOnboarding from './pages/HotelPartnerOnboarding';
 
 import AdminDashboard from './pages/AdminDashboard';
 import BookingSuccess from './pages/BookingSuccess';
@@ -73,84 +79,93 @@ function App() {
   return (
     <HelmetProvider>
       <ToastProvider>
-        <AuthProvider>
-          <WishlistProvider>
-            <PackageProvider>
-              <Router>
-                <Layout>
-                  <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/destinations" element={<DestinationsPage />} />
-                    <Route path="/trip-planner" element={<TripPlanner />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/signup" element={<Signup />} />
-                    <Route path="/package/:id" element={<PackageDetail />} />
-                    <Route path="/wishlist" element={<WishlistPage />} />
-                    <Route
-                      path="/dashboard"
-                      element={
-                        <ProtectedRoute>
-                          <UserDashboard />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/profile"
-                      element={
-                        <ProtectedRoute>
-                          <Profile />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route path="/blog" element={<BlogPage />} />
-                    <Route path="/blog/:id" element={<BlogPost />} />
-                    <Route path="/stories" element={<StoriesPage />} />
-                    <Route path="/story/:id" element={<StoryDetail />} />
-                    <Route path="/contact" element={<ContactNew />} />
-                    <Route path="/careers" element={<Careers />} />
-                    <Route
-                      path="/booking/:id"
-                      element={
-                        <ProtectedRoute>
-                          <BookingPage />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/my-bookings"
-                      element={
-                        <ProtectedRoute>
-                          <MyBookings />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/my-trips"
-                      element={
-                        <ProtectedRoute>
-                          <MyTrips />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route path="/trip/:tripId" element={<TripDetails />} />
-                    <Route
-                      path="/admin"
-                      element={
-                        <RoleRoute allowedRoles={['admin', 'ops', 'finance']}>
-                          <AdminDashboard />
-                        </RoleRoute>
-                      }
-                    />
-                    <Route path="/connect" element={<QRLanding />} />
-                    <Route path="/booking-success" element={<BookingSuccess />} />
-                    <Route path="/terms" element={<TermsConditions />} />
-                    <Route path="/migrate-packages-fix" element={<MigrateData />} />
-                  </Routes>
-                </Layout>
-              </Router>
-            </PackageProvider>
-          </WishlistProvider>
-        </AuthProvider>
+        <RoleProvider>
+          <AuthProvider>
+            <WishlistProvider>
+              <PackageProvider>
+                <Router>
+                  <Layout>
+                    <Routes>
+                      <Route path="/" element={<Home />} />
+                      <Route path="/destinations" element={<DestinationsPage />} />
+                      <Route path="/trip-planner" element={<TripPlanner />} />
+                      <Route path="/login" element={<Login />} />
+                      <Route path="/signup" element={<Signup />} />
+                      <Route path="/package/:id" element={<PackageDetail />} />
+                      <Route path="/wishlist" element={<WishlistPage />} />
+                      <Route
+                        path="/dashboard"
+                        element={
+                          <ProtectedRoute>
+                            <UserDashboard />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/profile"
+                        element={
+                          <ProtectedRoute>
+                            <Profile />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route path="/blog" element={<BlogPage />} />
+                      <Route path="/blog/:id" element={<BlogPost />} />
+                      <Route path="/stories" element={<StoriesPage />} />
+                      <Route path="/story/:id" element={<StoryDetail />} />
+                      <Route path="/contact" element={<ContactNew />} />
+                      <Route path="/careers" element={<Careers />} />
+                      <Route
+                        path="/booking/:id"
+                        element={
+                          <ProtectedRoute>
+                            <BookingPage />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/my-bookings"
+                        element={
+                          <ProtectedRoute>
+                            <MyBookings />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/my-trips"
+                        element={
+                          <ProtectedRoute>
+                            <MyTrips />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route path="/trip/:tripId" element={<TripDetails />} />
+                      <Route
+                        path="/admin"
+                        element={
+                          <RoleRoute allowedRoles={['admin', 'ops', 'finance']}>
+                            <AdminDashboard />
+                          </RoleRoute>
+                        }
+                      />
+                      <Route path="/connect" element={<QRLanding />} />
+                      <Route path="/booking-success" element={<BookingSuccess />} />
+                      <Route path="/terms" element={<TermsConditions />} />
+                      <Route path="/migrate-packages-fix" element={<MigrateData />} />
+
+                      {/* NEW: IY Hotels Vertical */}
+                      <Route path="/hotels" element={<Hotels />} />
+                      <Route path="/hotels/:id" element={<HotelDetail />} />
+                      <Route path="/hotels/book/:id" element={<HotelBookingPage />} />
+                      <Route path="/hotels/success" element={<HotelBookingSuccess />} />
+                      <Route path="/partner/hotel-onboarding" element={<HotelPartnerOnboarding />} />
+                    </Routes>
+                  </Layout>
+                </Router>
+              </PackageProvider>
+            </WishlistProvider>
+          </AuthProvider>
+        </RoleProvider>
       </ToastProvider>
     </HelmetProvider>
   );
