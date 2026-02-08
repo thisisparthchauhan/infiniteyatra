@@ -8,7 +8,7 @@ import StoryCard from '../components/StoryCard';
 import CreateStoryModal from '../components/CreateStoryModal';
 import SEO from '../components/SEO';
 import { seededStories } from '../data/seededStories';
-import parthImg from '../assets/parth-chauhan.jpg';
+import parthImg from '../assets/parth-chauhan-new.jpg';
 
 const StoriesPage = () => {
     const [stories, setStories] = useState([]);
