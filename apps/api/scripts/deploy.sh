@@ -27,7 +27,13 @@ npm run build
 echo "[4/5] Checking/Running Database Migrations..."
 # Ensure DATABASE_URL is set in .env
 if [ -f .env ]; then
-  npx prisma migrate deploy
+if [ -d "prisma/migrations" ]; then
+    echo "Running migrate deploy..."
+    npx prisma migrate deploy
+  else
+    echo "WARNING: No migrations found. Running db push (Acceptable for first deploy)..."
+    npx prisma db push
+  fi
 else
   echo "WARNING: .env not found, skipping migration."
 fi
