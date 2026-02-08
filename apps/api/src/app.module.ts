@@ -15,6 +15,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { RedisModule } from './redis/redis.module';
 import { HotelsModule } from './hotels/hotels.module';
 import { HotelBookingsModule } from './hotel-bookings/hotel-bookings.module';
+import { HealthController } from './health.controller';
 
 @Module({
     imports: [
@@ -35,7 +36,7 @@ import { HotelBookingsModule } from './hotel-bookings/hotel-bookings.module';
         HotelsModule,
         HotelBookingsModule
     ],
-    controllers: [],
+    controllers: [HealthController],
     providers: [],
 })
 export class AppModule { }
