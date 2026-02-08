@@ -1,6 +1,6 @@
 {
     "hosting": {
-        "source": "apps/web",
+        "public": "legacy_backup/dist",
         "ignore": [
             "firebase.json",
             "**/.*",

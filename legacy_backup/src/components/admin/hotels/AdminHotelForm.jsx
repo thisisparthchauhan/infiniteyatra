@@ -15,42 +15,10 @@ const AdminHotelForm = ({ initialData, onSave, onCancel }) => {
         tokenPrice: '',
         discount: '',
         isVisible: true,
-        hotelType: [], // Tags: Luxury, Budget, etc.
 
         // 2. Images
         image: '', // Thumbnail
         images: [], // Gallery
-
-        // 3. Room Types
-        rooms: [],
-        // Structure: { id, name, occupancy, price, costPrice, count, description, images: [] }
-
-        // 4. Highlights
-        highlights: [],
-
-        // 5. Amenities (Split)
-        inclusions: [],
-        exclusions: [],
-
-        // 6. Good To Know
-        goodToKnow: [],
-
-        // 7. Who Is This For
-        whoIsThisFor: [],
-
-        // 8. Things To Carry (Optional)
-        thingsToCarry: [],
-
-        // 9. FAQs
-        faqs: [],
-
-        // 10. Policies
-        policies: {
-            cancellation: '',
-            refund: '',
-            child: '',
-            pet: ''
-        },
 
         ...initialData,
         // Ensure arrays are initialized if editing old data
