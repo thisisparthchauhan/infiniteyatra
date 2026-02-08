@@ -32,6 +32,12 @@ sudo ufw allow OpenSSH
 sudo ufw allow 'Nginx Full'
 echo "y" | sudo ufw enable
 
+# PM2 Startup Persistence
+echo "Configuring PM2 Startup..."
+# Generates and executes the startup script for the current user
+pm2 startup | tail -n 1 | bash
+pm2 save
+
 echo "------------------------------------------------"
 echo "Setup Complete! Next steps:"
 echo "1. Clone your repository: git clone https://github.com/thisisparthchauhan/infiniteyatra.git"
