@@ -2,17 +2,24 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, X, Send, Sparkles, Loader2 } from 'lucide-react';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const AIChatbot = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState([
         {
-            role: 'assistant',
-            content: '👋 Hi! I\'m your AI travel assistant. Ask me anything about our treks, packages, or destinations!'
+            role: 'model',
+            text: '👋 Welcome to Infinite Yatra\nTell me where your heart wants to go — treks, yatras, or custom journeys.\nI’ll plan everything for you.'
         }
     ]);
     const [input, setInput] = useState('');
+
+    // CONTEXT AWARENESS
+    const location = useLocation();
+    const { currentUser } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
+    const [fallbackShown, setFallbackShown] = useState(false);
     const messagesEndRef = useRef(null);
     const inputRef = useRef(null);
 
@@ -32,71 +39,128 @@ const AIChatbot = () => {
 
     // Quick suggestion buttons
     const quickSuggestions = [
-        'What treks are available?',
-        'Best time for Kedarkantha?',
-        'Group booking discounts?',
-        'What\'s included in packages?'
+        '🏔️ Explore Treks',
+        '🛕 Yatra Packages',
+        '🧭 Custom Trip',
+        '📞 Talk to Expert'
     ];
 
-    const handleSendMessage = async () => {
-        if (!input.trim() || isLoading) return;
-
-        const userMessage = input.trim();
-        setInput('');
+    const handleSendMessage = async (overrideInput = null) => {
+        const textToSend = overrideInput || input;
+        if (!textToSend.trim() || isLoading) return;
 
         // Add user message
-        setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
+        const userMessage = { role: 'user', text: textToSend.trim() };
+        setMessages(prev => [...prev, userMessage]);
+        setInput('');
         setIsLoading(true);
 
         try {
             // Initialize Gemini AI
             const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
-            const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+            const model = genAI.getGenerativeModel({
+                model: 'gemini-1.5-flash',
+                systemInstruction: {
+                    parts: [{
+                        text: `You are the official AI Travel Assistant of Infinite Yatra (IY).
 
-            // Context about Infinite Yatra
-            const context = `You are a helpful AI assistant for Infinite Yatra, an adventure travel company specializing in Himalayan treks and spiritual journeys in India. 
+CURRENT CONTEXT:
+- User is currently viewing: ${location.pathname}
+- User Name: ${currentUser ? currentUser.displayName || 'Guest' : 'Guest'}
+- Logged In: ${currentUser ? 'Yes' : 'No'}
 
-Our main packages include:
-1. Kedarkantha Trek - 6 days, ₹6,000, Moderate difficulty, 12,500 ft altitude
-2. Tungnath Trek - 4 days, ₹6,000, Easy to Moderate, 13,000 ft altitude
-3. Chardham Yatra 2026 - 10 days, ₹35,000, visits Gangotri, Yamunotri, Kedarnath, Badrinath
-4. Soul of Himalayas - 7 days, ₹18,000, includes Kedarnath, Tungnath, Badrinath, Rishikesh
+Personality:
+- Calm
+- Premium
+- Friendly
+- Emotionally inspiring
+Brand philosophy: “Explore Infinite.”
 
-We offer:
-- Experienced trek leaders and guides
-- All meals during treks
-- Accommodation (tents/guesthouses)
-- Safety equipment and first aid
-- Transportation
-- Forest permits
+ROLE:
+Help users explore treks, yatras, destinations, hotels, and custom journeys.
+Guide them clearly and politely toward planning or booking trips.
 
-Best time for winter treks: December to April
-Best time for Chardham: May to October
+ABSOLUTE RULE:
+You must ALWAYS respond with helpful travel-related content.
+You must NEVER mention:
+- connection issues
+- errors
+- retries
+- technical problems
+- WhatsApp due to failure
 
-Answer questions about our treks, packages, booking process, what to pack, difficulty levels, and general travel advice. Be friendly, concise, and helpful. If asked about specific bookings or payments, direct them to contact us via WhatsApp or the booking page.`;
+You are NOT responsible for error handling.
+All errors are handled by the application, not by you.
 
-            const prompt = `${context}\n\nUser question: ${userMessage}\n\nProvide a helpful, friendly response:`;
+RESPONSE STRUCTURE:
+1. One short emotional or welcoming line
+2. Clear bullet-point information
+3. One simple follow-up question
 
-            const result = await model.generateContent(prompt);
-            const response = await result.response;
-            const aiResponse = response.text();
+STYLE RULES:
+- Short responses
+- No long paragraphs
+- Natural human tone
+- No repetition
 
-            // Add AI response
-            setMessages(prev => [...prev, { role: 'assistant', content: aiResponse }]);
+INTENT HANDLING:
+- Destination mentioned → brief overview
+- Trek/yatra → duration, route, stay, best season
+- Price → starting range + ask dates
+- Interest → politely suggest WhatsApp details
+- Confusion → guide with options
+
+GOAL:
+Inspire travel, build trust, and guide toward action.
+
+End key replies with:
+Explore Infinite.` }]
+                }
+            });
+
+            // Prepare history for API
+            // Filter out system messages from UI history if any, and map to API format
+            const history = messages
+                .filter(m => m.role === 'user' || m.role === 'model') // 'model' is AI
+                .map(m => ({
+                    role: m.role,
+                    parts: [{ text: m.text || m.content }] // Use text or content for history
+                }));
+
+            const chat = model.startChat({
+                history: history,
+            });
+
+            const result = await chat.sendMessage(textToSend);
+            const response = result.response.text();
+
+            if (!response || response.trim() === "") {
+                throw new Error("Empty AI response");
+            }
+
+            setMessages(prev => [...prev, { role: 'model', text: response }]);
+            setFallbackShown(false); // reset on success
+
         } catch (error) {
-            console.error('AI Error:', error);
-            setMessages(prev => [...prev, {
-                role: 'assistant',
-                content: '😊 I\'m having trouble connecting right now. Please try asking again, or contact us directly via WhatsApp for immediate assistance!'
-            }]);
+            console.error("Gemini Error:", error);
+
+            if (!fallbackShown) {
+                setMessages(prev => [
+                    ...prev,
+                    {
+                        role: 'system',
+                        text: "😕 I’m having trouble connecting right now. Please try again later or contact us on WhatsApp for immediate assistance.",
+                    },
+                ]);
+                setFallbackShown(true);
+            }
         } finally {
             setIsLoading(false);
         }
     };
 
     const handleQuickSuggestion = (suggestion) => {
-        setInput(suggestion);
-        inputRef.current?.focus();
+        handleSendMessage(suggestion);
     };
 
     const handleKeyPress = (e) => {
@@ -182,11 +246,13 @@ Answer questions about our treks, packages, booking process, what to pack, diffi
                                     <div
                                         className={`max-w-[80%] rounded-2xl px-4 py-3 ${message.role === 'user'
                                             ? 'bg-gradient-to-br from-blue-600 to-purple-600 text-white'
-                                            : 'bg-white text-slate-900 shadow-sm border border-slate-200'
+                                            : message.role === 'system'
+                                                ? 'bg-red-50 text-red-600 border border-red-100 text-xs' // System error style
+                                                : 'bg-white text-slate-900 shadow-sm border border-slate-200'
                                             }`}
                                     >
                                         <p className="text-sm leading-relaxed whitespace-pre-wrap">
-                                            {message.content}
+                                            {message.text}
                                         </p>
                                     </div>
                                 </motion.div>
@@ -238,11 +304,11 @@ Answer questions about our treks, packages, booking process, what to pack, diffi
                                     onKeyPress={handleKeyPress}
                                     placeholder="Ask me anything..."
                                     rows="1"
-                                    className="flex-1 resize-none outline-none border border-slate-300 rounded-xl px-4 py-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                                    className="flex-1 resize-none outline-none border border-slate-300 rounded-xl px-4 py-3 text-sm text-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
                                     style={{ maxHeight: '100px' }}
                                 />
                                 <button
-                                    onClick={handleSendMessage}
+                                    onClick={() => handleSendMessage()}
                                     disabled={!input.trim() || isLoading}
                                     className="bg-gradient-to-br from-blue-600 to-purple-600 text-white p-3 rounded-xl hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                                 >

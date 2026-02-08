@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import { Heart, Compass, Mountain, Shield, Globe, Users, Rocket, ArrowRight } from 'lucide-react';
 import { motion, useMotionValue, useTransform, useSpring } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import parthImg from '../assets/parth-chauhan.jpg';
+import parthImg from '../assets/parth-chauhan-new.jpg';
 import msmeLogo from '../assets/msme-logo.png';
 
 const About = () => {

@@ -53,6 +53,8 @@ model User {
   loggedIncidents Incident[] @relation("LoggedIncidents")
   userRoles    UserRole[] // RBAC
   accessLogs   AccessLog[]
+  
+  hotelBookings HotelBooking[]
 }
 
 model Role {
@@ -159,6 +161,8 @@ model Departure {
   // Computed Status
   healthScore      Decimal   @default(100)
   opsStatus        String    @default("PENDING") // PENDING, READY, AT_RISK
+  
+  readinessChecklist ReadinessChecklist?
 }
 
 model CostCategory {
@@ -538,3 +542,96 @@ model Transaction {
 
 
 
+
+// --- IY HOTELS VERTICAL ---
+
+model Hotel {
+  id          String   @id @default(uuid())
+  slug        String   @unique
+  name        String
+  description String
+  city        String
+  address     String
+  rating      Decimal  @default(0) // 0-5 stars
+  amenities   String[] // Pool, WiFi, Gym
+  images      String[]
+  
+  partnerId   String?  // Future: Link to Hotel Partner User
+  
+  rooms       RoomType[]
+  bookings    HotelBooking[]
+  
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model RoomType {
+  id          String   @id @default(uuid())
+  hotelId     String
+  hotel       Hotel    @relation(fields: [hotelId], references: [id])
+  
+  name        String   // e.g. "Deluxe Ocean View"
+  description String?
+  basePrice   Decimal
+  capacity    Int      // Max guests
+  amenities   String[]
+  images      String[]
+  
+  availabilities HotelAvailability[]
+  bookingItems   HotelBookingItem[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model HotelAvailability {
+  id          String   @id @default(uuid())
+  roomTypeId  String
+  roomType    RoomType @relation(fields: [roomTypeId], references: [id])
+  
+  date        DateTime
+  totalRooms  Int
+  bookedRooms Int      @default(0)
+  priceOverride Decimal? // Dynamic pricing for this date
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([roomTypeId, date])
+}
+
+model HotelBooking {
+  id            String        @id @default(uuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id])
+  
+  hotelId       String
+  hotel         Hotel         @relation(fields: [hotelId], references: [id])
+  
+  checkIn       DateTime
+  checkOut      DateTime
+  guests        Int
+  
+  totalAmount   Decimal
+  status        BookingStatus @default(PENDING)
+  paymentStatus PaymentStatus @default(PENDING)
+  
+  items         HotelBookingItem[]
+  
+  source        BookingSource @default(DIRECT)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model HotelBookingItem {
+  id             String       @id @default(uuid())
+  bookingId      String
+  booking        HotelBooking @relation(fields: [bookingId], references: [id])
+  roomTypeId     String
+  roomType       RoomType     @relation(fields: [roomTypeId], references: [id])
+  
+  quantity       Int          @default(1)
+  pricePerNight  Decimal
+  totalPrice     Decimal
+}

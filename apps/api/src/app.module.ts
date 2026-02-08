@@ -13,6 +13,8 @@ import { OperationsModule } from './operations/operations.module';
 import { InvestorModule } from './investor/investor.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { RedisModule } from './redis/redis.module';
+import { HotelsModule } from './hotels/hotels.module';
+import { HotelBookingsModule } from './hotel-bookings/hotel-bookings.module';
 
 @Module({
     imports: [
@@ -29,7 +31,9 @@ import { RedisModule } from './redis/redis.module';
         AutoPricingModule,
         OperationsModule,
         InvestorModule,
-        RedisModule
+        RedisModule,
+        HotelsModule,
+        HotelBookingsModule
     ],
     controllers: [],
     providers: [],

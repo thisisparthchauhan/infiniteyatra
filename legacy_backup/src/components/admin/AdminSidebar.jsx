@@ -6,7 +6,7 @@ import { useRole } from '../../context/RoleContext';
 import { MENU_ITEMS } from '../../config/roles';
 
 const AdminSidebar = ({ activeTab, setActiveTab, isOpen, setIsOpen }) => {
-    const { currentRole, setCurrentRole, hasPermission, roles } = useRole();
+    const { currentRole, currentWorkspace, setCurrentWorkspace, hasPermission, roles, workspaces } = useRole();
 
     // Filter menu items based on permissions
     const visibleMenuItems = MENU_ITEMS.filter(item => hasPermission(item.id));
@@ -28,44 +28,56 @@ const AdminSidebar = ({ activeTab, setActiveTab, isOpen, setIsOpen }) => {
                     ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
                 `}
             >
-                <div className="px-6 mb-6 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-blue-500/25">
-                            IY
-                        </div>
-                        <span className="text-xl font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
+                <div className="px-6 mb-8 mt-2 flex items-center justify-center">
+                    <Link to="/" className="text-center group">
+                        <h1 className="text-2xl font-bold text-white tracking-[0.2em] uppercase leading-tight group-hover:text-blue-400 transition-colors">
                             Infinite Yatra
-                        </span>
-                    </div>
-                </div>
-
-                <div className="px-4 mb-4">
-                    <Link
-                        to="/"
-                        className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all border border-white/5 hover:border-white/10"
-                    >
-                        <Home size={20} />
-                        <span className="font-medium">Back to Website</span>
+                        </h1>
+                        <p className="text-[10px] font-medium text-slate-500 tracking-[0.4em] uppercase mt-1 group-hover:text-slate-400 transition-colors">
+                            Explore Infinite
+                        </p>
                     </Link>
                 </div>
 
-                {/* Role Switcher (For Dev/Demo) */}
+                {/* WORKSPACE SWITCHER */}
                 <div className="px-4 mb-6">
                     <div className="relative group">
-                        <button className="w-full text-left px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-xs font-bold text-slate-400 uppercase tracking-wider hover:bg-white/10 transition-colors flex items-center justify-between">
-                            {currentRole}
-                            <ChevronDown size={14} />
+                        <div className="px-1 mb-2 flex items-center justify-between">
+                            <h2 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Workspace</h2>
+                            {currentRole === roles.SUPER_ADMIN && (
+                                <span className="text-[8px] bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded border border-blue-500/20">PREVIEW</span>
+                            )}
+                        </div>
+
+                        <button
+                            className="w-full text-left px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-xs font-bold text-white transition-all flex items-center justify-between hover:bg-white/10 hover:border-white/20 cursor-pointer"
+                        >
+                            <span className="truncate mr-2">
+                                {Object.values(workspaces).find(w => w.id === currentWorkspace)?.label}
+                            </span>
+                            <ChevronDown size={14} className="text-slate-400" />
                         </button>
-                        <div className="absolute top-full left-0 w-full bg-[#111] border border-white/10 rounded-lg shadow-xl overflow-hidden hidden group-hover:block z-50">
-                            {Object.values(roles).map(role => (
-                                <button
-                                    key={role}
-                                    onClick={() => setCurrentRole(role)}
-                                    className={`w-full text-left px-4 py-2 text-xs hover:bg-blue-600/20 hover:text-blue-400 transition-colors ${currentRole === role ? 'text-blue-500 font-bold bg-blue-500/10' : 'text-slate-400'}`}
-                                >
-                                    {role}
-                                </button>
-                            ))}
+
+                        {/* Dropdown for All (Dev/Demo Mode) */}
+                        <div className="absolute top-full left-0 w-full pt-2 hidden group-hover:block z-50">
+                            <div className="bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl overflow-hidden ring-1 ring-black">
+                                {Object.values(workspaces).map(workspace => (
+                                    <button
+                                        key={workspace.id}
+                                        onClick={() => {
+                                            setCurrentWorkspace(workspace.id);
+                                            // Auto-restore Super Admin role if switching to Admin Dashboard
+                                            // This ensures we don't get stuck in a restricted role
+                                            if (workspace.id === workspaces.ADMIN_DASHBOARD.id) {
+                                                setCurrentRole(roles.SUPER_ADMIN);
+                                            }
+                                        }}
+                                        className={`w-full text-left px-4 py-3 text-xs transition-colors border-l-2 ${currentWorkspace === workspace.id ? 'bg-blue-900/20 border-blue-500 text-white' : 'border-transparent text-slate-400 hover:bg-white/5 hover:text-white'}`}
+                                    >
+                                        {workspace.label}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -108,19 +120,6 @@ const AdminSidebar = ({ activeTab, setActiveTab, isOpen, setIsOpen }) => {
                     })}
                 </div>
 
-                <div className="px-4 mt-auto">
-                    <div className="p-4 rounded-2xl bg-gradient-to-br from-purple-900/50 to-blue-900/50 border border-white/10 backdrop-blur-md">
-                        <div className="flex items-center gap-3 mb-2">
-                            <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-xs">
-                                IY
-                            </div>
-                            <div>
-                                <p className="text-sm font-bold text-white">Infinite Yatra</p>
-                                <p className="text-xs text-white/50">{currentRole}</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </motion.div>
         </>
     );

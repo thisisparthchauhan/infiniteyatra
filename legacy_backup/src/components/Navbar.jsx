@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X, Phone, Search, MapPin, Info, Sparkles, BookOpen, Home, User, Package, Mail, LogOut, LayoutDashboard, Heart } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useWishlist } from '../context/WishlistContext';
+import { useCurrency } from '../context/CurrencyContext.jsx';
 
 import logo from '../assets/logo-new.png';
 
@@ -14,6 +15,7 @@ const Navbar = () => {
     const navigate = useNavigate();
     const { currentUser, logout } = useAuth();
     const { wishlist } = useWishlist();
+    const { currency, setCurrency, allCurrencies } = useCurrency();
 
     const isAuthPage = location.pathname === '/login' || location.pathname === '/signup';
 
@@ -218,6 +220,24 @@ const Navbar = () => {
                                     <Search size={20} />
                                 </button>
                             )}
+
+                            {/* Currency Switcher */}
+                            <div className="relative group">
+                                <button className={`flex items-center gap-1 font-bold text-sm ${textColor === 'text-slate-900' ? 'text-slate-900' : 'text-white'}`}>
+                                    {currency} <span className="text-[10px] opacity-70">▼</span>
+                                </button>
+                                <div className="absolute top-full right-0 mt-2 bg-[#0a0a0a] border border-white/10 rounded-xl shadow-xl overflow-hidden hidden group-hover:block w-24">
+                                    {Object.values(allCurrencies).map(c => (
+                                        <button
+                                            key={c.code}
+                                            onClick={() => setCurrency(c.code)}
+                                            className={`block w-full text-left px-4 py-2 text-sm hover:bg-white/10 ${currency === c.code ? 'text-blue-400 font-bold' : 'text-slate-400'}`}
+                                        >
+                                            {c.code} {c.symbol}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
 
                             {/* Wishlist Icon */}
                             {!isAuthPage && (

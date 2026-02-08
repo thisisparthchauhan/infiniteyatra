@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, Bell, Search, ShieldAlert } from 'lucide-react';
+import { Menu, Bell, Search, ShieldAlert, Home, ChevronDown, User, LogOut, Settings, Shield } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import SEO from '../components/SEO';
 import AdminSidebar from '../components/admin/AdminSidebar';
 import { useRole } from '../context/RoleContext';
+import { USER_ROLES } from '../config/roles';
 
 // Sub-Modules
 import Overview from '../components/admin/dashboard/Overview';
@@ -20,35 +22,41 @@ import AddStaffModal from '../components/admin/AddStaffModal';
 import AdminHomepageManager from '../components/admin/dashboard/AdminHomepageManager';
 import AdminHotelManager from '../components/admin/hotels/AdminHotelManager';
 import AdminHotelFinance from '../components/admin/hotels/AdminHotelFinance';
+import AdminHotelBookings from '../components/admin/hotels/AdminHotelBookings';
+import LiveAnalytics from '../components/admin/analytics/LiveAnalytics';
 
 const AdminDashboard = () => {
-    const { hasPermission, getFirstAllowedTab, currentRole } = useRole();
+    const { hasPermission, getFirstAllowedTab, currentRole, setCurrentRole, currentWorkspace } = useRole();
     const [activeTab, setActiveTab] = useState(getFirstAllowedTab());
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [showStaffModal, setShowStaffModal] = useState(false);
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
 
-    // Reset active tab when role changes
+    // Reset active tab when role or workspace changes
     useEffect(() => {
         const firstTab = getFirstAllowedTab();
         setActiveTab(firstTab);
-    }, [currentRole]);
+    }, [currentRole, currentWorkspace]);
 
     // Dynamic Title based on active tab
     const getTitle = () => {
         const titles = {
             overview: 'Dashboard Overview',
             bookings: 'Tour Booking Management',
-            finance: 'Tour Financial Intelligence',
-            crm: 'Tour Customer Relationships',
+            finance: 'Financials (Tours)',
+            crm: 'Tour Clients',
             packages: 'Package Inventory',
-            homepage: 'Home Package Manager',
+            homepage: 'Homepage Manager',
             operations: 'Trip Operations Center',
             staff: 'Team & Permissions',
-            stories: 'Story Management',
+            stories: 'Blog & Stories',
             media: 'Media Library',
+            experiences: 'Experiences',
             influencers: 'Influencer ROI',
             hotels: 'Hotel Management',
-            'hotel-finance': 'Hotel Financials'
+            'hotel-finance': 'Hotel Financials',
+            'hotel-bookings': 'Hotel Bookings',
+            analytics: 'Live Command Center'
         };
         return titles[activeTab] || 'Admin Panel';
     };
@@ -68,11 +76,13 @@ const AdminDashboard = () => {
         }
 
         switch (activeTab) {
+            case 'analytics': return <LiveAnalytics />;
             case 'overview': return <Overview />;
             case 'bookings': return <Bookings />;
             case 'packages': return <Inventory />;
             case 'homepage': return <AdminHomepageManager />;
             case 'hotels': return <AdminHotelManager />;
+            case 'hotel-bookings': return <AdminHotelBookings />;
             case 'hotel-finance': return <AdminHotelFinance />;
             case 'operations': return <Operations />;
             case 'finance': return <Financials />;
@@ -131,12 +141,58 @@ const AdminDashboard = () => {
                                 <span className="text-sm text-slate-500 group-hover:text-slate-300">Cmd+K to search...</span>
                             </div>
 
+                            {/* Home Button */}
+                            <Link to="/" className="p-2 text-slate-400 hover:text-white transition-colors" title="Back to Website">
+                                <Home size={20} />
+                            </Link>
+
                             <div className="flex items-center gap-4 border-l border-white/10 pl-6">
-                                <button className="relative p-2 text-slate-400 hover:text-white transition-colors">
-                                    <Bell size={20} />
-                                    <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
-                                </button>
-                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 ring-4 ring-white/5"></div>
+                                {/* Profile Dropdown */}
+                                <div className="relative">
+                                    <button
+                                        onClick={() => setIsProfileOpen(!isProfileOpen)}
+                                        className="flex items-center gap-3 p-1 pr-3 rounded-full hover:bg-white/5 transition-colors group"
+                                    >
+                                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 ring-2 ring-white/10 group-hover:ring-white/20 flex items-center justify-center text-sm font-bold text-white shadow-lg shadow-blue-500/20">
+                                            PC
+                                        </div>
+                                        <div className="hidden md:block text-left">
+                                            <p className="text-xs font-bold text-white group-hover:text-blue-400 transition-colors">Parth Chauhan</p>
+                                            <p className="text-[10px] text-slate-400">chauhanparth165@gmail.com</p>
+                                        </div>
+                                        <ChevronDown size={14} className={`text-slate-500 transition-transform duration-200 ${isProfileOpen ? 'rotate-180' : ''}`} />
+                                    </button>
+
+                                    <AnimatePresence>
+                                        {isProfileOpen && (
+                                            <>
+                                                {/* Backdrop to close */}
+                                                <div
+                                                    className="fixed inset-0 z-40"
+                                                    onClick={() => setIsProfileOpen(false)}
+                                                />
+
+                                                {/* Dropdown Menu */}
+                                                <motion.div
+                                                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                    transition={{ duration: 0.2 }}
+                                                    className="absolute top-full right-0 mt-2 w-72 bg-[#111] border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden"
+                                                >
+                                                    {/* Header */}
+                                                    <div className="px-5 py-4 border-b border-white/5 bg-white/5">
+                                                        <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Account</p>
+                                                        <Link to="/profile" className="block group/profile">
+                                                            <p className="text-sm font-bold text-white group-hover/profile:text-blue-400 transition-colors">Parth Chauhan</p>
+                                                            <p className="text-xs text-slate-400">chauhanparth165@gmail.com</p>
+                                                        </Link>
+                                                    </div>
+                                                </motion.div>
+                                            </>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
                             </div>
                         </div>
                     </header>

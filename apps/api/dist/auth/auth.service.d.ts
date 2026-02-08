@@ -14,7 +14,7 @@ export declare class AuthService {
     register(data: any): Promise<{
         id: string;
         email: string;
-        role: import(".prisma/client").$Enums.Role;
+        role: import(".prisma/client").$Enums.LegacyRole;
         ltv: import("@prisma/client/runtime/library").Decimal;
         createdAt: Date;
         updatedAt: Date;

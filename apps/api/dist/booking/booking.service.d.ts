@@ -46,6 +46,10 @@ export declare class BookingService {
                 itinerary: import(".prisma/client").Prisma.JsonValue | null;
                 createdAt: Date;
                 updatedAt: Date;
+                version: number;
+                requirements: import(".prisma/client").Prisma.JsonValue | null;
+                costStructure: import(".prisma/client").Prisma.JsonValue | null;
+                healthScore: import("@prisma/client/runtime/library").Decimal;
             };
         } & {
             id: string;
@@ -58,6 +62,8 @@ export declare class BookingService {
             priceOverride: import("@prisma/client/runtime/library").Decimal | null;
             vehicleId: string | null;
             guideId: string | null;
+            healthScore: import("@prisma/client/runtime/library").Decimal;
+            opsStatus: string;
         };
     } & {
         id: string;

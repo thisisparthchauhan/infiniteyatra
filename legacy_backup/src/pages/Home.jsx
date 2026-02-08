@@ -3,6 +3,7 @@ import Hero from '../components/Hero';
 import Destinations from '../components/Destinations';
 import About from '../components/About';
 import TravelStories from '../components/TravelStories';
+import HomeHotels from '../components/HomeHotels';
 
 import SEO from '../components/SEO';
 import InstagramFeed from '../components/InstagramFeed';
@@ -57,6 +58,8 @@ const Home = () => {
                 <RevealOnScroll width="100%">
                     <Destinations packages={homepagePackages} />
                 </RevealOnScroll>
+
+
 
                 <RevealOnScroll width="100%">
                     <TravelStories featuredOnly={true} limitCount={4} />

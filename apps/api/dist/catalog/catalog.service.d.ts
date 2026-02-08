@@ -21,6 +21,8 @@ export declare class CatalogService {
             priceOverride: import("@prisma/client/runtime/library").Decimal | null;
             vehicleId: string | null;
             guideId: string | null;
+            healthScore: import("@prisma/client/runtime/library").Decimal;
+            opsStatus: string;
         }[];
     } & {
         id: string;
@@ -35,6 +37,10 @@ export declare class CatalogService {
         itinerary: import(".prisma/client").Prisma.JsonValue | null;
         createdAt: Date;
         updatedAt: Date;
+        version: number;
+        requirements: import(".prisma/client").Prisma.JsonValue | null;
+        costStructure: import(".prisma/client").Prisma.JsonValue | null;
+        healthScore: import("@prisma/client/runtime/library").Decimal;
     })[]>;
     updatePackage(id: string, data: any): Promise<{
         id: string;
@@ -49,6 +55,10 @@ export declare class CatalogService {
         itinerary: import(".prisma/client").Prisma.JsonValue | null;
         createdAt: Date;
         updatedAt: Date;
+        version: number;
+        requirements: import(".prisma/client").Prisma.JsonValue | null;
+        costStructure: import(".prisma/client").Prisma.JsonValue | null;
+        healthScore: import("@prisma/client/runtime/library").Decimal;
     }>;
     private calculatePackageHealth;
     private triggerDownstreamUpdates;
@@ -64,6 +74,8 @@ export declare class CatalogService {
             priceOverride: import("@prisma/client/runtime/library").Decimal | null;
             vehicleId: string | null;
             guideId: string | null;
+            healthScore: import("@prisma/client/runtime/library").Decimal;
+            opsStatus: string;
         }[];
     } & {
         id: string;
@@ -78,6 +90,10 @@ export declare class CatalogService {
         itinerary: import(".prisma/client").Prisma.JsonValue | null;
         createdAt: Date;
         updatedAt: Date;
+        version: number;
+        requirements: import(".prisma/client").Prisma.JsonValue | null;
+        costStructure: import(".prisma/client").Prisma.JsonValue | null;
+        healthScore: import("@prisma/client/runtime/library").Decimal;
     }>;
     createPackage(data: any): Promise<{
         id: string;
@@ -92,6 +108,10 @@ export declare class CatalogService {
         itinerary: import(".prisma/client").Prisma.JsonValue | null;
         createdAt: Date;
         updatedAt: Date;
+        version: number;
+        requirements: import(".prisma/client").Prisma.JsonValue | null;
+        costStructure: import(".prisma/client").Prisma.JsonValue | null;
+        healthScore: import("@prisma/client/runtime/library").Decimal;
     }>;
     addDeparture(data: any): Promise<{
         id: string;
@@ -104,5 +124,7 @@ export declare class CatalogService {
         priceOverride: import("@prisma/client/runtime/library").Decimal | null;
         vehicleId: string | null;
         guideId: string | null;
+        healthScore: import("@prisma/client/runtime/library").Decimal;
+        opsStatus: string;
     }>;
 }

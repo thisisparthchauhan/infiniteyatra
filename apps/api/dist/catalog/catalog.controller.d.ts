@@ -14,6 +14,8 @@ export declare class CatalogController {
             priceOverride: import("@prisma/client/runtime/library").Decimal | null;
             vehicleId: string | null;
             guideId: string | null;
+            healthScore: import("@prisma/client/runtime/library").Decimal;
+            opsStatus: string;
         }[];
     } & {
         id: string;
@@ -28,6 +30,10 @@ export declare class CatalogController {
         itinerary: import(".prisma/client").Prisma.JsonValue | null;
         createdAt: Date;
         updatedAt: Date;
+        version: number;
+        requirements: import(".prisma/client").Prisma.JsonValue | null;
+        costStructure: import(".prisma/client").Prisma.JsonValue | null;
+        healthScore: import("@prisma/client/runtime/library").Decimal;
     })[]>;
     getPackage(slug: string): Promise<{
         departures: {
@@ -41,6 +47,8 @@ export declare class CatalogController {
             priceOverride: import("@prisma/client/runtime/library").Decimal | null;
             vehicleId: string | null;
             guideId: string | null;
+            healthScore: import("@prisma/client/runtime/library").Decimal;
+            opsStatus: string;
         }[];
     } & {
         id: string;
@@ -55,6 +63,10 @@ export declare class CatalogController {
         itinerary: import(".prisma/client").Prisma.JsonValue | null;
         createdAt: Date;
         updatedAt: Date;
+        version: number;
+        requirements: import(".prisma/client").Prisma.JsonValue | null;
+        costStructure: import(".prisma/client").Prisma.JsonValue | null;
+        healthScore: import("@prisma/client/runtime/library").Decimal;
     }>;
     createPackage(body: any): Promise<{
         id: string;
@@ -69,6 +81,10 @@ export declare class CatalogController {
         itinerary: import(".prisma/client").Prisma.JsonValue | null;
         createdAt: Date;
         updatedAt: Date;
+        version: number;
+        requirements: import(".prisma/client").Prisma.JsonValue | null;
+        costStructure: import(".prisma/client").Prisma.JsonValue | null;
+        healthScore: import("@prisma/client/runtime/library").Decimal;
     }>;
     addDeparture(body: any): Promise<{
         id: string;
@@ -81,5 +97,7 @@ export declare class CatalogController {
         priceOverride: import("@prisma/client/runtime/library").Decimal | null;
         vehicleId: string | null;
         guideId: string | null;
+        healthScore: import("@prisma/client/runtime/library").Decimal;
+        opsStatus: string;
     }>;
 }
