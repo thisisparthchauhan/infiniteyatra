@@ -24,6 +24,7 @@ const event_emitter_1 = require("@nestjs/event-emitter");
 const redis_module_1 = require("./redis/redis.module");
 const hotels_module_1 = require("./hotels/hotels.module");
 const hotel_bookings_module_1 = require("./hotel-bookings/hotel-bookings.module");
+const health_controller_1 = require("./health.controller");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -47,7 +48,7 @@ exports.AppModule = AppModule = __decorate([
             hotels_module_1.HotelsModule,
             hotel_bookings_module_1.HotelBookingsModule
         ],
-        controllers: [],
+        controllers: [health_controller_1.HealthController],
         providers: [],
     })
 ], AppModule);

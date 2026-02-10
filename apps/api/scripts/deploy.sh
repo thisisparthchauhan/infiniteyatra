@@ -1,4 +1,4 @@
-#!/bin/bash
+@#!/bin/bash
 set -e
 
 APP_DIR="/home/ubuntu/infiniteyatra/apps/api"
