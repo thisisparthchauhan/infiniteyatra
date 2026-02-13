@@ -44,7 +44,7 @@ import { PrismaModule } from "./prisma/prisma.module";
         AutoPricingModule,
         OperationsModule,
         InvestorModule,
-        RedisModule,
+        // RedisModule,
         HotelsModule,
         HotelBookingsModule
     ],
