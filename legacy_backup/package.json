@@ -31,21 +31,21 @@
     "react-router-dom": "^7.9.6",
     "recharts": "^3.7.0",
     "tailwind-merge": "^3.4.0",
-    "xlsx": "^0.18.5"
-  },
-  "devDependencies": {
-    "@eslint/js": "^9.39.1",
+    "xlsx": "^0.18.5",
     "@tailwindcss/vite": "^4.1.17",
-    "@types/react": "^18.3.3",
-    "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^5.1.1",
     "autoprefixer": "^10.4.22",
-    "eslint": "^9.39.1",
-    "eslint-plugin-react-hooks": "^7.0.1",
-    "eslint-plugin-react-refresh": "^0.4.24",
-    "globals": "^16.5.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.17",
     "vite": "^7.2.4"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "eslint": "^9.39.1",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.4.24",
+    "globals": "^16.5.0"
   }
 }
