@@ -3,5 +3,7 @@ export declare class HealthController {
         status: string;
         timestamp: string;
         uptime: number;
+        environment: string;
+        service: string;
     };
 }

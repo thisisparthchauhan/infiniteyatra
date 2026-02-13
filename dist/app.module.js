@@ -39,7 +39,7 @@ exports.AppModule = AppModule = __decorate([
                 isGlobal: true,
             }),
             serve_static_1.ServeStaticModule.forRoot({
-                rootPath: (0, path_1.join)(__dirname, "..", "client", "out"),
+                rootPath: (0, path_1.join)(__dirname, "..", "legacy_backup", "dist"),
                 exclude: ["/api/(.*)"],
             }),
             event_emitter_1.EventEmitterModule.forRoot(),

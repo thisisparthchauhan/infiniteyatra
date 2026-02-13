@@ -17,6 +17,17 @@ async function bootstrap() {
         console.log(`Listening on port: ${port}`);
     } catch (error) {
         console.error('Error starting application:', error);
+
+        // Write error to a file for debugging on server
+        const fs = require('fs');
+        const errorLog = `
+Timestamp: ${new Date().toISOString()}
+Error: ${error.message}
+Stack: ${error.stack}
+----------------------------------------
+`;
+        fs.appendFileSync('server-startup-error.log', errorLog);
+
         process.exit(1);
     }
 }
