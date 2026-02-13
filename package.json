@@ -5,7 +5,7 @@
     "scripts": {
         "postinstall": "cd client && npm install",
         "dev": "nest start --watch",
-        "build": "npx prisma generate && cd client && npm run build && nest build",
+        "build": "npx prisma generate && cd client && npm run build && cd .. && nest build",
         "start": "node dist/main",
         "start:prod": "node dist/main"
     },
