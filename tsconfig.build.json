@@ -1,6 +1,7 @@
 {
     "extends": "./tsconfig.json",
     "exclude": [
+        "client",
         "node_modules",
         "test",
         "dist",
