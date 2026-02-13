@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { MapPin, Star, Wifi, Coffee } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-const HotelCard = ({ id, slug, name, city, rating, price, imageUrl }) => {
+const HotelCard = ({ id, slug, name, city, rating, price, image, imageUrl }) => {
     return (
         <motion.div
             whileHover={{ y: -5 }}
@@ -11,7 +11,7 @@ const HotelCard = ({ id, slug, name, city, rating, price, imageUrl }) => {
         >
             <div className="relative h-64 w-full overflow-hidden">
                 <img
-                    src={imageUrl || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80'}
+                    src={image || imageUrl || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80'}
                     alt={name}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />

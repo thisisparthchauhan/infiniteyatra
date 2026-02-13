@@ -38,7 +38,7 @@ const AdminHotelManager = () => {
             if (fetchedHotels.length === 0 && currentRole !== USER_ROLES.HOTEL_PARTNER) {
                 // Only fallback to static if NOT a partner (partners start Empty)
                 console.log("No hotels in DB, using static data for preview");
-                setHotels([]);
+                setHotels(staticHotels);
             } else {
                 setHotels(fetchedHotels);
             }
@@ -78,7 +78,7 @@ const AdminHotelManager = () => {
             // alert("Hotel saved successfully!");
         } catch (error) {
             console.error("Error saving hotel:", error);
-            alert("Failed to save hotel.");
+            alert(`Failed to save hotel: ${error.message}`);
         } finally {
             setLoading(false);
         }
@@ -133,11 +133,9 @@ const AdminHotelManager = () => {
                 </div>
                 <div className="flex gap-3">
                     {/* Dev Tool: Reset Data */}
-                    {hotels.length === 0 && (
-                        <button onClick={handleMigrate} className="px-4 py-2 bg-white/5 hover:bg-white/10 text-slate-300 rounded-xl text-sm font-medium transition-colors border border-white/10 flex items-center gap-2">
-                            <Database size={16} /> Load Demo Data
-                        </button>
-                    )}
+                    <button onClick={handleMigrate} className="px-4 py-2 bg-white/5 hover:bg-white/10 text-slate-300 rounded-xl text-sm font-medium transition-colors border border-white/10 flex items-center gap-2">
+                        <Database size={16} /> Load Demo Data (Shimla)
+                    </button>
                     <button
                         onClick={() => { setCurrentHotel(null); setIsFormOpen(true); }}
                         className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm font-medium transition-colors shadow-lg shadow-blue-500/20 flex items-center gap-2"

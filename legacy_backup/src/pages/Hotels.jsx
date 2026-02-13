@@ -3,47 +3,40 @@ import Hero from '../components/Hotels/Hero';
 import HotelCard from '../components/Hotels/HotelCard';
 import { ShieldCheck, Sparkles, Users } from 'lucide-react';
 
-// Mock Data
-const HOTELS = [
-    {
-        id: '1',
-        slug: 'grand-iy-resort',
-        name: 'The Grand IY Resort',
-        city: 'Goa',
-        rating: 4.8,
-        price: 12000,
-        imageUrl: 'https://images.unsplash.com/photo-1571896349842-6e53ce41be03?auto=format&fit=crop&q=80'
-    },
-    {
-        id: '2',
-        slug: 'himalayan-sanctuary',
-        name: 'Himalayan Sanctuary',
-        city: 'Manali',
-        rating: 4.9,
-        price: 8500,
-        imageUrl: 'https://images.unsplash.com/photo-1540541338287-41700206dee6?auto=format&fit=crop&q=80'
-    },
-    {
-        id: '3',
-        slug: 'urban-escape',
-        name: 'IY Urban Escape',
-        city: 'Mumbai',
-        rating: 4.5,
-        price: 9000,
-        imageUrl: 'https://images.unsplash.com/photo-1564501049412-61c2a3083791?auto=format&fit=crop&q=80'
-    },
-    {
-        id: '4',
-        slug: 'desert-camp',
-        name: 'Thar Desert Luxury Camp',
-        city: 'Jaisalmer',
-        rating: 4.7,
-        price: 15000,
-        imageUrl: 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&q=80'
-    }
-];
+import { collection, getDocs, query, where } from 'firebase/firestore';
+import { db } from '../firebase';
+import { hotels as staticHotels } from '../data/hotels';
+import { useEffect, useState } from 'react';
 
 const Hotels = () => {
+    const [hotels, setHotels] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchHotels = async () => {
+            try {
+                // Fetch only visible hotels
+                const q = query(collection(db, 'hotels'), where('isVisible', '==', true));
+                const querySnapshot = await getDocs(q);
+                const fetchedHotels = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+                if (fetchedHotels.length > 0) {
+                    setHotels(fetchedHotels);
+                } else {
+                    // Fallback to static data if DB is empty
+                    setHotels(staticHotels);
+                }
+            } catch (error) {
+                console.error("Error fetching hotels:", error);
+                setHotels(staticHotels);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchHotels();
+    }, []);
+
     return (
         <main className="min-h-screen bg-zinc-50 dark:bg-black">
             <Hero />
@@ -59,11 +52,15 @@ const Hotels = () => {
                     </button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                    {HOTELS.map((hotel) => (
-                        <HotelCard key={hotel.id} {...hotel} />
-                    ))}
-                </div>
+                {loading ? (
+                    <div className="text-center py-20 text-zinc-500">Loading stays...</div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                        {hotels.map((hotel) => (
+                            <HotelCard key={hotel.id} {...hotel} />
+                        ))}
+                    </div>
+                )}
             </section>
 
             {/* NEW: Trust & Verification Section */}
