@@ -6,7 +6,7 @@ async function bootstrap() {
     const app = await NestFactory.create(AppModule);
     app.use(helmet());
     app.enableCors({
-        origin: ['https://infiniteyatra-iy.web.app', 'https://infiniteyatra.com', 'http://localhost:5173'],
+        origin: ['https://infiniteyatra-iy.web.app', 'https://infiniteyatra.com', 'http://localhost:5173', 'http://localhost:3000'],
         methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
         credentials: true,
     });
