@@ -1,0 +1,13 @@
+RewriteEngine On
+
+# Allow Hostinger Passenger to serve the NestJS API endpoints
+RewriteCond %{REQUEST_URI} ^/(auth|catalog|booking|inventory|cost|finance|forecast|dashboard|pricing|auto-pricing|operations|investor|redis|hotels|hotel-bookings|health)/
+RewriteRule ^ - [L]
+
+RewriteCond %{REQUEST_URI} ^/health$
+RewriteRule ^ - [L]
+
+# Proxy everything else to the PM2 Next.js frontend running on port 3000
+RewriteCond %{REQUEST_URI} !^/(auth|catalog|booking|inventory|cost|finance|forecast|dashboard|pricing|auto-pricing|operations|investor|redis|hotels|hotel-bookings|health)/
+RewriteCond %{REQUEST_URI} !^/health$
+RewriteRule ^(.*)$ http://127.0.0.1:3000/$1 [P,L]

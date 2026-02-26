@@ -17,8 +17,7 @@ import { HotelsModule } from './hotels/hotels.module';
 import { HotelBookingsModule } from './hotel-bookings/hotel-bookings.module';
 import { HealthController } from './health.controller';
 import { ConfigModule } from "@nestjs/config";
-import { ServeStaticModule } from "@nestjs/serve-static";
-import { join } from "path";
+
 import { PrismaModule } from "./prisma/prisma.module";
 
 @Module({
@@ -26,10 +25,7 @@ import { PrismaModule } from "./prisma/prisma.module";
         ConfigModule.forRoot({
             isGlobal: true,
         }),
-        ServeStaticModule.forRoot({
-            rootPath: join(__dirname, "..", "legacy_backup", "dist"),
-            exclude: ["/api/(.*)"],
-        }),
+
         EventEmitterModule.forRoot(),
         AuthModule,
         PrismaModule,
