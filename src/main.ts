@@ -11,6 +11,18 @@ async function bootstrap() {
             methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
             credentials: true,
         });
+
+        // Proxy all non-API requests to the PM2 Next.js server running on port 3000
+        // This allows Hostinger's Passenger to serve both NestJS and Next.js via proxy
+        const { createProxyMiddleware } = require('http-proxy-middleware');
+        app.use(
+            /^(?!\/(auth|catalog|booking|inventory|cost|finance|forecast|dashboard|pricing|auto-pricing|operations|investor|redis|hotels|hotel-bookings|health)(?:\/|$)).*/,
+            createProxyMiddleware({
+                target: 'http://127.0.0.1:3000',
+                changeOrigin: true,
+            }),
+        );
+
         const port = process.env.PORT || 3000;
         await app.listen(port, '0.0.0.0');
         console.log(`Application is running on: ${await app.getUrl()}`);
