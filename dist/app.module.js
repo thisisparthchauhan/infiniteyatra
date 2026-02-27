@@ -26,8 +26,6 @@ const hotels_module_1 = require("./hotels/hotels.module");
 const hotel_bookings_module_1 = require("./hotel-bookings/hotel-bookings.module");
 const health_controller_1 = require("./health.controller");
 const config_1 = require("@nestjs/config");
-const serve_static_1 = require("@nestjs/serve-static");
-const path_1 = require("path");
 const prisma_module_1 = require("./prisma/prisma.module");
 let AppModule = class AppModule {
 };
@@ -37,10 +35,6 @@ exports.AppModule = AppModule = __decorate([
         imports: [
             config_1.ConfigModule.forRoot({
                 isGlobal: true,
-            }),
-            serve_static_1.ServeStaticModule.forRoot({
-                rootPath: (0, path_1.join)(__dirname, "..", "legacy_backup", "dist"),
-                exclude: ["/api/(.*)"],
             }),
             event_emitter_1.EventEmitterModule.forRoot(),
             auth_module_1.AuthModule,
