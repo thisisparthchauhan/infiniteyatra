@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Globe, Rocket, Map, Phone, Mail, Instagram, ExternalLink, ArrowRight, Star } from 'lucide-react';
+import { Globe, Rocket, Map, Phone, Mail, Instagram, Linkedin, ExternalLink, ArrowRight, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const XIcon = ({ size = 20, className }) => (
@@ -190,7 +190,7 @@ const QRLanding = () => {
                     <ActionButton href="tel:+919265799325" icon={<Phone size={20} />} label="Call Now" />
 
                     <div className="grid grid-cols-2 gap-4">
-                        <ActionButton href="https://instagram.com/infinite.yatra" icon={<Instagram size={20} />} label="Instagram" />
+                        <ActionButton href="https://www.instagram.com/infinite.yatra/" icon={<Instagram size={20} />} label="Instagram" />
                         <ActionButton href="mailto:infiniteyatra@gmail.com" icon={<Mail size={20} />} label="Email" />
                     </div>
 
@@ -199,6 +199,7 @@ const QRLanding = () => {
                         <SocialButton href="https://x.com/infiniteyatra" icon={XIcon} />
                         <SocialButton href="https://www.threads.com/@infinite.yatra" icon={ThreadsIcon} />
                         <SocialButton href="https://www.whatsapp.com/channel/0029VbBX7rv3gvWStqSdXf08" icon={WhatsAppIcon} />
+                        <SocialButton href="https://www.linkedin.com/company/infinite-yatra/" icon={Linkedin} />
                     </div>
 
                     <p className="text-center text-[10px] text-slate-600 tracking-wider mt-6">Designed for instant connection and zero friction.</p>
