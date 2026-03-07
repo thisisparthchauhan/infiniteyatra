@@ -17,7 +17,8 @@ import {
     Home,
     Car,
     MapPin,
-    CalendarCheck
+    CalendarCheck,
+    Map
 } from 'lucide-react';
 
 export const USER_ROLES = {
@@ -37,7 +38,7 @@ export const WORKSPACES = {
         label: 'Admin Dashboard',
         allowedRoles: [USER_ROLES.SUPER_ADMIN],
         modules: [
-            'overview', 'staff',
+            'overview', 'staff', 'sitemap',
             'bookings', 'crm', 'packages', 'operations',
             'finance', 'hotel-finance', 'influencers',
             'homepage', 'experiences', 'stories', 'media',
@@ -93,7 +94,7 @@ export const ROLE_WORKSPACE_MAP = {
 
 // Flattened permissions for legacy checks if needed, but we should rely on Workspace modules
 export const ROLE_PERMISSIONS = {
-    [USER_ROLES.SUPER_ADMIN]: ['overview', 'staff', 'bookings', 'crm', 'packages', 'operations', 'finance', 'hotel-finance', 'influencers', 'homepage', 'experiences', 'stories', 'media', 'hotels', 'transport-overview', 'transport-vehicles', 'transport-cities', 'transport-bookings', 'transport-settings'],
+    [USER_ROLES.SUPER_ADMIN]: ['overview', 'staff', 'sitemap', 'bookings', 'crm', 'packages', 'operations', 'finance', 'hotel-finance', 'influencers', 'homepage', 'experiences', 'stories', 'media', 'hotels', 'transport-overview', 'transport-vehicles', 'transport-cities', 'transport-bookings', 'transport-settings'],
     [USER_ROLES.TOUR_MANAGER]: ['bookings', 'crm', 'packages', 'operations'],
     [USER_ROLES.FINANCE_MANAGER]: ['finance', 'hotel-finance', 'influencers', 'analytics'],
     [USER_ROLES.CONTENT_MANAGER]: ['homepage', 'experiences', 'stories', 'media'],
@@ -107,6 +108,7 @@ export const MENU_ITEMS = [
     // Admin
     { id: 'analytics', label: 'Live Dashboard', icon: BarChart3 }, // New
     { id: 'overview', label: 'Snapshot', icon: LayoutDashboard },
+    { id: 'sitemap', label: 'Site Map', icon: Map },
     { id: 'staff', label: 'Staff & Roles', icon: Users },
 
     // Tour

@@ -30,6 +30,7 @@ import AdminTransportVehicles from '../components/admin/transport/AdminTransport
 import AdminTransportBookings from '../components/admin/transport/AdminTransportBookings';
 import AdminTransportSettings from '../components/admin/transport/AdminTransportSettings';
 import AdminTransportOverview from '../components/admin/transport/AdminTransportOverview';
+import AdminSitemap from '../components/admin/AdminSitemap';
 
 const AdminDashboard = () => {
     const { hasPermission, getFirstAllowedTab, currentRole, setCurrentRole, currentWorkspace } = useRole();
@@ -67,7 +68,8 @@ const AdminDashboard = () => {
             'transport-vehicles': 'Manage Vehicles',
             'transport-cities': 'Manage Cities',
             'transport-bookings': 'Transport Bookings',
-            'transport-settings': 'Transport Settings'
+            'transport-settings': 'Transport Settings',
+            'sitemap': 'Site Architecture Map'
         };
         return titles[activeTab] || 'Admin Panel';
     };
@@ -107,6 +109,7 @@ const AdminDashboard = () => {
             case 'transport-cities': return <AdminTransportCities />;
             case 'transport-bookings': return <AdminTransportBookings />;
             case 'transport-settings': return <AdminTransportSettings />;
+            case 'sitemap': return <AdminSitemap />;
             case 'staff':
                 return (
                     <div className="text-center py-20">
