@@ -1,6 +1,36 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Helper function for Admin access
+    function isAdmin() {
+      return request.auth != null && (request.auth.token.role == 'admin' || request.auth.token.email == 'chauhanparth165@gmail.com');
+    }
+
+    match /transport_vehicles/{vehicleId} {
+      // Users can read active and visible vehicles. Admin has full read/write.
+      allow read: if isAdmin() || (resource.data.isActive == true && resource.data.isVisible == true);
+      allow write: if isAdmin();
+    }
+
+    match /transport_cities/{cityId} {
+      // Users can read active cities. Admin has full read/write.
+      allow read: if isAdmin() || resource.data.isActive == true;
+      allow write: if isAdmin();
+    }
+
+    match /transport_bookings/{bookingId} {
+      // Users can create bookings and read their own bookings. Admin has full read/write.
+      allow read: if isAdmin() || (request.auth != null && resource.data.userId == request.auth.uid);
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
+
+    match /transport_settings/{settingId} {
+      // Anyone can read (needed for frontend logic like isTransportEnabled). Admin has full write.
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
     match /bookings/{bookingId} {
       allow read: if request.auth != null;
       allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;

@@ -1,15 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { Activity, TrendingUp, Search, Calendar, Eye, ArrowUpRight, DollarSign, Users, BarChart3, Clock } from 'lucide-react';
+import { Activity, TrendingUp, Search, Calendar, Eye, ArrowUpRight, DollarSign, Users, BarChart3, Clock, Car } from 'lucide-react';
 import { collection, query, getDocs, orderBy, limit } from 'firebase/firestore';
 import { db } from '../../../firebase';
 import AdminSeatAnalytics from '../AdminSeatAnalytics';
 
-const Overview = () => {
+const Overview = ({ setActiveTab }) => {
     const [stats, setStats] = useState({
         total: 0,
         mainRevenue: 0,
         estProfit: 0,
         avgBookingValue: 0
+    });
+    const [transportStats, setTransportStats] = useState({
+        revenue: 0,
+        todayBookings: 0
     });
     const [recentBookings, setRecentBookings] = useState([]);
     const [topPackages, setTopPackages] = useState([]);
@@ -97,6 +101,27 @@ const Overview = () => {
                     estProfit: profit,
                     avgBookingValue: avgValue
                 });
+
+                // 3. Fetch Transport Metrics
+                try {
+                    const transportSnapshot = await getDocs(collection(db, 'transport_bookings'));
+                    let tRevenue = 0;
+                    let tToday = 0;
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+
+                    transportSnapshot.docs.forEach(doc => {
+                        const data = doc.data();
+                        const bDate = data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt || 0);
+                        if (bDate >= today) tToday++;
+                        if (data.status === 'confirmed' || data.status === 'completed') {
+                            tRevenue += Number(data.totalAmount || 0);
+                        }
+                    });
+                    setTransportStats({ revenue: tRevenue, todayBookings: tToday });
+                } catch (e) {
+                    console.error("Error fetching transport stats:", e);
+                }
 
 
                 const sortedTrips = Object.entries(tripCounts)
@@ -216,6 +241,39 @@ const Overview = () => {
                     <p className="text-2xl font-bold text-white">{formatCurrency(stats.avgBookingValue)}</p>
                 </div>
             </div>
+
+            {/* TRANSPORT METRICS */}
+            {setActiveTab && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Transport Revenue */}
+                    <div onClick={() => setActiveTab('transport-overview')} className="bg-[#151515] p-6 rounded-3xl border border-white/5 relative overflow-hidden group cursor-pointer hover:border-blue-500/30 transition-all shadow-xl">
+                        <div className="flex justify-between items-start mb-4">
+                            <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500">
+                                <DollarSign size={20} />
+                            </div>
+                            <span className="bg-blue-500/10 text-blue-400 text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1">
+                                Transport
+                            </span>
+                        </div>
+                        <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Transport Revenue</p>
+                        <p className="text-2xl font-bold text-white">{formatCurrency(transportStats.revenue)}</p>
+                    </div>
+
+                    {/* Transport Bookings Today */}
+                    <div onClick={() => setActiveTab('transport-overview')} className="bg-[#151515] p-6 rounded-3xl border border-white/5 relative overflow-hidden group cursor-pointer hover:border-emerald-500/30 transition-all shadow-xl">
+                        <div className="flex justify-between items-start mb-4">
+                            <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+                                <Car size={20} />
+                            </div>
+                            <span className="bg-emerald-500/10 text-emerald-400 text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1">
+                                Today
+                            </span>
+                        </div>
+                        <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Transport Bookings Today</p>
+                        <p className="text-2xl font-bold text-white">{transportStats.todayBookings}</p>
+                    </div>
+                </div>
+            )}
 
             {/* CATEGORY ANALYTICS */}
             <div className="bg-[#151515] p-6 rounded-3xl border border-white/5">

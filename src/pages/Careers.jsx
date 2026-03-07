@@ -153,7 +153,7 @@ const Careers = () => {
                                     </div>
                                 </div>
                                 <a
-                                    href="mailto:infiniteyatra@gmail.com"
+                                    href="mailto:info@infiniiteyatra.com"
                                     className="inline-flex items-center gap-2 bg-white/10 group-hover:bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold border border-white/10 group-hover:border-blue-600 transition-all duration-300"
                                 >
                                     Apply Now
@@ -166,10 +166,10 @@ const Careers = () => {
                     <div className="mt-12 text-center bg-blue-900/20 p-8 rounded-2xl border border-blue-500/20">
                         <h4 className="text-xl font-bold text-white mb-2">Don't see the right role?</h4>
                         <p className="text-slate-400 mb-6">
-                            We are always looking for talented people. Send your resume to <span className="font-semibold text-blue-400">infiniteyatra@gmail.com</span>
+                            We are always looking for talented people. Send your resume to <span className="font-semibold text-blue-400">info@infiniiteyatra.com</span>
                         </p>
                         <a
-                            href="mailto:infiniteyatra@gmail.com"
+                            href="mailto:info@infiniiteyatra.com"
                             className="inline-flex items-center gap-2 text-blue-400 font-bold hover:underline"
                         >
                             <Mail size={20} />

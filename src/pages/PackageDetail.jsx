@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { MapPin, Calendar, ChevronDown, Check, X, Phone, MessageCircle, Plus, Minus } from 'lucide-react';
+import { MapPin, Calendar, ChevronDown, Check, X, Phone, MessageCircle, Plus, Minus, Car } from 'lucide-react';
 import { usePackages } from '../context/PackageContext';
+import { db } from '../firebase';
+import { collection, query, where, limit, getDocs } from 'firebase/firestore';
 import SEO from '../components/SEO';
 import AnimatedBanner from '../components/AnimatedBanner';
 import PhotoGallery from '../components/PhotoGallery';
@@ -19,6 +21,7 @@ const PackageDetail = () => {
     const [showFullDescription, setShowFullDescription] = useState(false);
     const [showGallery, setShowGallery] = useState(false);
     const [showFullPackingList, setShowFullPackingList] = useState(false);
+    const [transportOptions, setTransportOptions] = useState([]);
     const { getPackageById, loading } = usePackages();
 
     useEffect(() => {
@@ -31,6 +34,26 @@ const PackageDetail = () => {
                 setSelectedDate(packageData.availableDates[0]);
             }
             window.scrollTo(0, 0);
+
+            // Fetch cross-sell transport
+            const fetchTransportOptions = async () => {
+                try {
+                    const citySearch = packageData.pickupDrop?.split(',')[0] || packageData.location.split(',')[0];
+                    if (!citySearch) return;
+
+                    const q = query(
+                        collection(db, 'transport_vehicles'),
+                        where('city', '==', citySearch.trim()),
+                        where('isActive', '==', true),
+                        limit(3)
+                    );
+                    const snap = await getDocs(q);
+                    setTransportOptions(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+                } catch (err) {
+                    console.error('Failed to fetch cross-sell transport', err);
+                }
+            };
+            fetchTransportOptions();
         } else {
             navigate('/');
         }
@@ -452,6 +475,53 @@ const PackageDetail = () => {
                                     </div>
                                 ))}
                             </div>
+                        </section>
+                    )}
+
+                    {/* Transport Cross-Sell */}
+                    {transportOptions.length > 0 && (
+                        <section className="transport-cross-sell mt-12 bg-slate-900/50 border border-slate-800 rounded-3xl p-6 md:p-8 relative overflow-hidden">
+                            {/* Decorative background element */}
+                            <div className="absolute top-[-20%] right-[-10%] w-[50%] h-[50%] bg-blue-500/10 rounded-full blur-[80px] pointer-events-none" />
+
+                            <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4 relative z-10">
+                                <div>
+                                    <h2 className="text-2xl font-bold flex items-center gap-3 text-white mb-2"><Car className="text-blue-500 border border-blue-500/20 p-1.5 rounded-lg bg-blue-500/10" size={36} /> Need transport?</h2>
+                                    <p className="text-slate-400">Rentals available for your trip in {pkg.pickupDrop?.split(',')[0] || pkg.location.split(',')[0]}</p>
+                                </div>
+                                <button
+                                    onClick={() => navigate(`/transport?city=${encodeURIComponent(pkg.pickupDrop?.split(',')[0] || pkg.location.split(',')[0])}`)}
+                                    className="hidden md:inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 font-bold transition-colors"
+                                >
+                                    View All Options →
+                                </button>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 relative z-10">
+                                {transportOptions.map(vehicle => (
+                                    <div
+                                        key={vehicle.id}
+                                        onClick={() => navigate(`/transport/book/${vehicle.id}`)}
+                                        className="bg-[#0a0a0a] border border-slate-800 rounded-2xl overflow-hidden cursor-pointer hover:border-blue-500/40 transition-all duration-300 group shadow-lg"
+                                    >
+                                        <div className="h-40 overflow-hidden relative">
+                                            <img src={vehicle.images?.[0] || 'https://images.unsplash.com/photo-1549317661-bd32c8ce0e2b'} alt={vehicle.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                            <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-md px-2 py-1 rounded text-[10px] font-bold text-white border border-white/10 uppercase tracking-wider">{vehicle.type}</div>
+                                        </div>
+                                        <div className="p-4">
+                                            <h3 className="font-bold text-white text-lg truncate mb-1 group-hover:text-blue-400 transition-colors">{vehicle.name}</h3>
+                                            <p className="text-slate-400 text-sm font-medium">₹{vehicle.pricePerDay || vehicle.pricePerHour}<span className="text-xs text-slate-500 font-normal"> / {vehicle.pricePerDay ? 'day' : 'hour'}</span></p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <button
+                                onClick={() => navigate(`/transport?city=${encodeURIComponent(pkg.pickupDrop?.split(',')[0] || pkg.location.split(',')[0])}`)}
+                                className="md:hidden mt-6 w-full flex justify-center items-center gap-2 text-white bg-blue-600 hover:bg-blue-500 font-bold py-3.5 rounded-xl transition-colors shadow-lg shadow-blue-500/20"
+                            >
+                                View All Transport
+                            </button>
                         </section>
                     )}
                 </div>

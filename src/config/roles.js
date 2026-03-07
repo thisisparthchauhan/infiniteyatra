@@ -14,7 +14,10 @@ import {
     BookOpen,
     BarChart3,
     Landmark,
-    Home
+    Home,
+    Car,
+    MapPin,
+    CalendarCheck
 } from 'lucide-react';
 
 export const USER_ROLES = {
@@ -38,7 +41,7 @@ export const WORKSPACES = {
             'bookings', 'crm', 'packages', 'operations',
             'finance', 'hotel-finance', 'influencers',
             'homepage', 'experiences', 'stories', 'media',
-            'hotels'
+            'hotels', 'transport-overview', 'transport-vehicles', 'transport-cities', 'transport-bookings', 'transport-settings'
         ]
     },
     TOUR_MANAGER: {
@@ -90,7 +93,7 @@ export const ROLE_WORKSPACE_MAP = {
 
 // Flattened permissions for legacy checks if needed, but we should rely on Workspace modules
 export const ROLE_PERMISSIONS = {
-    [USER_ROLES.SUPER_ADMIN]: ['overview', 'staff', 'bookings', 'crm', 'packages', 'operations', 'finance', 'hotel-finance', 'influencers', 'homepage', 'experiences', 'stories', 'media', 'hotels'],
+    [USER_ROLES.SUPER_ADMIN]: ['overview', 'staff', 'bookings', 'crm', 'packages', 'operations', 'finance', 'hotel-finance', 'influencers', 'homepage', 'experiences', 'stories', 'media', 'hotels', 'transport-overview', 'transport-vehicles', 'transport-cities', 'transport-bookings', 'transport-settings'],
     [USER_ROLES.TOUR_MANAGER]: ['bookings', 'crm', 'packages', 'operations'],
     [USER_ROLES.FINANCE_MANAGER]: ['finance', 'hotel-finance', 'influencers', 'analytics'],
     [USER_ROLES.CONTENT_MANAGER]: ['homepage', 'experiences', 'stories', 'media'],
@@ -127,4 +130,11 @@ export const MENU_ITEMS = [
     // Hotel
     { id: 'hotels', label: 'Manage Hotels', icon: Building2 },
     { id: 'hotel-bookings', label: 'Hotel Bookings', icon: BookOpen },
+
+    // Transport
+    { id: 'transport-overview', label: 'Transport Overview', icon: LayoutDashboard },
+    { id: 'transport-vehicles', label: 'Manage Vehicles', icon: Car },
+    { id: 'transport-cities', label: 'Manage Cities', icon: MapPin },
+    { id: 'transport-bookings', label: 'Transport Bookings', icon: CalendarCheck },
+    { id: 'transport-settings', label: 'Transport Settings', icon: Settings }
 ];

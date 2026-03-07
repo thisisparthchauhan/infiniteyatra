@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, Phone, Search, MapPin, Info, Sparkles, BookOpen, Home, User, Package, Mail, LogOut, LayoutDashboard, Heart } from 'lucide-react';
+import { Menu, X, Phone, Search, MapPin, Info, Sparkles, BookOpen, Home, User, Package, Mail, LogOut, LayoutDashboard, Heart, Car } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useWishlist } from '../context/WishlistContext';
 
@@ -87,6 +87,7 @@ const Navbar = () => {
         { name: 'Home', icon: Home, href: '/', type: 'link' },
         { name: 'Destinations', icon: MapPin, href: '/destinations', type: 'link' },
         { name: 'Hotels', icon: Home, href: '/hotels', type: 'link' }, // Added Hotels link
+        { name: 'Transport', icon: Car, href: '/transport', type: 'link' }, // Added Transport link
         { name: 'AI Trip Planner', icon: Sparkles, href: '/trip-planner', type: 'link', highlight: true },
         { name: 'Stories', icon: BookOpen, href: '/stories', type: 'link' },
         { name: 'About Us', icon: Info, href: '#about', type: 'scroll' },

@@ -8,10 +8,11 @@ import 'jspdf-autotable';
 const BookingSuccess = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const { bookingId, packageTitle, amountPaid, totalAmount, date } = location.state || {};
+    const { bookingId, packageTitle, totalAmount, date } = location.state || {};
+    const amountPaid = location.state?.amountPaid || totalAmount || 0;
     const hasDownloaded = useRef(false);
 
-    const balanceDue = totalAmount - amountPaid;
+    const balanceDue = (totalAmount || 0) - (amountPaid || 0);
 
     const handleDownloadInvoice = () => {
         try {
@@ -64,7 +65,7 @@ const BookingSuccess = () => {
             doc.setFontSize(10);
             doc.setTextColor(100);
             doc.setFont('helvetica', 'normal');
-            doc.text(`Travel Date: ${new Date(date).toLocaleDateString()}`, 20, yPos + 7);
+            doc.text(`Travel Date: ${date ? new Date(date).toLocaleDateString() : 'TBD'}`, 20, yPos + 7);
 
             // Financial Table
             const tableData = [
@@ -99,7 +100,7 @@ const BookingSuccess = () => {
             doc.setFontSize(10);
             doc.setTextColor(100);
             doc.text('Thank you for choosing Infinite Yatra!', 105, finalY, { align: 'center' });
-            doc.text('Need help? Contact us at infiniteyatra@gmail.com', 105, finalY + 7, { align: 'center' });
+            doc.text('Need help? Contact us at info@infiniiteyatra.com', 105, finalY + 7, { align: 'center' });
 
             doc.save(`Invoice_${bookingId}.pdf`);
         } catch (err) {
@@ -167,7 +168,7 @@ const BookingSuccess = () => {
                         </div>
                         <div className="flex justify-between items-center">
                             <span className="text-slate-500 text-sm">Trip Date</span>
-                            <span className="font-bold text-slate-900">{new Date(date).toLocaleDateString()}</span>
+                            <span className="font-bold text-slate-900">{date ? new Date(date).toLocaleDateString() : 'TBD'}</span>
                         </div>
                     </div>
 

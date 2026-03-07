@@ -4,6 +4,7 @@ import Destinations from '../components/Destinations';
 import About from '../components/About';
 import TravelStories from '../components/TravelStories';
 import HomeHotels from '../components/HomeHotels';
+import HomeTransport from '../components/HomeTransport';
 
 import SEO from '../components/SEO';
 import InstagramFeed from '../components/InstagramFeed';
@@ -59,7 +60,9 @@ const Home = () => {
                     <Destinations packages={homepagePackages} />
                 </RevealOnScroll>
 
-
+                <RevealOnScroll width="100%">
+                    <HomeTransport />
+                </RevealOnScroll>
 
                 <RevealOnScroll width="100%">
                     <TravelStories featuredOnly={true} limitCount={4} />

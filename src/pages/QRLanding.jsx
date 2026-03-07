@@ -191,7 +191,7 @@ const QRLanding = () => {
 
                     <div className="grid grid-cols-2 gap-4">
                         <ActionButton href="https://www.instagram.com/infinite.yatra/" icon={<Instagram size={20} />} label="Instagram" />
-                        <ActionButton href="mailto:infiniteyatra@gmail.com" icon={<Mail size={20} />} label="Email" />
+                        <ActionButton href="mailto:info@infiniiteyatra.com" icon={<Mail size={20} />} label="Email" />
                     </div>
 
                     {/* New Social Media Section */}

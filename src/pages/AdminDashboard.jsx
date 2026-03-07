@@ -25,6 +25,12 @@ import AdminHotelFinance from '../components/admin/hotels/AdminHotelFinance';
 import AdminHotelBookings from '../components/admin/hotels/AdminHotelBookings';
 import LiveAnalytics from '../components/admin/analytics/LiveAnalytics';
 
+import AdminTransportCities from '../components/admin/transport/AdminTransportCities';
+import AdminTransportVehicles from '../components/admin/transport/AdminTransportVehicles';
+import AdminTransportBookings from '../components/admin/transport/AdminTransportBookings';
+import AdminTransportSettings from '../components/admin/transport/AdminTransportSettings';
+import AdminTransportOverview from '../components/admin/transport/AdminTransportOverview';
+
 const AdminDashboard = () => {
     const { hasPermission, getFirstAllowedTab, currentRole, setCurrentRole, currentWorkspace } = useRole();
     const [activeTab, setActiveTab] = useState(getFirstAllowedTab());
@@ -56,7 +62,12 @@ const AdminDashboard = () => {
             hotels: 'Hotel Management',
             'hotel-finance': 'Hotel Financials',
             'hotel-bookings': 'Hotel Bookings',
-            analytics: 'Live Command Center'
+            analytics: 'Live Command Center',
+            'transport-overview': 'Transport Overview',
+            'transport-vehicles': 'Manage Vehicles',
+            'transport-cities': 'Manage Cities',
+            'transport-bookings': 'Transport Bookings',
+            'transport-settings': 'Transport Settings'
         };
         return titles[activeTab] || 'Admin Panel';
     };
@@ -77,7 +88,7 @@ const AdminDashboard = () => {
 
         switch (activeTab) {
             case 'analytics': return <LiveAnalytics />;
-            case 'overview': return <Overview />;
+            case 'overview': return <Overview setActiveTab={setActiveTab} />;
             case 'bookings': return <Bookings />;
             case 'packages': return <Inventory />;
             case 'homepage': return <AdminHomepageManager />;
@@ -91,6 +102,11 @@ const AdminDashboard = () => {
             case 'experiences': return <AdminExperiences />;
             case 'media': return <AdminImageUpload />;
             case 'influencers': return <InfluencerROI />;
+            case 'transport-overview': return <AdminTransportOverview />;
+            case 'transport-vehicles': return <AdminTransportVehicles />;
+            case 'transport-cities': return <AdminTransportCities />;
+            case 'transport-bookings': return <AdminTransportBookings />;
+            case 'transport-settings': return <AdminTransportSettings />;
             case 'staff':
                 return (
                     <div className="text-center py-20">

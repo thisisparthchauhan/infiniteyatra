@@ -143,8 +143,8 @@ const ContactNew = () => {
                                     </div>
                                     <div>
                                         <p className="text-sm text-slate-500 mb-1 uppercase tracking-wider font-medium">Email Us</p>
-                                        <a href="mailto:infiniteyatra@gmail.com" className="text-white text-lg font-medium hover:text-purple-400 transition-colors break-all">
-                                            infiniteyatra@gmail.com
+                                        <a href="mailto:info@infiniiteyatra.com" className="text-white text-lg font-medium hover:text-purple-400 transition-colors break-all">
+                                            info@infiniiteyatra.com
                                         </a>
                                     </div>
                                 </div>

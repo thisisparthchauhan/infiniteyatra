@@ -144,13 +144,13 @@ const Footer = () => {
                             </li>
                             <li>
                                 <a
-                                    href="mailto:infiniteyatra@gmail.com"
+                                    href="mailto:info@infiniiteyatra.com"
                                     className="text-white/60 hover:text-white transition-all duration-300 group flex items-center gap-3 font-light"
                                 >
                                     <div className="p-2 rounded-lg bg-white/5 group-hover:bg-purple-600/20 transition-all duration-300 border border-white/5 group-hover:border-purple-500/30">
                                         <Mail size={16} className="group-hover:text-purple-400 transition-colors" />
                                     </div>
-                                    <span className="text-sm">infiniteyatra@gmail.com</span>
+                                    <span className="text-sm">info@infiniiteyatra.com</span>
                                 </a>
                             </li>
                         </ul>

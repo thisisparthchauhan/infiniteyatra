@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { db } from '../firebase';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
 import './Profile.css';
@@ -36,6 +36,7 @@ const Profile = () => {
         phoneNumbers: ['']
     });
     const [saving, setSaving] = useState(false);
+    const [transportBookingsCount, setTransportBookingsCount] = useState(0);
 
     const availableInterests = [
         { id: 'business', label: 'Business', emoji: '💼' },
@@ -66,6 +67,10 @@ const Profile = () => {
                         }
                         setUserData({ ...userData, ...data });
                     }
+
+                    // Fetch Transport Bookings for Passport Stats
+                    const transportDocs = await getDocs(query(collection(db, 'transport_bookings'), where('userId', '==', currentUser.uid)));
+                    setTransportBookingsCount(transportDocs.size);
                 } catch (error) {
                     console.error('Error fetching user data:', error);
                 }
@@ -267,6 +272,14 @@ const Profile = () => {
                     </div>
                     <div className="passport-badge">IY Citizen</div>
                     <div className="passport-tagline">Citizen of Infinite Yatra</div>
+
+                    {transportBookingsCount > 0 && (
+                        <div className="mt-4 flex justify-center">
+                            <span className="inline-flex items-center gap-1.5 bg-blue-500/20 border border-blue-500/50 text-blue-300 px-3 py-1.5 rounded-full text-xs font-bold shadow-lg shadow-blue-500/10 backdrop-blur-md">
+                                🚗 {transportBookingsCount} Rides Booked
+                            </span>
+                        </div>
+                    )}
                 </div>
 
                 {/* Main Content */}
@@ -425,6 +438,21 @@ const Profile = () => {
                                 <span className="info-arrow">›</span>
                             </div>
                         </div>
+                    </section>
+
+                    {/* Transport Integration */}
+                    <section className="profile-section" style={{ background: 'linear-gradient(145deg, rgba(20,20,30,0.8), rgba(0,0,0,0.4))', border: '1px solid rgba(59,130,246,0.3)' }}>
+                        <h2 className="section-title text-blue-400 border-b border-blue-500/20 pb-3">My Transports</h2>
+                        <a href="/profile/transport-bookings" className="flex items-center justify-between mt-4 p-3 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 transition-all cursor-pointer group">
+                            <div className="flex items-center gap-3">
+                                <span className="text-xl">🚗</span>
+                                <div>
+                                    <div className="text-white font-bold text-sm">View Rides</div>
+                                    <div className="text-blue-300/70 text-xs mt-0.5">Manage rentals & cars</div>
+                                </div>
+                            </div>
+                            <span className="text-blue-400 group-hover:translate-x-1 transition-transform">›</span>
+                        </a>
                     </section>
 
                     {/* For the Culture */}

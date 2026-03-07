@@ -107,8 +107,8 @@ const ContactUs = () => {
                                     </div>
                                     <div>
                                         <p className="text-sm text-slate-500 mb-1">Email Us</p>
-                                        <a href="mailto:infiniteyatra@gmail.com" className="text-slate-800 font-semibold hover:text-blue-600 transition-colors break-all">
-                                            infiniteyatra@gmail.com
+                                        <a href="mailto:info@infiniiteyatra.com" className="text-slate-800 font-semibold hover:text-blue-600 transition-colors break-all">
+                                            info@infiniiteyatra.com
                                         </a>
                                     </div>
                                 </div>

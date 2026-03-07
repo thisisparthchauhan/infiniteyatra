@@ -1,15 +1,26 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Home, LogOut, ChevronDown } from 'lucide-react';
+import { Home, LogOut, ChevronDown, Car } from 'lucide-react';
 import { useRole } from '../../context/RoleContext';
 import { MENU_ITEMS } from '../../config/roles';
 
 const AdminSidebar = ({ activeTab, setActiveTab, isOpen, setIsOpen }) => {
     const { currentRole, currentWorkspace, setCurrentWorkspace, hasPermission, roles, workspaces } = useRole();
 
+    const [isTransportExpanded, setIsTransportExpanded] = useState(false);
+
+    const transportItemIds = ['transport-overview', 'transport-vehicles', 'transport-cities', 'transport-bookings', 'transport-settings'];
     // Filter menu items based on permissions
     const visibleMenuItems = MENU_ITEMS.filter(item => hasPermission(item.id));
+    const regularItems = visibleMenuItems.filter(item => !transportItemIds.includes(item.id));
+    const transportItems = visibleMenuItems.filter(item => transportItemIds.includes(item.id));
+
+    useEffect(() => {
+        if (transportItemIds.includes(activeTab)) {
+            setIsTransportExpanded(true);
+        }
+    }, [activeTab]);
 
     return (
         <>
@@ -87,7 +98,7 @@ const AdminSidebar = ({ activeTab, setActiveTab, isOpen, setIsOpen }) => {
                         <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Workspace</h2>
                     </div>
 
-                    {visibleMenuItems.map((item) => {
+                    {regularItems.map((item) => {
                         const Icon = item.icon;
                         const isActive = activeTab === item.id;
 
@@ -118,6 +129,53 @@ const AdminSidebar = ({ activeTab, setActiveTab, isOpen, setIsOpen }) => {
                             </button>
                         );
                     })}
+
+                    {transportItems.length > 0 && (
+                        <div className="mt-2 text-left">
+                            <button
+                                onClick={() => setIsTransportExpanded(!isTransportExpanded)}
+                                className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-300 group ${isTransportExpanded || transportItemIds.includes(activeTab) ? 'bg-white/5 text-white' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
+                            >
+                                <div className="flex items-center gap-3">
+                                    <Car size={20} className="group-hover:text-blue-400 transition-colors" />
+                                    <span className="font-medium">Transport</span>
+                                </div>
+                                <ChevronDown size={16} className={`transition-transform duration-300 ${isTransportExpanded ? 'rotate-180 text-blue-400' : ''}`} />
+                            </button>
+
+                            <AnimatePresence>
+                                {isTransportExpanded && (
+                                    <motion.div
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: 'auto', opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
+                                        transition={{ duration: 0.2 }}
+                                        className="overflow-hidden"
+                                    >
+                                        <div className="flex flex-col gap-1 pl-11 pr-2 pt-2 pb-2">
+                                            {transportItems.map(item => {
+                                                const Icon = item.icon;
+                                                const isActive = activeTab === item.id;
+                                                return (
+                                                    <button
+                                                        key={item.id}
+                                                        onClick={() => {
+                                                            setActiveTab(item.id);
+                                                            if (window.innerWidth < 1024) setIsOpen(false);
+                                                        }}
+                                                        className={`w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-300 group relative overflow-hidden ${isActive ? 'bg-blue-600/20 text-blue-400 font-semibold shadow-inner' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
+                                                    >
+                                                        <Icon size={16} className={isActive ? 'text-blue-400' : 'group-hover:text-white transition-colors'} />
+                                                        <span className="text-sm truncate">{item.label.replace('Transport ', '')}</span>
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
+                    )}
                 </div>
 
             </motion.div>

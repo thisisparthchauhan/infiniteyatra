@@ -44,6 +44,12 @@ import HotelBookingPage from './pages/HotelBookingPage';
 import HotelBookingSuccess from './pages/HotelBookingSuccess';
 import HotelPartnerOnboarding from './pages/HotelPartnerOnboarding';
 
+// Transport Pages
+import TransportHome from './pages/transport/TransportHome';
+import TransportListings from './pages/transport/TransportListings';
+import TransportDetails from './pages/transport/TransportDetails';
+import MyTransportBookings from './pages/transport/MyTransportBookings';
+
 import AdminDashboard from './pages/AdminDashboard';
 import BookingSuccess from './pages/BookingSuccess';
 
@@ -112,6 +118,14 @@ function App() {
                             </ProtectedRoute>
                           }
                         />
+                        <Route
+                          path="/profile/transport-bookings"
+                          element={
+                            <ProtectedRoute>
+                              <MyTransportBookings />
+                            </ProtectedRoute>
+                          }
+                        />
                         <Route path="/blog" element={<BlogPage />} />
                         <Route path="/blog/:id" element={<BlogPost />} />
                         <Route path="/stories" element={<StoriesPage />} />
@@ -162,6 +176,11 @@ function App() {
                         <Route path="/hotels/book/:id" element={<HotelBookingPage />} />
                         <Route path="/hotels/success" element={<HotelBookingSuccess />} />
                         <Route path="/partner/hotel-onboarding" element={<HotelPartnerOnboarding />} />
+
+                        {/* NEW: IY Transport Vertical */}
+                        <Route path="/transport" element={<TransportHome />} />
+                        <Route path="/transport/search" element={<TransportListings />} />
+                        <Route path="/transport/book/:id" element={<TransportDetails />} />
                       </Routes>
                     </Layout>
                   </Router>
