@@ -100,7 +100,7 @@ const BookingSuccess = () => {
             doc.setFontSize(10);
             doc.setTextColor(100);
             doc.text('Thank you for choosing Infinite Yatra!', 105, finalY, { align: 'center' });
-            doc.text('Need help? Contact us at info@infiniiteyatra.com', 105, finalY + 7, { align: 'center' });
+            doc.text('Need help? Contact us at info@infiniteyatra.com', 105, finalY + 7, { align: 'center' });
 
             doc.save(`Invoice_${bookingId}.pdf`);
         } catch (err) {

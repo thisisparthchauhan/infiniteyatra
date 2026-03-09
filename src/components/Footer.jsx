@@ -1,22 +1,16 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Instagram, Mail, Send, Phone, CheckCircle, AlertCircle } from 'lucide-react';
-import logo from '../assets/logo-new.png';
+import React, { useState, useEffect, useRef, useCallback, memo, useMemo } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Phone, Mail, Lock, Globe, ArrowRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import msmeLogo from '../assets/msme-logo.png';
 import { db } from '../firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '../context/ToastContext';
 
-// Custom Icons for brands not in lucide-react (or specific versions)
-const XIcon = ({ size = 20, className }) => (
+/* ─── Brand SVG Icons ─── */
+const InstagramIcon = ({ size = 20, className }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
-        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-    </svg>
-);
-
-const ThreadsIcon = ({ size = 20, className }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
-        <path d="M12.005 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75c2.46 0 4.71-.915 6.45-2.43l-1.35-1.59c-1.395 1.215-3.195 1.95-5.1 1.95-4.23 0-7.65-3.42-7.65-7.65s3.42-7.65 7.65-7.65c4.155 0 7.545 3.285 7.65 7.41.045 1.845-.51 2.82-1.08 3.36-.39.375-.9.585-1.515.585-.855 0-1.455-.555-1.455-1.605V9.63c0-2.31-1.89-4.2-4.2-4.2-2.31 0-4.2 1.89-4.2 4.2s1.89 4.2 4.2 4.2c1.065 0 2.04-.405 2.79-1.065.645 1.11 1.695 1.89 3.03 1.89 1.47 0 2.64-.675 3.39-1.83.69-1.065.9-2.475.84-4.05-.135-5.295-4.455-9.525-9.75-9.525zm0 9.45c-1.155 0-2.1-.945-2.1-2.1s.945-2.1 2.1-2.1 2.1.945 2.1 2.1-.945 2.1-2.1 2.1z" />
+        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
     </svg>
 );
 
@@ -26,240 +20,485 @@ const WhatsAppIcon = ({ size = 20, className }) => (
     </svg>
 );
 
-const Footer = () => {
+const XIcon = ({ size = 20, className }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+    </svg>
+);
+
+const YouTubeIcon = ({ size = 20, className }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+        <path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+    </svg>
+);
+
+
+
+/* ─── Sub-components ─── */
+
+const FooterLink = ({ to, children, external, href }) => {
+    const baseClass = "group flex items-center gap-2 text-[#888] text-sm transition-all duration-200 hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-[#7C3AED] hover:to-[#2563EB]";
+
+    if (external) {
+        return (
+            <a href={href} target="_blank" rel="noopener noreferrer" className={baseClass}>
+                <span className="opacity-0 group-hover:opacity-100 transition-all duration-200 -ml-4 group-hover:ml-0">
+                    <ArrowRight size={12} />
+                </span>
+                <span className="transition-transform duration-200 group-hover:translate-x-1">{children}</span>
+            </a>
+        );
+    }
+
+    return (
+        <Link to={to} className={baseClass}>
+            <span className="opacity-0 group-hover:opacity-100 transition-all duration-200 -ml-4 group-hover:ml-0">
+                <ArrowRight size={12} />
+            </span>
+            <span className="transition-transform duration-200 group-hover:translate-x-1">{children}</span>
+        </Link>
+    );
+};
+
+const SectionHeading = ({ children }) => (
+    <div className="mb-6">
+        <h4 className="text-[13px] uppercase tracking-[0.2em] text-white font-semibold">{children}</h4>
+        <div className="mt-2 h-[2px] w-8 bg-gradient-to-r from-[#7C3AED] to-[#2563EB] rounded-full" />
+    </div>
+);
+
+
+/* ─── Main Footer ─── */
+const Footer = memo(() => {
     const { addToast } = useToast();
     const [email, setEmail] = useState('');
-    const [status, setStatus] = useState('idle'); // idle, loading, success, error
+    const [status, setStatus] = useState('idle');
+    const [easterEggHover, setEasterEggHover] = useState(false);
 
-    const handleSubscribe = async (e) => {
+    // Cinematic Easter Egg Launch State
+    const [isLaunching, setIsLaunching] = useState(false);
+    const navigate = useNavigate();
+
+    const handleLaunch = useCallback((e) => {
         e.preventDefault();
-        if (!email) return;
+        e.stopPropagation();
+        if (isLaunching) return;
 
+        setIsLaunching(true);
+        // After 2000ms, redirect
+        setTimeout(() => {
+            navigate('/future');
+            // reset state slightly after navigation
+            setTimeout(() => setIsLaunching(false), 500);
+        }, 2000);
+    }, [isLaunching, navigate]);
+
+    // Generate random stars once to prevent React hydration mismatch / re-renders
+    const stars = useMemo(() => {
+        return [...Array(40)].map(() => ({
+            left: `${Math.random() * 100}%`,
+            top: `${Math.random() * 100}%`,
+            duration: 1 + Math.random() * 2,
+            delay: Math.random() * 2
+        }));
+    }, []);
+
+    const handleSubscribe = useCallback(async (e) => {
+        e.preventDefault();
+        if (!email || status === 'loading') return;
         setStatus('loading');
+
         try {
+            // Check for duplicates
+            const q = query(collection(db, 'newsletter_subscribers'), where('email', '==', email));
+            const snap = await getDocs(q);
+            if (!snap.empty) {
+                setStatus('duplicate');
+                addToast("You're already subscribed! 🙌", 'info');
+                setTimeout(() => setStatus('idle'), 3000);
+                return;
+            }
+
             await addDoc(collection(db, 'newsletter_subscribers'), {
                 email,
-                timestamp: serverTimestamp()
+                subscribedAt: serverTimestamp(),
+                source: 'footer'
             });
             setStatus('success');
-            addToast('Subscribed successfully! Welcome to Infinite Yatra.', 'success');
+            addToast('🎉 You\'re in! Watch your inbox for adventures.', 'success');
             setEmail('');
             setTimeout(() => setStatus('idle'), 3000);
         } catch (error) {
-            console.error('Subscription error:', error);
+            console.error('Newsletter subscription error:', error);
             setStatus('error');
             addToast(`Subscription failed: ${error.message || 'Please try again'}`, 'error');
             setTimeout(() => setStatus('idle'), 3000);
         }
-    };
+    }, [email, status, addToast]);
+
+
+    const exploreLinks = [
+        { emoji: '🗺️', label: 'Destinations', to: '/destinations' },
+        { emoji: '🏨', label: 'Hotels', to: '/hotels' },
+        { emoji: '🚗', label: 'Transport', to: '/transport' },
+        { emoji: '🤖', label: 'AI Trip Planner', to: '/trip-planner' },
+        { emoji: '📖', label: 'Travel Stories', to: '/stories' },
+    ];
+
+    const supportLinks = [
+        { label: 'About Us', to: '/contact' },
+        { label: 'Contact Us', to: '/contact' },
+        { label: 'Careers', to: '/careers' },
+        { label: 'Terms & Conditions', to: '/terms' },
+        { label: 'List Your Property', to: '/partner/hotel-onboarding' },
+    ];
+
+    const socialLinks = [
+        { icon: InstagramIcon, href: 'https://instagram.com/infinite.yatra', title: 'Instagram', hoverBg: 'hover:bg-gradient-to-br hover:from-[#f09433] hover:via-[#e6683c] hover:to-[#dc2743]' },
+        { icon: WhatsAppIcon, href: 'https://whatsapp.com/channel/0029VbBX7rv3gvWStqSdXf08', title: 'WhatsApp', hoverBg: 'hover:bg-[#25D366]' },
+        { icon: XIcon, href: 'https://x.com/infiniteyatra', title: 'X', hoverBg: 'hover:bg-black hover:text-white' },
+        { icon: YouTubeIcon, href: 'https://www.youtube.com/channel/UCdWYIKLuKMh_hZIJleWajdg', title: 'YouTube', hoverBg: 'hover:bg-[#FF0000]' },
+    ];
+
 
     return (
-        <footer className="relative bg-black pt-20 pb-10 text-white overflow-hidden border-t border-white/5">
-            {/* Decorative gradient orbs - subtle on black */}
-            <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
-            <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <footer id="site-footer">
+            {/* ═══════════ SECTION 2: Main Footer Body ═══════════ */}
+            <div style={{ backgroundColor: '#0d0d0d' }}>
+                {/* Gradient top border */}
+                <div className="h-px w-full bg-gradient-to-r from-[#7C3AED] to-[#2563EB]" />
 
-            {/* Top gradient border */}
-            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-slate-700/50 to-transparent"></div>
+                <div className="container mx-auto px-6 py-16">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-10">
 
-            <div className="relative z-10 container mx-auto px-6 py-20">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-12 lg:gap-16 mb-16">
-                    <div className="space-y-6 flex flex-col items-center text-center">
-                        <div className="flex flex-col items-center">
-                            <h3 className="text-2xl font-black tracking-[0.2em] text-white drop-shadow-sm whitespace-nowrap" style={{ fontFamily: "'Raleway', sans-serif" }}>
-                                INFINITE YATRA
-                            </h3>
-                            <span className="text-[10px] tracking-[0.3em] font-extrabold text-white/90" style={{ fontFamily: "'Raleway', sans-serif" }}>EXPLORE INFINITE</span>
-                        </div>
-                        <p className="text-white/60 leading-relaxed text-sm font-light text-center">
-                            Discover breathtaking destinations and create unforgettable memories with Infinite Yatra.
-                        </p>
-                        <div className="flex items-center justify-center gap-3 pt-2">
-                            <div className="h-1 w-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
-                            <span className="text-xs text-slate-500 font-medium">Explore Infinite</span>
-                        </div>
-                    </div>
+                        {/* ── Column 1: Brand ── */}
+                        <div className="space-y-6">
+                            <div className="w-max">
+                                <h3
+                                    className="text-2xl font-black tracking-[0.2em] text-white text-center"
+                                    style={{ fontFamily: "'Raleway', sans-serif" }}
+                                >
+                                    INFINITE YATRA
+                                </h3>
+                                <span
+                                    className="text-[10px] tracking-[0.3em] font-extrabold text-white/80 block w-full text-center"
+                                    style={{ fontFamily: "'Raleway', sans-serif" }}
+                                >
+                                    EXPLORE INFINITE
+                                </span>
+                            </div>
 
-                    {/* Quick Links */}
-                    <div>
-                        <h4 className="font-bold text-lg mb-6 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                            Company
-                        </h4>
-                        <ul className="space-y-4">
-                            <li>
-                                <a
-                                    href="#"
-                                    className="text-white/60 hover:text-white transition-all duration-300 group inline-flex items-center gap-2 font-light"
-                                >
-                                    <span className="w-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 group-hover:w-4 transition-all duration-300 rounded-full"></span>
-                                    About Us
-                                </a>
-                            </li>
-                            <li>
-                                <Link
-                                    to="/careers"
-                                    className="text-white/60 hover:text-white transition-all duration-300 group inline-flex items-center gap-2 font-light"
-                                >
-                                    <span className="w-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 group-hover:w-4 transition-all duration-300 rounded-full"></span>
-                                    Careers
-                                </Link>
-                            </li>
-                            <li>
-                                <Link
-                                    to="/terms"
-                                    className="text-white/60 hover:text-white transition-all duration-300 group inline-flex items-center gap-2 font-light"
-                                >
-                                    <span className="w-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 group-hover:w-4 transition-all duration-300 rounded-full"></span>
-                                    Terms & Conditions
-                                </Link>
-                            </li>
-                            <li>
-                                <Link
-                                    to="/partner/hotel-onboarding"
-                                    className="text-white/60 hover:text-white transition-all duration-300 group inline-flex items-center gap-2 font-light"
-                                >
-                                    <span className="w-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 group-hover:w-4 transition-all duration-300 rounded-full"></span>
-                                    List Your Property
-                                </Link>
-                            </li>
-                        </ul>
-                    </div>
-
-                    {/* Contact */}
-                    <div>
-                        <h4 className="font-bold text-lg mb-6 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                            Contact Us
-                        </h4>
-                        <ul className="space-y-5">
-                            <li>
-                                <a
-                                    href="tel:+919265799325"
-                                    className="text-white/60 hover:text-white transition-all duration-300 group flex items-center gap-3 font-light"
-                                >
-                                    <div className="p-2 rounded-lg bg-white/5 group-hover:bg-blue-600/20 transition-all duration-300 border border-white/5 group-hover:border-blue-500/30">
-                                        <Phone size={16} className="group-hover:text-blue-400 transition-colors" />
-                                    </div>
+                            {/* Contact Card */}
+                            <div className="mt-6 p-4 w-max rounded-xl bg-[#1a1a1a] border border-[#222] space-y-3">
+                                <a href="tel:+919265799325" className="flex items-center gap-3 text-[#888] text-sm hover:text-white transition-colors">
+                                    <Phone size={16} className="text-[#7C3AED] shrink-0" />
                                     <span>+91 9265799325</span>
                                 </a>
-                            </li>
-                            <li>
-                                <a
-                                    href="mailto:info@infiniiteyatra.com"
-                                    className="text-white/60 hover:text-white transition-all duration-300 group flex items-center gap-3 font-light"
-                                >
-                                    <div className="p-2 rounded-lg bg-white/5 group-hover:bg-purple-600/20 transition-all duration-300 border border-white/5 group-hover:border-purple-500/30">
-                                        <Mail size={16} className="group-hover:text-purple-400 transition-colors" />
-                                    </div>
-                                    <span className="text-sm">info@infiniiteyatra.com</span>
+                                <a href="mailto:info@infiniteyatra.com" className="flex items-center gap-3 text-[#888] text-sm hover:text-white transition-colors">
+                                    <Mail size={16} className="text-[#2563EB] shrink-0" />
+                                    <span>info@infiniteyatra.com</span>
                                 </a>
-                            </li>
-                        </ul>
-                    </div>
+                                <a
+                                    href="https://wa.me/919265799325"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-2 px-4 py-2 mt-1 rounded-full border border-green-500/40 text-green-400 text-xs font-medium hover:bg-green-500/10 transition-all duration-200"
+                                >
+                                    💬 Chat on WhatsApp
+                                </a>
+                            </div>
+                        </div>
 
-                    {/* Newsletter */}
-                    <div>
-                        <h4 className="font-bold text-lg mb-6 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                            Stay Updated
-                        </h4>
-                        <p className="text-white/60 mb-6 text-sm leading-relaxed font-light">
-                            Subscribe to our newsletter for exclusive travel deals and inspiration.
-                        </p>
-                        <form onSubmit={handleSubscribe} className="space-y-3">
-                            <div className="relative">
+                        {/* ── Column 2: Explore ── */}
+                        <div>
+                            <SectionHeading>Explore</SectionHeading>
+                            <ul className="space-y-3">
+                                {exploreLinks.map((link) => (
+                                    <li key={link.label}>
+                                        <FooterLink to={link.to}>
+                                            <span className="mr-1">{link.emoji}</span> {link.label}
+                                        </FooterLink>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+
+                        {/* ── Column 3: Support ── */}
+                        <div>
+                            <SectionHeading>Support</SectionHeading>
+                            <ul className="space-y-3">
+                                {supportLinks.map((link) => (
+                                    <li key={link.label}>
+                                        <FooterLink to={link.to}>{link.label}</FooterLink>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+
+                        {/* ── Column 4: Stay Updated ── */}
+                        <div>
+                            <SectionHeading>Stay Updated</SectionHeading>
+                            <p className="text-[#888] text-[13px] leading-relaxed mb-5">
+                                Join best travelers getting weekly trip inspiration, exclusive deals & hidden destinations.
+                            </p>
+
+                            <form onSubmit={handleSubscribe} className="space-y-3">
                                 <input
                                     type="email"
                                     placeholder="Enter your email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     disabled={status === 'loading' || status === 'success'}
-                                    className="w-full bg-white/5 backdrop-blur-sm text-white px-4 py-3 rounded-xl outline-none 
-                                             border border-white/10 focus:border-blue-500/50 focus:bg-white/10
-                                             transition-all duration-300 placeholder:text-white/30 disabled:opacity-50"
+                                    className="w-full bg-[#1a1a1a] text-white px-4 py-3 rounded-xl outline-none border border-[#222]
+                                             focus:border-[#7C3AED]/50 focus:shadow-[0_0_0_3px_rgba(124,58,237,0.1)]
+                                             transition-all duration-300 placeholder:text-[#555] text-sm disabled:opacity-50"
                                     required
                                 />
-                            </div>
-                            <button
-                                type="submit"
-                                disabled={status === 'loading' || status === 'success'}
-                                className={`w-full px-4 py-3 rounded-xl transition-all duration-300 font-medium
-                                             shadow-lg hover:shadow-xl active:scale-[0.98]
-                                             flex items-center justify-center gap-2 group glass-btn
-                                             ${status === 'success'
-                                        ? 'bg-green-500/20 border-green-500/50 text-green-400'
-                                        : status === 'error'
-                                            ? 'bg-red-500/20 border-red-500/50 text-red-400'
-                                            : 'bg-white/10 hover:bg-white/20 border-white/20 text-white'
-                                    }`}
-                            >
-                                {status === 'loading' ? (
-                                    <span>Subscribing...</span>
-                                ) : status === 'success' ? (
-                                    <>Subscribed <CheckCircle size={16} /></>
-                                ) : status === 'error' ? (
-                                    <>Error, Try Again <AlertCircle size={16} /></>
-                                ) : (
-                                    <>Subscribe <Send size={16} className="group-hover:translate-x-1 transition-transform duration-300" /></>
-                                )}
-                            </button>
-                        </form>
-                    </div>
-                </div>
+                                <button
+                                    type="submit"
+                                    disabled={status === 'loading' || status === 'success'}
+                                    className={`w-full px-4 py-3 rounded-xl font-medium text-sm transition-all duration-300
+                                        ${status === 'success'
+                                            ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                                            : status === 'error' || status === 'duplicate'
+                                                ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+                                                : 'bg-gradient-to-r from-[#7C3AED] to-[#2563EB] text-white hover:shadow-lg hover:shadow-purple-500/20 active:scale-[0.98]'
+                                        } disabled:opacity-60`}
+                                >
+                                    {status === 'loading' ? 'Subscribing...'
+                                        : status === 'success' ? '🎉 You\'re in!'
+                                            : status === 'duplicate' ? 'Already subscribed! 🙌'
+                                                : status === 'error' ? 'Error — Try Again'
+                                                    : 'Subscribe'}
+                                </button>
+                            </form>
 
-                {/* Bottom Section */}
-                <div className="relative">
-                    <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
-
-                    <div className="pt-10 flex flex-col md:flex-row items-center justify-between gap-6">
-                        <div className="flex flex-col md:flex-row items-center gap-6">
-                            <p className="text-white/40 text-sm font-light">
-                                © {new Date().getFullYear()} Infinite Yatra. All rights reserved.
-                            </p>
-
-                            {/* MSME Badge - Bottom Placement */}
-                            <div className="flex items-center gap-3 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:border-white/20 transition-all group cursor-default backdrop-blur-sm">
-                                <div className="h-6 w-fit bg-white rounded p-0.5 flex items-center justify-center">
-                                    <img src={msmeLogo} alt="MSME" className="h-full w-auto object-contain" />
-                                </div>
-                                <div className="flex flex-col text-left">
-                                    <span className="text-[10px] font-bold text-white uppercase tracking-wider leading-tight">MSME Registered</span>
-                                    <span className="text-[9px] text-white/50 leading-tight">Government of India</span>
+                            {/* Social Icons - Connect With Us */}
+                            <div className="mt-8">
+                                <h4 className="text-white text-center font-bold text-lg mb-6">Connect With Us</h4>
+                                <div className="flex items-center justify-center gap-4">
+                                    {socialLinks.map((social) => {
+                                        const Icon = social.icon;
+                                        return (
+                                            <a
+                                                key={social.title}
+                                                href={social.href}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                title={social.title}
+                                                className={`p-4 rounded-2xl bg-[#111111] border border-[#222222] text-[#888888]
+                                                    ${social.hoverBg} hover:text-white hover:border-transparent
+                                                    transition-all duration-300 shadow-xl`}
+                                            >
+                                                <Icon size={24} />
+                                            </a>
+                                        );
+                                    })}
                                 </div>
                             </div>
-                        </div>
-
-                        {/* Social Media Icons */}
-                        <div className="flex items-center gap-4">
-                            {[
-                                { icon: XIcon, href: "https://x.com/infiniteyatra", title: "X (Twitter)", color: "hover:bg-slate-700" },
-                                { icon: ThreadsIcon, href: "https://www.threads.com/@infinite.yatra", title: "Threads", color: "hover:bg-slate-700" },
-                                { icon: Instagram, href: "https://www.instagram.com/infinite.yatra/", title: "Instagram", color: "hover:bg-gradient-to-br hover:from-purple-600 hover:to-pink-600" },
-                                { icon: WhatsAppIcon, href: "https://api.whatsapp.com/send?phone=919265799325&text=Hey%20Infinite%20Yatra%20%F0%9F%91%8B%2C%20I%E2%80%99m%20interested%20in%20your%20tours.%20Please%20share%20more%20details%20%F0%9F%99%8F", title: "WhatsApp", color: "hover:bg-green-600" },
-                                { icon: WhatsAppIcon, href: "https://www.whatsapp.com/channel/0029VbBX7rv3gvWStqSdXf08", title: "WhatsApp Channel", color: "hover:bg-green-600", iconColor: "text-green-400" }
-                            ].map((social, index) => {
-                                const Icon = social.icon;
-                                return (
-                                    <a
-                                        key={index}
-                                        href={social.href}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        title={social.title}
-                                        className={`p-3 rounded-xl bg-white/5 backdrop-blur-sm text-white/60 
-                                                  ${social.color} hover:text-white
-                                                  transition-all duration-300 hover:scale-110 hover:-translate-y-1
-                                                  border border-white/10 hover:border-white/30
-                                                  shadow-lg hover:shadow-xl group`}
-                                    >
-                                        <Icon size={20} className={social.iconColor || ""} />
-                                    </a>
-                                );
-                            })}
                         </div>
                     </div>
                 </div>
             </div>
+
+
+            {/* ═══════════ SECTION 4: Bottom Bar ═══════════ */}
+            <div style={{ backgroundColor: '#080808' }}>
+                <div className="container mx-auto px-6 py-5">
+                    {/* Using a grid with 3 columns ensures the center item is always dead center on desktop */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 items-center gap-6 text-center md:text-left">
+                        {/* Left */}
+                        <div className="flex justify-center md:justify-start">
+                            <p className="text-[#666] text-[13px]">© 2026 Infinite Yatra. All rights reserved.</p>
+                        </div>
+
+                        {/* Center - Easter Egg */}
+                        <div className="flex justify-center relative items-center h-[24px]">
+                            <div
+                                className="cursor-default select-none relative flex justify-center items-center w-full h-full"
+                                onMouseEnter={() => setEasterEggHover(true)}
+                                onMouseLeave={() => setEasterEggHover(false)}
+                            >
+                                {/* Base Text */}
+                                <p
+                                    className={`transition-opacity whitespace-nowrap text-[14px] absolute inset-y-0 flex items-center justify-center gap-1.5 ${easterEggHover
+                                            ? 'opacity-0 pointer-events-none'
+                                            : 'opacity-100 text-[#888]'
+                                        }`}
+                                    style={{
+                                        transitionDuration: '300ms',
+                                        transitionDelay: easterEggHover ? '0ms' : '300ms',
+                                    }}
+                                >
+                                    today across Earth... tomorrow beyond it.
+                                    <button onClick={handleLaunch} className="rocket-float hover:scale-110 transition-transform cursor-pointer" title="Infinite Yatra Space Program">
+                                        🚀
+                                    </button>
+                                </p>
+
+                                {/* Hover Revealing Text & Stars */}
+                                <div className="absolute inset-y-0 w-full flex items-center justify-center pointer-events-none">
+                                    {/* Stars Background (Appears at 1600ms) */}
+                                    <div
+                                        className={`absolute inset-0 flex items-center justify-center ${easterEggHover
+                                                ? 'opacity-100'
+                                                : 'opacity-0'
+                                            }`}
+                                        style={{
+                                            transitionProperty: 'opacity',
+                                            transitionDuration: easterEggHover ? '1000ms' : '300ms',
+                                            transitionDelay: easterEggHover ? '1600ms' : '0ms',
+                                            transitionTimingFunction: 'ease-in-out',
+                                            zIndex: 0
+                                        }}
+                                    >
+                                        <div className="relative w-full h-full max-w-[250px]">
+                                            <span className="footer-twinkle-star" aria-hidden="true" style={{ top: '25%', right: '10%' }}>✦</span>
+                                            <span className="footer-twinkle-star footer-twinkle-star-2" aria-hidden="true" style={{ bottom: '25%', left: '10%' }}>✦</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Foreground Text */}
+                                    <div
+                                        className={`whitespace-nowrap text-[15px] flex items-center justify-center gap-2 ${easterEggHover
+                                                ? 'opacity-100 pointer-events-auto'
+                                                : 'opacity-0 pointer-events-none'
+                                            }`}
+                                        style={{
+                                            transitionProperty: 'opacity',
+                                            transitionDuration: '300ms',
+                                            transitionDelay: easterEggHover ? '300ms' : '0ms',
+                                            transitionTimingFunction: 'ease-in-out',
+                                            zIndex: 10
+                                        }}
+                                    >
+                                        <button onClick={handleLaunch} className="rocket-float hover:scale-110 transition-transform cursor-pointer" title="Infinite Yatra Space Program">
+                                            🚀
+                                        </button>
+                                        <button
+                                            onClick={handleLaunch}
+                                            className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#7C3AED] to-[#2563EB] footer-easter-glow hover:opacity-80 transition-opacity"
+                                        >
+                                            Space Travel — Future Vision
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Right */}
+                        <div className="flex justify-center md:justify-end items-center gap-2 text-[#666] text-[12px]">
+                            <Link to="/terms" className="hover:text-white transition-colors">Terms & Conditions</Link>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* ═══════════ Cinematic Rocket Launch Overlay ═══════════ */}
+            <AnimatePresence>
+                {isLaunching && (
+                    <motion.div
+                        className="fixed inset-0 z-[9999] pointer-events-none overflow-hidden"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                    >
+                        {/* Step 1: Background slowly darkens */}
+                        <motion.div
+                            className="absolute inset-0 bg-black"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 0.95 }}
+                            transition={{ duration: 1.6 }}
+                        />
+
+                        {/* Step 3: Space background fade at 1600ms */}
+                        <motion.div
+                            className="absolute inset-0 bg-gradient-to-t from-[#020024] via-[#090979] to-[#000000]"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 1.6, duration: 0.4 }}
+                        />
+
+                        {/* Step 2: Stars appear at 1000ms */}
+                        <motion.div
+                            className="absolute inset-0"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 1.0, duration: 0.5 }}
+                        >
+                            {stars.map((star, i) => (
+                                <motion.div
+                                    key={i}
+                                    className="absolute text-white text-[10px]"
+                                    style={{
+                                        left: star.left,
+                                        top: star.top
+                                    }}
+                                    animate={{ opacity: [0.1, 1, 0.1], scale: [0.8, 1.2, 0.8] }}
+                                    transition={{ duration: star.duration, repeat: Infinity, delay: star.delay }}
+                                >
+                                    ✦
+                                </motion.div>
+                            ))}
+                        </motion.div>
+
+                        {/* The Rocket Container */}
+                        <div className="absolute inset-x-0 bottom-0 h-full flex flex-col items-center justify-end pb-20">
+                            <motion.div
+                                className="relative z-10 flex flex-col items-center"
+                                initial={{ y: '20vh' }}
+                                animate={{ y: ['20vh', '20vh', '-120vh'] }}
+                                transition={{
+                                    duration: 2.0,
+                                    times: [0, 0.3, 1], // Launch bursts at 600ms
+                                    ease: ['easeInOut', 'easeIn']
+                                }}
+                            >
+                                {/* Rocket Emoji (tilts upward) */}
+                                <motion.div
+                                    className="text-7xl origin-center"
+                                    initial={{ scale: 1, rotate: 0 }}
+                                    animate={{ scale: [1, 1.2, 1.3], rotate: [0, -45, -45] }}
+                                    transition={{ duration: 2.0, times: [0, 0.1, 1] }}
+                                >
+                                    🚀
+                                </motion.div>
+
+                                {/* Engine Fire Effect (Ignition at 200ms) */}
+                                <motion.div
+                                    className="absolute top-[75%] flex flex-col items-center"
+                                    initial={{ opacity: 0, scale: 0 }}
+                                    animate={{
+                                        opacity: [0, 1, 0.8, 1, 0.9, 1],
+                                        scale: [0, 1, 0.8, 1.1, 0.9, 1]
+                                    }}
+                                    transition={{
+                                        duration: 1.8,
+                                        delay: 0.2, // Ignition starts at 200ms
+                                        repeat: Infinity,
+                                        repeatType: "reverse"
+                                    }}
+                                >
+                                    <div className="text-5xl -mt-2 animate-pulse" style={{ filter: 'drop-shadow(0 0 10px orange)' }}>🔥</div>
+
+                                    {/* Trail glow */}
+                                    <motion.div
+                                        className="w-4 h-64 bg-gradient-to-b from-orange-500 via-yellow-400 to-transparent blur-xl rounded-full -mt-4"
+                                        initial={{ opacity: 0, scaleY: 0 }}
+                                        animate={{ opacity: [0, 0.8, 0.8], scaleY: [0, 1, 1] }}
+                                        transition={{ duration: 1.4, delay: 0.6, times: [0, 0.2, 1] }} // Appears solidly at 600ms
+                                        style={{ transformOrigin: 'top' }}
+                                    />
+                                </motion.div>
+                            </motion.div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </footer>
     );
-};
+});
+
+Footer.displayName = 'Footer';
 
 export default Footer;

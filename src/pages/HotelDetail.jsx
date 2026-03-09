@@ -134,7 +134,7 @@ const MOCK_HOTEL = {
     contact: {
         phone: '+91 98765 43210',
         whatsapp: '+91 98765 43210',
-        email: 'info@infiniiteyatra.com'
+        email: 'info@infiniteyatra.com'
     },
     cancellationPolicy: "No date modifications (date changes or stay duration reductions) are allowed within the 7-day window prior to the check-in date. Any such requests will be treated as cancellations.",
     propertyPolicy: "Guests are required to show a photo identification and credit card upon check-in. Please note that all Special Requests are subject to availability and additional charges may apply.",

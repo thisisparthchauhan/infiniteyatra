@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MapPin, Calendar, Users, Phone, Send, CheckCircle, Loader, ArrowDown } from 'lucide-react';
+import { MapPin, Calendar, Users, Phone, Mail, Send, CheckCircle, Loader, ArrowDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
@@ -35,8 +35,10 @@ const Hero = () => {
         location: '',
         days: '',
         persons: '',
-        phone: ''
+        phone: '',
+        email: ''
     });
+    const [contactMode, setContactMode] = useState('phone'); // 'phone' or 'email'
     const [suggestions, setSuggestions] = useState([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -84,18 +86,33 @@ const Hero = () => {
         e.preventDefault();
 
         // Basic Validation
-        if (!formData.location || !formData.phone) {
-            addToast("Location and Phone number are required", "error");
+        if (!formData.location) {
+            addToast("Location is required", "error");
             return;
+        }
+
+        if (contactMode === 'phone' && !formData.phone) {
+            addToast("Phone number is required", "error");
+            return;
+        }
+        if (contactMode === 'email') {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!formData.email || !emailRegex.test(formData.email)) {
+                addToast("Please enter a valid email address", "error");
+                return;
+            }
         }
 
         setIsSubmitting(true);
         try {
             await addDoc(collection(db, "enquiries"), {
-                ...formData,
+                location: formData.location,
                 days: Number(formData.days) || 0,
                 persons: Number(formData.persons) || 0,
-                status: 'new', // For admin to track
+                contactMode,
+                phone: contactMode === 'phone' ? formData.phone : '',
+                email: contactMode === 'email' ? formData.email : '',
+                status: 'new',
                 createdAt: serverTimestamp(),
                 source: 'homepage_hero'
             });
@@ -106,7 +123,7 @@ const Hero = () => {
             // Reset form after 5 seconds to allow sending another
             setTimeout(() => {
                 setIsSubmitted(false);
-                setFormData({ location: '', days: '', persons: '', phone: '' });
+                setFormData({ location: '', days: '', persons: '', phone: '', email: '' });
             }, 5000);
 
         } catch (error) {
@@ -184,10 +201,10 @@ const Hero = () => {
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.8, delay: 0.8 }}
                                 onSubmit={handleSubmit}
-                                className="glass-card-dark p-2 rounded-[2rem] flex flex-col lg:flex-row items-center gap-2"
+                                className="glass-card-dark p-2 rounded-[2rem] flex flex-col lg:flex-row items-center gap-2 overflow-visible"
                             >
                                 {/* Location - Wider */}
-                                <div className="flex-[2] flex items-center gap-3 px-6 py-4 w-full border-b lg:border-b-0 lg:border-r border-white/10">
+                                <div className="flex-[1.2] flex items-center gap-3 px-6 py-4 w-full border-b lg:border-b-0 lg:border-r border-white/10">
                                     <MapPin className="text-blue-400 shrink-0" size={20} />
                                     <div className="text-left w-full">
                                         <label htmlFor="location" className="block text-[10px] text-white/70 font-bold uppercase tracking-wider mb-1">Location</label>
@@ -225,33 +242,9 @@ const Hero = () => {
                                                             {suggestions.map((city, idx) => (
                                                                 <div
                                                                     key={idx}
-                                                                    className="px-4 py-3 rounded-xl hover:bg-white/10 cursor-pointer flex items-center gap-4 transition-all duration-200 group"
+                                                                    className="px-4 py-3 rounded-xl hover:bg-white/10 cursor-pointer flex items-center gap-3 transition-all duration-200 group"
                                                                     onClick={() => handleSuggestionClick(city)}
                                                                 >
-                                                                    <div className="w-10 h-10 rounded-lg bg-blue-500/10 group-hover:bg-blue-500/20 flex items-center justify-center shrink-0 border border-blue-500/20 transition-colors">
-                                                                        <img
-                                                                            src={`https://source.unsplash.com/100x100/?${city.split(',')[0]},travel`}
-                                                                            alt={city}
-                                                                            className="w-full h-full object-cover rounded-lg opacity-0"
-                                                                            onError={(e) => {
-                                                                                e.target.style.display = 'none';
-                                                                                e.target.nextSibling.style.display = 'block';
-                                                                            }}
-                                                                            onLoad={(e) => e.target.classList.remove('opacity-0')}
-                                                                        />
-                                                                        <MapPin size={18} className="text-blue-400 absolute" style={{ display: 'none' }} />
-                                                                        {/* Fallback to icon initially or on error. Actually unsplash source might be flaky, let's stick to icon for reliability and speed as requested "show amravati... " */}
-                                                                    </div>
-
-                                                                    {/* Simple Icon version per user request style */}
-                                                                    <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center shrink-0 border border-white/10">
-                                                                        <img
-                                                                            src="https://cdn-icons-png.flaticon.com/512/201/201623.png"
-                                                                            alt="map"
-                                                                            className="w-6 h-6 opacity-80"
-                                                                        />
-                                                                    </div>
-
                                                                     <div className="flex-1 text-left">
                                                                         <p className="text-base font-semibold text-white group-hover:text-blue-300 transition-colors">{city.split(',')[0]}</p>
                                                                         <p className="text-xs text-white/40 group-hover:text-white/60 transition-colors">{city.split(',')[1] || 'India'}</p>
@@ -302,46 +295,89 @@ const Hero = () => {
                                     </div>
                                 </div>
 
-                                {/* Phone - Wider */}
-                                <div className="flex-[1.8] flex items-center gap-3 px-6 py-4 w-full">
-                                    <Phone className="text-blue-400 shrink-0" size={20} />
-                                    <div className="text-left w-full">
-                                        <label htmlFor="phone" className="block text-[10px] text-white/70 font-bold uppercase tracking-wider mb-1">Phone</label>
-                                        <div className="phone-input-dark w-full">
-                                            <PhoneInput
-                                                country={'in'}
-                                                value={formData.phone}
-                                                onChange={handlePhoneChange}
-                                                enableSearch={true}
-                                                disableSearchIcon={false}
-                                                searchPlaceholder="Search country"
-                                                inputStyle={{
-                                                    width: '100%',
-                                                    height: '100%',
-                                                    background: 'transparent',
-                                                    border: 'none',
-                                                    color: 'white',
-                                                    fontSize: '1.125rem', // text-lg
-                                                    fontWeight: 500,
-                                                    paddingLeft: '48px'
-                                                }}
-                                                buttonStyle={{
-                                                    background: 'transparent',
-                                                    border: 'none',
-                                                    paddingLeft: '0px'
-                                                }}
-                                                dropdownStyle={{
-                                                    background: '#1e293b',
-                                                    color: 'white',
-                                                    border: '1px solid rgba(255,255,255,0.1)'
-                                                }}
-                                                containerStyle={{
-                                                    width: '100%',
-                                                    height: '100%'
-                                                }}
-                                                placeholder="Number"
+                                {/* Contact Segmented Control */}
+                                <div className="flex-[1.8] flex flex-row items-center gap-3 px-6 py-4 w-full">
+                                    <div className="flex bg-[#0f1115]/80 rounded-xl p-1 shrink-0 border border-white/10 shadow-inner">
+                                        <button
+                                            type="button"
+                                            onClick={() => setContactMode('phone')}
+                                            className={`p-2 rounded-lg transition-all duration-300 ${contactMode === 'phone' ? 'bg-blue-500/20 text-blue-400 shadow-sm' : 'text-white/40 hover:text-white/80 hover:bg-white/5'}`}
+                                            title="Use Phone"
+                                        >
+                                            <Phone size={16} />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setContactMode('email')}
+                                            className={`p-2 rounded-lg transition-all duration-300 ${contactMode === 'email' ? 'bg-purple-500/20 text-purple-400 shadow-sm' : 'text-white/40 hover:text-white/80 hover:bg-white/5'}`}
+                                            title="Use Email"
+                                        >
+                                            <Mail size={16} />
+                                        </button>
+                                    </div>
+                                    <div className="text-left w-full h-full flex flex-col justify-center">
+                                        <label className="block text-[10px] text-white/70 font-bold uppercase tracking-wider mb-1">
+                                            {contactMode === 'phone' ? 'Phone Number' : 'Email Address'}
+                                        </label>
+
+                                        {contactMode === 'phone' ? (
+                                            <motion.div
+                                                initial={{ opacity: 0, x: -10 }}
+                                                animate={{ opacity: 1, x: 0 }}
+                                                className="phone-input-dark w-full"
+                                                key="phone-input"
+                                            >
+                                                <PhoneInput
+                                                    country={'in'}
+                                                    value={formData.phone}
+                                                    onChange={handlePhoneChange}
+                                                    enableSearch={true}
+                                                    disableSearchIcon={false}
+                                                    searchPlaceholder="Search country"
+                                                    inputStyle={{
+                                                        width: '100%',
+                                                        height: '100%',
+                                                        background: 'transparent',
+                                                        border: 'none',
+                                                        color: 'white',
+                                                        fontSize: '1.125rem', // text-lg
+                                                        fontWeight: 500,
+                                                        paddingLeft: '48px',
+                                                        paddingTop: 0,
+                                                        paddingBottom: 0
+                                                    }}
+                                                    buttonStyle={{
+                                                        background: 'transparent',
+                                                        border: 'none',
+                                                        paddingLeft: '0px'
+                                                    }}
+                                                    dropdownStyle={{
+                                                        background: '#1e293b',
+                                                        color: 'white',
+                                                        border: '1px solid rgba(255,255,255,0.1)'
+                                                    }}
+                                                    containerStyle={{
+                                                        width: '100%',
+                                                        height: '100%'
+                                                    }}
+                                                    placeholder="Number"
+                                                />
+                                            </motion.div>
+                                        ) : (
+                                            <motion.input
+                                                initial={{ opacity: 0, x: 10 }}
+                                                animate={{ opacity: 1, x: 0 }}
+                                                key="email-input"
+                                                id="email"
+                                                name="email"
+                                                type="email"
+                                                value={formData.email}
+                                                onChange={handleChange}
+                                                placeholder="your@email.com"
+                                                pattern="[^\s@]+@[^\s@]+\.[^\s@]+"
+                                                className="w-full outline-none text-white placeholder:text-white/50 font-medium text-lg bg-transparent"
                                             />
-                                        </div>
+                                        )}
                                     </div>
                                 </div>
 

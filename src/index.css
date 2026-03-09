@@ -364,3 +364,111 @@ input:-webkit-autofill:active {
 .react-datepicker-popper {
     z-index: 9999 !important;
 }
+
+/* ═══════════ Footer Animations ═══════════ */
+
+/* Slow shimmer gradient for Quick Book strip */
+@keyframes footerShimmer {
+    0% {
+        background-position: -200% 0;
+    }
+
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.footer-shimmer {
+    background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(124, 58, 237, 0.06) 25%,
+            rgba(37, 99, 235, 0.08) 50%,
+            rgba(124, 58, 237, 0.06) 75%,
+            transparent 100%);
+    background-size: 200% 100%;
+    animation: footerShimmer 7s ease-in-out infinite;
+    will-change: background-position;
+}
+
+/* Pulsing green dot for "Bookings Open" */
+@keyframes pulseGreen {
+
+    0%,
+    100% {
+        opacity: 0.75;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0;
+        transform: scale(2);
+    }
+}
+
+.pulse-green-dot>span:first-child {
+    animation: pulseGreen 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+/* Easter egg twinkle star */
+@keyframes twinkle {
+
+    0%,
+    100% {
+        opacity: 0;
+        transform: scale(0.5) rotate(0deg);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.2) rotate(180deg);
+    }
+}
+
+.footer-twinkle-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.footer-twinkle-star {
+    position: absolute;
+    top: -8px;
+    right: -16px;
+    font-size: 10px;
+    color: #7C3AED;
+    animation: twinkle 1.5s ease-in-out infinite;
+    pointer-events: none;
+}
+
+.footer-twinkle-star-2 {
+    top: auto;
+    bottom: -6px;
+    right: auto;
+    left: -14px;
+    animation-delay: 0.7s;
+    color: #2563EB;
+}
+
+/* Easter egg purple glow */
+.footer-easter-glow {
+    filter: drop-shadow(0 0 8px rgba(124, 58, 237, 0.4));
+}
+
+/* ═══════════ Rocket Animation ═══════════ */
+@keyframes rocketFloat {
+    0% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-4px);
+    }
+
+    100% {
+        transform: translateY(0);
+    }
+}
+
+.rocket-float {
+    animation: rocketFloat 2s ease-in-out infinite;
+    display: inline-block;
+}

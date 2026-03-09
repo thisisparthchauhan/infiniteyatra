@@ -71,7 +71,7 @@ export const generateInvoicePDF = (booking, payment, customer) => {
     doc.text("Contact Us", infoX, infoY, { align: 'right' });
     doc.setFont("helvetica", "normal");
     doc.text("Phone: +91 9265799325", infoX, infoY + 5, { align: 'right' });
-    doc.text("Email: info@infiniiteyatra.com", infoX, infoY + 10, { align: 'right' });
+    doc.text("Email: info@infiniteyatra.com", infoX, infoY + 10, { align: 'right' });
 
     infoY += 18;
     doc.setFont("helvetica", "bold");
@@ -354,7 +354,7 @@ export const generateInvoicePDF = (booking, payment, customer) => {
     const socY = footerY + 20;
     doc.text("infinite.yatra", margin + 10, socY); // Add icons if possible, simpler to use text for now
     doc.text("Infinite Yatra (WhatsApp)", margin + 10, socY + 5);
-    doc.text("info@infiniiteyatra.com", margin + 10, socY + 10);
+    doc.text("info@infiniteyatra.com", margin + 10, socY + 10);
 
     doc.setFontSize(8);
     doc.setTextColor(100, 100, 100);

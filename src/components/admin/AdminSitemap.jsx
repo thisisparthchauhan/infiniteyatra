@@ -45,7 +45,7 @@ const SITE_DATA = {
             { id: 'blogPost', label: 'Blog Post', route: '/blog/:id', icon: FileText, desc: 'Individual blog article with rich content, images, and share buttons.' },
             { id: 'stories', label: 'Stories', route: '/stories', icon: PenTool, desc: 'Community travel stories written by users. Anyone logged in can create stories. Admin can edit/delete any story.' },
             { id: 'storyDetail', label: 'Story Detail', route: '/story/:id', icon: FileText, desc: 'Individual travel story with comments and reactions.' },
-            { id: 'contact', label: 'Contact Us', route: '/contact', icon: Smartphone, desc: 'Contact form, WhatsApp link (+91 9265799325), email (info@infiniiteyatra.com), office address, embedded map.' },
+            { id: 'contact', label: 'Contact Us', route: '/contact', icon: Smartphone, desc: 'Contact form, WhatsApp link (+91 9265799325), email (info@infiniteyatra.com), office address, embedded map.' },
             { id: 'careers', label: 'Careers', route: '/careers', icon: Users, desc: 'Job listings with "Apply Now" buttons that open mailto: links. "Send your resume" section at bottom.' },
             { id: 'tripPlanner', label: 'AI Trip Planner', route: '/trip-planner', icon: Compass, desc: 'AI-powered itinerary generator using Google Gemini API. Users describe preferences → get custom trip plan.' },
             { id: 'wishlist', label: 'Wishlist', route: '/wishlist', icon: Heart, desc: 'Saved/favorited packages. Uses WishlistContext (localStorage-based). No login required to save.' },

@@ -57,11 +57,14 @@ import MigrateData from './pages/MigrateData';
 
 import TermsConditions from './pages/TermsConditions';
 
+import Future from './pages/Future';
+
 const Layout = ({ children }) => {
   const location = useLocation();
   const isConnectPage = location.pathname === '/connect';
   const isAdminPage = location.pathname.startsWith('/admin');
-  const shouldHideLayout = isConnectPage || isAdminPage;
+  const isFuturePage = location.pathname === '/future';
+  const shouldHideLayout = isConnectPage || isAdminPage || isFuturePage;
 
   return (
     <>
@@ -169,6 +172,7 @@ function App() {
                         <Route path="/booking-success" element={<BookingSuccess />} />
                         <Route path="/terms" element={<TermsConditions />} />
                         <Route path="/migrate-packages-fix" element={<MigrateData />} />
+                        <Route path="/future" element={<Future />} />
 
                         {/* NEW: IY Hotels Vertical */}
                         <Route path="/hotels" element={<Hotels />} />
