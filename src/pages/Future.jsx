@@ -3,6 +3,7 @@ import { motion, useInView } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowDown, ChevronDown } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
+import SpaceWaitlistModal from '../components/SpaceWaitlistModal';
 
 /* =========================================
    1. Canvas Starfield Background
@@ -445,6 +446,18 @@ const RocketMangal = () => (
    MAIN PAGE COMPONENT 
 ========================================= */
 const Future = () => {
+    const [isWaitlistOpen, setIsWaitlistOpen] = useState(false);
+    const [showShareBanner, setShowShareBanner] = useState(false);
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('ref') === 'mission-share') {
+            const t1 = setTimeout(() => setShowShareBanner(true), 2000);
+            const t2 = setTimeout(() => setShowShareBanner(false), 7000);
+            return () => { clearTimeout(t1); clearTimeout(t2); };
+        }
+    }, []);
+
     return (
         <>
             <Helmet>
@@ -480,6 +493,19 @@ const Future = () => {
                     <div className="absolute top-[50%] right-[10%] w-[50vw] h-[50vw] rounded-full bg-[#00FFFF]/5 blur-[150px]" />
                     <div className="absolute bottom-[0%] left-[-10%] w-[60vw] h-[40vw] rounded-full bg-[#C8AAFF]/5 blur-[150px]" />
                 </div>
+
+                {/* Share URL Banner */}
+                {showShareBanner && (
+                    <motion.div 
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{ duration: 0.8 }}
+                        className="fixed top-[86px] left-1/2 -translate-x-1/2 z-50 bg-[#0A0618]/90 backdrop-blur-md border border-[#7B2FFF]/50 px-6 py-3 rounded shadow-[0_0_20px_rgba(123,47,255,0.3)] text-center text-[#C8AAFF] font-['Orbitron'] text-[11px] tracking-[2px]"
+                    >
+                        🚀 Someone shared their mission with you. This is what awaits humanity.
+                    </motion.div>
+                )}
 
                 {/* ── Navbar ── Fully Opaque */}
                 <nav className="fixed top-0 left-0 w-full h-[70px] px-[56px] flex justify-between items-center z-[100] bg-[#040112] border-b border-[#7B2FFF]/20 shadow-[0_4px_40px_rgba(0,0,0,0.9)]">
@@ -688,18 +714,18 @@ const Future = () => {
                         </p>
                     </FadeUp>
 
-                    <FadeUp delay={0.4} className="flex flex-col sm:flex-row gap-6 w-full max-w-sm sm:max-w-none px-4">
-                        <button className="relative px-8 py-4 font-['Orbitron'] font-bold text-sm tracking-[3px] text-white rounded bg-gradient-to-r from-[#7B2FFF] to-blue-600 hover:scale-[1.03] transition-transform shadow-[0_0_20px_rgba(123,47,255,0.4)] group overflow-hidden w-full sm:w-auto">
+                    <FadeUp delay={0.4} className="flex justify-center w-full px-4">
+                        <button 
+                            onClick={() => setIsWaitlistOpen(true)}
+                            className="relative px-8 py-4 font-['Orbitron'] font-bold text-sm tracking-[3px] text-white rounded bg-gradient-to-r from-[#7B2FFF] to-blue-600 hover:scale-[1.03] transition-transform shadow-[0_0_20px_rgba(123,47,255,0.4)] group overflow-hidden w-full sm:w-auto"
+                        >
                             <span className="relative z-10">JOIN THE WAITLIST</span>
                             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-gradient-to-r from-blue-600 to-[#00FFFF] transition-opacity duration-300 z-0" />
                         </button>
-
-                        <Link to="/" className="flex items-center justify-center px-8 py-4 font-['Orbitron'] font-bold text-sm tracking-[3px] text-[#00FFFF] rounded border border-[#00FFFF]/40 hover:bg-[#00FFFF]/10 hover:border-[#00FFFF] transition-all shadow-none hover:shadow-[0_0_15px_rgba(0,255,255,0.2)] w-full sm:w-auto">
-                            ← RETURN TO EARTH
-                        </Link>
                     </FadeUp>
                 </section>
 
+                <SpaceWaitlistModal isOpen={isWaitlistOpen} onClose={() => setIsWaitlistOpen(false)} />
             </div>
         </>
     );
