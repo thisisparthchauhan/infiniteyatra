@@ -310,7 +310,7 @@ const SpaceWaitlistModal = ({ isOpen, onClose }) => {
                 link.click();
                 
                 // B) Copy to clipboard Fallback
-                await navigator.clipboard.writeText(shareText);
+                try { await navigator.clipboard.writeText(shareText); } catch(e) {}
                 
                 setShareState('success');
                 setTimeout(() => setShareState('idle'), 4000);
@@ -323,10 +323,17 @@ const SpaceWaitlistModal = ({ isOpen, onClose }) => {
                     return;
                 }
                 
+                // Force copy caption to clipboard for user convenience (some apps drop caption if only file is shared)
+                try {
+                    await navigator.clipboard.writeText(shareText);
+                    toast.success("Caption copied to clipboard! Paste it anywhere.", { duration: 3000, style: { background: '#0A0618', color: '#00D4FF', border: '1px solid rgba(123,47,255,0.4)', fontFamily: 'Exo 2' } });
+                } catch(e) {}
+
                 const file = new File([blob], `IY-Mission-${missionID}.png`, { type: 'image/png' });
+                
+                // Sharing ONLY the file ensures the image is actually attached to Instagram / WhatsApp
+                // The URL and Text are dropped when sharing pure images via Android Intents reliably
                 const shareData = {
-                    title: "My Infinite Yatra Mission",
-                    text: shareText,
                     files: [file]
                 };
 
@@ -448,50 +455,46 @@ const SpaceWaitlistModal = ({ isOpen, onClose }) => {
                                 </div>
 
                                 {/* CARD */}
-                                <div id="missionCard" className="relative z-20 w-full" style={{
-                                    background: 'linear-gradient(145deg, #0D0824, #140A30)',
-                                    border: '1px solid rgba(123,47,255,0.4)',
-                                    borderRadius: '4px',
-                                    padding: '48px',
-                                    boxShadow: '0 0 80px rgba(123,47,255,0.25), 0 0 160px rgba(123,47,255,0.1)'
+                                <div id="missionCard" className="relative z-20 w-full p-8 sm:p-12 border border-[rgba(123,47,255,0.4)] rounded shadow-[0_0_80px_rgba(123,47,255,0.25),_0_0_160px_rgba(123,47,255,0.1)]" style={{
+                                    background: 'linear-gradient(145deg, #0D0824, #140A30)'
                                 }}>
                                     {/* Corner Accents */}
                                     <div className="absolute top-0 right-0 w-8 h-[2px] bg-[#7B2FFF]"></div>
                                     <div className="absolute top-0 right-0 w-[2px] h-8 bg-[#7B2FFF] shadow-[0_0_10px_#7B2FFF]"></div>
 
-                                    <div className="text-[14px] font-['Orbitron'] text-white tracking-widest mb-4">
+                                    <div className="text-[12px] sm:text-[14px] font-['Orbitron'] text-white tracking-widest mb-4">
                                         🚀 MISSION FILE — CLASSIFIED
                                     </div>
                                     <hr className="border-[rgba(123,47,255,0.5)] mb-6" />
 
-                                    <div className="font-['Orbitron'] text-[9px] tracking-[4px] text-[#7B2FFF] mb-1">ASTRONAUT CANDIDATE</div>
-                                    <div className="font-['Orbitron'] font-black text-[28px] tracking-[2px] text-transparent bg-clip-text bg-gradient-to-r from-white via-[#C8AAFF] to-[#7B2FFF] mb-2 leading-tight">
+                                    <div className="font-['Orbitron'] text-[8px] sm:text-[9px] tracking-[3px] sm:tracking-[4px] text-[#7B2FFF] mb-1">ASTRONAUT CANDIDATE</div>
+                                    <div className="font-['Orbitron'] font-black text-[22px] sm:text-[28px] tracking-[1px] sm:tracking-[2px] text-transparent bg-clip-text bg-gradient-to-r from-white via-[#C8AAFF] to-[#7B2FFF] mb-2 leading-tight break-words">
                                         {capturedData?.firstName.toUpperCase()} {capturedData?.lastName.toUpperCase()}
                                     </div>
-                                    <div className="font-['Orbitron'] text-[11px] text-[#00D4FF] tracking-[3px] mb-8">
+                                    <div className="font-['Orbitron'] text-[10px] sm:text-[11px] text-[#00D4FF] tracking-[2px] sm:tracking-[3px] mb-8">
                                         {missionID}
                                     </div>
 
                                     <hr className="border-[rgba(123,47,255,0.5)] mb-6" />
 
-                                    <div className="grid grid-cols-3 gap-4 mb-8">
+                                    <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-8">
                                         <div>
-                                            <div className="font-['Orbitron'] text-[9px] tracking-[2px] text-[#A0AEC0] mb-2">MISSION</div>
-                                            <div className="font-['Orbitron'] text-[12px] text-white tracking-[1px]">{capturedData?.missionChoice.toUpperCase()}</div>
+                                            <div className="font-['Orbitron'] text-[8px] sm:text-[9px] tracking-[1px] sm:tracking-[2px] text-[#A0AEC0] mb-2 leading-tight">MISSION</div>
+                                            <div className="font-['Orbitron'] text-[10px] sm:text-[12px] text-white tracking-[0.5px] sm:tracking-[1px] leading-tight break-words pr-1">{capturedData?.missionChoice.toUpperCase()}</div>
                                         </div>
                                         <div>
-                                            <div className="font-['Orbitron'] text-[9px] tracking-[2px] text-[#A0AEC0] mb-2">STATUS</div>
-                                            <div className="font-['Orbitron'] text-[12px] text-white tracking-[1px]">WAITLISTED</div>
+                                            <div className="font-['Orbitron'] text-[8px] sm:text-[9px] tracking-[1px] sm:tracking-[2px] text-[#A0AEC0] mb-2 leading-tight">STATUS</div>
+                                            <div className="font-['Orbitron'] text-[10px] sm:text-[12px] text-white tracking-[0.5px] sm:tracking-[1px] leading-tight break-words">WAITLISTED</div>
                                         </div>
-                                        <div>
-                                            <div className="font-['Orbitron'] text-[9px] tracking-[2px] text-[#A0AEC0] mb-2">PRIORITY</div>
-                                            <div className="font-['Orbitron'] text-[12px] text-[#00D4FF] tracking-[1px]">EXPLORER</div>
+                                        <div className="text-right">
+                                            <div className="font-['Orbitron'] text-[8px] sm:text-[9px] tracking-[1px] sm:tracking-[2px] text-[#A0AEC0] mb-2 leading-tight">PRIORITY</div>
+                                            <div className="font-['Orbitron'] text-[10px] sm:text-[12px] text-[#00D4FF] tracking-[0.5px] sm:tracking-[1px] leading-tight break-words">EXPLORER</div>
                                         </div>
                                     </div>
 
                                     <hr className="border-[rgba(123,47,255,0.5)] mb-6" />
 
-                                    <div className="text-center font-['Exo_2'] text-[13px] italic text-white/40 mb-8 px-4 leading-relaxed">
+                                    <div className="text-center font-['Exo_2'] text-[11px] sm:text-[13px] italic text-white/40 mb-8 px-2 sm:px-4 leading-relaxed">
                                         "We will contact you when humanity is ready.<br/>Stay grounded — for now."
                                     </div>
 
@@ -499,9 +502,9 @@ const SpaceWaitlistModal = ({ isOpen, onClose }) => {
                                         <div className="w-2.5 h-2.5 bg-[#00D4FF] rounded-full radar-dot-pulse"></div>
                                     </div>
                                     
-                                    <div className="text-center font-['Orbitron'] text-[9px] tracking-[4px] text-[#7B2FFF]/60 w-full absolute bottom-4 left-0">
+                                    <div className="text-center font-['Orbitron'] text-[8px] sm:text-[9px] tracking-[3px] sm:tracking-[4px] text-[#7B2FFF]/60 w-full absolute bottom-4 left-0">
                                         INFINITE YATRA · SPACE PROGRAM<br/>
-                                        <span className="text-white/30 text-[8px] tracking-[2px]">infiniteyatra.com/future</span>
+                                        <span className="text-white/30 text-[7px] sm:text-[8px] tracking-[1px] sm:tracking-[2px]">infiniteyatra.com/future</span>
                                     </div>
                                 </div>
 
@@ -532,7 +535,7 @@ const SpaceWaitlistModal = ({ isOpen, onClose }) => {
                                                     className="w-full text-left font-['Exo_2']"
                                                 >
                                                     <div className="flex items-center gap-2 text-[#00D4FF] font-['Orbitron'] text-[10px] tracking-[3px] mb-1">
-                                                        <Check size={12} className="text-green-400" /> MISSION CARD SAVED TO YOUR DEVICE
+                                                        <Check size={12} className="text-green-400" /> MISSION IMAGE SAVED OR SHARED
                                                     </div>
                                                     <div className="flex items-center gap-2 text-[#00D4FF] font-['Orbitron'] text-[10px] tracking-[3px] mb-1">
                                                         <Check size={12} className="text-green-400" /> SHARE TEXT COPIED TO CLIPBOARD
