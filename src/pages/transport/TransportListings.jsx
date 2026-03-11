@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Filter, SlidersHorizontal, MapPin, Car } from 'lucide-react';
-import { getVehicles, getCities } from '../../services/transportService';
+import { getVehicles, getCities, getTransportConfig } from '../../services/transportService';
 import TransportVehicleCard from '../../components/transport/TransportVehicleCard';
 
 const TransportListings = () => {
@@ -13,6 +13,7 @@ const TransportListings = () => {
 
     const [vehicles, setVehicles] = useState([]);
     const [cities, setCities] = useState([]);
+    const [vehicleCategories, setVehicleCategories] = useState([]);
     const [loading, setLoading] = useState(true);
 
     // Filters
@@ -34,12 +35,14 @@ const TransportListings = () => {
     const fetchData = async () => {
         try {
             setLoading(true);
-            const [vData, cData] = await Promise.all([
+            const [vData, cData, configData] = await Promise.all([
                 getVehicles(),
-                getCities()
+                getCities(),
+                getTransportConfig()
             ]);
             setVehicles(vData.filter(v => v.isActive && v.isVisible));
             setCities(cData.filter(c => c.isActive));
+            setVehicleCategories((configData.categories || []).filter(c => c.isVisible));
         } catch (error) {
             console.error('Error fetching data for listings:', error);
         } finally {
@@ -118,10 +121,9 @@ const TransportListings = () => {
                                         className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white text-base focus:outline-none focus:border-blue-500 focus:bg-slate-800 transition-colors"
                                     >
                                         <option value="all">All Types</option>
-                                        <option value="car">Car</option>
-                                        <option value="bike">Bike / Scooter</option>
-                                        <option value="cycle">Cycle</option>
-                                        <option value="traveller">Traveller / Van</option>
+                                        {vehicleCategories.map(cat => (
+                                            <option key={cat.type} value={cat.type.toLowerCase()}>{cat.title}</option>
+                                        ))}
                                     </select>
                                 </div>
 

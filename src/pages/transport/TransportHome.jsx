@@ -2,8 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Search, MapPin, Calendar, Car, Compass, Shield, Zap } from 'lucide-react';
-import { getCities, getVehicles } from '../../services/transportService';
+import { getCities, getVehicles, getTransportConfig } from '../../services/transportService';
 import TransportVehicleCard from '../../components/transport/TransportVehicleCard';
+
+const getCategoryEmoji = (title) => {
+    const map = {
+        cycles: '🚲', bikes: '🏍️', cars: '🚗', traveller: '🚐', bus: '🚌', 
+        trains: '🚆', flights: '✈️', 'jet planes': '🚀', cruise: '🚢'
+    };
+    return map[title.toLowerCase()] || '🚐';
+};
 
 const TransportHome = () => {
     const navigate = useNavigate();
@@ -12,13 +20,15 @@ const TransportHome = () => {
     const [filteredFeatured, setFilteredFeatured] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('all');
+    const [vehicleCategories, setVehicleCategories] = useState([]);
 
     const vehicleTabs = [
         { id: 'all', label: 'All Vehicles', icon: '🚐' },
-        { id: 'cycle', label: 'Cycle / E-Bicycle', icon: '🚲' },
-        { id: 'bike', label: 'Bike', icon: '🏍️' },
-        { id: 'car', label: 'Car', icon: '🚗' },
-        { id: 'traveller', label: 'Traveller', icon: '🚐' }
+        ...vehicleCategories.map(cat => ({
+            id: cat.type.toLowerCase(),
+            label: cat.title,
+            icon: getCategoryEmoji(cat.title)
+        }))
     ];
 
     const [searchParams, setSearchParams] = useState({
@@ -31,6 +41,10 @@ const TransportHome = () => {
     useEffect(() => {
         const fetchInitialData = async () => {
             try {
+                const configData = await getTransportConfig();
+                const visibleCategories = (configData.categories || []).filter(c => c.isVisible);
+                setVehicleCategories(visibleCategories);
+
                 const citiesData = await getCities();
                 const activeCities = citiesData.filter(c => c.isActive);
                 setCities(activeCities);
@@ -135,10 +149,9 @@ const TransportHome = () => {
                                         onChange={(e) => setSearchParams({ ...searchParams, type: e.target.value })}
                                     >
                                         <option value="all">All Vehicles</option>
-                                        <option value="car">Cars</option>
-                                        <option value="bike">Bikes / Scooters</option>
-                                        <option value="cycle">Cycles</option>
-                                        <option value="traveller">Travellers / Vans</option>
+                                        {vehicleCategories.map(cat => (
+                                            <option key={cat.type} value={cat.type.toLowerCase()}>{cat.title}</option>
+                                        ))}
                                     </select>
                                 </div>
                             </div>

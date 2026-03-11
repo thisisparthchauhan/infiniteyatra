@@ -270,3 +270,54 @@ export const updateTransportSettings = async (settingsData) => {
         throw error;
     }
 };
+
+// ==========================================
+// HOMEPAGE CONFIG
+// ==========================================
+
+const DEFAULT_HOMEPAGE_CONFIG = {
+    homepageHeading: "Move Infinite",
+    homepageSubtext: "From a cycle to a Cruise — book the right ride for your journey. Explore our premium collection of vehicles available for rent.",
+    buttonPrefix: "Explore",
+    categories: [
+        { id: "cycles", title: "Cycles", desc: "Eco-friendly short commutes", image: "https://images.unsplash.com/photo-1571068316344-75bc76f77890?auto=format&fit=crop&q=80", type: "Cycles", icon: "Bike", isVisible: true },
+        { id: "bikes", title: "Bikes", desc: "Adventure ready motorcycles", image: "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=80", type: "Bikes", icon: "Zap", isVisible: true },
+        { id: "cars", title: "Cars", desc: "Self-Drive & Driven options", image: "/assets/transport/tesla_car.png", type: "Cars", icon: "Car", isVisible: true },
+        { id: "traveller", title: "Traveller", desc: "Group travels and vans", image: "/assets/transport/urbania_traveller.png", type: "Traveller", icon: "Bus", isVisible: true },
+        { id: "bus", title: "Bus", desc: "Intercity luxury bus travel", image: "/assets/transport/cyberpunk_bus.png", type: "Bus", icon: "Bus", isVisible: true },
+        { id: "trains", title: "Trains", desc: "Scenic railway journeys", image: "/assets/transport/bullet_train.jpg", type: "Trains", icon: "Train", isVisible: true },
+        { id: "flights", title: "Flights", desc: "Quick intercity routing", image: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&q=80", type: "Flights", icon: "Plane", isVisible: true },
+        { id: "jet-planes", title: "Jet Planes", desc: "Private luxury aviation", image: "https://images.unsplash.com/photo-1540962351504-03099e0a754b?auto=format&fit=crop&q=80", type: "Jet Planes", icon: "Rocket", isVisible: true },
+        { id: "cruise", title: "Cruise", desc: "Ocean & river voyages", image: "https://images.unsplash.com/photo-1599640842225-85d111c60e6b?auto=format&fit=crop&q=80", type: "Cruise", icon: "Ship", isVisible: true }
+    ]
+};
+
+export const getTransportConfig = async () => {
+    try {
+        const docRef = doc(db, SETTINGS_COLLECTION, 'homepage_config');
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            // Merge defaults with saved data to ensure no missing fields
+            return {
+                ...DEFAULT_HOMEPAGE_CONFIG,
+                ...docSnap.data(),
+                categories: docSnap.data().categories?.length > 0 ? docSnap.data().categories : DEFAULT_HOMEPAGE_CONFIG.categories
+            };
+        }
+        return DEFAULT_HOMEPAGE_CONFIG;
+    } catch (error) {
+        console.error("Error getting transport homepage config:", error);
+        return DEFAULT_HOMEPAGE_CONFIG; 
+    }
+};
+
+export const updateTransportConfig = async (configData) => {
+    try {
+        const docRef = doc(db, SETTINGS_COLLECTION, 'homepage_config');
+        await setDoc(docRef, configData, { merge: true });
+        return true;
+    } catch (error) {
+        console.error("Error updating transport homepage config:", error);
+        throw error;
+    }
+};

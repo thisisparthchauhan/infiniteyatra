@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, MapPin, Users, Fuel, Briefcase, CheckCircle, Info, Star, Clock, AlertCircle, Phone, FileText, ChevronLeft, X } from 'lucide-react';
+import { Calendar, MapPin, Users, Fuel, Briefcase, CheckCircle, Info, Star, Clock, AlertCircle, Phone, FileText, ChevronLeft, X, Plus, Minus } from 'lucide-react';
 import { getVehicles, addBooking } from '../../services/transportService';
 import { useAuth } from '../../context/AuthContext';
 
@@ -26,10 +26,13 @@ const TransportDetails = () => {
         pickupCity: '',
         dropCity: '',
         pickupAddress: '',
+        intermediateStops: [],
         dropAddress: '',
         passengerName: currentUser?.displayName || '',
         passengerPhone: '',
-        specialRequests: ''
+        specialRequests: '',
+        driveMode: 'with_driver', // 'with_driver' | 'self_drive'
+        drivingLicense: ''
     });
 
     useEffect(() => {
@@ -61,6 +64,32 @@ const TransportDetails = () => {
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setBookingData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const addStop = () => {
+        setBookingData(prev => ({
+            ...prev,
+            intermediateStops: [...prev.intermediateStops, '']
+        }));
+    };
+
+    const removeStop = (indexToRemove) => {
+        setBookingData(prev => ({
+            ...prev,
+            intermediateStops: prev.intermediateStops.filter((_, index) => index !== indexToRemove)
+        }));
+    };
+
+    const handleStopChange = (index, value) => {
+        setBookingData(prev => {
+            const newStops = [...prev.intermediateStops];
+            newStops[index] = value;
+            return { ...prev, intermediateStops: newStops };
+        });
+    };
+
+    const handleDriveModeToggle = (mode) => {
+        setBookingData(prev => ({ ...prev, driveMode: mode }));
     };
 
     const totalDays = () => {
@@ -367,7 +396,27 @@ const TransportDetails = () => {
                                     </div>
                                 </div>
 
-                                {/* Address Fields */}
+                                {/* Drive Mode Selection (Cars & Bikes Only) */}
+                                {['car', 'bike', 'cars', 'bikes'].includes(vehicle.type?.toLowerCase()) && (
+                                    <div className="bg-slate-900 border border-slate-800 p-2 rounded-xl flex gap-2">
+                                        <button 
+                                            type="button"
+                                            onClick={() => handleDriveModeToggle('with_driver')}
+                                            className={`flex-1 py-2 font-bold text-sm rounded-lg transition-all ${bookingData.driveMode === 'with_driver' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
+                                        >
+                                            With Driver
+                                        </button>
+                                        <button 
+                                            type="button"
+                                            onClick={() => handleDriveModeToggle('self_drive')}
+                                            className={`flex-1 py-2 font-bold text-sm rounded-lg transition-all ${bookingData.driveMode === 'self_drive' ? 'bg-purple-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
+                                        >
+                                            Self Drive
+                                        </button>
+                                    </div>
+                                )}
+
+                                {/* Address Fields & Dynamic Waypoints */}
                                 <div className="space-y-3">
                                     <div className="relative">
                                         <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
@@ -377,10 +426,45 @@ const TransportDetails = () => {
                                             value={bookingData.pickupAddress} onChange={handleInputChange}
                                         />
                                     </div>
+                                    
+                                    <div className="pl-6 border-l-2 border-dashed border-slate-700 ml-5 py-2 space-y-3">
+                                        <AnimatePresence>
+                                            {bookingData.intermediateStops.map((stop, index) => (
+                                                <motion.div 
+                                                    key={index}
+                                                    initial={{ opacity: 0, height: 0, scale: 0.9 }}
+                                                    animate={{ opacity: 1, height: 'auto', scale: 1 }}
+                                                    exit={{ opacity: 0, height: 0, scale: 0.9 }}
+                                                    className="relative flex items-center gap-2"
+                                                >
+                                                    <div className="absolute -left-[35px] w-4 h-4 rounded-full bg-slate-800 border-2 border-slate-600" />
+                                                    <input
+                                                        type="text" placeholder={`Stop ${index + 1}`} required
+                                                        className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white text-base font-medium focus:border-purple-500 focus:outline-none placeholder:text-slate-600 min-h-[44px]"
+                                                        value={stop} onChange={(e) => handleStopChange(index, e.target.value)}
+                                                    />
+                                                    <button 
+                                                        type="button" onClick={() => removeStop(index)}
+                                                        className="p-3 bg-red-900/20 text-red-500 hover:bg-red-900/40 rounded-xl transition-colors shrink-0"
+                                                    >
+                                                        <Minus size={16} strokeWidth={3} />
+                                                    </button>
+                                                </motion.div>
+                                            ))}
+                                        </AnimatePresence>
+                                        
+                                        <button 
+                                            type="button" onClick={addStop}
+                                            className="text-sm font-bold text-blue-400 hover:text-blue-300 flex items-center gap-1.5 transition-colors py-1"
+                                        >
+                                            <Plus size={16} /> Add Stop (Optional)
+                                        </button>
+                                    </div>
+
                                     <div className="relative">
-                                        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-700" size={16} />
+                                        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-purple-500" size={16} />
                                         <input
-                                            type="text" name="dropAddress" placeholder="Drop Location (if outstation/different)"
+                                            type="text" name="dropAddress" placeholder="Final Drop Location" required
                                             className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-3 text-white text-base font-medium focus:border-purple-500 focus:outline-none placeholder:text-slate-600 min-h-[44px]"
                                             value={bookingData.dropAddress} onChange={handleInputChange}
                                         />
@@ -406,6 +490,25 @@ const TransportDetails = () => {
                                         />
                                     </div>
                                 </div>
+                                
+                                <AnimatePresence>
+                                    {bookingData.driveMode === 'self_drive' && (
+                                        <motion.div 
+                                            initial={{ opacity: 0, height: 0 }}
+                                            animate={{ opacity: 1, height: 'auto' }}
+                                            exit={{ opacity: 0, height: 0 }}
+                                            className="relative"
+                                        >
+                                            <FileText className="absolute left-3 top-1/2 -translate-y-1/2 text-purple-500" size={16} />
+                                            <input
+                                                type="text" name="drivingLicense" placeholder="Driving License Number" required
+                                                className="w-full bg-purple-950/20 border border-purple-900/50 rounded-xl pl-10 pr-3 py-3 text-white text-base font-medium focus:border-purple-500 focus:outline-none min-h-[44px]"
+                                                value={bookingData.drivingLicense} onChange={handleInputChange}
+                                            />
+                                            <p className="text-[10px] text-slate-500 mt-1 ml-1 font-medium">* Required for self-drive verification upon pickup</p>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
 
                                 {/* Special Requests */}
                                 <div className="relative">
@@ -503,6 +606,26 @@ const TransportDetails = () => {
                             </div>
 
                             <form id="mobile-booking-form" onSubmit={handleSubmit} className="space-y-4">
+                                {/* Drive Mode Selection (Cars & Bikes Only) */}
+                                {['car', 'bike', 'cars', 'bikes'].includes(vehicle.type?.toLowerCase()) && (
+                                    <div className="bg-slate-900 border border-slate-800 p-2 rounded-xl flex gap-2">
+                                        <button 
+                                            type="button"
+                                            onClick={() => handleDriveModeToggle('with_driver')}
+                                            className={`flex-1 py-2 font-bold text-sm rounded-lg transition-all ${bookingData.driveMode === 'with_driver' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
+                                        >
+                                            With Driver
+                                        </button>
+                                        <button 
+                                            type="button"
+                                            onClick={() => handleDriveModeToggle('self_drive')}
+                                            className={`flex-1 py-2 font-bold text-sm rounded-lg transition-all ${bookingData.driveMode === 'self_drive' ? 'bg-purple-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
+                                        >
+                                            Self Drive
+                                        </button>
+                                    </div>
+                                )}
+                                
                                 {/* Dates & Time */}
                                 <div className="bg-slate-900 rounded-2xl p-3 border border-slate-800 space-y-3">
                                     <div className="grid grid-cols-2 gap-3">
@@ -538,7 +661,7 @@ const TransportDetails = () => {
                                     </div>
                                 </div>
 
-                                {/* Address Fields */}
+                                {/* Address Fields & Dynamic Waypoints */}
                                 <div className="space-y-3 pt-2">
                                     <div className="relative">
                                         <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
@@ -548,10 +671,45 @@ const TransportDetails = () => {
                                             value={bookingData.pickupAddress} onChange={handleInputChange}
                                         />
                                     </div>
+                                    
+                                    <div className="pl-6 border-l-2 border-dashed border-slate-700 ml-5 py-2 space-y-3">
+                                        <AnimatePresence>
+                                            {bookingData.intermediateStops.map((stop, index) => (
+                                                <motion.div 
+                                                    key={index}
+                                                    initial={{ opacity: 0, height: 0, scale: 0.9 }}
+                                                    animate={{ opacity: 1, height: 'auto', scale: 1 }}
+                                                    exit={{ opacity: 0, height: 0, scale: 0.9 }}
+                                                    className="relative flex items-center gap-2"
+                                                >
+                                                    <div className="absolute -left-[35px] w-4 h-4 rounded-full bg-slate-800 border-2 border-slate-600" />
+                                                    <input
+                                                        type="text" placeholder={`Stop ${index + 1}`} required
+                                                        className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white text-base font-medium focus:border-blue-500 focus:outline-none placeholder:text-slate-600 min-h-[44px]"
+                                                        value={stop} onChange={(e) => handleStopChange(index, e.target.value)}
+                                                    />
+                                                    <button 
+                                                        type="button" onClick={() => removeStop(index)}
+                                                        className="p-3 bg-red-900/20 text-red-500 hover:bg-red-900/40 rounded-xl transition-colors shrink-0"
+                                                    >
+                                                        <Minus size={16} strokeWidth={3} />
+                                                    </button>
+                                                </motion.div>
+                                            ))}
+                                        </AnimatePresence>
+                                        
+                                        <button 
+                                            type="button" onClick={addStop}
+                                            className="text-sm font-bold text-blue-400 hover:text-blue-300 flex items-center gap-1.5 transition-colors py-1"
+                                        >
+                                            <Plus size={16} /> Add Stop (Optional)
+                                        </button>
+                                    </div>
+
                                     <div className="relative">
-                                        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-700" size={18} />
+                                        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-500" size={18} />
                                         <input
-                                            type="text" name="dropAddress" placeholder="Drop Location (if different)"
+                                            type="text" name="dropAddress" placeholder="Final Drop Location" required
                                             className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-10 pr-4 py-3 text-white text-base focus:border-blue-500 focus:outline-none min-h-[44px]"
                                             value={bookingData.dropAddress} onChange={handleInputChange}
                                         />
@@ -577,6 +735,25 @@ const TransportDetails = () => {
                                         />
                                     </div>
                                 </div>
+                                
+                                <AnimatePresence>
+                                    {bookingData.driveMode === 'self_drive' && (
+                                        <motion.div 
+                                            initial={{ opacity: 0, height: 0 }}
+                                            animate={{ opacity: 1, height: 'auto' }}
+                                            exit={{ opacity: 0, height: 0 }}
+                                            className="relative"
+                                        >
+                                            <FileText className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-500" size={16} />
+                                            <input
+                                                type="text" name="drivingLicense" placeholder="Driving License Number" required
+                                                className="w-full bg-blue-900/10 border border-blue-900/30 rounded-xl pl-10 pr-3 py-3 text-white text-base font-medium focus:border-blue-500 focus:outline-none min-h-[44px]"
+                                                value={bookingData.drivingLicense} onChange={handleInputChange}
+                                            />
+                                            <p className="text-[10px] text-slate-500 mt-1 ml-1 font-medium">* Required for self-drive verification upon pickup</p>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
 
                                 {/* Special Requests */}
                                 <div className="relative pt-2">
