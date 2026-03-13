@@ -5,6 +5,8 @@ import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '../context/ToastContext';
 import { uploadToCloudinary } from '../services/cloudinary';
+import { useAuth } from '../context/AuthContext';
+import { addCredits } from '../services/passportService';
 
 const ReviewForm = ({ packageId, packageTitle, onClose, onReviewSubmitted }) => {
     const [rating, setRating] = useState(0);
@@ -13,6 +15,7 @@ const ReviewForm = ({ packageId, packageTitle, onClose, onReviewSubmitted }) => 
     const [comment, setComment] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { addToast } = useToast();
+    const { currentUser } = useAuth();
 
     // Cloudinary Upload for Photos
     const handlePhotoChange = async (e) => {
@@ -57,6 +60,15 @@ const ReviewForm = ({ packageId, packageTitle, onClose, onReviewSubmitted }) => 
             });
 
             addToast("Review submitted successfully!", "success");
+
+            // Award IY Passport credits
+            if (currentUser?.uid) {
+                try {
+                    await addCredits(currentUser.uid, 'review', 'Wrote a review', 25, packageId);
+                    addToast('⭐ +25 IY Passport credits earned!', 'success');
+                } catch (e) { console.log('Passport credit skip:', e); }
+            }
+
             if (onReviewSubmitted) onReviewSubmitted();
             onClose();
         } catch (error) {

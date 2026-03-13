@@ -10,14 +10,15 @@ import {
     where,
     orderBy,
     serverTimestamp,
-    setDoc
+    setDoc,
+    onSnapshot
 } from 'firebase/firestore';
 import { db } from '../firebase';
 
 // Collections
 const VEHICLES_COLLECTION = 'transport_vehicles';
 const CITIES_COLLECTION = 'transport_cities';
-const BOOKINGS_COLLECTION = 'transport_bookings';
+const BOOKINGS_COLLECTION = 'transportation_bookings';
 const SETTINGS_COLLECTION = 'transport_settings';
 
 // ==========================================
@@ -186,6 +187,22 @@ export const getBookings = async (userId = null) => {
     }
 };
 
+export const listenToBookings = (callback, onError) => {
+    const q = query(collection(db, BOOKINGS_COLLECTION), orderBy('createdAt', 'desc'));
+    return onSnapshot(q, (querySnapshot) => {
+        const bookings = querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+        callback(bookings);
+    }, (error) => {
+        console.error("Error listening to bookings:", error);
+        // Still call callback with empty array so loading resolves
+        callback([]);
+        if (onError) onError(error);
+    });
+};
+
 export const getBookingById = async (id) => {
     try {
         const docRef = doc(db, BOOKINGS_COLLECTION, id);
@@ -236,6 +253,20 @@ export const updateBookingStatus = async (id, status) => {
     }
 };
 
+export const updateBookingData = async (id, data) => {
+    try {
+        const docRef = doc(db, BOOKINGS_COLLECTION, id);
+        await updateDoc(docRef, {
+            ...data,
+            updatedAt: serverTimestamp()
+        });
+        return true;
+    } catch (error) {
+        console.error("Error updating booking data:", error);
+        throw error;
+    }
+};
+
 // ==========================================
 // SETTINGS
 // ==========================================
@@ -276,19 +307,38 @@ export const updateTransportSettings = async (settingsData) => {
 // ==========================================
 
 const DEFAULT_HOMEPAGE_CONFIG = {
-    homepageHeading: "Move Infinite",
-    homepageSubtext: "From a cycle to a Cruise — book the right ride for your journey. Explore our premium collection of vehicles available for rent.",
+    heroImage: "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&q=80",
+    heroTitlePre: "Move",
+    heroTitleHighlight: "Infinite",
+    heroSubtitle: "From a cycle to a Cruise — book the right ride for your journey. Explore our premium collection of vehicles available for rent.",
     buttonPrefix: "Explore",
+    features: [
+        {
+            title: "Wide Selection",
+            description: "From city bikes to luxury cruises, find the perfect vehicle for any journey.",
+            iconName: "Car"
+        },
+        {
+            title: "Verified Vehicles",
+            description: "Every vehicle is inspected and verified for your safety and comfort.",
+            iconName: "Shield"
+        },
+        {
+            title: "Instant Booking",
+            description: "Book your ride in seconds with our streamlined reservation system.",
+            iconName: "Zap"
+        }
+    ],
     categories: [
-        { id: "cycles", title: "Cycles", desc: "Eco-friendly short commutes", image: "https://images.unsplash.com/photo-1571068316344-75bc76f77890?auto=format&fit=crop&q=80", type: "Cycles", icon: "Bike", isVisible: true },
+        { id: "cycles", title: "Cycles", desc: "Eco-friendly short commutes", image: "https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&q=80", type: "Cycles", icon: "Bike", isVisible: true },
         { id: "bikes", title: "Bikes", desc: "Adventure ready motorcycles", image: "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=80", type: "Bikes", icon: "Zap", isVisible: true },
         { id: "cars", title: "Cars", desc: "Self-Drive & Driven options", image: "/assets/transport/tesla_car.png", type: "Cars", icon: "Car", isVisible: true },
-        { id: "traveller", title: "Traveller", desc: "Group travels and vans", image: "/assets/transport/urbania_traveller.png", type: "Traveller", icon: "Bus", isVisible: true },
-        { id: "bus", title: "Bus", desc: "Intercity luxury bus travel", image: "/assets/transport/cyberpunk_bus.png", type: "Bus", icon: "Bus", isVisible: true },
-        { id: "trains", title: "Trains", desc: "Scenic railway journeys", image: "/assets/transport/bullet_train.jpg", type: "Trains", icon: "Train", isVisible: true },
+        { id: "traveller", title: "Traveller", desc: "Group travels and vans", image: "/assets/transport/red-van-nature.jpg", type: "Traveller", icon: "Bus", isVisible: true },
+        { id: "bus", title: "Bus", desc: "Intercity luxury bus travel", image: "/assets/transport/bus.jpg", type: "Bus", icon: "Bus", isVisible: true },
+        { id: "trains", title: "Trains", desc: "Scenic railway journeys", image: "/assets/transport/jaden-william-qVeqpMrZQGk-unsplash.jpg", type: "Trains", icon: "Train", isVisible: true },
         { id: "flights", title: "Flights", desc: "Quick intercity routing", image: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&q=80", type: "Flights", icon: "Plane", isVisible: true },
         { id: "jet-planes", title: "Jet Planes", desc: "Private luxury aviation", image: "https://images.unsplash.com/photo-1540962351504-03099e0a754b?auto=format&fit=crop&q=80", type: "Jet Planes", icon: "Rocket", isVisible: true },
-        { id: "cruise", title: "Cruise", desc: "Ocean & river voyages", image: "https://images.unsplash.com/photo-1599640842225-85d111c60e6b?auto=format&fit=crop&q=80", type: "Cruise", icon: "Ship", isVisible: true }
+        { id: "cruise", title: "Cruise", desc: "Ocean & river voyages", image: "/assets/transport/cruise.jpg", type: "Cruise", icon: "Ship", isVisible: true }
     ]
 };
 

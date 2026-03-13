@@ -9,6 +9,7 @@ import { db, storage } from '../firebase';
 import { collection, addDoc, serverTimestamp, query, getDocs, doc, getDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useAuth } from '../context/AuthContext';
+import { addCredits } from '../services/passportService';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
 
@@ -635,6 +636,13 @@ const BookingPage = () => {
                     totalAmount: finalTotal, amountPaid: finalTotal, date: bookingData.date
                 }
             });
+
+            // Award IY Passport credits
+            if (currentUser?.uid) {
+                try {
+                    await addCredits(currentUser.uid, 'booking', `Booked ${pkg.title} trip`, 100, bookingRef.id);
+                } catch (e) { console.log('Passport credit skip:', e); }
+            }
         } catch (error) {
             console.error(error);
             setError(error.message);

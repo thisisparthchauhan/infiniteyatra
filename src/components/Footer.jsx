@@ -140,7 +140,7 @@ const Footer = memo(() => {
     const exploreLinks = [
         { emoji: '🗺️', label: 'Destinations', to: '/destinations' },
         { emoji: '🏨', label: 'Hotels', to: '/hotels' },
-        { emoji: '🚗', label: 'Transport', to: '/transport' },
+        { emoji: '🚗', label: 'Transport', to: '/transportation' },
         { emoji: '🤖', label: 'AI Trip Planner', to: '/trip-planner' },
         { emoji: '📖', label: 'Travel Stories', to: '/stories' },
     ];

@@ -6,12 +6,15 @@ import { ArrowLeft, CreditCard, Calendar, Users, ShieldCheck, Hotel, Bed, Trendi
 import { calculateDynamicPrice } from '../utils/pricingEngine';
 import { payWithRazorpay } from '../services/paymentGateway';
 import { acquireLock, releaseLock } from '../services/lockingService'; // If integrated
+import { useAuth } from '../context/AuthContext';
+import { addCredits } from '../services/passportService';
 
 const HotelBookingPage = () => {
     const { id } = useParams();
     const [searchParams] = useSearchParams();
     const roomId = searchParams.get('room');
     const navigate = useNavigate();
+    const { currentUser } = useAuth();
 
     const [hotel, setHotel] = useState(null);
     const [selectedRoom, setSelectedRoom] = useState(null);
@@ -171,6 +174,14 @@ const HotelBookingPage = () => {
 
                     await addDoc(collection(db, 'hotel_bookings'), bookingPayload);
                     await addDoc(collection(db, 'hotel_finance'), financeRecord);
+
+                    // Award IY Passport credits
+                    if (currentUser?.uid) {
+                        try {
+                            await addCredits(currentUser.uid, 'booking', `Booked ${hotel.name} hotel`, 75, bookingPayload.referenceId);
+                        } catch (e) { console.log('Passport credit skip:', e); }
+                    }
+
                     navigate('/hotels/success', { state: { booking: bookingPayload } });
                 } catch (dbError) {
                     console.error("DB Error after Payment:", dbError);

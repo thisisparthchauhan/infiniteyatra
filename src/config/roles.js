@@ -18,7 +18,8 @@ import {
     Car,
     MapPin,
     CalendarCheck,
-    Map
+    Map,
+    Award
 } from 'lucide-react';
 
 export const USER_ROLES = {
@@ -42,7 +43,7 @@ export const WORKSPACES = {
             'bookings', 'crm', 'packages', 'operations',
             'finance', 'hotel-finance', 'influencers',
             'homepage', 'experiences', 'stories', 'media',
-            'hotels', 'transport-overview', 'transport-vehicles', 'transport-cities', 'transport-bookings', 'transport-settings', 'space-waitlist'
+            'hotels', 'transport-overview', 'transport-vehicles', 'transport-cities', 'transport-bookings', 'transport-content', 'transport-settings', 'space-waitlist', 'passport'
         ]
     },
     TOUR_MANAGER: {
@@ -94,7 +95,7 @@ export const ROLE_WORKSPACE_MAP = {
 
 // Flattened permissions for legacy checks if needed, but we should rely on Workspace modules
 export const ROLE_PERMISSIONS = {
-    [USER_ROLES.SUPER_ADMIN]: ['overview', 'staff', 'sitemap', 'bookings', 'crm', 'packages', 'operations', 'finance', 'hotel-finance', 'influencers', 'homepage', 'experiences', 'stories', 'media', 'hotels', 'transport-overview', 'transport-vehicles', 'transport-cities', 'transport-bookings', 'transport-settings', 'space-waitlist'],
+    [USER_ROLES.SUPER_ADMIN]: ['overview', 'staff', 'sitemap', 'bookings', 'crm', 'packages', 'operations', 'finance', 'hotel-finance', 'influencers', 'homepage', 'experiences', 'stories', 'media', 'hotels', 'transport-overview', 'transport-vehicles', 'transport-cities', 'transport-bookings', 'transport-content', 'transport-settings', 'space-waitlist', 'passport'],
     [USER_ROLES.TOUR_MANAGER]: ['bookings', 'crm', 'packages', 'operations'],
     [USER_ROLES.FINANCE_MANAGER]: ['finance', 'hotel-finance', 'influencers', 'analytics'],
     [USER_ROLES.CONTENT_MANAGER]: ['homepage', 'experiences', 'stories', 'media'],
@@ -138,8 +139,12 @@ export const MENU_ITEMS = [
     { id: 'transport-vehicles', label: 'Manage Vehicles', icon: Car },
     { id: 'transport-cities', label: 'Manage Cities', icon: MapPin },
     { id: 'transport-bookings', label: 'Transport Bookings', icon: CalendarCheck },
+    { id: 'transport-content', label: 'Transport Content', icon: PenTool },
     { id: 'transport-settings', label: 'Transport Settings', icon: Settings },
 
     // Space
-    { id: 'space-waitlist', label: 'IY Space', icon: Globe }
+    { id: 'space-waitlist', label: 'IY Space', icon: Globe },
+
+    // Passport
+    { id: 'passport', label: 'IY Passport', icon: Award }
 ];

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, Phone, Search, MapPin, Info, Sparkles, BookOpen, Home, User, Package, Mail, LogOut, LayoutDashboard, Heart, Car } from 'lucide-react';
+import { Menu, X, Phone, Search, MapPin, Info, Sparkles, BookOpen, Home, User, Package, Mail, LogOut, LayoutDashboard, Heart, Car, Award } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useWishlist } from '../context/WishlistContext';
+import { getPassport } from '../services/passportService';
 
 
 import logo from '../assets/logo-new.png';
@@ -15,6 +16,13 @@ const Navbar = () => {
     const navigate = useNavigate();
     const { currentUser, logout } = useAuth();
     const { wishlist } = useWishlist();
+    const [passportCredits, setPassportCredits] = useState(null);
+
+    // Fetch passport credits
+    useEffect(() => {
+        if (!currentUser?.uid) { setPassportCredits(null); return; }
+        getPassport(currentUser.uid).then(p => setPassportCredits(p?.totalCredits ?? null)).catch(() => {});
+    }, [currentUser]);
 
 
     const isAuthPage = location.pathname === '/login' || location.pathname === '/signup';
@@ -87,7 +95,7 @@ const Navbar = () => {
         { name: 'Home', icon: Home, href: '/', type: 'link' },
         { name: 'Destinations', icon: MapPin, href: '/destinations', type: 'link' },
         { name: 'Hotels', icon: Home, href: '/hotels', type: 'link' }, // Added Hotels link
-        { name: 'Transport', icon: Car, href: '/transport', type: 'link' }, // Added Transport link
+        { name: 'Transport', icon: Car, href: '/transportation', type: 'link' },
         { name: 'AI Trip Planner', icon: Sparkles, href: '/trip-planner', type: 'link', highlight: true },
         { name: 'Stories', icon: BookOpen, href: '/stories', type: 'link' },
         { name: 'About Us', icon: Info, href: '#about', type: 'scroll' },
@@ -246,6 +254,15 @@ const Navbar = () => {
 
                             {currentUser ? (
                                 <div className="flex items-center gap-3">
+                                    {/* Passport Credit Badge */}
+                                    {passportCredits !== null && (
+                                        <Link
+                                            to="/passport"
+                                            className="passport-glow bg-gradient-to-r from-purple-600/20 to-blue-600/20 border border-purple-500/30 px-3 py-1.5 rounded-full flex items-center gap-1.5 text-xs font-bold hover:from-purple-600/30 hover:to-blue-600/30 transition-all"
+                                        >
+                                            <span className="bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">✦ {passportCredits}</span>
+                                        </Link>
+                                    )}
                                     <div className="relative group">
                                         <div className={`
                                             flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300
@@ -287,6 +304,14 @@ const Navbar = () => {
                                                 >
                                                     <Sparkles size={16} className="text-purple-400" />
                                                     AI Trips
+                                                </Link>
+                                                <Link
+                                                    to="/passport"
+                                                    className="flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
+                                                >
+                                                    <Award size={16} className="text-amber-400" />
+                                                    IY Passport
+                                                    {passportCredits !== null && <span className="ml-auto text-xs text-purple-400 font-bold">{passportCredits} cr</span>}
                                                 </Link>
 
 
@@ -544,6 +569,19 @@ const Navbar = () => {
                                         <Sparkles size={20} className="text-purple-400" />
                                         AI Trips
                                     </Link>
+                                    <Link
+                                        to="/passport"
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                        className="
+                                            flex flex-col items-center justify-center gap-2 p-3 rounded-xl
+                                            bg-gradient-to-br from-purple-600/10 to-blue-600/10 hover:from-purple-600/20 hover:to-blue-600/20
+                                            border border-purple-500/20 transition-all
+                                            text-xs font-medium text-slate-300 hover:text-white
+                                        "
+                                    >
+                                        <Award size={20} className="text-amber-400" />
+                                        Passport
+                                    </Link>
                                 </div>
 
                                 <button
@@ -603,6 +641,13 @@ const Navbar = () => {
                         opacity: 1;
                         transform: translateX(0);
                     }
+                }
+                @keyframes passport-glow {
+                    0%, 80%, 100% { box-shadow: 0 0 0 0 transparent; }
+                    90% { box-shadow: 0 0 12px 2px rgba(168, 85, 247, 0.3); }
+                }
+                .passport-glow {
+                    animation: passport-glow 5s ease-in-out infinite;
                 }
             `}</style>
         </>

@@ -11,23 +11,30 @@ const AdminSpaceWaitlist = () => {
     const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
-        const q = query(
-            collection(db, 'space_waitlist'),
-            orderBy('createdAt', 'desc')
-        );
+        let unsubscribe = () => {};
+        try {
+            const q = query(
+                collection(db, 'space_waitlist'),
+                orderBy('createdAt', 'desc')
+            );
 
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            const list = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-            setWaitlist(list);
+            unsubscribe = onSnapshot(q, (snapshot) => {
+                const list = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                setWaitlist(list);
+                setLoading(false);
+            }, (error) => {
+                console.error("Error fetching waitlist:", error);
+                setWaitlist([]);
+                setLoading(false);
+            });
+        } catch (error) {
+            console.error("Error setting up waitlist listener:", error);
+            setWaitlist([]);
             setLoading(false);
-        }, (error) => {
-            console.error("Error fetching waitlist:", error);
-            toast.error("Failed to load waitlist data");
-            setLoading(false);
-        });
+        }
 
         return () => unsubscribe();
     }, []);

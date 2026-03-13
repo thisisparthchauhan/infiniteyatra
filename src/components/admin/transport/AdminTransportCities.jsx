@@ -39,14 +39,15 @@ const AdminTransportCities = () => {
         try {
             setLoading(true);
             const [citiesData, vehiclesData] = await Promise.all([
-                getCities(),
-                getVehicles()
+                getCities().catch(() => []),
+                getVehicles().catch(() => [])
             ]);
             setCities(citiesData);
             setVehicles(vehiclesData);
         } catch (error) {
             console.error('Error fetching data:', error);
-            alert('Failed to load data');
+            setCities([]);
+            setVehicles([]);
         } finally {
             setLoading(false);
         }

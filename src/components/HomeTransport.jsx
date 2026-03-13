@@ -18,7 +18,7 @@ export const transportItems = [
     {
         title: "Cycles",
         desc: "Eco-friendly short commutes",
-        image: "https://images.unsplash.com/photo-1571068316344-75bc76f77890?auto=format&fit=crop&q=80",
+        image: "https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&q=80",
         type: "Cycles",
         icon: "Bike",
         animation: {
@@ -53,7 +53,7 @@ export const transportItems = [
     {
         title: "Traveller",
         desc: "Group travels and vans",
-        image: "/assets/transport/urbania_traveller.png",
+        image: "/assets/transport/red-van-nature.jpg",
         type: "Traveller",
         icon: "Bus",
         animation: {
@@ -64,7 +64,7 @@ export const transportItems = [
     {
         title: "Bus",
         desc: "Intercity luxury bus travel",
-        image: "/assets/transport/cyberpunk_bus.png",
+        image: "/assets/transport/bus.jpg",
         type: "Bus",
         icon: "Bus",
         animation: {
@@ -75,7 +75,7 @@ export const transportItems = [
     {
         title: "Trains",
         desc: "Scenic railway journeys",
-        image: "/assets/transport/bullet_train.jpg",
+        image: "/assets/transport/jaden-william-qVeqpMrZQGk-unsplash.jpg",
         type: "Trains",
         icon: "Train",
         animation: {
@@ -113,7 +113,7 @@ export const transportItems = [
     {
         title: "Cruise",
         desc: "Ocean & river voyages",
-        image: "https://images.unsplash.com/photo-1599640842225-85d111c60e6b?auto=format&fit=crop&q=80",
+        image: "/assets/transport/cruise.jpg",
         type: "Cruise",
         icon: "Ship",
         animation: {
@@ -238,7 +238,7 @@ const HomeTransport = () => {
                         ))}
                     </div>
                     <Link
-                        to={`/transport/search?type=${activeItem.type.toLowerCase()}`}
+                        to={`/transportation/${activeItem.id || activeItem.type.toLowerCase().replace(/\s+/g, '-')}`}
                         className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white px-8 py-4 rounded-xl font-bold transition-all shadow-lg hover:shadow-blue-500/25 group"
                     >
                         {config.buttonPrefix} {activeItem.title} <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -251,7 +251,7 @@ const HomeTransport = () => {
                     viewport={{ once: true }}
                     className="flex-1 w-full relative h-[400px] md:h-[500px]"
                 >
-                    <div className="w-full h-full rounded-3xl overflow-hidden relative shadow-2xl border border-white/10 group">
+                    <Link to={`/transportation/${activeItem.id || activeItem.type.toLowerCase().replace(/\s+/g, '-')}`} className="block w-full h-full rounded-3xl overflow-hidden relative shadow-2xl border border-white/10 group cursor-pointer">
                         <AnimatePresence mode="wait">
                             <motion.img
                                 key={activeIndex}
@@ -280,7 +280,7 @@ const HomeTransport = () => {
                                 </motion.div>
                             </AnimatePresence>
                         </div>
-                    </div>
+                    </Link>
                     
                     {/* Carousel Indicators */}
                     <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 flex gap-2">

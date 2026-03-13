@@ -28,10 +28,12 @@ import LiveAnalytics from '../components/admin/analytics/LiveAnalytics';
 import AdminTransportCities from '../components/admin/transport/AdminTransportCities';
 import AdminTransportVehicles from '../components/admin/transport/AdminTransportVehicles';
 import AdminTransportBookings from '../components/admin/transport/AdminTransportBookings';
+import AdminTransportContent from '../components/admin/transport/AdminTransportContent';
 import AdminTransportSettings from '../components/admin/transport/AdminTransportSettings';
 import AdminTransportOverview from '../components/admin/transport/AdminTransportOverview';
 import AdminSitemap from '../components/admin/AdminSitemap';
 import AdminSpaceWaitlist from '../components/admin/space/AdminSpaceWaitlist';
+import AdminPassport from '../components/admin/AdminPassport';
 
 const AdminDashboard = () => {
     const { hasPermission, getFirstAllowedTab, currentRole, setCurrentRole, currentWorkspace } = useRole();
@@ -69,9 +71,11 @@ const AdminDashboard = () => {
             'transport-vehicles': 'Manage Vehicles',
             'transport-cities': 'Manage Cities',
             'transport-bookings': 'Transport Bookings',
+            'transport-content': 'Transport Content',
             'transport-settings': 'Transport Settings',
             'sitemap': 'Site Architecture Map',
-            'space-waitlist': 'IY Space Waitlist'
+            'space-waitlist': 'IY Space Waitlist',
+            'passport': 'IY Passport'
         };
         return titles[activeTab] || 'Admin Panel';
     };
@@ -110,9 +114,11 @@ const AdminDashboard = () => {
             case 'transport-vehicles': return <AdminTransportVehicles />;
             case 'transport-cities': return <AdminTransportCities />;
             case 'transport-bookings': return <AdminTransportBookings />;
+            case 'transport-content': return <AdminTransportContent />;
             case 'transport-settings': return <AdminTransportSettings />;
             case 'sitemap': return <AdminSitemap />;
             case 'space-waitlist': return <AdminSpaceWaitlist />;
+            case 'passport': return <AdminPassport />;
             case 'staff':
                 return (
                     <div className="text-center py-20">

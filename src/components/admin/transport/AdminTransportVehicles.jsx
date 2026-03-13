@@ -51,14 +51,15 @@ const AdminTransportVehicles = () => {
         try {
             setLoading(true);
             const [vehiclesData, citiesData] = await Promise.all([
-                getVehicles(),
-                getCities()
+                getVehicles().catch(() => []),
+                getCities().catch(() => [])
             ]);
             setVehicles(vehiclesData);
             setCities(citiesData);
         } catch (error) {
             console.error('Error fetching data:', error);
-            alert('Failed to load data');
+            setVehicles([]);
+            setCities([]);
         } finally {
             setLoading(false);
         }
@@ -200,6 +201,9 @@ const AdminTransportVehicles = () => {
         );
     }
 
+    // Show empty state when collection is genuinely empty (not just filtered out)
+    const isCollectionEmpty = vehicles.length === 0;
+
     return (
         <div className="p-6">
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4">
@@ -252,6 +256,21 @@ const AdminTransportVehicles = () => {
                     </button>
                 </div>
             </div>
+
+            {/* Empty collection state */}
+            {isCollectionEmpty && (
+                <div className="bg-[#111] border border-white/10 rounded-2xl p-16 text-center">
+                    <Car size={56} className="mx-auto mb-4 text-slate-700" />
+                    <h3 className="text-xl font-bold text-slate-300 mb-2">No vehicles added yet</h3>
+                    <p className="text-slate-500 mb-6">Start building your fleet by adding your first vehicle listing.</p>
+                    <button
+                        onClick={() => handleOpenModal()}
+                        className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white px-6 py-3 rounded-xl flex items-center gap-2 font-bold transition-all shadow-lg mx-auto"
+                    >
+                        <Plus size={18} /> Add New Vehicle
+                    </button>
+                </div>
+            )}
 
             <div className="bg-[#111] border border-white/10 rounded-2xl overflow-hidden shadow-xl">
                 {/* Desktop Table View */}

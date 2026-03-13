@@ -45,7 +45,6 @@ import HotelBookingSuccess from './pages/HotelBookingSuccess';
 import HotelPartnerOnboarding from './pages/HotelPartnerOnboarding';
 
 // Transport Pages
-import TransportHome from './pages/transport/TransportHome';
 import TransportListings from './pages/transport/TransportListings';
 import TransportDetails from './pages/transport/TransportDetails';
 import MyTransportBookings from './pages/transport/MyTransportBookings';
@@ -58,6 +57,10 @@ import MigrateData from './pages/MigrateData';
 import TermsConditions from './pages/TermsConditions';
 
 import Future from './pages/Future';
+import Passport from './pages/Passport';
+
+import TransportationHub from './pages/TransportationHub';
+import VehicleDetail from './pages/VehicleDetail';
 
 const Layout = ({ children }) => {
   const location = useLocation();
@@ -173,6 +176,7 @@ function App() {
                         <Route path="/terms" element={<TermsConditions />} />
                         <Route path="/migrate-packages-fix" element={<MigrateData />} />
                         <Route path="/future" element={<Future />} />
+                        <Route path="/passport" element={<ProtectedRoute><Passport /></ProtectedRoute>} />
 
                         {/* NEW: IY Hotels Vertical */}
                         <Route path="/hotels" element={<Hotels />} />
@@ -181,10 +185,11 @@ function App() {
                         <Route path="/hotels/success" element={<HotelBookingSuccess />} />
                         <Route path="/partner/hotel-onboarding" element={<HotelPartnerOnboarding />} />
 
-                        {/* NEW: IY Transport Vertical */}
-                        <Route path="/transport" element={<TransportHome />} />
+                        {/* IY Transport Vertical */}
                         <Route path="/transport/search" element={<TransportListings />} />
                         <Route path="/transport/book/:id" element={<TransportDetails />} />
+                        <Route path="/transportation" element={<TransportationHub />} />
+                        <Route path="/transportation/:vehicleId" element={<VehicleDetail />} />
                       </Routes>
                     </Layout>
                   </Router>
