@@ -79,10 +79,13 @@ const AdminTransportCities = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
+            // Remove the ID from the payload to avoid Firebase errors
+            const { id, ...submitData } = formData;
+
             if (editMode) {
-                await updateCity(formData.id, formData);
+                await updateCity(id, submitData);
             } else {
-                await addCity(formData);
+                await addCity(submitData);
             }
             handleCloseModal();
             fetchData();

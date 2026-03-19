@@ -12,6 +12,7 @@ import { useAuth } from '../context/AuthContext';
 import { addCredits } from '../services/passportService';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
+import { COUNTRIES } from '../data/countries';
 
 const steps = [
     { id: 1, label: 'Trip Details', icon: Calendar },
@@ -24,22 +25,22 @@ const DOC_TYPES_BY_NATIONALITY = {
     india: [
         { key: 'aadhaar', label: 'Aadhaar Card', sides: ['Front', 'Back'] },
         { key: 'pan', label: 'PAN Card', sides: ['Front'] },
-        { key: 'passport', label: 'Passport', sides: ['Front'] },
+        { key: 'passport', label: 'Passport', sides: ['Front', 'Visa Page (Optional)'] },
         { key: 'driving_license', label: 'Driving License', sides: ['Front', 'Back'] },
         { key: 'voter_id', label: 'Voter ID', sides: ['Front', 'Back'] },
     ],
     usa: [
-        { key: 'passport', label: 'Passport', sides: ['Front'] },
+        { key: 'passport', label: 'Passport', sides: ['Front', 'Visa Page (Optional)'] },
         { key: 'driving_license', label: "Driver's License", sides: ['Front', 'Back'] },
         { key: 'ssn', label: 'SSN Card', sides: ['Front'] },
     ],
     uk: [
-        { key: 'passport', label: 'Passport', sides: ['Front'] },
+        { key: 'passport', label: 'Passport', sides: ['Front', 'Visa Page (Optional)'] },
         { key: 'driving_license', label: 'Driving Licence', sides: ['Front', 'Back'] },
         { key: 'national_id', label: 'National ID Card', sides: ['Front', 'Back'] },
     ],
     other: [
-        { key: 'passport', label: 'Passport', sides: ['Front'] },
+        { key: 'passport', label: 'Passport', sides: ['Front', 'Visa Page (Optional)'] },
         { key: 'national_id', label: 'National ID', sides: ['Front', 'Back'] },
         { key: 'driving_license', label: 'Driving License', sides: ['Front', 'Back'] },
     ]
@@ -49,20 +50,13 @@ const RELATION_OPTIONS = ['Spouse', 'Parent', 'Sibling', 'Child', 'Friend', 'Col
 
 const GENDER_OPTIONS = ['Male', 'Female', 'Other', 'Prefer not to say'];
 
-const NATIONALITY_OPTIONS = [
-    { value: 'india', label: '🇮🇳 India' },
-    { value: 'usa', label: '🇺🇸 USA' },
-    { value: 'uk', label: '🇬🇧 UK' },
-    { value: 'other', label: '🌍 Other' },
-];
-
 const createEmptyTraveler = () => ({
     firstName: '',
     middleName: '',
     lastName: '',
     dob: '',
     gender: '',
-    nationality: 'india',
+    nationality: 'India',
     contactNumbers: [''],
     selectedDocType: '',
     docFiles: {},       // { 'aadhaar_Front': File, 'aadhaar_Back': File }
@@ -91,8 +85,11 @@ const InputField = ({ label, required, error, children }) => (
 
 const TravelerCard = ({ traveler, index, onChange, expandedTraveler, setExpandedTraveler }) => {
     const isExpanded = expandedTraveler === index;
-    const nationality = traveler.nationality || 'india';
-    const docTypes = DOC_TYPES_BY_NATIONALITY[nationality] || DOC_TYPES_BY_NATIONALITY.other;
+    const nationality = traveler.nationality || 'India';
+    const isIndia = nationality === 'India';
+    const isUSA = nationality === 'United States' || nationality === 'USA';
+    const isUK = nationality === 'United Kingdom' || nationality === 'UK';
+    const docTypes = isIndia ? DOC_TYPES_BY_NATIONALITY.india : isUSA ? DOC_TYPES_BY_NATIONALITY.usa : isUK ? DOC_TYPES_BY_NATIONALITY.uk : DOC_TYPES_BY_NATIONALITY.other;
 
     const update = (field, value) => onChange(index, field, value);
 
@@ -193,13 +190,13 @@ const TravelerCard = ({ traveler, index, onChange, expandedTraveler, setExpanded
                                 <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Personal Details</p>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                                     <InputField label="First Name" required>
-                                        <input value={traveler.firstName} onChange={e => update('firstName', e.target.value)} placeholder="First name" className="input-dark" />
+                                        <input value={traveler.firstName} onChange={e => update('firstName', e.target.value.replace(/[^a-zA-Z\s]/g, ''))} placeholder="First name" className="input-dark" />
                                     </InputField>
                                     <InputField label="Middle Name">
-                                        <input value={traveler.middleName} onChange={e => update('middleName', e.target.value)} placeholder="Middle name" className="input-dark" />
+                                        <input value={traveler.middleName} onChange={e => update('middleName', e.target.value.replace(/[^a-zA-Z\s]/g, ''))} placeholder="Middle name" className="input-dark" />
                                     </InputField>
                                     <InputField label="Last Name" required>
-                                        <input value={traveler.lastName} onChange={e => update('lastName', e.target.value)} placeholder="Last name" className="input-dark" />
+                                        <input value={traveler.lastName} onChange={e => update('lastName', e.target.value.replace(/[^a-zA-Z\s]/g, ''))} placeholder="Last name" className="input-dark" />
                                     </InputField>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
@@ -214,7 +211,7 @@ const TravelerCard = ({ traveler, index, onChange, expandedTraveler, setExpanded
                                     </InputField>
                                     <InputField label="Nationality" required>
                                         <select value={traveler.nationality} onChange={e => update('nationality', e.target.value)} className="input-dark appearance-none">
-                                            {NATIONALITY_OPTIONS.map(n => <option key={n.value} value={n.value} className="bg-slate-900">{n.label}</option>)}
+                                            {COUNTRIES.map(c => <option key={c} value={c} className="bg-slate-900">{c}</option>)}
                                         </select>
                                     </InputField>
                                 </div>
@@ -339,9 +336,9 @@ const TravelerCard = ({ traveler, index, onChange, expandedTraveler, setExpanded
                                             )}
                                             <p className="text-[10px] text-slate-500 font-bold uppercase mb-2">Emergency Contact {eIdx + 1}</p>
                                             <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                                                <input value={ec.firstName} onChange={e => updateEmergencyContact(eIdx, 'firstName', e.target.value)} placeholder="First name" className="input-dark text-sm" />
-                                                <input value={ec.middleName} onChange={e => updateEmergencyContact(eIdx, 'middleName', e.target.value)} placeholder="Middle name" className="input-dark text-sm" />
-                                                <input value={ec.lastName} onChange={e => updateEmergencyContact(eIdx, 'lastName', e.target.value)} placeholder="Last name" className="input-dark text-sm" />
+                                                <input value={ec.firstName} onChange={e => updateEmergencyContact(eIdx, 'firstName', e.target.value.replace(/[^a-zA-Z\s]/g, ''))} placeholder="First name" className="input-dark text-sm" />
+                                                <input value={ec.middleName} onChange={e => updateEmergencyContact(eIdx, 'middleName', e.target.value.replace(/[^a-zA-Z\s]/g, ''))} placeholder="Middle name" className="input-dark text-sm" />
+                                                <input value={ec.lastName} onChange={e => updateEmergencyContact(eIdx, 'lastName', e.target.value.replace(/[^a-zA-Z\s]/g, ''))} placeholder="Last name" className="input-dark text-sm" />
                                                 <select value={ec.relation} onChange={e => updateEmergencyContact(eIdx, 'relation', e.target.value)} className="input-dark text-sm appearance-none">
                                                     <option value="" className="bg-slate-900">Relation</option>
                                                     {RELATION_OPTIONS.map(r => <option key={r} value={r} className="bg-slate-900">{r}</option>)}
@@ -787,7 +784,7 @@ const BookingPage = () => {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                     <div className="md:col-span-2">
                                         <label className="block text-sm text-slate-400 mb-2 font-medium">Full Name *</label>
-                                        <input name="name" value={bookingData.name} onChange={handleInputChange} placeholder="Your full name" className={`w-full bg-white/5 border rounded-xl p-3.5 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 ${validationErrors.name ? 'border-red-500/50' : 'border-white/10'}`} />
+                                        <input name="name" value={bookingData.name} onChange={(e) => { e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, ''); handleInputChange(e); }} placeholder="Your full name" className={`w-full bg-white/5 border rounded-xl p-3.5 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 ${validationErrors.name ? 'border-red-500/50' : 'border-white/10'}`} />
                                         {validationErrors.name && <p className="text-red-400 text-xs mt-1">{validationErrors.name}</p>}
                                     </div>
                                     <div>
@@ -929,7 +926,7 @@ const BookingPage = () => {
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
                                     <div><span className="text-slate-500">Lead:</span> <span className="font-medium">{bookingData.name}</span></div>
                                     <div><span className="text-slate-500">Email:</span> <span className="font-medium">{bookingData.email}</span></div>
-                                    <div><span className="text-slate-500">Phone:</span> <span className="font-medium">+{bookingData.phone}</span></div>
+                                    <div><span className="text-slate-500">Phone:</span> <span className="font-medium">{bookingData.phone.startsWith('+') ? bookingData.phone : '+' + bookingData.phone}</span></div>
                                 </div>
                                 <div className="pt-2 border-t border-white/5 space-y-1">
                                     {bookingData.travelersList.map((t, i) => (

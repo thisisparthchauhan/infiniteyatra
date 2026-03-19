@@ -16,6 +16,35 @@ const Bookings = () => {
     const [selectedBooking, setSelectedBooking] = useState(null);
     const [filterStatus, setFilterStatus] = useState('all');
 
+    // Documents State
+    const [selectedBookingDocs, setSelectedBookingDocs] = useState([]);
+    const [loadingDocs, setLoadingDocs] = useState(false);
+
+    useEffect(() => {
+        const fetchDocs = async () => {
+            if (!selectedBooking) {
+                setSelectedBookingDocs([]);
+                return;
+            }
+            setLoadingDocs(true);
+            try {
+                const docsRef = collection(db, 'bookings', selectedBooking.id, 'documents');
+                const docSnap = await getDocs(docsRef);
+                let allDocs = [];
+                docSnap.forEach(d => {
+                    const data = d.data();
+                    if (data.docs) allDocs = [...allDocs, ...data.docs];
+                });
+                setSelectedBookingDocs(allDocs);
+            } catch (err) {
+                console.error("Error fetching docs", err);
+            } finally {
+                setLoadingDocs(false);
+            }
+        };
+        fetchDocs();
+    }, [selectedBooking]);
+
     const fetchBookings = async () => {
         setLoading(true);
         try {
@@ -547,6 +576,91 @@ const Bookings = () => {
                                             )}
                                         </div>
                                     </div>
+
+                                    {/* Individual Travelers */}
+                                    {selectedBooking.travelersList && selectedBooking.travelersList.length > 0 && (
+                                        <div className="p-4 rounded-xl bg-white/5 border border-white/5 space-y-4">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <Users size={16} className="text-indigo-400" />
+                                                <label className="text-xs text-indigo-400 uppercase font-bold tracking-wider">Traveler Details</label>
+                                            </div>
+                                            {selectedBooking.travelersList.map((t, idx) => {
+                                                const travelerDocs = selectedBookingDocs.filter(d => d.travelerIndex === idx);
+                                                return (
+                                                <div key={idx} className="p-4 rounded-xl bg-white/[0.02] border border-white/5 space-y-3">
+                                                    <div className="flex items-center gap-2 mb-2">
+                                                        <div className="w-5 h-5 rounded bg-indigo-500/10 flex items-center justify-center text-indigo-400 font-bold text-xs">{idx + 1}</div>
+                                                        <label className="text-sm font-bold text-slate-200">Traveler {idx + 1}</label>
+                                                    </div>
+                                                    <div className="grid grid-cols-2 gap-4 text-sm mt-3">
+                                                        <div>
+                                                            <span className="text-[10px] text-slate-500 uppercase block mb-1">Name</span>
+                                                            <p className="font-medium text-white">{`${t.firstName} ${t.middleName || ''} ${t.lastName}`.trim() || 'N/A'}</p>
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-[10px] text-slate-500 uppercase block mb-1">DOB & Gender</span>
+                                                            <p className="text-slate-300">{t.dob || 'N/A'} • {t.gender || 'N/A'}</p>
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-[10px] text-slate-500 uppercase block mb-1">Nationality</span>
+                                                            <p className="text-slate-300">{t.nationality || 'N/A'}</p>
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-[10px] text-slate-500 uppercase block mb-1">ID Document Type</span>
+                                                            <p className="text-slate-300 capitalize">{t.selectedDocType?.replace('_', ' ') || 'None'}</p>
+                                                        </div>
+                                                        {t.contactNumbers && t.contactNumbers.length > 0 && t.contactNumbers[0] !== '' && (
+                                                            <div className="col-span-2">
+                                                                <span className="text-[10px] text-slate-500 uppercase block mb-1">Contact Numbers</span>
+                                                                <p className="text-slate-300 font-mono">{t.contactNumbers.filter(n => n).join(', ')}</p>
+                                                            </div>
+                                                        )}
+                                                        {t.emergencyContacts && t.emergencyContacts.length > 0 && t.emergencyContacts.some(ec => ec.firstName) && (
+                                                            <div className="col-span-2 bg-red-500/5 border border-red-500/10 p-3 rounded-xl mt-2">
+                                                                <span className="text-[10px] text-red-400 uppercase font-bold block mb-1">Emergency Contacts</span>
+                                                                {t.emergencyContacts.filter(ec => ec.firstName).map((ec, i) => (
+                                                                    <div key={i} className="text-slate-300 text-xs mb-1 last:mb-0">
+                                                                        <span className="font-medium">{ec.firstName} {ec.lastName}</span> {ec.relation && `(${ec.relation})`} - <span className="font-mono">{ec.contactNumber}</span>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                        
+                                                        {/* Document Thumbnails */}
+                                                        {travelerDocs.length > 0 && (
+                                                            <div className="col-span-2 border-t border-white/5 pt-3 mt-1">
+                                                                <span className="text-[10px] text-slate-500 uppercase block mb-2 font-bold">Uploaded Documents</span>
+                                                                <div className="flex flex-wrap gap-3">
+                                                                    {travelerDocs.map((doc, dIdx) => (
+                                                                        <a
+                                                                            key={dIdx}
+                                                                            href={doc.url}
+                                                                            target="_blank"
+                                                                            rel="noopener noreferrer"
+                                                                            className="flex flex-col items-center justify-center gap-1.5 p-2 rounded-lg bg-black/20 border border-white/10 hover:border-blue-500/50 hover:bg-blue-500/5 transition-all w-24 group"
+                                                                            title={doc.fileName}
+                                                                        >
+                                                                            <div className="w-12 h-12 rounded bg-white/5 flex items-center justify-center group-hover:bg-blue-500/20 transition-colors overflow-hidden">
+                                                                                {doc.fileName?.toLowerCase().includes('.pdf') || doc.url?.toLowerCase().includes('.pdf') ? (
+                                                                                    <FileText size={20} className="text-red-400" />
+                                                                                ) : (
+                                                                                    <img src={doc.url} alt={doc.docKey} className="w-full h-full object-cover" />
+                                                                                )}
+                                                                            </div>
+                                                                            <span className="text-[9px] text-slate-400 capitalize text-center leading-tight truncate w-full group-hover:text-blue-300">
+                                                                                {doc.docKey.replace(/_/g, ' ')}
+                                                                            </span>
+                                                                        </a>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="p-4 rounded-xl bg-white/5 border border-white/5">

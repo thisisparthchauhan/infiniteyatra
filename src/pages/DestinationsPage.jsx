@@ -1,180 +1,93 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import Destinations from '../components/Destinations';
-import SearchFilter from '../components/SearchFilter';
+import React, { useState, useEffect, useMemo, lazy, Suspense } from 'react';
 import SEO from '../components/SEO';
-import AnimatedBanner from '../components/AnimatedBanner';
 import { usePackages } from '../context/PackageContext';
+
+import HeroSection from '../components/destinations/HeroSection';
+import SeasonFilterStrip from '../components/destinations/SeasonFilterStrip';
+import EditorsPick from '../components/destinations/EditorsPick';
+import CategorizedDestinations from '../components/destinations/CategorizedDestinations';
+import InspirationStrip from '../components/destinations/InspirationStrip';
+
+// Lazy-load the heavy map component
+const WorldMapView = lazy(() => import('../components/destinations/WorldMapView'));
+
+const gridRef = React.createRef();
 
 const DestinationsPage = () => {
     const { packages, loading } = usePackages();
 
-    const minPrice = packages.length ? Math.min(...packages.map(p => p.price)) : 0;
-    const maxPrice = packages.length ? Math.max(...packages.map(p => p.price)) : 100000;
-
-    const [filters, setFilters] = useState({
-        search: '',
-        priceRange: 100000, // Default safely high
-        category: 'All',
-        duration: 'All',
-        sortBy: 'Recommended'
-    });
-
-    const [filteredPackages, setFilteredPackages] = useState([]);
-
-    // Update filters when packages load
-    useEffect(() => {
-        if (packages.length > 0) {
-            setFilters(prev => ({ ...prev, priceRange: maxPrice }));
-            setFilteredPackages(packages);
-        }
-    }, [packages]);
+    const [activeSeason, setActiveSeason] = useState('all');
+    const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'map'
 
     useEffect(() => {
-        // Scroll to top when page loads
         window.scrollTo(0, 0);
     }, []);
 
-    // Filter Logic
-    useEffect(() => {
-        if (loading) return;
+    // Scroll to grid when "Explore All Destinations" is clicked in hero
+    const handleExploreClick = () => {
+        const el = document.getElementById('packages-section');
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
 
-        const result = packages.filter(pkg => {
-            // 1. Search (Title or Location)
-            const searchMatch =
-                pkg.title.toLowerCase().includes(filters.search.toLowerCase()) ||
-                pkg.location.toLowerCase().includes(filters.search.toLowerCase());
-
-            // 2. Price
-            const priceMatch = pkg.price <= filters.priceRange;
-
-            // 3. Category
-            let categoryMatch = true;
-            if (filters.category !== 'All') {
-                // Use explicit category field if available
-                if (pkg.category) {
-                    const cats = Array.isArray(pkg.category) ? pkg.category : [pkg.category];
-                    categoryMatch = cats.map(c => c.toLowerCase()).includes(filters.category.toLowerCase());
-                } else {
-                    const isTrek = pkg.title.toLowerCase().includes('trek');
-                    const isSpiritual = pkg.title.toLowerCase().includes('yatra') || pkg.title.toLowerCase().includes('temple') || pkg.id === 'kedarnath' || pkg.id === 'tungnath';
-                    const isInternational = !pkg.location.includes('India');
-
-                    if (filters.category === 'Trek') categoryMatch = isTrek;
-                    else if (filters.category === 'Spiritual') categoryMatch = isSpiritual;
-                    else if (filters.category === 'International') categoryMatch = isInternational;
-                    else categoryMatch = false;
-                }
-            }
-
-            // 4. Duration
-            let durationMatch = true;
-            if (filters.duration !== 'All') {
-                const days = parseInt(pkg.duration); // "6 Days / 5 Nights" -> 6
-                if (filters.duration === 'Short (< 5 days)') durationMatch = days < 5;
-                else if (filters.duration === 'Medium (5-8 days)') durationMatch = days >= 5 && days <= 8;
-                else if (filters.duration === 'Long (> 8 days)') durationMatch = days > 8;
-            }
-
-            return searchMatch && priceMatch && categoryMatch && durationMatch;
-        });
-
-
-
-        // Sorting Logic
-        const sortedResult = [...result].sort((a, b) => {
-            if (filters.sortBy === 'Price: Low to High') {
-                return a.price - b.price;
-            } else if (filters.sortBy === 'Price: High to Low') {
-                return b.price - a.price;
-            } else if (filters.sortBy === 'Duration: Shortest') {
-                return parseInt(a.duration) - parseInt(b.duration);
-            } else if (filters.sortBy === 'Duration: Longest') {
-                return parseInt(b.duration) - parseInt(a.duration);
-            }
-            return 0; // Recommended (Default order)
-        });
-
-        setFilteredPackages(sortedResult);
-    }, [filters]);
+    // We don't need seasonFilteredPackages here anymore since CategorizedDestinations handles it
+    // just pass raw packages, loading, and activeSeason down.
 
     return (
-        <div className="pt-24 pb-12 bg-black min-h-screen relative overflow-hidden">
+        <div
+            className="min-h-screen"
+            style={{ background: '#0a0a0a' }}
+        >
             <SEO
                 title="Destinations"
                 description="Explore our curated collection of treks, tours, and spiritual journeys. Find your dream journey with Infinite Yatra."
                 url="/destinations"
             />
 
-            {/* Background Glows (matching ContactNew) */}
-            <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-600/20 rounded-full blur-[128px] pointer-events-none"></div>
-            <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-600/20 rounded-full blur-[128px] pointer-events-none"></div>
+            {/* ── Section 1: Cinematic Hero ── */}
+            <HeroSection onExploreClick={handleExploreClick} />
 
-            <AnimatedBanner />
+            {/* ── Section 2: Season Filter Strip (sticky) ── */}
+            <SeasonFilterStrip
+                activeSeason={activeSeason}
+                setActiveSeason={setActiveSeason}
+                viewMode={viewMode}
+                setViewMode={setViewMode}
+            />
 
-            <div className="container mx-auto px-6 relative z-10">
-                <div className="mb-10 text-center mt-12">
-                    <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-                        Find Your Dream Journey
-                    </h1>
-                    <p className="text-slate-400 text-lg max-w-2xl mx-auto">
-                        Explore our curated collection of treks, tours, and spiritual journeys.
-                        Use the filters below to find the perfect package for you.
-                    </p>
-                </div>
+            {/* ── Section 3: Editor's Pick ── */}
+            {viewMode === 'grid' && <EditorsPick />}
 
-                <SearchFilter
-                    filters={filters}
-                    setFilters={setFilters}
-                    minPrice={minPrice}
-                    maxPrice={maxPrice}
-                    variant="dark"
-                />
-
-                {/* Show sections only when no filters are active */
-                    filters.search === '' && filters.category === 'All' && filters.duration === 'All' ? (
-                        <div className="space-y-16">
-                            {/* 1. Treks Section */}
-                            <Destinations
-                                packages={packages.filter(p => p.category && (Array.isArray(p.category) ? p.category.includes('trek') : p.category === 'trek'))}
-                                title="Trending Treks"
-                                subtitle="Conquer the heights and walk above the clouds."
-                                showViewAll={false}
-                                disableHeader={false}
-                                variant="dark"
-                            />
-
-                            {/* 2. Spiritual Section */}
-                            <Destinations
-                                packages={packages.filter(p => p.category && (Array.isArray(p.category) ? p.category.includes('spiritual') : p.category === 'spiritual'))}
-                                title="Spiritual Journeys"
-                                subtitle="Find inner peace at the world's holiest shrines."
-                                showViewAll={false}
-                                disableHeader={false}
-                                variant="dark"
-                            />
-
-                            {/* 3. International Section */}
-                            <Destinations
-                                packages={packages.filter(p => p.category && (Array.isArray(p.category) ? p.category.includes('international') : p.category === 'international'))}
-                                title="International Getaways"
-                                subtitle="Explore iconic destinations beyond boundaries."
-                                showViewAll={false}
-                                disableHeader={false}
-                                variant="dark"
-                            />
-                        </div>
-                    ) : (
-                        /* Show filtered results as single list */
-                        <Destinations
-                            packages={filteredPackages}
-                            title={filteredPackages.length > 0 ? "Search Results" : "No Results Found"}
-                            subtitle={`${filteredPackages.length} packages found matching your criteria`}
-                            showViewAll={false}
-                            disableHeader={false}
-                            variant="dark"
-                        />
-                    )}
+            {/* ── Section 4 / 5: Grid or Map ── */}
+            <div id="packages-section">
+                {viewMode === 'grid' ? (
+                    <CategorizedDestinations
+                        packages={packages}
+                        loading={loading}
+                        activeSeason={activeSeason}
+                    />
+                ) : (
+                    <Suspense
+                        fallback={
+                            <div
+                                className="flex items-center justify-center"
+                                style={{ height: '65vh', background: '#0a0a0a' }}
+                            >
+                                <div className="flex flex-col items-center gap-3">
+                                    <div
+                                        className="w-10 h-10 rounded-full border-2 border-purple-500 border-t-transparent animate-spin"
+                                    />
+                                    <p className="text-gray-600 text-sm">Loading map…</p>
+                                </div>
+                            </div>
+                        }
+                    >
+                        <WorldMapView />
+                    </Suspense>
+                )}
             </div>
+
+            {/* ── Section 6: Inspiration Strip ── */}
+            <InspirationStrip />
         </div>
     );
 };

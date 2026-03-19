@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Edit2, Trash2, Car, X, Image as ImageIcon, Eye, EyeOff, Search, MapPin, UploadCloud, Loader2 } from 'lucide-react';
+import { Plus, Edit2, Trash2, Car, X, Image as ImageIcon, Eye, EyeOff, Search, MapPin, Link as LinkIcon, Loader2, CheckCircle, Upload } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 import { getVehicles, addVehicle, updateVehicle, deleteVehicle, getCities } from '../../../services/transportService';
-import { storage } from '../../../firebase';
-import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 
 const AVAILABLE_FEATURES = ['AC', 'GPS', 'Music System', 'Child Seat', 'First Aid Kit', 'Insurance Included'];
 
@@ -13,7 +12,11 @@ const AdminTransportVehicles = () => {
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editMode, setEditMode] = useState(false);
+    const [imageUrl, setImageUrl] = useState('');
     const [uploading, setUploading] = useState(false);
+
+    const CLOUD_NAME = "infiniteyatra";
+    const UPLOAD_PRESET = "infinite_unsigned";
 
     // Filters
     const [searchQuery, setSearchQuery] = useState('');
@@ -32,6 +35,7 @@ const AdminTransportVehicles = () => {
             country: 'India',
             pricePerDay: '',
             pricePerHour: '',
+            pricePerKm: '',
             seats: '',
             description: '',
             features: [],
@@ -87,41 +91,15 @@ const AdminTransportVehicles = () => {
         }
     };
 
-    const handleImageUpload = async (e) => {
-        const files = Array.from(e.target.files);
-        if (files.length === 0) return;
-
-        setUploading(true);
-        const uploadedUrls = [];
-
-        try {
-            for (let i = 0; i < files.length; i++) {
-                const file = files[i];
-                const storageRef = ref(storage, `transport/images/${Date.now()}_${file.name}`);
-                const uploadTask = uploadBytesResumable(storageRef, file);
-
-                await new Promise((resolve, reject) => {
-                    uploadTask.on(
-                        'state_changed',
-                        null,
-                        (error) => reject(error),
-                        async () => {
-                            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                            uploadedUrls.push(downloadURL);
-                            resolve();
-                        }
-                    );
-                });
-            }
-            setFormData(prev => ({ ...prev, images: [...prev.images, ...uploadedUrls] }));
-        } catch (error) {
-            console.error("Error uploading images:", error);
-            alert("Failed to upload images");
-        } finally {
-            setUploading(false);
-            // reset file input
-            e.target.value = null;
+    const handleAddImageUrl = () => {
+        const url = imageUrl.trim();
+        if (!url) return;
+        if (!url.startsWith('http')) {
+            alert('Please enter a valid URL starting with http:// or https://');
+            return;
         }
+        setFormData(prev => ({ ...prev, images: [...prev.images, url] }));
+        setImageUrl('');
     };
 
     const removeImage = (indexToRemove) => {
@@ -131,6 +109,42 @@ const AdminTransportVehicles = () => {
         }));
     };
 
+    const handleFileUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error("File size too large (Max 5MB)");
+            return;
+        }
+
+        setUploading(true);
+        try {
+            const uploadData = new FormData();
+            uploadData.append("file", file);
+            uploadData.append("upload_preset", UPLOAD_PRESET);
+
+            const response = await fetch(
+                `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+                { method: "POST", body: uploadData }
+            );
+
+            if (!response.ok) throw new Error("Upload failed");
+
+            const data = await response.json();
+            const url = data.secure_url;
+
+            setFormData(prev => ({ ...prev, images: [...prev.images, url] }));
+            toast.success("Image uploaded successfully!");
+        } catch (error) {
+            console.error("Error uploading image:", error);
+            toast.error("Upload failed: " + error.message);
+        } finally {
+            setUploading(false);
+            e.target.value = null;
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
@@ -138,6 +152,7 @@ const AdminTransportVehicles = () => {
                 ...formData,
                 pricePerDay: Number(formData.pricePerDay),
                 pricePerHour: Number(formData.pricePerHour || 0),
+                pricePerKm: Number(formData.pricePerKm || 0),
                 seats: Number(formData.seats)
             };
 
@@ -156,9 +171,10 @@ const AdminTransportVehicles = () => {
             }
             handleCloseModal();
             fetchData();
+            toast.success(editMode ? 'Vehicle updated successfully!' : 'Vehicle added successfully!');
         } catch (error) {
             console.error('Error saving vehicle:', error);
-            alert('Failed to save vehicle');
+            toast.error('Failed to save vehicle');
         }
     };
 
@@ -472,37 +488,26 @@ const AdminTransportVehicles = () => {
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                                             <div>
                                                 <label className="block text-sm font-medium text-slate-300 mb-1.5">City</label>
-                                                <select required
+                                                <input type="text" required placeholder="e.g. Manali"
                                                     className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white text-base focus:outline-none focus:border-blue-500 transition-colors min-h-[44px]"
                                                     value={formData.city}
-                                                    onChange={e => {
-                                                        const selectedCity = cities.find(c => c.cityName === e.target.value);
-                                                        setFormData({
-                                                            ...formData,
-                                                            city: e.target.value,
-                                                            state: selectedCity ? selectedCity.stateName : formData.state,
-                                                            country: selectedCity ? selectedCity.countryName : formData.country
-                                                        });
-                                                    }}
-                                                >
-                                                    <option value="">Select City</option>
-                                                    {cities.filter(c => c.isActive).map(c => (
-                                                        <option key={c.id} value={c.cityName}>{c.cityName}</option>
-                                                    ))}
-                                                </select>
+                                                    onChange={e => setFormData({ ...formData, city: e.target.value })}
+                                                />
                                             </div>
                                             <div>
                                                 <label className="block text-sm font-medium text-slate-300 mb-1.5">State</label>
-                                                <input type="text" required readOnly
-                                                    className="w-full bg-slate-900/50 border border-slate-800 rounded-xl px-4 py-3 text-slate-400 cursor-not-allowed text-base min-h-[44px]"
+                                                <input type="text" required placeholder="e.g. Himachal Pradesh"
+                                                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white text-base focus:outline-none focus:border-blue-500 transition-colors min-h-[44px]"
                                                     value={formData.state}
+                                                    onChange={e => setFormData({ ...formData, state: e.target.value })}
                                                 />
                                             </div>
                                             <div>
                                                 <label className="block text-sm font-medium text-slate-300 mb-1.5">Country</label>
-                                                <input type="text" required readOnly
-                                                    className="w-full bg-slate-900/50 border border-slate-800 rounded-xl px-4 py-3 text-slate-400 cursor-not-allowed text-base min-h-[44px]"
+                                                <input type="text" required placeholder="India"
+                                                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white text-base focus:outline-none focus:border-blue-500 transition-colors min-h-[44px]"
                                                     value={formData.country}
+                                                    onChange={e => setFormData({ ...formData, country: e.target.value })}
                                                 />
                                             </div>
                                         </div>
@@ -511,12 +516,19 @@ const AdminTransportVehicles = () => {
                                     {/* SECTION 3: Specs & Pricing */}
                                     <div>
                                         <h4 className="text-sm font-bold text-blue-400 uppercase tracking-wider mb-4">Specs & Pricing</h4>
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
                                             <div>
                                                 <label className="block text-sm font-medium text-slate-300 mb-1.5">Seats / Capacity</label>
                                                 <input type="number" required min="1"
                                                     className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white text-base focus:outline-none focus:border-blue-500 transition-colors min-h-[44px]"
                                                     value={formData.seats} onChange={e => setFormData({ ...formData, seats: e.target.value })}
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-slate-300 mb-1.5">Price Per Km (₹)</label>
+                                                <input type="number" min="0" placeholder="e.g. 12"
+                                                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white text-base focus:outline-none focus:border-blue-500 transition-colors min-h-[44px]"
+                                                    value={formData.pricePerKm} onChange={e => setFormData({ ...formData, pricePerKm: e.target.value })}
                                                 />
                                             </div>
                                             <div>
@@ -578,40 +590,65 @@ const AdminTransportVehicles = () => {
                                         </div>
                                     </div>
 
-                                    {/* SECTION 6: Images (Firebase Storage) */}
+                                    {/* SECTION 6: Images (Paste URL) */}
                                     <div>
                                         <h4 className="text-sm font-bold text-blue-400 uppercase tracking-wider mb-4 flex items-center justify-between">
                                             <span>Images</span>
-                                            <span className="text-xs font-normal text-slate-500 bg-slate-800 px-2 py-1 rounded">Upload multiple</span>
+                                            <span className="text-xs font-normal text-slate-500 bg-slate-800 px-2 py-1 rounded">Upload or Paste URL</span>
                                         </h4>
-                                        <div className="bg-slate-900 border border-slate-700 border-dashed rounded-2xl p-6 text-center">
-                                            <input
-                                                type="file" multiple accept="image/*"
-                                                onChange={handleImageUpload} className="hidden" id="imageUpload"
-                                            />
-                                            <label htmlFor="imageUpload" className="cursor-pointer flex flex-col items-center justify-center h-32 relative">
-                                                {uploading ? (
-                                                    <div className="flex flex-col items-center">
-                                                        <Loader2 size={32} className="text-blue-500 animate-spin mb-3" />
-                                                        <span className="text-slate-400 text-sm font-medium pt-2">Uploading to Firebase Storage...</span>
+                                        <div className="bg-slate-900 border border-slate-700 rounded-2xl p-5">
+                                            
+                                            {/* File Upload Option */}
+                                            <div className="mb-4">
+                                                <input type="file" id="vehicle-image-upload" className="hidden" accept="image/*" onChange={handleFileUpload} disabled={uploading} />
+                                                <label htmlFor="vehicle-image-upload" className="flex items-center justify-center w-full h-24 px-4 transition bg-slate-800 border-2 border-slate-600 border-dashed rounded-xl appearance-none cursor-pointer hover:border-blue-500 hover:bg-slate-800/80 focus:outline-none">
+                                                    <div className="flex flex-col items-center space-y-2">
+                                                        {uploading ? (
+                                                            <Loader2 className="w-6 h-6 text-blue-500 animate-spin" />
+                                                        ) : (
+                                                            <Upload className="w-6 h-6 text-slate-400" />
+                                                        )}
+                                                        <span className="font-medium text-slate-400">
+                                                            {uploading ? 'Uploading image...' : 'Click to upload from device (Max 5MB)'}
+                                                        </span>
                                                     </div>
-                                                ) : (
-                                                    <>
-                                                        <div className="w-14 h-14 bg-blue-500/10 rounded-full flex items-center justify-center mb-3 group-hover:bg-blue-500/20 transition-colors">
-                                                            <UploadCloud size={28} className="text-blue-400" />
-                                                        </div>
-                                                        <span className="text-white font-bold mb-1">Click to upload images</span>
-                                                        <span className="text-slate-500 text-xs">PNG, JPG, WEBP up to 5MB</span>
-                                                    </>
-                                                )}
-                                            </label>
+                                                </label>
+                                            </div>
+
+                                            <div className="flex items-center gap-4 mb-4">
+                                                <div className="h-px bg-slate-700 flex-1"></div>
+                                                <span className="text-xs font-bold text-slate-500 uppercase">OR PASTE URL</span>
+                                                <div className="h-px bg-slate-700 flex-1"></div>
+                                            </div>
+
+                                            {/* Paste URL Option */}
+                                            <div className="flex gap-3">
+                                                <div className="relative flex-1">
+                                                    <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
+                                                    <input
+                                                        type="url"
+                                                        placeholder="Paste image URL (https://...)"
+                                                        className="w-full bg-slate-800 border border-slate-600 rounded-xl pl-10 pr-4 py-3 text-white text-sm focus:outline-none focus:border-blue-500 transition-colors"
+                                                        value={imageUrl}
+                                                        onChange={e => setImageUrl(e.target.value)}
+                                                        onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddImageUrl(); } }}
+                                                    />
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={handleAddImageUrl}
+                                                    className="bg-blue-600 hover:bg-blue-500 text-white px-5 py-3 rounded-xl font-bold text-sm transition-colors whitespace-nowrap"
+                                                >
+                                                    + Add
+                                                </button>
+                                            </div>
 
                                             {/* Preview Grid */}
                                             {formData.images.length > 0 && (
-                                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-6 border-t border-slate-800">
+                                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-5 pt-5 border-t border-slate-700">
                                                     {formData.images.map((img, idx) => (
-                                                        <div key={idx} className="relative aspect-video rounded-xl border border-slate-700 overflow-hidden group">
-                                                            <img src={img} alt={`Preview ${idx}`} className="w-full h-full object-cover" />
+                                                        <div key={idx} className="relative aspect-video rounded-xl border border-slate-700 overflow-hidden group bg-slate-800">
+                                                            <img src={img} alt={`Preview ${idx}`} className="w-full h-full object-cover" onError={e => { e.target.style.display = 'none'; }} />
                                                             <button
                                                                 type="button"
                                                                 onClick={(e) => { e.preventDefault(); removeImage(idx); }}

@@ -34,6 +34,8 @@ import AdminTransportOverview from '../components/admin/transport/AdminTransport
 import AdminSitemap from '../components/admin/AdminSitemap';
 import AdminSpaceWaitlist from '../components/admin/space/AdminSpaceWaitlist';
 import AdminPassport from '../components/admin/AdminPassport';
+import AdminCars from '../components/admin/transport/AdminCars';
+import AdminCarBookings from '../components/admin/transport/AdminCarBookings';
 
 const AdminDashboard = () => {
     const { hasPermission, getFirstAllowedTab, currentRole, setCurrentRole, currentWorkspace } = useRole();
@@ -75,6 +77,8 @@ const AdminDashboard = () => {
             'transport-settings': 'Transport Settings',
             'sitemap': 'Site Architecture Map',
             'space-waitlist': 'IY Space Waitlist',
+            'car-management': 'Manage Cars',
+            'car-bookings': 'Car Bookings',
             'passport': 'IY Passport'
         };
         return titles[activeTab] || 'Admin Panel';
@@ -119,6 +123,8 @@ const AdminDashboard = () => {
             case 'sitemap': return <AdminSitemap />;
             case 'space-waitlist': return <AdminSpaceWaitlist />;
             case 'passport': return <AdminPassport />;
+            case 'car-management': return <AdminCars />;
+            case 'car-bookings': return <AdminCarBookings />;
             case 'staff':
                 return (
                     <div className="text-center py-20">

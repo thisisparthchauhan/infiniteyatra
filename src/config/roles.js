@@ -43,7 +43,7 @@ export const WORKSPACES = {
             'bookings', 'crm', 'packages', 'operations',
             'finance', 'hotel-finance', 'influencers',
             'homepage', 'experiences', 'stories', 'media',
-            'hotels', 'transport-overview', 'transport-vehicles', 'transport-cities', 'transport-bookings', 'transport-content', 'transport-settings', 'space-waitlist', 'passport'
+            'hotels', 'transport-overview', 'transport-vehicles', 'transport-cities', 'transport-bookings', 'transport-content', 'transport-settings', 'car-management', 'car-bookings', 'space-waitlist', 'passport'
         ]
     },
     TOUR_MANAGER: {
@@ -95,7 +95,7 @@ export const ROLE_WORKSPACE_MAP = {
 
 // Flattened permissions for legacy checks if needed, but we should rely on Workspace modules
 export const ROLE_PERMISSIONS = {
-    [USER_ROLES.SUPER_ADMIN]: ['overview', 'staff', 'sitemap', 'bookings', 'crm', 'packages', 'operations', 'finance', 'hotel-finance', 'influencers', 'homepage', 'experiences', 'stories', 'media', 'hotels', 'transport-overview', 'transport-vehicles', 'transport-cities', 'transport-bookings', 'transport-content', 'transport-settings', 'space-waitlist', 'passport'],
+    [USER_ROLES.SUPER_ADMIN]: ['overview', 'staff', 'sitemap', 'bookings', 'crm', 'packages', 'operations', 'finance', 'hotel-finance', 'influencers', 'homepage', 'experiences', 'stories', 'media', 'hotels', 'transport-overview', 'transport-vehicles', 'transport-cities', 'transport-bookings', 'transport-content', 'transport-settings', 'car-management', 'car-bookings', 'space-waitlist', 'passport'],
     [USER_ROLES.TOUR_MANAGER]: ['bookings', 'crm', 'packages', 'operations'],
     [USER_ROLES.FINANCE_MANAGER]: ['finance', 'hotel-finance', 'influencers', 'analytics'],
     [USER_ROLES.CONTENT_MANAGER]: ['homepage', 'experiences', 'stories', 'media'],
@@ -141,6 +141,10 @@ export const MENU_ITEMS = [
     { id: 'transport-bookings', label: 'Transport Bookings', icon: CalendarCheck },
     { id: 'transport-content', label: 'Transport Content', icon: PenTool },
     { id: 'transport-settings', label: 'Transport Settings', icon: Settings },
+
+    // Cars (With Driver)
+    { id: 'car-management', label: 'Manage Cars', icon: Car },
+    { id: 'car-bookings', label: 'Car Bookings', icon: CalendarCheck },
 
     // Space
     { id: 'space-waitlist', label: 'IY Space', icon: Globe },

@@ -10,7 +10,7 @@ const AdminSidebar = ({ activeTab, setActiveTab, isOpen, setIsOpen }) => {
 
     const [isTransportExpanded, setIsTransportExpanded] = useState(false);
 
-    const transportItemIds = ['transport-overview', 'transport-vehicles', 'transport-cities', 'transport-bookings', 'transport-content', 'transport-settings'];
+    const transportItemIds = ['transport-overview', 'transport-vehicles', 'transport-cities', 'transport-bookings', 'transport-content', 'transport-settings', 'car-management', 'car-bookings'];
     // Filter menu items based on permissions
     const visibleMenuItems = MENU_ITEMS.filter(item => hasPermission(item.id));
     const regularItems = visibleMenuItems.filter(item => !transportItemIds.includes(item.id));

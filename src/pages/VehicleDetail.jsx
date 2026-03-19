@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import TransportationBookingDrawer from '../components/TransportationBookingDrawer';
+import CarBookingDrawer from '../components/CarBookingDrawer';
 import { motion } from 'framer-motion';
 import { 
   ArrowRight, ShieldCheck, Map, Clock, 
   Users, Briefcase, Zap, Heart, Wind, 
-  Target, Anchor, Coffee, Star 
+  Target, Anchor, Coffee, Star, Car 
 } from 'lucide-react';
 
 const vehicleConfig = {
@@ -162,6 +163,7 @@ export default function VehicleDetail() {
   const { vehicleId } = useParams();
   const navigate = useNavigate();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isCarDrawerOpen, setIsCarDrawerOpen] = useState(false);
   
   const vehicle = vehicleConfig[vehicleId];
 
@@ -300,6 +302,18 @@ export default function VehicleDetail() {
                 <span className="text-gray-400 text-lg">Starting from</span>
                 <span className={`text-4xl md:text-5xl font-black ${vehicle.textAccent}`}>{vehicle.price}</span>
               </div>
+
+              {/* With Driver button for Cars */}
+              {vehicleId === 'cars' && (
+                <button 
+                  onClick={() => setIsCarDrawerOpen(true)}
+                  className="hidden md:inline-flex items-center justify-center px-10 py-5 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold text-lg hover:shadow-[0_0_30px_rgba(99,102,241,0.3)] transition-all duration-300 group mr-4 mb-4"
+                >
+                  <Car className="mr-3 w-6 h-6" /> Book Cars → With Driver
+                  <ArrowRight className="ml-3 w-6 h-6 group-hover:translate-x-2 transition-transform" />
+                </button>
+              )}
+
               <button 
                 onClick={() => setIsDrawerOpen(true)}
                 className={`hidden md:inline-flex items-center justify-center px-10 py-5 rounded-full bg-gradient-to-r ${vehicle.accent} text-white font-bold text-lg hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] transition-all duration-300 group`}
@@ -313,7 +327,16 @@ export default function VehicleDetail() {
       </div>
 
       {/* 5. MOBILE STICKY BOOKING BUTTON */}
-      <div className="md:hidden fixed bottom-6 left-4 right-4 z-50">
+      <div className="md:hidden fixed bottom-6 left-4 right-4 z-50 flex flex-col gap-2">
+        {vehicleId === 'cars' && (
+          <button 
+            onClick={() => setIsCarDrawerOpen(true)}
+            className="w-full flex items-center justify-between px-6 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold text-lg shadow-[0_10px_40px_rgba(0,0,0,0.5)] active:scale-95 transition-transform"
+          >
+             <span className="flex items-center gap-2"><Car className="w-5 h-5" /> With Driver</span>
+             <ArrowRight className="w-6 h-6 animate-pulse" />
+          </button>
+        )}
         <button 
           onClick={() => setIsDrawerOpen(true)}
           className={`w-full flex items-center justify-between px-6 py-4 rounded-xl bg-gradient-to-r ${vehicle.accent} text-white font-bold text-lg shadow-[0_10px_40px_rgba(0,0,0,0.5)] active:scale-95 transition-transform`}
@@ -328,6 +351,11 @@ export default function VehicleDetail() {
         onClose={() => setIsDrawerOpen(false)} 
         vehicle={vehicle} 
         vehicleId={vehicleId} 
+      />
+
+      <CarBookingDrawer 
+        isOpen={isCarDrawerOpen} 
+        onClose={() => setIsCarDrawerOpen(false)} 
       />
     </div>
   );
