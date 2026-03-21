@@ -1,5 +1,6 @@
 import { db } from '../firebase';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { RazorpayService } from './razorpayService';
 
 /**
  * Loads the Razorpay SDK script dynamically.
@@ -19,28 +20,23 @@ export const loadRazorpay = () => {
  * In production, this MUST call your Backend API (Node.js/Firebase Functions).
  */
 export const createPaymentOrder = async (bookingId, amount, currency = 'INR') => {
-    // SIMULATION: Call your backend API here
-    // const res = await fetch('/api/create-order', { body: { bookingId, amount } });
-    // return res.json();
-
-    console.log(`[Mock] Creating Razorpay Order for Booking ${bookingId} - ${currency} ${amount}`);
-
-    // Returning a mock order ID
-    return {
-        id: 'order_' + new Date().getTime(),
-        currency: currency,
-        amount: amount * 100, // Razorpay expects paise
-    };
+    console.log(`[Live] Creating Razorpay Order for Booking ${bookingId} - ${currency} ${amount}`);
+    return await RazorpayService.createOrder(bookingId, amount);
 };
 
 /**
  * Verifies the payment signature (Simulated).
  * In production, verify signature on backend using razorpay-node SDK.
  */
-export const verifyPayment = async (response) => {
-    console.log("[Mock] Verifying Payment", response);
-    // Simulate API call to verify signature
-    return true;
+export const verifyPayment = async (response, bookingId) => {
+    console.log("[Live] Verifying Payment", response);
+    try {
+        const res = await RazorpayService.verifyPayment(response, bookingId);
+        return res.success;
+    } catch (error) {
+        console.error("Signature verification failed", error);
+        return false;
+    }
 };
 
 /**
@@ -62,7 +58,7 @@ export const payWithRazorpay = async (bookingDetails, onSuccess, onFailure) => {
         const order = await createPaymentOrder(bookingDetails.id, bookingDetails.amount, bookingDetails.currency);
 
         const options = {
-            key: "YOUR_RAZORPAY_KEY_ID", // Replace with env variable
+            key: import.meta.env.VITE_RAZORPAY_KEY_ID, // Using env variable
             amount: order.amount,
             currency: order.currency,
             name: "Infinite Yatra",
@@ -71,7 +67,7 @@ export const payWithRazorpay = async (bookingDetails, onSuccess, onFailure) => {
             order_id: order.id,
             handler: async function (response) {
                 // 2. Verify Payment on Success
-                const isValid = await verifyPayment(response);
+                const isValid = await verifyPayment(response, bookingDetails.id);
                 if (isValid) {
                     onSuccess({
                         paymentId: response.razorpay_payment_id,
