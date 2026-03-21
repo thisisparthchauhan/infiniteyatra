@@ -52,12 +52,12 @@ export const RazorpayService = {
      * @param {object} paymentData - { razorpay_order_id, razorpay_payment_id, razorpay_signature }
      * @param {string} bookingId
      */
-    verifyPayment: async (paymentData, bookingId) => {
+    verifyPayment: async (paymentData, bookingId, collectionName = 'bookings') => {
         try {
             const response = await fetch(`${API_BASE_URL}/verify-payment`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ...paymentData, bookingId })
+                body: JSON.stringify({ ...paymentData, bookingId, collectionName })
             });
 
             if (!response.ok) throw new Error('Payment verification failed');

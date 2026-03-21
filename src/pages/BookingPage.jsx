@@ -6,10 +6,11 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { motion, AnimatePresence } from 'framer-motion';
 import { db, storage } from '../firebase';
-import { collection, addDoc, serverTimestamp, query, getDocs, doc, getDoc } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, getDocs, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useAuth } from '../context/AuthContext';
 import { addCredits } from '../services/passportService';
+import { payWithRazorpay } from '../services/paymentGateway';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
 import { COUNTRIES } from '../data/countries';
@@ -574,7 +575,9 @@ const BookingPage = () => {
                 }))
             }));
 
-            const bookingRef = await addDoc(collection(db, 'bookings'), {
+            const newBookingRef = doc(collection(db, 'bookings'));
+
+            await setDoc(newBookingRef, {
                 userId: currentUser.uid,
                 packageId: pkg.id,
                 packageTitle: pkg.title,
@@ -588,58 +591,87 @@ const BookingPage = () => {
                 totalPrice: finalTotal,
                 tourAmount: tourTotal,
                 hotelAmount: hotelTotal - bundleDiscount,
-                status: 'confirmed',
-                bookingStatus: 'confirmed',
-                paymentStatus: 'paid',
+                status: 'pending',
+                bookingStatus: 'pending',
+                paymentStatus: 'pending',
                 createdAt: serverTimestamp(),
                 bundledHotelId: selectedHotel?.id || null,
                 bundledHotelName: selectedHotel?.name || null
             });
 
-            // Upload document files
-            const uploadedDocs = await uploadDocFiles(bookingRef.id);
-            if (uploadedDocs.length > 0) {
-                // We'd update the booking doc, but for simplicity store in a sub-collection or just log
-                await addDoc(collection(db, 'bookings', bookingRef.id, 'documents'), {
-                    docs: uploadedDocs,
-                    createdAt: serverTimestamp()
-                });
-            }
+            await payWithRazorpay(
+                {
+                    id: newBookingRef.id,
+                    amount: finalTotal,
+                    currency: 'INR',
+                    user: { name: bookingData.name, email: bookingData.email, phone: bookingData.phone },
+                    description: `Trip Booking - ${pkg.title}`
+                },
+                async (paymentResult) => {
+                    try {
+                        await updateDoc(newBookingRef, {
+                            razorpayOrderId: paymentResult.orderId || '',
+                            razorpayPaymentId: paymentResult.paymentId || '',
+                            status: 'confirmed',
+                            bookingStatus: 'confirmed',
+                            paymentStatus: 'paid',
+                        });
 
-            if (selectedHotel) {
-                await addDoc(collection(db, 'hotel_bookings'), {
-                    hotelId: selectedHotel.id, hotelName: selectedHotel.name,
-                    roomId: selectedHotel.roomId, roomName: selectedHotel.roomName,
-                    userId: currentUser.uid, customerName: bookingData.name,
-                    customerEmail: bookingData.email, customerPhone: bookingData.phone,
-                    checkIn: bookingData.date, checkOut: bookingData.date,
-                    pricePerNight: selectedHotel.originalPrice,
-                    totalAmount: hotelTotal - bundleDiscount,
-                    paymentStatus: 'Paid (Bundle)', bookingStatus: 'Confirmed',
-                    bundledWithTour: bookingRef.id, createdAt: serverTimestamp()
-                });
-                await addDoc(collection(db, 'hotel_finance'), {
-                    bookingId: 'BUNDLE_' + bookingRef.id, hotelId: selectedHotel.id,
-                    grossAmount: hotelTotal - bundleDiscount,
-                    iyCommission: (hotelTotal - bundleDiscount) * 0.15,
-                    hotelPayout: (hotelTotal - bundleDiscount) * 0.85,
-                    createdAt: serverTimestamp(), note: 'Bundle Booking'
-                });
-            }
+                        // Upload document files
+                        const uploadedDocs = await uploadDocFiles(newBookingRef.id);
+                        if (uploadedDocs.length > 0) {
+                            await addDoc(collection(db, 'bookings', newBookingRef.id, 'documents'), {
+                                docs: uploadedDocs,
+                                createdAt: serverTimestamp()
+                            });
+                        }
 
-            navigate('/booking-success', {
-                state: {
-                    bookingId: bookingRef.id, packageTitle: pkg.title,
-                    totalAmount: finalTotal, amountPaid: finalTotal, date: bookingData.date
+                        if (selectedHotel) {
+                            await addDoc(collection(db, 'hotel_bookings'), {
+                                hotelId: selectedHotel.id, hotelName: selectedHotel.name,
+                                roomId: selectedHotel.roomId, roomName: selectedHotel.roomName,
+                                userId: currentUser.uid, customerName: bookingData.name,
+                                customerEmail: bookingData.email, customerPhone: bookingData.phone,
+                                checkIn: bookingData.date, checkOut: bookingData.date,
+                                pricePerNight: selectedHotel.originalPrice,
+                                totalAmount: hotelTotal - bundleDiscount,
+                                paymentStatus: 'Paid (Bundle)', bookingStatus: 'Confirmed',
+                                bundledWithTour: newBookingRef.id, createdAt: serverTimestamp()
+                            });
+                            await addDoc(collection(db, 'hotel_finance'), {
+                                bookingId: 'BUNDLE_' + newBookingRef.id, hotelId: selectedHotel.id,
+                                grossAmount: hotelTotal - bundleDiscount,
+                                iyCommission: (hotelTotal - bundleDiscount) * 0.15,
+                                hotelPayout: (hotelTotal - bundleDiscount) * 0.85,
+                                createdAt: serverTimestamp(), note: 'Bundle Booking'
+                            });
+                        }
+
+                        // Award IY Passport credits
+                        if (currentUser?.uid) {
+                            try {
+                                await addCredits(currentUser.uid, 'booking', `Booked ${pkg.title} trip`, 100, newBookingRef.id);
+                            } catch (e) { console.log('Passport credit skip:', e); }
+                        }
+
+                        navigate('/booking-success', {
+                            state: {
+                                bookingId: newBookingRef.id, packageTitle: pkg.title,
+                                totalAmount: finalTotal, amountPaid: finalTotal, date: bookingData.date
+                            }
+                        });
+                    } catch (err) {
+                        console.error('Save booking error:', err);
+                        setError('Payment successful but saving booking failed. Contact support.');
+                        setSubmitting(false);
+                    }
+                },
+                (errorMsg) => {
+                    setError(errorMsg || 'Payment failed or was cancelled.');
+                    setSubmitting(false);
                 }
-            });
+            );
 
-            // Award IY Passport credits
-            if (currentUser?.uid) {
-                try {
-                    await addCredits(currentUser.uid, 'booking', `Booked ${pkg.title} trip`, 100, bookingRef.id);
-                } catch (e) { console.log('Passport credit skip:', e); }
-            }
         } catch (error) {
             console.error(error);
             setError(error.message);

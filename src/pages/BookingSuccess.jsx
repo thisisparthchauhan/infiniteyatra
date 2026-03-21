@@ -3,7 +3,7 @@ import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { CheckCircle, Download, MessageCircle, Mail, ArrowRight, Home, Smartphone, Copy } from 'lucide-react';
 import { motion } from 'framer-motion';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 
 const BookingSuccess = () => {
     const location = useLocation();
@@ -75,7 +75,7 @@ const BookingSuccess = () => {
                 ['Balance Due', balanceDue?.toLocaleString()]
             ];
 
-            doc.autoTable({
+            autoTable(doc, {
                 startY: yPos + 20,
                 head: [tableData[0]],
                 body: tableData.slice(1),

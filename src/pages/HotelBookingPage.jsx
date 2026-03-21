@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { doc, getDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, addDoc, setDoc, updateDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 import { ArrowLeft, CreditCard, Calendar, Users, ShieldCheck, Hotel, Bed, TrendingUp } from 'lucide-react';
 import { calculateDynamicPrice } from '../utils/pricingEngine';
@@ -114,8 +114,7 @@ const HotelBookingPage = () => {
             return;
         }
 
-        const bookingId = 'BK' + Date.now().toString().slice(-6);
-        const amountToPay = paymentMethod === 'full' ? totalAmount : advanceAmount;
+        const newHotelBookingRef = doc(collection(db, 'hotel_bookings'));
 
         const bookingPayload = {
             hotelId: id,
@@ -136,15 +135,15 @@ const HotelBookingPage = () => {
             totalAmount,
             paidAmount: amountToPay,
             paymentMethod,
-            paymentStatus: 'Pending', // Initially Pending
+            paymentStatus: 'Pending',
             bookingStatus: 'Pending',
-            referenceId: bookingId,
+            referenceId: newHotelBookingRef.id,
             pricingDebug: pricingBreakdown,
             createdAt: serverTimestamp()
         };
 
         const financeRecord = {
-            bookingId: bookingId,
+            bookingId: newHotelBookingRef.id,
             hotelId: id,
             grossAmount: baseAmount,
             totalCollected: totalAmount,
@@ -154,34 +153,44 @@ const HotelBookingPage = () => {
             createdAt: serverTimestamp()
         };
 
+        // Pre-create the booking to prevent verify backend crash
+        await setDoc(newHotelBookingRef, bookingPayload);
+
         // Initiate Razorpay Payment
         await payWithRazorpay(
             {
-                id: bookingId,
+                id: newHotelBookingRef.id,
                 amount: amountToPay,
                 currency: 'INR',
                 user: { name: guestDetails.fullName, email: guestDetails.email, phone: guestDetails.phone },
-                description: `Booking at ${hotel.name}`
+                description: `Booking at ${hotel.name}`,
+                collectionName: 'hotel_bookings'
             },
             async (paymentSuccess) => {
                 // ON SUCCESS
                 try {
-                    // Update Status
-                    bookingPayload.paymentStatus = paymentMethod === 'full' ? 'Paid' : 'Partial';
-                    bookingPayload.bookingStatus = 'Confirmed';
-                    bookingPayload.paymentId = paymentSuccess.paymentId;
-                    bookingPayload.orderId = paymentSuccess.orderId;
+                    await updateDoc(newHotelBookingRef, {
+                        paymentStatus: paymentMethod === 'full' ? 'Paid' : 'Partial',
+                        bookingStatus: 'Confirmed',
+                        paymentId: paymentSuccess.paymentId,
+                        orderId: paymentSuccess.orderId
+                    });
 
-                    await addDoc(collection(db, 'hotel_bookings'), bookingPayload);
                     await addDoc(collection(db, 'hotel_finance'), financeRecord);
 
                     // Award IY Passport credits
                     if (currentUser?.uid) {
                         try {
-                            await addCredits(currentUser.uid, 'booking', `Booked ${hotel.name} hotel`, 75, bookingPayload.referenceId);
+                            await addCredits(currentUser.uid, 'booking', `Booked ${hotel.name} hotel`, 75, newHotelBookingRef.id);
                         } catch (e) { console.log('Passport credit skip:', e); }
                     }
 
+                    // Re-fetch payload to send complete object to success page
+                    bookingPayload.paymentStatus = paymentMethod === 'full' ? 'Paid' : 'Partial';
+                    bookingPayload.bookingStatus = 'Confirmed';
+                    bookingPayload.paymentId = paymentSuccess.paymentId;
+                    bookingPayload.orderId = paymentSuccess.orderId;
+                    
                     navigate('/hotels/success', { state: { booking: bookingPayload } });
                 } catch (dbError) {
                     console.error("DB Error after Payment:", dbError);

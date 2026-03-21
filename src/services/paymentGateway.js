@@ -28,10 +28,10 @@ export const createPaymentOrder = async (bookingId, amount, currency = 'INR') =>
  * Verifies the payment signature (Simulated).
  * In production, verify signature on backend using razorpay-node SDK.
  */
-export const verifyPayment = async (response, bookingId) => {
+export const verifyPayment = async (response, bookingId, collectionName = 'bookings') => {
     console.log("[Live] Verifying Payment", response);
     try {
-        const res = await RazorpayService.verifyPayment(response, bookingId);
+        const res = await RazorpayService.verifyPayment(response, bookingId, collectionName);
         return res.success;
     } catch (error) {
         console.error("Signature verification failed", error);
@@ -65,10 +65,10 @@ export const payWithRazorpay = async (bookingDetails, onSuccess, onFailure) => {
             description: bookingDetails.description || "Travel Booking",
             image: "https://infiniteyatra.com/logo.png", // Replace with your logo URL
             order_id: order.id,
-            handler: async function (response) {
+            handler: async (response) => {
                 // 2. Verify Payment on Success
-                const isValid = await verifyPayment(response, bookingDetails.id);
-                if (isValid) {
+                const isVerified = await verifyPayment(response, bookingDetails.id, bookingDetails.collectionName || 'bookings');
+                if (isVerified) {
                     onSuccess({
                         paymentId: response.razorpay_payment_id,
                         orderId: response.razorpay_order_id,

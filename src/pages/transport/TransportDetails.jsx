@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, MapPin, Users, Fuel, Briefcase, CheckCircle, Info, Star, Clock, AlertCircle, Phone, FileText, ChevronLeft, X, Plus, Minus } from 'lucide-react';
-import { getVehicles, addBooking } from '../../services/transportService';
+import { getVehicles, addBooking, updateBookingData } from '../../services/transportService';
+import { payWithRazorpay } from '../../services/paymentGateway';
 import { useAuth } from '../../context/AuthContext';
 
 const TransportDetails = () => {
@@ -125,6 +126,7 @@ const TransportDetails = () => {
             startDate: new Date(bookingData.startDate),
             endDate: new Date(bookingData.endDate),
             userId: currentUser.uid,
+            customerEmail: currentUser.email,
             vehicleId: vehicle.id,
             vehicleName: vehicle.name,
             vehicleType: vehicle.type,
@@ -137,11 +139,41 @@ const TransportDetails = () => {
             setSubmitting(true);
             const docId = await addBooking(payload);
             setBookingId(docId);
-            setShowSuccessModal(true);
+            
+            await payWithRazorpay(
+                {
+                    id: docId,
+                    amount: totalAmount,
+                    currency: 'INR',
+                    user: { name: currentUser.displayName, email: currentUser.email, phone: bookingData.passengerPhone },
+                    description: `Transport Booking - ${vehicle.name}`,
+                    collectionName: 'transportation_bookings'
+                },
+                async (paymentSuccess) => {
+                    try {
+                        await updateBookingData(docId, {
+                            paymentStatus: 'Paid',
+                            status: 'confirmed',
+                            paymentId: paymentSuccess.paymentId,
+                            orderId: paymentSuccess.orderId
+                        });
+                        setShowSuccessModal(true);
+                    } catch (dbError) {
+                        console.error('Error updating booking post-payment:', dbError);
+                        alert('Payment successful but status update failed. Please contact support.');
+                    } finally {
+                        setSubmitting(false);
+                    }
+                },
+                (errorMessage) => {
+                    console.error('Payment Failed:', errorMessage);
+                    alert(`Payment Failed: ${errorMessage}`);
+                    setSubmitting(false);
+                }
+            );
         } catch (error) {
             console.error('Booking failed:', error);
             alert('Failed to submit booking. Please try again.');
-        } finally {
             setSubmitting(false);
         }
     };
