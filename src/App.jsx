@@ -39,6 +39,7 @@ import StoriesPage from './pages/StoriesPage';
 import StoryDetail from './pages/StoryDetail';
 import Profile from './pages/Profile';
 import Hotels from './pages/Hotels';
+import AllHotels from './pages/AllHotels';
 import HotelDetail from './pages/HotelDetail';
 import HotelBookingPage from './pages/HotelBookingPage';
 import HotelBookingSuccess from './pages/HotelBookingSuccess';
@@ -180,6 +181,7 @@ function App() {
 
                         {/* NEW: IY Hotels Vertical */}
                         <Route path="/hotels" element={<Hotels />} />
+                        <Route path="/hotels/all" element={<AllHotels />} />
                         <Route path="/hotels/:id" element={<HotelDetail />} />
                         <Route path="/hotels/book/:id" element={<HotelBookingPage />} />
                         <Route path="/hotels/success" element={<HotelBookingSuccess />} />

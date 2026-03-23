@@ -4,6 +4,13 @@ import { uploadMultipleToCloudinary, uploadToCloudinary } from '../../../service
 import PricingSimulator from './PricingSimulator';
 
 const AdminHotelForm = ({ initialData, onSave, onCancel }) => {
+    const AMENITY_OPTIONS = [
+        'WiFi', 'Breakfast Included', 'Swimming Pool', 'Gym / Fitness Centre', 'Parking',
+        'Air Conditioning', 'Restaurant', 'Room Service', 'Spa', 'Bar/Lounge',
+        'Conference Room', 'Laundry', 'Pet Friendly', 'EV Charging', 'Bonfire Area',
+        'Doctor on Call', 'Trek Gear Storage', 'Airport Shuttle'
+    ];
+
     const [formData, setFormData] = useState({
         // 1. Basic Information
         name: '',
@@ -15,14 +22,25 @@ const AdminHotelForm = ({ initialData, onSave, onCancel }) => {
         tokenPrice: '',
         discount: '',
         isVisible: true,
+        description: '', // About / Description
 
         // 2. Images
         image: '', // Thumbnail
         images: [], // Gallery
 
+        // Contact Info
+        contactPhone: '',
+        contactEmail: '',
+        contactPerson: '',
+
+        // Policies
+        cancellationPolicy: '',
+        propertyPolicy: '',
+
         ...initialData,
         // Ensure arrays are initialized if editing old data
         hotelType: initialData?.hotelType || [],
+        amenities: initialData?.amenities || [],
         rooms: (initialData?.rooms || []).map(r => ({ ...r, pricing: r.pricing || [] })),
         highlights: initialData?.highlights || [],
         inclusions: initialData?.inclusions || [],
@@ -146,6 +164,15 @@ const AdminHotelForm = ({ initialData, onSave, onCancel }) => {
             costPrice: Number(formData.costPrice) || 0,
             tokenPrice: Number(formData.tokenPrice) || 0,
 
+            // New fields
+            description: formData.description || '',
+            amenities: formData.amenities || [],
+            contactPhone: formData.contactPhone || '',
+            contactEmail: formData.contactEmail || '',
+            contactPerson: formData.contactPerson || '',
+            cancellationPolicy: formData.cancellationPolicy || '',
+            propertyPolicy: formData.propertyPolicy || '',
+
             rooms: formData.rooms.map(r => ({
                 ...r,
                 price: Number(r.price) || 0,
@@ -245,6 +272,11 @@ const AdminHotelForm = ({ initialData, onSave, onCancel }) => {
                     </div>
 
                     <div>
+                        <label className={labelClass}>Description / About *</label>
+                        <textarea name="description" value={formData.description} onChange={handleChange} className={`${inputClass} h-32 resize-none`} placeholder="Describe the hotel — location, vibe, unique features, nearby attractions..." />
+                    </div>
+
+                    <div>
                         <label className={labelClass}>Visibility</label>
                         <label className="relative inline-flex items-center cursor-pointer">
                             <input
@@ -284,6 +316,56 @@ const AdminHotelForm = ({ initialData, onSave, onCancel }) => {
                                     {tag}
                                 </button>
                             ))}
+                        </div>
+                    </div>
+
+                    {/* Amenities Chips */}
+                    <div>
+                        <label className={labelClass}>Amenities</label>
+                        <p className="text-xs text-slate-500 mb-3">Select all amenities available at this property.</p>
+                        <div className="flex flex-wrap gap-2">
+                            {AMENITY_OPTIONS.map(amenity => (
+                                <button
+                                    type="button"
+                                    key={amenity}
+                                    onClick={() => {
+                                        const current = formData.amenities || [];
+                                        const updated = current.includes(amenity)
+                                            ? current.filter(a => a !== amenity)
+                                            : [...current, amenity];
+                                        setFormData(prev => ({ ...prev, amenities: updated }));
+                                    }}
+                                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${(formData.amenities || []).includes(amenity)
+                                        ? 'bg-green-600 border-green-600 text-white shadow-lg shadow-green-500/20'
+                                        : 'bg-black/40 border-white/10 text-slate-400 hover:border-white/30 hover:text-white'
+                                        }`}
+                                >
+                                    {amenity}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    <hr className="border-white/10" />
+
+                    {/* CONTACT INFORMATION */}
+                    <div className="space-y-6">
+                        <h3 className="text-lg font-bold text-blue-400 flex items-center gap-2">
+                            <Info size={18} /> Contact Information
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <label className={labelClass}>Contact Phone</label>
+                                <input name="contactPhone" value={formData.contactPhone || ''} onChange={handleChange} className={inputClass} placeholder="+91 98765 43210" />
+                            </div>
+                            <div>
+                                <label className={labelClass}>Contact Email</label>
+                                <input name="contactEmail" value={formData.contactEmail || ''} onChange={handleChange} className={inputClass} placeholder="hotel@example.com" />
+                            </div>
+                            <div>
+                                <label className={labelClass}>Contact Person</label>
+                                <input name="contactPerson" value={formData.contactPerson || ''} onChange={handleChange} className={inputClass} placeholder="Mr. Rahul — Sales Manager" />
+                            </div>
                         </div>
                     </div>
 
@@ -714,9 +796,19 @@ const AdminHotelForm = ({ initialData, onSave, onCancel }) => {
                     {/* SECTION 10: POLICIES */}
                     <div className="space-y-4">
                         <h3 className="text-lg font-bold text-blue-400">Hotel Policies</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                        <div>
+                            <label className={labelClass}>Cancellation Policy (Main — displayed on hotel page)</label>
+                            <textarea name="cancellationPolicy" value={formData.cancellationPolicy || ''} onChange={handleChange} className={`${inputClass} h-28 resize-none`} placeholder="e.g. Free cancellation up to 48 hours before check-in. 50% charge within 48 hours. No refund for no-show." />
+                        </div>
+                        <div>
+                            <label className={labelClass}>Property Policy (Main — displayed on hotel page)</label>
+                            <textarea name="propertyPolicy" value={formData.propertyPolicy || ''} onChange={handleChange} className={`${inputClass} h-28 resize-none`} placeholder="e.g. Guests are required to show photo ID upon check-in. Smoking is not allowed..." />
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-white/10">
                             <div>
-                                <label className={labelClass}>Cancellation Policy</label>
+                                <label className={labelClass}>Cancellation (Legacy / Detailed)</label>
                                 <textarea name="policies.cancellation" value={formData.policies.cancellation} onChange={handleChange} className={`${inputClass} h-24 resize-none`} />
                             </div>
                             <div>

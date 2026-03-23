@@ -23,6 +23,8 @@ import AdminHomepageManager from '../components/admin/dashboard/AdminHomepageMan
 import AdminHotelManager from '../components/admin/hotels/AdminHotelManager';
 import AdminHotelFinance from '../components/admin/hotels/AdminHotelFinance';
 import AdminHotelBookings from '../components/admin/hotels/AdminHotelBookings';
+import AdminHotelInquiries from '../components/admin/hotels/AdminHotelInquiries';
+import AdminHotelReviews from '../components/admin/hotels/AdminHotelReviews';
 import LiveAnalytics from '../components/admin/analytics/LiveAnalytics';
 
 import AdminTransportCities from '../components/admin/transport/AdminTransportCities';
@@ -68,6 +70,8 @@ const AdminDashboard = () => {
             hotels: 'Hotel Management',
             'hotel-finance': 'Hotel Financials',
             'hotel-bookings': 'Hotel Bookings',
+            'hotel-inquiries': 'Hotel Inquiries CRM',
+            'hotel-reviews': 'Hotel Reviews',
             analytics: 'Live Command Center',
             'transport-overview': 'Transport Overview',
             'transport-vehicles': 'Manage Vehicles',
@@ -106,6 +110,8 @@ const AdminDashboard = () => {
             case 'homepage': return <AdminHomepageManager />;
             case 'hotels': return <AdminHotelManager />;
             case 'hotel-bookings': return <AdminHotelBookings />;
+            case 'hotel-inquiries': return <AdminHotelInquiries />;
+            case 'hotel-reviews': return <AdminHotelReviews />;
             case 'hotel-finance': return <AdminHotelFinance />;
             case 'operations': return <Operations />;
             case 'finance': return <Financials />;

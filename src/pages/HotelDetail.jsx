@@ -3,11 +3,13 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import { doc, getDoc, collection, getDocs, query, limit } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../context/AuthContext';
-import { ArrowLeft, MapPin, Star, Wifi, Utensils, Car, TreePine, Accessibility, ShieldCheck, ChevronRight, Info, Plus, Share2, Heart, Users, Bed, CheckCircle2, XCircle, ChevronDown, Calendar, Search, User, Package, Sparkles, LayoutDashboard, LogOut, Phone, MessageCircle, Mail, Clock, Ban, Beer, FileText } from 'lucide-react';
+import { ArrowLeft, MapPin, Star, Wifi, Utensils, Car, TreePine, Accessibility, ShieldCheck, ChevronRight, Info, Plus, Share2, Heart, Users, Bed, CheckCircle2, XCircle, ChevronDown, Calendar, Search, User, Package, Sparkles, LayoutDashboard, LogOut, Phone, MessageCircle, Mail, Clock, Ban, Beer, FileText, Coffee, Waves, Dumbbell, Wind, UtensilsCrossed, ConciergeBell, Armchair, WashingMachine, Dog, Zap, Mountain, Stethoscope, Truck } from 'lucide-react';
 import { calculateDynamicPrice } from '../utils/pricingEngine';
 import RecommendationEngine from '../components/common/RecommendationEngine';
 import SEO from '../components/SEO';
 import RoomCard from '../components/RoomCard';
+import HotelInquiryModal from '../components/Hotels/HotelInquiryModal';
+import HotelReviews from '../components/Hotels/HotelReviews';
 
 // MOCK DATA FOR DEV/PREVIEW
 const MOCK_HOTEL = {
@@ -161,6 +163,7 @@ const HotelDetail = () => {
     const [activeSection, setActiveSection] = useState('about');
     const [isScrolled, setIsScrolled] = useState(false);
     const [isAboutExpanded, setIsAboutExpanded] = useState(false);
+    const [showInquiryModal, setShowInquiryModal] = useState(false);
 
     // Booking State - MOVED UP TO FIX HOOK ERROR
     const [checkIn, setCheckIn] = useState(() => {
@@ -495,17 +498,25 @@ const HotelDetail = () => {
                                 <Sparkles className="text-orange-500" size={20} />
                                 About
                             </h2>
-                            <div className="text-zinc-300 leading-relaxed whitespace-pre-line">
-                                {isAboutExpanded ? hotel.description : (hotel.description?.slice(0, 300) + (hotel.description?.length > 300 ? '...' : ''))}
-                                {hotel.description?.length > 300 && (
-                                    <button
-                                        onClick={() => setIsAboutExpanded(!isAboutExpanded)}
-                                        className="ml-2 text-orange-500 hover:text-orange-400 text-sm font-bold underline"
-                                    >
-                                        {isAboutExpanded ? "View Less" : "View More"}
-                                    </button>
-                                )}
-                            </div>
+                            {(() => {
+                                const aboutText = hotel.description || hotel.about || '';
+                                if (!aboutText) {
+                                    return <p className="text-zinc-500 italic">No description available yet.</p>;
+                                }
+                                return (
+                                    <div className="text-zinc-300 leading-relaxed whitespace-pre-line">
+                                        {isAboutExpanded ? aboutText : (aboutText.slice(0, 300) + (aboutText.length > 300 ? '...' : ''))}
+                                        {aboutText.length > 300 && (
+                                            <button
+                                                onClick={() => setIsAboutExpanded(!isAboutExpanded)}
+                                                className="ml-2 text-orange-500 hover:text-orange-400 text-sm font-bold underline"
+                                            >
+                                                {isAboutExpanded ? "View Less" : "View More"}
+                                            </button>
+                                        )}
+                                    </div>
+                                );
+                            })()}
 
                             <div className="flex flex-wrap gap-2 pt-2">
                                 {hotel.highlights?.map((highlight, idx) => (
@@ -568,16 +579,36 @@ const HotelDetail = () => {
                         {/* Amenities Section */}
                         <section id="amenities">
                             <h2 className="text-2xl font-bold font-display mb-6">Amenities</h2>
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                {hotel.amenities?.map((amenity, idx) => (
-                                    <div key={idx} className="flex items-center gap-3 p-4 bg-white/5 border border-white/5 rounded-xl hover:bg-white/10 hover:border-white/10 transition-all group">
-                                        <div className="p-2 bg-black/40 rounded-lg text-zinc-400 group-hover:text-white transition-colors">
-                                            <CheckCircle2 size={18} />
-                                        </div>
-                                        <span className="text-sm font-medium text-zinc-300">{amenity}</span>
+                            {(() => {
+                                const AMENITY_ICON_MAP = {
+                                    'WiFi': Wifi, 'Breakfast Included': Coffee, 'Swimming Pool': Waves,
+                                    'Gym / Fitness Centre': Dumbbell, 'Parking': Car, 'Air Conditioning': Wind,
+                                    'Restaurant': UtensilsCrossed, 'Room Service': ConciergeBell, 'Spa': Sparkles,
+                                    'Bar/Lounge': Beer, 'Conference Room': Users, 'Laundry': WashingMachine,
+                                    'Pet Friendly': Dog, 'EV Charging': Zap, 'Bonfire Area': Mountain,
+                                    'Doctor on Call': Stethoscope, 'Trek Gear Storage': Package, 'Airport Shuttle': Truck,
+                                    'Wifi': Wifi, 'Heater': Wind, 'Caretaker': User
+                                };
+                                const amenities = hotel.amenities;
+                                if (!amenities || amenities.length === 0) {
+                                    return <p className="text-zinc-500 italic">No amenities listed yet.</p>;
+                                }
+                                return (
+                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                        {amenities.map((amenity, idx) => {
+                                            const IconComp = AMENITY_ICON_MAP[amenity] || CheckCircle2;
+                                            return (
+                                                <div key={idx} className="flex items-center gap-3 p-4 bg-white/5 border border-white/5 rounded-xl hover:bg-white/10 hover:border-white/10 transition-all group">
+                                                    <div className="p-2 bg-black/40 rounded-lg text-orange-400 group-hover:text-orange-300 transition-colors">
+                                                        <IconComp size={18} />
+                                                    </div>
+                                                    <span className="text-sm font-medium text-zinc-300">{amenity}</span>
+                                                </div>
+                                            );
+                                        })}
                                     </div>
-                                ))}
-                            </div>
+                                );
+                            })()}
                         </section>
 
                         <hr className="border-white/10" />
@@ -585,12 +616,29 @@ const HotelDetail = () => {
                         {/* Location Section */}
                         <section id="location">
                             <h2 className="text-2xl font-bold font-display mb-6">Location</h2>
-                            <div className="bg-white/5 border border-white/10 rounded-2xl p-1 h-80 relative overflow-hidden group">
-                                <div className="absolute inset-0 bg-zinc-800 flex items-center justify-center">
-                                    <MapPin size={48} className="text-zinc-600 mb-2" />
-                                </div>
-                                <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                                    {hotel.googleMapsUrl ? (
+                            <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+                                {(() => {
+                                    const getEmbedUrl = (mapsLink) => {
+                                        if (mapsLink?.includes('embed')) return mapsLink;
+                                        const addr = hotel.address || hotel.location || hotel.name;
+                                        const q = encodeURIComponent(`${hotel.name} ${addr}`);
+                                        return `https://maps.google.com/maps?q=${q}&output=embed`;
+                                    };
+                                    return (
+                                        <iframe
+                                            src={getEmbedUrl(hotel.googleMapsUrl)}
+                                            width="100%"
+                                            height="300"
+                                            style={{ border: 0 }}
+                                            allowFullScreen
+                                            loading="lazy"
+                                            referrerPolicy="no-referrer-when-downgrade"
+                                            title={`Map of ${hotel.name}`}
+                                        />
+                                    );
+                                })()}
+                                {hotel.googleMapsUrl && (
+                                    <div className="p-4 flex justify-center">
                                         <a
                                             href={hotel.googleMapsUrl}
                                             target="_blank"
@@ -599,10 +647,8 @@ const HotelDetail = () => {
                                         >
                                             <MapPin size={18} /> View location on Maps
                                         </a>
-                                    ) : (
-                                        <span className="text-zinc-400 text-sm">Map unavailable</span>
-                                    )}
-                                </div>
+                                    </div>
+                                )}
                             </div>
                             <p className="mt-4 text-zinc-400 text-sm">
                                 Located in the peaceful area of {hotel.location?.split(',')[0]}, close to major attractions yet away from the noise.
@@ -615,11 +661,32 @@ const HotelDetail = () => {
                         <section id="contact">
                             <h2 className="text-2xl font-bold font-display mb-6">Contact</h2>
                             <div className="flex flex-wrap gap-4">
-                                {hotel.contact?.phone && (
-                                    <a href={`tel:${hotel.contact.phone}`} className="flex items-center gap-3 px-5 py-3 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all">
+                                {(hotel.contactPhone || hotel.contact?.phone) && (
+                                    <a href={`tel:${hotel.contactPhone || hotel.contact?.phone}`} className="flex items-center gap-3 px-5 py-3 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all">
                                         <Phone size={20} className="text-green-500" />
-                                        <span className="font-medium text-white">Call Property</span>
+                                        <div>
+                                            <span className="font-medium text-white block">Call Property</span>
+                                            <span className="text-xs text-zinc-400">{hotel.contactPhone || hotel.contact?.phone}</span>
+                                        </div>
                                     </a>
+                                )}
+                                {(hotel.contactEmail || hotel.contact?.email) && (
+                                    <a href={`mailto:${hotel.contactEmail || hotel.contact?.email}`} className="flex items-center gap-3 px-5 py-3 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all">
+                                        <Mail size={20} className="text-blue-500" />
+                                        <div>
+                                            <span className="font-medium text-white block">Email</span>
+                                            <span className="text-xs text-zinc-400">{hotel.contactEmail || hotel.contact?.email}</span>
+                                        </div>
+                                    </a>
+                                )}
+                                {hotel.contactPerson && (
+                                    <div className="flex items-center gap-3 px-5 py-3 bg-white/5 border border-white/10 rounded-xl">
+                                        <User size={20} className="text-purple-400" />
+                                        <div>
+                                            <span className="font-medium text-white block">Contact Person</span>
+                                            <span className="text-xs text-zinc-400">{hotel.contactPerson}</span>
+                                        </div>
+                                    </div>
                                 )}
                                 {hotel.contact?.whatsapp && (
                                     <a href={`https://wa.me/${hotel.contact.whatsapp.replace(/[^0-9]/g, '')}`} target="_blank" rel="noreferrer" className="flex items-center gap-3 px-5 py-3 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all">
@@ -627,14 +694,23 @@ const HotelDetail = () => {
                                         <span className="font-medium text-white">WhatsApp</span>
                                     </a>
                                 )}
-                                {hotel.contact?.email && (
-                                    <a href={`mailto:${hotel.contact.email}`} className="flex items-center gap-3 px-5 py-3 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all">
-                                        <Mail size={20} className="text-blue-500" />
-                                        <span className="font-medium text-white">Email</span>
-                                    </a>
-                                )}
+                                {/* Always show IY Support WhatsApp */}
+                                <a
+                                    href="https://wa.me/919265799325?text=Hi%2C%20I%20have%20a%20query%20about%20a%20hotel%20listing%20on%20Infinite%20Yatra."
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-3 px-5 py-3 bg-green-500/10 border border-green-500/20 rounded-xl hover:bg-green-500/20 transition-all"
+                                >
+                                    <MessageCircle size={20} className="text-green-400" />
+                                    <span className="font-medium text-green-400">Chat with IY Support on WhatsApp</span>
+                                </a>
                             </div>
                         </section>
+
+                        <hr className="border-white/10" />
+
+                        {/* Reviews Section */}
+                        <HotelReviews hotelId={hotel.id} hotelName={hotel.name} />
 
                         <hr className="border-white/10" />
 
@@ -646,12 +722,22 @@ const HotelDetail = () => {
                                     <ChevronDown className="text-zinc-500 group-hover:text-white transition-colors" />
                                 </h2>
                                 <div className="bg-red-500/5 border border-red-500/20 rounded-xl p-6">
-                                    <p className="text-white font-medium mb-3">
-                                        {hotel.cancellationPolicy?.split('.')[0]}.
-                                    </p>
-                                    <p className="text-sm text-zinc-400">
-                                        {hotel.cancellationPolicy}
-                                    </p>
+                                    {(() => {
+                                        const cancellationText = hotel.cancellationPolicy || hotel.policies?.cancellation || '';
+                                        if (!cancellationText) {
+                                            return <p className="text-zinc-400">No cancellation policy specified. Please contact us for details.</p>;
+                                        }
+                                        return (
+                                            <>
+                                                <p className="text-white font-medium mb-3">
+                                                    {cancellationText.split('.')[0]}.
+                                                </p>
+                                                <p className="text-sm text-zinc-400">
+                                                    {cancellationText}
+                                                </p>
+                                            </>
+                                        );
+                                    })()}
                                 </div>
                             </div>
 
@@ -661,8 +747,8 @@ const HotelDetail = () => {
                                     <ChevronDown className="text-zinc-500 group-hover:text-white transition-colors" />
                                 </h2>
                                 <div className="text-zinc-400 text-sm leading-relaxed space-y-2">
-                                    <p>{hotel.propertyPolicy || "Standard property policies apply."}</p>
-                                    <p>{hotel.policies?.child}</p>
+                                    <p>{hotel.propertyPolicy || hotel.policies?.cancellation || "Standard property policies apply."}</p>
+                                    {hotel.policies?.child && <p>{hotel.policies.child}</p>}
                                 </div>
                             </div>
                         </section>
@@ -735,7 +821,10 @@ const HotelDetail = () => {
 
                             {/* Price Breakdown */}
                             <div className="space-y-3 mb-6">
-                                <button className="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-orange-500/25 active:scale-95">
+                                <button
+                                    onClick={() => setShowInquiryModal(true)}
+                                    className="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-orange-500/25 active:scale-95"
+                                >
                                     Check Availability
                                 </button>
                                 <p className="text-center text-xs text-zinc-500">You won't be charged yet</p>
@@ -790,6 +879,20 @@ const HotelDetail = () => {
                     />
                 )}
             </div>
+
+            {/* HOTEL INQUIRY MODAL */}
+            <HotelInquiryModal
+                isOpen={showInquiryModal}
+                onClose={() => setShowInquiryModal(false)}
+                hotel={hotel}
+                selectedRoom={hotel?.rooms?.[0]}
+                checkIn={checkIn}
+                checkOut={checkOut}
+                guests={guests}
+                nights={nights}
+                totalStayPrice={totalStayPrice}
+                avgNightlyPrice={avgNightlyPrice}
+            />
 
         </div >
     );

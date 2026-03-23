@@ -19,7 +19,8 @@ import {
     MapPin,
     CalendarCheck,
     Map,
-    Award
+    Award,
+    Star
 } from 'lucide-react';
 
 export const USER_ROLES = {
@@ -43,7 +44,7 @@ export const WORKSPACES = {
             'bookings', 'crm', 'packages', 'operations',
             'finance', 'hotel-finance', 'influencers',
             'homepage', 'experiences', 'stories', 'media',
-            'hotels', 'transport-overview', 'transport-vehicles', 'transport-cities', 'transport-bookings', 'transport-content', 'transport-settings', 'car-management', 'car-bookings', 'space-waitlist', 'passport'
+            'hotels', 'hotel-inquiries', 'hotel-reviews', 'transport-overview', 'transport-vehicles', 'transport-cities', 'transport-bookings', 'transport-content', 'transport-settings', 'car-management', 'car-bookings', 'space-waitlist', 'passport'
         ]
     },
     TOUR_MANAGER: {
@@ -68,19 +69,19 @@ export const WORKSPACES = {
         id: 'hotel_workspace',
         label: 'Hotel Manager',
         allowedRoles: [USER_ROLES.SUPER_ADMIN, USER_ROLES.HOTEL_MANAGER, USER_ROLES.HOTEL_PARTNER],
-        modules: ['hotels', 'hotel-bookings', 'hotel-finance', 'analytics'] // Added Analytics
+        modules: ['hotels', 'hotel-bookings', 'hotel-inquiries', 'hotel-reviews', 'hotel-finance', 'analytics'] // Added Analytics
     },
     BOOKING_MANAGER: {
         id: 'booking_workspace',
         label: 'Booking Manager',
         allowedRoles: [USER_ROLES.SUPER_ADMIN, USER_ROLES.BOOKING_MANAGER],
-        modules: ['hotel-bookings', 'bookings', 'analytics']
+        modules: ['hotel-bookings', 'hotel-inquiries', 'bookings', 'analytics']
     },
     PARTNER: {
         id: 'partner_workspace',
         label: 'Partner Portal',
         allowedRoles: [USER_ROLES.HOTEL_PARTNER, USER_ROLES.TOUR_PARTNER],
-        modules: ['hotels', 'hotel-bookings'] // Restricted
+        modules: ['hotels', 'hotel-bookings', 'hotel-inquiries'] // Restricted
     }
 };
 
@@ -95,13 +96,13 @@ export const ROLE_WORKSPACE_MAP = {
 
 // Flattened permissions for legacy checks if needed, but we should rely on Workspace modules
 export const ROLE_PERMISSIONS = {
-    [USER_ROLES.SUPER_ADMIN]: ['overview', 'staff', 'sitemap', 'bookings', 'crm', 'packages', 'operations', 'finance', 'hotel-finance', 'influencers', 'homepage', 'experiences', 'stories', 'media', 'hotels', 'transport-overview', 'transport-vehicles', 'transport-cities', 'transport-bookings', 'transport-content', 'transport-settings', 'car-management', 'car-bookings', 'space-waitlist', 'passport'],
+    [USER_ROLES.SUPER_ADMIN]: ['overview', 'staff', 'sitemap', 'bookings', 'crm', 'packages', 'operations', 'finance', 'hotel-finance', 'influencers', 'homepage', 'experiences', 'stories', 'media', 'hotels', 'hotel-inquiries', 'hotel-reviews', 'transport-overview', 'transport-vehicles', 'transport-cities', 'transport-bookings', 'transport-content', 'transport-settings', 'car-management', 'car-bookings', 'space-waitlist', 'passport'],
     [USER_ROLES.TOUR_MANAGER]: ['bookings', 'crm', 'packages', 'operations'],
     [USER_ROLES.FINANCE_MANAGER]: ['finance', 'hotel-finance', 'influencers', 'analytics'],
     [USER_ROLES.CONTENT_MANAGER]: ['homepage', 'experiences', 'stories', 'media'],
-    [USER_ROLES.HOTEL_MANAGER]: ['hotels', 'hotel-bookings', 'hotel-finance', 'analytics'],
-    [USER_ROLES.BOOKING_MANAGER]: ['hotel-bookings', 'bookings', 'analytics'],
-    [USER_ROLES.HOTEL_PARTNER]: ['hotels', 'hotel-bookings', 'hotel-finance'], // Self-Service
+    [USER_ROLES.HOTEL_MANAGER]: ['hotels', 'hotel-bookings', 'hotel-inquiries', 'hotel-reviews', 'hotel-finance', 'analytics'],
+    [USER_ROLES.BOOKING_MANAGER]: ['hotel-bookings', 'hotel-inquiries', 'bookings', 'analytics'],
+    [USER_ROLES.HOTEL_PARTNER]: ['hotels', 'hotel-bookings', 'hotel-inquiries', 'hotel-finance'], // Self-Service
     [USER_ROLES.TOUR_PARTNER]: ['bookings', 'finance'] // Self-Service
 };
 
@@ -133,6 +134,8 @@ export const MENU_ITEMS = [
     // Hotel
     { id: 'hotels', label: 'Manage Hotels', icon: Building2 },
     { id: 'hotel-bookings', label: 'Hotel Bookings', icon: BookOpen },
+    { id: 'hotel-inquiries', label: 'Hotel Inquiries', icon: Users },
+    { id: 'hotel-reviews', label: 'Hotel Reviews', icon: Star },
 
     // Transport
     { id: 'transport-overview', label: 'Transport Overview', icon: LayoutDashboard },
