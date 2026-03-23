@@ -45,7 +45,7 @@ export const WORKSPACES = {
             'bookings', 'crm', 'packages', 'operations',
             'finance', 'hotel-finance', 'influencers',
             'homepage', 'experiences', 'stories', 'media',
-            'hotels', 'hotel-inquiries', 'hotel-reviews', 'hotel-availability', 'hotel-vendors', 'transport-overview', 'transport-vehicles', 'transport-cities', 'transport-bookings', 'transport-content', 'transport-settings', 'car-management', 'car-bookings', 'space-waitlist', 'passport'
+            'hotels', 'hotel-inquiries', 'hotel-reviews', 'hotel-availability', 'hotel-vendors', 'transport-overview', 'transport-vehicles', 'transport-cities', 'transport-bookings', 'transport-content', 'transport-settings', 'car-management', 'car-bookings', 'space-waitlist', 'passport', 'ai-planner-analytics'
         ]
     },
     TOUR_MANAGER: {
@@ -97,7 +97,7 @@ export const ROLE_WORKSPACE_MAP = {
 
 // Flattened permissions for legacy checks if needed, but we should rely on Workspace modules
 export const ROLE_PERMISSIONS = {
-    [USER_ROLES.SUPER_ADMIN]: ['overview', 'staff', 'sitemap', 'bookings', 'crm', 'packages', 'operations', 'finance', 'hotel-finance', 'influencers', 'homepage', 'experiences', 'stories', 'media', 'hotels', 'hotel-inquiries', 'hotel-reviews', 'hotel-availability', 'hotel-vendors', 'transport-overview', 'transport-vehicles', 'transport-cities', 'transport-bookings', 'transport-content', 'transport-settings', 'car-management', 'car-bookings', 'space-waitlist', 'passport'],
+    [USER_ROLES.SUPER_ADMIN]: ['overview', 'staff', 'sitemap', 'bookings', 'crm', 'packages', 'operations', 'finance', 'hotel-finance', 'influencers', 'homepage', 'experiences', 'stories', 'media', 'hotels', 'hotel-inquiries', 'hotel-reviews', 'hotel-availability', 'hotel-vendors', 'transport-overview', 'transport-vehicles', 'transport-cities', 'transport-bookings', 'transport-content', 'transport-settings', 'car-management', 'car-bookings', 'space-waitlist', 'passport', 'ai-planner-analytics'],
     [USER_ROLES.TOUR_MANAGER]: ['bookings', 'crm', 'packages', 'operations'],
     [USER_ROLES.FINANCE_MANAGER]: ['finance', 'hotel-finance', 'influencers', 'analytics'],
     [USER_ROLES.CONTENT_MANAGER]: ['homepage', 'experiences', 'stories', 'media'],
@@ -156,5 +156,8 @@ export const MENU_ITEMS = [
     { id: 'space-waitlist', label: 'IY Space', icon: Globe },
 
     // Passport
-    { id: 'passport', label: 'IY Passport', icon: Award }
+    { id: 'passport', label: 'IY Passport', icon: Award },
+
+    // AI Planner
+    { id: 'ai-planner-analytics', label: 'AI Planner Analytics', icon: Sparkles }
 ];

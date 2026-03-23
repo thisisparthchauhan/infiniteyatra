@@ -31,6 +31,7 @@ import MyBookings from './pages/MyBookings';
 import MyTrips from './pages/MyTrips';
 import QRLanding from './pages/QRLanding';
 import TripDetails from './pages/TripDetails';
+import SharedPlan from './pages/SharedPlan';
 import ContactUs from './pages/ContactUs';
 import WishlistPage from './pages/WishlistPage';
 import ContactNew from './pages/ContactNew';
@@ -171,6 +172,7 @@ function App() {
                           }
                         />
                         <Route path="/trip/:tripId" element={<TripDetails />} />
+                        <Route path="/plan/:shareId" element={<SharedPlan />} />
                         <Route
                           path="/admin"
                           element={
