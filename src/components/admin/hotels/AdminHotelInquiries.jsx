@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { collection, onSnapshot, query, orderBy, doc, updateDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../../firebase';
-import { Search, MessageCircle, Check, X, Eye, Download, Filter, Clock, CheckCircle2, XCircle, DollarSign, Users } from 'lucide-react';
-import { addCredits } from '../../../services/passportService';
+import { Search, MessageCircle, Check, X, Eye, Download, Filter, Clock, CheckCircle2, XCircle, DollarSign, Users, CreditCard } from 'lucide-react';
+import ConfirmPaymentModal from './ConfirmPaymentModal';
 
 const STATUS_COLORS = {
     pending: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/20',
     confirmed: 'bg-green-500/20 text-green-300 border-green-500/20',
+    paid: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/20',
     cancelled: 'bg-red-500/20 text-red-300 border-red-500/20',
     completed: 'bg-blue-500/20 text-blue-300 border-blue-500/20'
 };
@@ -22,6 +23,7 @@ const AdminHotelInquiries = () => {
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const [selectedInquiry, setSelectedInquiry] = useState(null);
+    const [confirmModal, setConfirmModal] = useState({ open: false, inquiry: null, mode: 'confirm' });
 
     useEffect(() => {
         const q = query(collection(db, 'hotel_inquiries'), orderBy('createdAt', 'desc'));
@@ -221,13 +223,18 @@ const AdminHotelInquiries = () => {
                                             <div className="flex gap-2">
                                                 {inq.status === 'pending' && (
                                                     <>
-                                                        <button onClick={() => updateStatus(inq.id, 'confirmed')} className="p-1.5 bg-green-500/20 text-green-400 rounded-lg hover:bg-green-500/30 transition-colors" title="Confirm">
+                                                        <button onClick={() => setConfirmModal({ open: true, inquiry: inq, mode: 'confirm' })} className="p-1.5 bg-green-500/20 text-green-400 rounded-lg hover:bg-green-500/30 transition-colors" title="Confirm">
                                                             <Check size={14} />
                                                         </button>
-                                                        <button onClick={() => updateStatus(inq.id, 'cancelled')} className="p-1.5 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors" title="Cancel">
+                                                        <button onClick={() => setConfirmModal({ open: true, inquiry: inq, mode: 'cancel' })} className="p-1.5 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors" title="Cancel">
                                                             <X size={14} />
                                                         </button>
                                                     </>
+                                                )}
+                                                {inq.status === 'confirmed' && (
+                                                    <button onClick={() => setConfirmModal({ open: true, inquiry: inq, mode: 'paid' })} className="p-1.5 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition-colors" title="Mark Paid">
+                                                        <CreditCard size={14} />
+                                                    </button>
                                                 )}
                                                 <button onClick={() => openWhatsApp(inq)} className="p-1.5 bg-green-500/10 text-green-400 rounded-lg hover:bg-green-500/20 transition-colors" title="WhatsApp">
                                                     <MessageCircle size={14} />
@@ -289,6 +296,14 @@ const AdminHotelInquiries = () => {
                     </div>
                 </div>
             )}
+
+            {/* Confirm/Pay/Cancel Modal */}
+            <ConfirmPaymentModal
+                isOpen={confirmModal.open}
+                onClose={() => setConfirmModal({ open: false, inquiry: null, mode: 'confirm' })}
+                inquiry={confirmModal.inquiry}
+                mode={confirmModal.mode}
+            />
         </div>
     );
 };

@@ -43,7 +43,12 @@ import AllHotels from './pages/AllHotels';
 import HotelDetail from './pages/HotelDetail';
 import HotelBookingPage from './pages/HotelBookingPage';
 import HotelBookingSuccess from './pages/HotelBookingSuccess';
+import HotelBookingConfirmation from './pages/HotelBookingConfirmation';
 import HotelPartnerOnboarding from './pages/HotelPartnerOnboarding';
+
+// Vendor Pages
+import VendorLogin from './pages/vendor/VendorLogin';
+import VendorDashboard from './pages/vendor/VendorDashboard';
 
 // Transport Pages
 import TransportListings from './pages/transport/TransportListings';
@@ -182,10 +187,15 @@ function App() {
                         {/* NEW: IY Hotels Vertical */}
                         <Route path="/hotels" element={<Hotels />} />
                         <Route path="/hotels/all" element={<AllHotels />} />
+                        <Route path="/hotels/booking-confirmation" element={<HotelBookingConfirmation />} />
                         <Route path="/hotels/:id" element={<HotelDetail />} />
                         <Route path="/hotels/book/:id" element={<HotelBookingPage />} />
                         <Route path="/hotels/success" element={<HotelBookingSuccess />} />
                         <Route path="/partner/hotel-onboarding" element={<HotelPartnerOnboarding />} />
+
+                        {/* Vendor Portal */}
+                        <Route path="/vendor/login" element={<VendorLogin />} />
+                        <Route path="/vendor/dashboard" element={<VendorDashboard />} />
 
                         {/* IY Transport Vertical */}
                         <Route path="/transport/search" element={<TransportListings />} />

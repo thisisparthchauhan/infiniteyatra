@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Star, MessageCircle, ThumbsUp, User, ShieldCheck, Send, ChevronDown, X, Loader2 } from 'lucide-react';
 import { collection, addDoc, getDocs, query, where, orderBy, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../common/Toast';
 
 // ─── Review Submission Modal ───
 export const HotelReviewModal = ({ isOpen, onClose, hotelId, hotelName }) => {
@@ -112,6 +114,8 @@ export const HotelReviewModal = ({ isOpen, onClose, hotelId, hotelName }) => {
 // ─── Reviews Display Component ───
 const HotelReviews = ({ hotelId, hotelName }) => {
     const { user } = useAuth();
+    const navigate = useNavigate();
+    const { showToast } = useToast();
     const [reviews, setReviews] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
@@ -127,7 +131,6 @@ const HotelReviews = ({ hotelId, hotelName }) => {
                 );
                 const snap = await getDocs(q);
                 const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                // Sort client-side to avoid composite index
                 data.sort((a, b) => {
                     const dateA = a.createdAt?.toDate?.() || new Date(0);
                     const dateB = b.createdAt?.toDate?.() || new Date(0);
@@ -149,6 +152,18 @@ const HotelReviews = ({ hotelId, hotelName }) => {
 
     const displayed = showAll ? reviews : reviews.slice(0, 3);
 
+    const handleWriteReview = () => {
+        if (user) {
+            setShowModal(true);
+        } else {
+            showToast({
+                type: 'warning',
+                message: 'Please log in to write a review.',
+                action: { label: 'Log In →', onClick: () => navigate('/login') }
+            });
+        }
+    };
+
     return (
         <section id="reviews" className="space-y-6">
             <div className="flex items-center justify-between">
@@ -162,7 +177,7 @@ const HotelReviews = ({ hotelId, hotelName }) => {
                     )}
                 </h2>
                 <button
-                    onClick={() => user ? setShowModal(true) : alert('Please log in to write a review.')}
+                    onClick={handleWriteReview}
                     className="px-4 py-2 bg-orange-500/20 text-orange-400 border border-orange-500/20 rounded-xl text-sm font-bold hover:bg-orange-500/30 transition-colors"
                 >
                     ✍️ Write a Review

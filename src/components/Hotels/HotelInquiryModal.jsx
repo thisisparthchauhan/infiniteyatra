@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { X, Star, MessageCircle, Loader2, CheckCircle2 } from 'lucide-react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../firebase';
+import { useAuth } from '../../context/AuthContext';
+import { notifyAdminNewInquiry } from '../../services/whatsappService';
 
 const HotelInquiryModal = ({
     isOpen,
@@ -15,6 +18,8 @@ const HotelInquiryModal = ({
     totalStayPrice,
     avgNightlyPrice
 }) => {
+    const navigate = useNavigate();
+    const { user } = useAuth();
     const [formData, setFormData] = useState({
         name: '',
         phone: '',
@@ -48,7 +53,6 @@ const HotelInquiryModal = ({
         e.preventDefault();
         setError('');
 
-        // Validate
         if (!formData.name.trim()) {
             setError('Please enter your full name.');
             return;
@@ -61,8 +65,9 @@ const HotelInquiryModal = ({
         setSubmitting(true);
 
         try {
-            // Save to Firestore
-            await addDoc(collection(db, 'hotel_inquiries'), {
+            const refId = `IY-HTL-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 9000) + 1000)}`;
+
+            const inquiryData = {
                 hotelId: hotel.id,
                 hotelName: hotel.name,
                 hotelCity: hotel.location || hotel.city || '',
@@ -79,38 +84,21 @@ const HotelInquiryModal = ({
                 clientPhone: formData.phone.trim(),
                 clientEmail: formData.email.trim(),
                 specialRequests: formData.specialRequests.trim(),
+                userId: user?.uid || null,
+                refId: refId,
                 status: 'pending',
                 createdAt: serverTimestamp(),
                 source: 'website'
-            });
+            };
 
-            // Build WhatsApp message
-            const message = `🏨 *Hotel Booking Inquiry — Infinite Yatra*
+            const docRef = await addDoc(collection(db, 'hotel_inquiries'), inquiryData);
 
-*Hotel:* ${hotel.name}, ${hotel.location || hotel.city || ''}
-*Room:* ${roomName}
-*Check-in:* ${formatDate(checkIn)}
-*Check-out:* ${formatDate(checkOut)} (${nights} night${nights > 1 ? 's' : ''})
-*Guests:* ${guests}
+            // Auto-notify admin on WhatsApp
+            notifyAdminNewInquiry({ ...inquiryData, id: docRef.id });
 
-*Guest Details:*
-Name: ${formData.name}
-Phone: ${formData.phone}
-${formData.email ? `Email: ${formData.email}` : ''}
-${formData.specialRequests ? `Special Requests: ${formData.specialRequests}` : ''}
-
-*Price Summary:*
-₹${avgNightlyPrice.toLocaleString()} × ${nights} night${nights > 1 ? 's' : ''} = ₹${baseTotal.toLocaleString()}
-Cleaning fee: ₹${cleaningFee.toLocaleString()}
-Service fee: ₹${serviceFee.toLocaleString()}
-*Total: ₹${totalAmount.toLocaleString()}*
-
-Please confirm availability. 🙏`;
-
-            const waUrl = `https://wa.me/919265799325?text=${encodeURIComponent(message)}`;
-            window.open(waUrl, '_blank');
-
-            setSuccess(true);
+            // Navigate to confirmation page
+            onClose();
+            navigate(`/hotels/booking-confirmation?ref=${docRef.id}`);
         } catch (err) {
             console.error('Error saving inquiry:', err);
             setError('Something went wrong. Please try again.');
@@ -136,26 +124,8 @@ Please confirm availability. 🙏`;
                     </button>
                 </div>
 
-                {success ? (
-                    /* Success State */
-                    <div className="p-8 text-center space-y-4">
-                        <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto">
-                            <CheckCircle2 size={32} className="text-green-400" />
-                        </div>
-                        <h3 className="text-xl font-bold text-white">Inquiry Sent! ✅</h3>
-                        <p className="text-zinc-400 text-sm">
-                            We've opened WhatsApp for you. Our team will confirm availability within 2 hours.
-                        </p>
-                        <p className="text-xs text-zinc-500">
-                            Your inquiry has been saved. You can track it from your bookings page.
-                        </p>
-                        <button onClick={onClose} className="mt-4 px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl font-medium transition-colors">
-                            Close
-                        </button>
-                    </div>
-                ) : (
-                    /* Form */
-                    <form onSubmit={handleSubmit} className="p-6 space-y-6">
+                {/* Form */}
+                <form onSubmit={handleSubmit} className="p-6 space-y-6">
                         {/* Booking Summary */}
                         <div className="bg-white/5 rounded-xl p-4 border border-white/5 space-y-2 text-sm">
                             <div className="flex justify-between text-zinc-300">
@@ -272,7 +242,6 @@ Please confirm availability. 🙏`;
                             </button>
                         </div>
                     </form>
-                )}
             </div>
         </div>
     );
