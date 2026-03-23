@@ -45,6 +45,8 @@ import HotelBookingPage from './pages/HotelBookingPage';
 import HotelBookingSuccess from './pages/HotelBookingSuccess';
 import HotelBookingConfirmation from './pages/HotelBookingConfirmation';
 import HotelPartnerOnboarding from './pages/HotelPartnerOnboarding';
+import MyHotelBookings from './pages/MyHotelBookings';
+import HotelCompare from './pages/HotelCompare';
 
 // Vendor Pages
 import VendorLogin from './pages/vendor/VendorLogin';
@@ -188,9 +190,11 @@ function App() {
                         <Route path="/hotels" element={<Hotels />} />
                         <Route path="/hotels/all" element={<AllHotels />} />
                         <Route path="/hotels/booking-confirmation" element={<HotelBookingConfirmation />} />
+                        <Route path="/hotels/compare" element={<HotelCompare />} />
                         <Route path="/hotels/:id" element={<HotelDetail />} />
                         <Route path="/hotels/book/:id" element={<HotelBookingPage />} />
                         <Route path="/hotels/success" element={<HotelBookingSuccess />} />
+                        <Route path="/my-hotel-bookings" element={<ProtectedRoute><MyHotelBookings /></ProtectedRoute>} />
                         <Route path="/partner/hotel-onboarding" element={<HotelPartnerOnboarding />} />
 
                         {/* Vendor Portal */}

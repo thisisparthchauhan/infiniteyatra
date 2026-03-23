@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Search, Star, MapPin, ChevronRight, SlidersHorizontal, Wifi, Coffee, Car, Waves, Dumbbell, X, MessageCircle, ArrowUpDown } from 'lucide-react';
@@ -31,6 +31,8 @@ const AllHotels = () => {
     const [activeCategory, setActiveCategory] = useState('All');
     const [sortBy, setSortBy] = useState('recommended');
     const [showFilters, setShowFilters] = useState(false);
+    const [compareList, setCompareList] = useState([]);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchHotels = async () => {
@@ -81,6 +83,14 @@ const AllHotels = () => {
         }
     });
 
+    const toggleCompare = (hotel) => {
+        setCompareList(prev => {
+            if (prev.find(h => h.id === hotel.id)) return prev.filter(h => h.id !== hotel.id);
+            if (prev.length >= 3) return prev;
+            return [...prev, hotel];
+        });
+    };
+
     return (
         <div className="min-h-screen bg-[#0a0a0a] text-white">
             <SEO title="All Hotels | Infinite Yatra" description="Browse all verified hotels and stays on Infinite Yatra." />
@@ -98,9 +108,19 @@ const AllHotels = () => {
                     <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-white to-zinc-400 bg-clip-text text-transparent mb-3">
                         Explore All Stays
                     </h1>
-                    <p className="text-zinc-400 text-lg max-w-2xl">
-                        Curated hotels, homestays, and resorts across India — verified for quality, safety, and comfort.
-                    </p>
+                    <div className="flex items-center gap-4">
+                        <p className="text-zinc-400 text-lg max-w-2xl">
+                            Curated hotels, homestays, and resorts across India — verified for quality, safety, and comfort.
+                        </p>
+                    </div>
+                    <div className="flex gap-3 mt-4">
+                        <Link to="/my-hotel-bookings" className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-sm font-medium text-zinc-300 hover:bg-white/10 transition-colors">
+                            📋 My Bookings
+                        </Link>
+                        <Link to="/hotels/compare" className="px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-xl text-sm font-medium text-purple-300 hover:bg-purple-500/20 transition-colors">
+                            ⚖️ Compare Hotels
+                        </Link>
+                    </div>
                 </div>
             </div>
 
@@ -258,6 +278,17 @@ const AllHotels = () => {
 
                                     {/* Content */}
                                     <div className="p-5 space-y-4">
+                                        {/* Compare checkbox */}
+                                        <label className="flex items-center gap-2 cursor-pointer text-xs" onClick={e => e.preventDefault()}>
+                                            <input
+                                                type="checkbox"
+                                                checked={!!compareList.find(c => c.id === hotel.id)}
+                                                onChange={() => toggleCompare(hotel)}
+                                                className="w-3.5 h-3.5 rounded bg-black/40 border-white/20 text-purple-500 cursor-pointer"
+                                            />
+                                            <span className="text-zinc-500 font-medium">Compare</span>
+                                        </label>
+
                                         {/* Amenity Icons */}
                                         {hotel.amenities && hotel.amenities.length > 0 && (
                                             <div className="flex gap-3">
@@ -294,6 +325,29 @@ const AllHotels = () => {
                                 </Link>
                             </motion.div>
                         ))}
+                    </div>
+                )}
+
+                {/* Floating Compare Bar */}
+                {compareList.length > 0 && (
+                    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-[#111]/95 backdrop-blur-xl border border-purple-500/30 rounded-2xl px-6 py-4 shadow-2xl shadow-purple-500/10 flex items-center gap-4">
+                        <div className="flex items-center gap-2">
+                            {compareList.map(h => (
+                                <div key={h.id} className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-xl">
+                                    <span className="text-sm text-white font-medium truncate max-w-[100px]">{h.name?.split(' ').slice(0, 2).join(' ')}</span>
+                                    <button onClick={() => toggleCompare(h)} className="text-zinc-500 hover:text-red-400">
+                                        <X size={12} />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                        <button
+                            disabled={compareList.length < 2}
+                            onClick={() => navigate(`/hotels/compare?ids=${compareList.map(h => h.id).join(',')}`)}
+                            className="px-5 py-2 bg-gradient-to-r from-purple-500 to-blue-600 text-white rounded-xl font-bold text-sm disabled:opacity-40 hover:from-purple-600 hover:to-blue-700 shadow-lg shadow-purple-500/25"
+                        >
+                            Compare ({compareList.length})
+                        </button>
                     </div>
                 )}
             </div>

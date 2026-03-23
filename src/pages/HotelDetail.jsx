@@ -10,6 +10,8 @@ import SEO from '../components/SEO';
 import RoomCard from '../components/RoomCard';
 import HotelInquiryModal from '../components/Hotels/HotelInquiryModal';
 import HotelReviews from '../components/Hotels/HotelReviews';
+import HotelGallery from '../components/Hotels/HotelGallery';
+import useAvailability from '../hooks/useAvailability';
 
 // MOCK DATA FOR DEV/PREVIEW
 const MOCK_HOTEL = {
@@ -164,6 +166,9 @@ const HotelDetail = () => {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isAboutExpanded, setIsAboutExpanded] = useState(false);
     const [showInquiryModal, setShowInquiryModal] = useState(false);
+    const [galleryOpen, setGalleryOpen] = useState(false);
+    const [galleryStart, setGalleryStart] = useState(0);
+    const [availStatus, setAvailStatus] = useState(null); // null | result object
 
     // Booking State - MOVED UP TO FIX HOOK ERROR
     const [checkIn, setCheckIn] = useState(() => {
@@ -428,7 +433,7 @@ const HotelDetail = () => {
                 {/* HERO GRID - BENTO STYLE */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-3 h-[50vh] min-h-[400px] mb-12 rounded-3xl overflow-hidden animate-in fade-in zoom-in-95 duration-700 delay-100">
                     {/* Main Image (Large) */}
-                    <div className="md:col-span-2 md:row-span-2 relative group overflow-hidden cursor-pointer">
+                    <div className="md:col-span-2 md:row-span-2 relative group overflow-hidden cursor-pointer" onClick={() => { setGalleryStart(0); setGalleryOpen(true); }}>
                         <img
                             src={heroImages[0]}
                             alt={hotel.name}
@@ -439,22 +444,22 @@ const HotelDetail = () => {
 
                     {/* Side Images */}
                     <div className="md:col-span-1 md:row-span-2 flex flex-col gap-3">
-                        <div className="flex-1 relative group overflow-hidden cursor-pointer rounded-2xl md:rounded-none">
+                        <div className="flex-1 relative group overflow-hidden cursor-pointer rounded-2xl md:rounded-none" onClick={() => { setGalleryStart(1); setGalleryOpen(true); }}>
                             <img src={heroImages[1] || heroImages[0]} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                             <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors"></div>
                         </div>
-                        <div className="flex-1 relative group overflow-hidden cursor-pointer rounded-2xl md:rounded-none">
+                        <div className="flex-1 relative group overflow-hidden cursor-pointer rounded-2xl md:rounded-none" onClick={() => { setGalleryStart(2); setGalleryOpen(true); }}>
                             <img src={heroImages[2] || heroImages[0]} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                             <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors"></div>
                         </div>
                     </div>
 
                     <div className="md:col-span-1 md:row-span-2 flex flex-col gap-3">
-                        <div className="flex-1 relative group overflow-hidden cursor-pointer rounded-2xl md:rounded-none">
+                        <div className="flex-1 relative group overflow-hidden cursor-pointer rounded-2xl md:rounded-none" onClick={() => { setGalleryStart(3); setGalleryOpen(true); }}>
                             <img src={heroImages[3] || heroImages[0]} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                             <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors"></div>
                         </div>
-                        <div className="flex-1 relative group overflow-hidden cursor-pointer rounded-2xl md:rounded-none">
+                        <div className="flex-1 relative group overflow-hidden cursor-pointer rounded-2xl md:rounded-none" onClick={() => { setGalleryStart(4); setGalleryOpen(true); }}>
                             <img src={heroImages[4] || heroImages[0]} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                             <div className="absolute inset-0 bg-black/50 flex items-center justify-center transition-colors group-hover:bg-black/40">
                                 <span className="px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg text-sm font-semibold hover:bg-white/20 transition-all flex items-center gap-2">
@@ -821,8 +826,47 @@ const HotelDetail = () => {
 
                             {/* Price Breakdown */}
                             <div className="space-y-3 mb-6">
+                                {availStatus && !availStatus.available && (
+                                    <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 mb-2">
+                                        <p className="text-sm text-red-400 font-bold">⚠ {availStatus.unavailableCount} date(s) unavailable</p>
+                                        <p className="text-xs text-red-400/70 mt-1">Some dates are blocked or already booked. Try different dates.</p>
+                                    </div>
+                                )}
+                                {availStatus?.available && (
+                                    <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-3 mb-2">
+                                        <p className="text-sm text-green-400 font-bold">✅ Dates are available!</p>
+                                    </div>
+                                )}
                                 <button
-                                    onClick={() => setShowInquiryModal(true)}
+                                    onClick={async () => {
+                                        // Quick availability check
+                                        const roomType = displayRoom?.name || 'default';
+                                        try {
+                                            const { doc: docRef, getDoc: getDocSnap } = await import('firebase/firestore');
+                                            const month = checkIn.slice(0, 7);
+                                            const docId = `${hotel.id}_${roomType}_${month}`;
+                                            const snap = await getDocSnap(docRef(db, 'hotel_availability', docId));
+                                            if (snap.exists()) {
+                                                const dates = snap.data().dates || {};
+                                                let blocked = 0;
+                                                let d = new Date(checkIn);
+                                                const end = new Date(checkOut);
+                                                while (d < end) {
+                                                    const ds = d.toISOString().split('T')[0];
+                                                    if (dates[ds] === 'blocked' || dates[ds] === 'booked') blocked++;
+                                                    d.setDate(d.getDate() + 1);
+                                                }
+                                                if (blocked > 0) {
+                                                    setAvailStatus({ available: false, unavailableCount: blocked });
+                                                    return;
+                                                }
+                                            }
+                                            setAvailStatus({ available: true });
+                                            setShowInquiryModal(true);
+                                        } catch {
+                                            setShowInquiryModal(true);
+                                        }
+                                    }}
                                     className="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-orange-500/25 active:scale-95"
                                 >
                                     Check Availability
@@ -892,6 +936,15 @@ const HotelDetail = () => {
                 nights={nights}
                 totalStayPrice={totalStayPrice}
                 avgNightlyPrice={avgNightlyPrice}
+            />
+
+            {/* Photo Gallery Lightbox */}
+            <HotelGallery
+                images={heroImages}
+                hotelName={hotel.name}
+                isOpen={galleryOpen}
+                onClose={() => setGalleryOpen(false)}
+                startIndex={galleryStart}
             />
 
         </div >
