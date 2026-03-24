@@ -45,10 +45,16 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
             ? (Array.isArray(initialData.category) ? initialData.category : [initialData.category])
             : ['trek'],
         linkedHotelIds: initialData?.linkedHotelIds || [],
+        linkedVehicleIds: initialData?.linkedVehicleIds || [],
+        packageRoute: initialData?.packageRoute || '',
     });
 
     const [allHotels, setAllHotels] = useState([]);
     const [fetchingHotels, setFetchingHotels] = useState(false);
+    
+    const [allVehicles, setAllVehicles] = useState([]);
+    const [fetchingVehicles, setFetchingVehicles] = useState(false);
+    const [vehicleSearch, setVehicleSearch] = useState('');
 
     // Fetch visible hotels on mount
     useEffect(() => {
@@ -72,7 +78,29 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
                 setFetchingHotels(false);
             }
         };
+
+        const fetchVehicles = async () => {
+            setFetchingVehicles(true);
+            try {
+                // Fetch vehicles where isActive is true
+                const vehiclesSnap = await getDocs(query(
+                    collection(db, 'transportation'),
+                    where('isActive', '==', true)
+                ));
+                // Sort client-side by vehicleType to avoid needing composite index
+                const fetchedVehicles = vehiclesSnap.docs
+                    .map(d => ({ id: d.id, ...d.data() }))
+                    .sort((a, b) => (a.vehicleType || '').localeCompare(b.vehicleType || ''));
+                setAllVehicles(fetchedVehicles);
+            } catch (err) {
+                console.error("Error fetching vehicles:", err);
+            } finally {
+                setFetchingVehicles(false);
+            }
+        };
+
         fetchHotels();
+        fetchVehicles();
     }, []);
 
     const toggleHotelLink = (hotelId) => {
@@ -81,6 +109,14 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
             ? current.filter(id => id !== hotelId)
             : [...current, hotelId];
         setFormData(prev => ({ ...prev, linkedHotelIds: updated }));
+    };
+
+    const toggleVehicleLink = (vehicleId) => {
+        const current = formData.linkedVehicleIds || [];
+        const updated = current.includes(vehicleId)
+            ? current.filter(id => id !== vehicleId)
+            : [...current, vehicleId];
+        setFormData(prev => ({ ...prev, linkedVehicleIds: updated }));
     };
 
     const [uploading, setUploading] = useState(false);
@@ -264,6 +300,8 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
                 activities: day.activities.filter(a => a.trim())
             })),
             linkedHotelIds: formData.linkedHotelIds || [],
+            linkedVehicleIds: formData.linkedVehicleIds || [],
+            packageRoute: formData.packageRoute || '',
         };
 
         onSave(cleanedData);
@@ -751,6 +789,69 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
                                 </div>
                             </div>
                         )}
+                    </div>
+
+                    {/* Linked Vehicles Section */}
+                    <div className="space-y-4 pt-6 mt-4 border-t border-white/10">
+                        <h3 className="text-lg font-bold text-blue-400">🚗 Linked Vehicles</h3>
+                        <p className="text-sm text-slate-400 mb-4">Select infinite yatra managed vehicles available to service this package route.</p>
+
+                        <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+                            <label className="block text-slate-400 text-sm mb-2 rounded font-bold">Package Route Hint (Optional)</label>
+                            <input
+                                type="text"
+                                value={formData.packageRoute || ''}
+                                onChange={(e) => setFormData(prev => ({ ...prev, packageRoute: e.target.value }))}
+                                placeholder="e.g. Dehradun → Manali"
+                                className="w-full bg-black/40 border border-white/10 text-white rounded p-3 focus:ring-2 focus:ring-blue-500 focus:outline-none placeholder-slate-600 mb-4"
+                            />
+                            
+                            <label className="block text-slate-400 text-sm mb-2 rounded font-bold">Search Vehicles</label>
+                            <input
+                                type="text"
+                                value={vehicleSearch}
+                                onChange={(e) => setVehicleSearch(e.target.value)}
+                                placeholder="Search by name or category..."
+                                className="w-full bg-black/40 border border-white/10 text-white rounded p-3 focus:ring-2 focus:ring-blue-500 focus:outline-none placeholder-slate-600 mb-4"
+                            />
+
+                            {fetchingVehicles ? (
+                                <p className="text-slate-500 py-4">Loading vehicles...</p>
+                            ) : allVehicles.length === 0 ? (
+                                <p className="text-slate-500 bg-white/5 p-4 rounded-lg">No active vehicles found in the database. Add some vehicles first.</p>
+                            ) : (
+                                <div className="border border-white/10 rounded-lg overflow-hidden shadow-inner bg-black/20">
+                                    <div className="max-h-[300px] overflow-y-auto custom-scrollbar">
+                                        {allVehicles
+                                            .filter(v => v.vehicleType?.toLowerCase().includes(vehicleSearch.toLowerCase()) || v.category?.toLowerCase().includes(vehicleSearch.toLowerCase()))
+                                            .map(vehicle => (
+                                                <label key={vehicle.id} className={`flex items-center gap-4 p-4 border-b border-white/10 hover:bg-white/5 cursor-pointer transition-colors ${formData.linkedVehicleIds?.includes(vehicle.id) ? 'bg-blue-500/10' : ''}`}>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={formData.linkedVehicleIds?.includes(vehicle.id)}
+                                                        onChange={() => toggleVehicleLink(vehicle.id)}
+                                                        className="w-5 h-5 rounded border-gray-600 text-blue-600 focus:ring-blue-500 focus:ring-offset-gray-900 bg-black/40"
+                                                    />
+                                                    <div className="flex-1">
+                                                        <div className="text-white font-bold">{vehicle.vehicleType}</div>
+                                                        <div className="text-xs text-slate-400 mt-1 flex gap-3">
+                                                            <span>👥 {vehicle.capacity} seats</span>
+                                                            {vehicle.pricePerKm && <span>• ₹{vehicle.pricePerKm}/km</span>}
+                                                            {vehicle.pricePerDay && <span>• ₹{vehicle.pricePerDay}/day</span>}
+                                                        </div>
+                                                    </div>
+                                                    {formData.linkedVehicleIds?.includes(vehicle.id) && (
+                                                        <div className="text-xs font-bold text-blue-400 bg-blue-500/10 px-2 py-1 rounded-full">Linked</div>
+                                                    )}
+                                                </label>
+                                        ))}
+                                    </div>
+                                    <div className="p-3 bg-black/40 border-t border-white/10 text-xs text-slate-400 font-medium">
+                                        Selected: {formData.linkedVehicleIds?.length || 0} vehicle(s) linked
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                 </div>

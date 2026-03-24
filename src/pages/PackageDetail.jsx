@@ -5,8 +5,9 @@ import { usePackages } from '../context/PackageContext';
 import { db } from '../firebase';
 import { collection, query, where, limit, getDocs, documentId } from 'firebase/firestore';
 import SEO from '../components/SEO';
-import AnimatedBanner from '../components/AnimatedBanner';
-import PhotoGallery from '../components/PhotoGallery';
+import BookingStep3 from '../components/BookingStep3';
+import HotelBookingConfirmation from '../components/hotels/HotelBookingConfirmation';
+import LinkedVehicleCard from '../components/LinkedVehicleCard';
 import './PackageDetail.css';
 
 const LinkedHotelCard = ({ hotel, navigate }) => {
@@ -78,6 +79,7 @@ const PackageDetail = () => {
     const [showFullPackingList, setShowFullPackingList] = useState(false);
     const [transportOptions, setTransportOptions] = useState([]);
     const [linkedHotels, setLinkedHotels] = useState([]);
+    const [linkedVehicles, setLinkedVehicles] = useState([]);
     const { getPackageById, loading } = usePackages();
 
     useEffect(() => {
@@ -139,6 +141,31 @@ const PackageDetail = () => {
 
         fetchLinkedHotels();
     }, [pkg?.linkedHotelIds]);
+
+    // Fetch Linked Vehicles
+    useEffect(() => {
+        const fetchLinkedVehicles = async () => {
+            if (!pkg?.linkedVehicleIds || pkg.linkedVehicleIds.length === 0) {
+                setLinkedVehicles([]);
+                return;
+            }
+
+            try {
+                // Firestore 'in' query supports up to 10 IDs
+                const vehiclesSnap = await getDocs(query(
+                    collection(db, 'transportation'),
+                    where(documentId(), 'in', pkg.linkedVehicleIds.slice(0, 10)),
+                    where('isActive', '==', true)
+                ));
+
+                setLinkedVehicles(vehiclesSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+            } catch (err) {
+                console.error("Failed to fetch linked vehicles:", err);
+            }
+        };
+
+        fetchLinkedVehicles();
+    }, [pkg?.linkedVehicleIds]);
 
     const toggleDay = (dayIndex) => {
         setExpandedDay(expandedDay === dayIndex ? null : dayIndex);
@@ -631,6 +658,34 @@ const PackageDetail = () => {
                                 >
                                     💬 Chat with us on WhatsApp
                                 </a>
+                            </div>
+                        </section>
+                    )}
+
+                    {/* Linked Vehicles Section — only renders if vehicles are linked */}
+                    {linkedVehicles.length > 0 && (
+                        <section className="linked-vehicles-section">
+                            <div className="section-header">
+                                <h2>🚗 Getting There</h2>
+                                <p>IY-managed transport options for this trip</p>
+                            </div>
+
+                            {/* Route badge */}
+                            {pkg.packageRoute && (
+                                <div className="route-badge">
+                                    📍 Common route: {pkg.packageRoute}
+                                </div>
+                            )}
+
+                            <div className="linked-vehicles-grid">
+                                {linkedVehicles.map(vehicle => (
+                                    <LinkedVehicleCard
+                                        key={vehicle.id}
+                                        vehicle={vehicle}
+                                        routeHint={pkg.packageRoute}
+                                        packageName={pkg.title || pkg.name}
+                                    />
+                                ))}
                             </div>
                         </section>
                     )}
