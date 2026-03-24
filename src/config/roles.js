@@ -21,7 +21,8 @@ import {
     Map,
     Award,
     Star,
-    Shield
+    Shield,
+    Sparkles
 } from 'lucide-react';
 
 export const USER_ROLES = {
