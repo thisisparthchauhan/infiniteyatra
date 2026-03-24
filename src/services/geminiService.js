@@ -3,7 +3,7 @@ import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../firebase';
 
 const ai = new OpenAI({ 
-    apiKey: import.meta.env.VITE_ZAI_API_KEY, 
+    apiKey: import.meta.env.VITE_ZAI_API_KEY || "missing_api_key_in_build", 
     baseURL: "https://api.z.ai/api/paas/v4",
     dangerouslyAllowBrowser: true 
 });
