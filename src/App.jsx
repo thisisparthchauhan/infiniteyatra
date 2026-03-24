@@ -70,6 +70,7 @@ import Passport from './pages/Passport';
 
 import TransportationHub from './pages/TransportationHub';
 import VehicleDetail from './pages/VehicleDetail';
+import SplashScreen from './components/SplashScreen';
 
 const Layout = ({ children }) => {
   const location = useLocation();
@@ -100,7 +101,9 @@ const Layout = ({ children }) => {
 function App() {
   console.log('App component rendering');
   return (
-    <HelmetProvider>
+    <>
+      <SplashScreen />
+      <HelmetProvider>
       <ToastProvider>
         <RoleProvider>
           <AuthProvider>
@@ -218,6 +221,7 @@ function App() {
         </RoleProvider>
       </ToastProvider>
     </HelmetProvider>
+    </>
   );
 }
 
