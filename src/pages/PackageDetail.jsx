@@ -3,11 +3,66 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { MapPin, Calendar, ChevronDown, Check, X, Phone, MessageCircle, Plus, Minus, Car } from 'lucide-react';
 import { usePackages } from '../context/PackageContext';
 import { db } from '../firebase';
-import { collection, query, where, limit, getDocs } from 'firebase/firestore';
+import { collection, query, where, limit, getDocs, documentId } from 'firebase/firestore';
 import SEO from '../components/SEO';
 import AnimatedBanner from '../components/AnimatedBanner';
 import PhotoGallery from '../components/PhotoGallery';
 import './PackageDetail.css';
+
+const LinkedHotelCard = ({ hotel, navigate }) => {
+    const topAmenities = (hotel.amenities || []).slice(0, 3);
+  
+    return (
+      <div className="linked-hotel-card" onClick={() => navigate(`/hotels/${hotel.id}`)}>
+        {/* Cover Image */}
+        <div className="hotel-card-image">
+          <img
+            src={hotel.coverImage || hotel.images?.[0] || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400'}
+            alt={hotel.name}
+            loading="lazy"
+          />
+          {/* IY Partner Badge */}
+          <div className="iy-partner-badge">★ IY PARTNER</div>
+        </div>
+  
+        {/* Card Body */}
+        <div className="hotel-card-body">
+          <h3 className="hotel-card-name">{hotel.name}</h3>
+          <p className="hotel-card-location">📍 {hotel.city}</p>
+  
+          {/* Star Category */}
+          <p className="hotel-card-category">⭐ {hotel.category}</p>
+  
+          {/* Top Amenities */}
+          {topAmenities.length > 0 && (
+            <div className="hotel-card-amenities">
+              {topAmenities.map(amenity => (
+                <span key={amenity} className="amenity-pill">{amenity}</span>
+              ))}
+            </div>
+          )}
+  
+          {/* Price */}
+          <div className="hotel-card-price">
+            <span className="price-label">From</span>
+            <span className="price-value">₹{hotel.startingPrice?.toLocaleString('en-IN') || hotel.price?.toLocaleString('en-IN')}</span>
+            <span className="price-unit">/night</span>
+          </div>
+  
+          {/* CTA */}
+          <button
+            className="hotel-card-cta"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/hotels/${hotel.id}`);
+            }}
+          >
+            View & Book →
+          </button>
+        </div>
+      </div>
+    );
+};
 
 const PackageDetail = () => {
     const { id } = useParams();
@@ -22,6 +77,7 @@ const PackageDetail = () => {
     const [showGallery, setShowGallery] = useState(false);
     const [showFullPackingList, setShowFullPackingList] = useState(false);
     const [transportOptions, setTransportOptions] = useState([]);
+    const [linkedHotels, setLinkedHotels] = useState([]);
     const { getPackageById, loading } = usePackages();
 
     useEffect(() => {
@@ -58,6 +114,31 @@ const PackageDetail = () => {
             navigate('/');
         }
     }, [id, navigate, loading, getPackageById]);
+
+    // Fetch Linked Hotels
+    useEffect(() => {
+        const fetchLinkedHotels = async () => {
+            if (!pkg?.linkedHotelIds || pkg.linkedHotelIds.length === 0) {
+                setLinkedHotels([]);
+                return;
+            }
+
+            try {
+                // Firestore 'in' query supports up to 10 IDs
+                const hotelsSnap = await getDocs(query(
+                    collection(db, 'hotels'),
+                    where(documentId(), 'in', pkg.linkedHotelIds.slice(0, 10)),
+                    where('visibility', '==', true)
+                ));
+
+                setLinkedHotels(hotelsSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+            } catch (err) {
+                console.error("Failed to fetch linked hotels:", err);
+            }
+        };
+
+        fetchLinkedHotels();
+    }, [pkg?.linkedHotelIds]);
 
     const toggleDay = (dayIndex) => {
         setExpandedDay(expandedDay === dayIndex ? null : dayIndex);
@@ -522,6 +603,35 @@ const PackageDetail = () => {
                             >
                                 View All Transport
                             </button>
+                        </section>
+                    )}
+
+                    {/* Linked Hotels Section — only renders if hotels exist */}
+                    {linkedHotels.length > 0 && (
+                        <section className="linked-hotels-section">
+                            <div className="section-header">
+                                <h2>🏨 Where to Stay</h2>
+                                <p>Recommended by Infinite Yatra for this destination</p>
+                            </div>
+
+                            <div className="linked-hotels-grid">
+                                {linkedHotels.map(hotel => (
+                                    <LinkedHotelCard key={hotel.id} hotel={hotel} navigate={navigate} />
+                                ))}
+                            </div>
+
+                            {/* WhatsApp CTA */}
+                            <div className="hotels-whatsapp-cta">
+                                <p>Need help choosing the right hotel?</p>
+                                <a
+                                    href={`https://wa.me/919265799325?text=${encodeURIComponent(`Hi! I'm interested in booking accommodation for the *${pkg.title}* package. Can you suggest the best hotel option?`)}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="whatsapp-btn"
+                                >
+                                    💬 Chat with us on WhatsApp
+                                </a>
+                            </div>
                         </section>
                     )}
                 </div>

@@ -3,6 +3,8 @@ import { X, Plus, Trash2, Save, Upload, Image as ImageIcon } from 'lucide-react'
 // Firebase Storage imports removed
 // import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 // import { storage } from '../firebase'; 
+import { collection, query, where, orderBy, getDocs } from 'firebase/firestore';
+import { db } from '../firebase';
 import { uploadMultipleToCloudinary, uploadToCloudinary } from '../services/cloudinary';
 
 const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
@@ -41,8 +43,41 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
         // Ensure category is always an array
         category: initialData?.category
             ? (Array.isArray(initialData.category) ? initialData.category : [initialData.category])
-            : ['trek']
+            : ['trek'],
+        linkedHotelIds: initialData?.linkedHotelIds || [],
     });
+
+    const [allHotels, setAllHotels] = useState([]);
+    const [fetchingHotels, setFetchingHotels] = useState(false);
+
+    // Fetch visible hotels on mount
+    useEffect(() => {
+        const fetchHotels = async () => {
+            setFetchingHotels(true);
+            try {
+                const hotelsSnap = await getDocs(query(
+                    collection(db, 'hotels'),
+                    where('visibility', '==', true),
+                    orderBy('name', 'asc')
+                ));
+                const fetchedHotels = hotelsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+                setAllHotels(fetchedHotels);
+            } catch (err) {
+                console.error("Error fetching hotels:", err);
+            } finally {
+                setFetchingHotels(false);
+            }
+        };
+        fetchHotels();
+    }, []);
+
+    const toggleHotelLink = (hotelId) => {
+        const current = formData.linkedHotelIds || [];
+        const updated = current.includes(hotelId)
+            ? current.filter(id => id !== hotelId)
+            : [...current, hotelId];
+        setFormData(prev => ({ ...prev, linkedHotelIds: updated }));
+    };
 
     const [uploading, setUploading] = useState(false);
     const [uploadError, setUploadError] = useState(null);
@@ -223,7 +258,8 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
             itinerary: formData.itinerary.map(day => ({
                 ...day,
                 activities: day.activities.filter(a => a.trim())
-            }))
+            })),
+            linkedHotelIds: formData.linkedHotelIds || [],
         };
 
         onSave(cleanedData);
@@ -670,6 +706,47 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
                                 <Plus size={20} /> Add Day
                             </button>
                         </div>
+                    </div>
+
+                    {/* Linked Hotels Section */}
+                    <div className="space-y-4 pt-6 mt-4 border-t border-white/10">
+                        <h3 className="text-lg font-bold text-blue-400">🏨 Linked Hotels</h3>
+                        <p className="text-sm text-slate-400 mb-4">Select Infinite Yatra hotels to display as recommended accommodations on this package's public detail page.</p>
+                        
+                        {fetchingHotels ? (
+                            <p className="text-slate-500">Loading hotels...</p>
+                        ) : allHotels.length === 0 ? (
+                            <p className="text-slate-500 bg-white/5 p-4 rounded-lg">No visible hotels found in the database. Add some hotels first.</p>
+                        ) : (
+                            <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden shadow-inner">
+                                <div className="max-h-[300px] overflow-y-auto custom-scrollbar">
+                                    {allHotels.map(hotel => (
+                                        <label key={hotel.id} className={`flex items-center gap-4 p-4 border-b border-white/10 hover:bg-white/5 cursor-pointer transition-colors ${formData.linkedHotelIds?.includes(hotel.id) ? 'bg-blue-500/10' : ''}`}>
+                                            <input
+                                                type="checkbox"
+                                                checked={formData.linkedHotelIds?.includes(hotel.id)}
+                                                onChange={() => toggleHotelLink(hotel.id)}
+                                                className="w-5 h-5 rounded border-gray-600 text-blue-600 focus:ring-blue-500 focus:ring-offset-gray-900 bg-black/40"
+                                            />
+                                            <div className="flex-1">
+                                                <div className="text-white font-bold">{hotel.name}</div>
+                                                <div className="text-xs text-slate-400 mt-1 flex gap-2">
+                                                    <span>📍 {hotel.city}</span>
+                                                    <span>•</span>
+                                                    <span>⭐ {hotel.category}</span>
+                                                </div>
+                                            </div>
+                                            {formData.linkedHotelIds?.includes(hotel.id) && (
+                                                <div className="text-xs font-bold text-blue-400 bg-blue-500/10 px-2 py-1 rounded-full">Linked</div>
+                                            )}
+                                        </label>
+                                    ))}
+                                </div>
+                                <div className="p-3 bg-black/40 border-t border-white/10 text-xs text-slate-400 font-medium">
+                                    Selected: {formData.linkedHotelIds?.length || 0} hotel(s) linked
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                 </div>

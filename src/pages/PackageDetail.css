@@ -1058,3 +1058,179 @@
         padding: 0.875rem;
     }
 }
+
+/* ======================================= */
+/* LINKED HOTELS SECTION (Custom Added)    */
+/* ======================================= */
+.linked-hotels-section {
+    margin-top: 60px;
+    padding: 40px 0;
+    border-top: 1px solid rgba(255,255,255,0.1);
+  }
+  
+  .section-header h2 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+  
+  .section-header p {
+    color: rgba(255,255,255,0.5);
+    font-size: 0.95rem;
+  }
+  
+  .linked-hotels-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+    margin-top: 32px;
+  }
+  
+  .linked-hotel-card {
+    background: #111;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+  }
+  
+  .linked-hotel-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(139, 92, 246, 0.4);
+  }
+  
+  .hotel-card-image {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+  }
+  
+  .hotel-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+  
+  .linked-hotel-card:hover .hotel-card-image img {
+    transform: scale(1.05);
+  }
+  
+  .iy-partner-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: linear-gradient(135deg, #7c3aed, #4f46e5);
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.05em;
+  }
+  
+  .hotel-card-body {
+    padding: 20px;
+  }
+  
+  .hotel-card-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 4px;
+  }
+  
+  .hotel-card-location {
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 8px;
+  }
+  
+  .hotel-card-amenities {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 10px 0;
+  }
+  
+  .amenity-pill {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.6);
+    font-size: 0.75rem;
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+  
+  .hotel-card-price {
+    margin: 12px 0 16px;
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+  }
+  
+  .price-label {
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.4);
+  }
+  
+  .price-value {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #fff;
+  }
+  
+  .price-unit {
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.4);
+  }
+  
+  .hotel-card-cta {
+    width: 100%;
+    padding: 12px;
+    background: transparent;
+    border: 1px solid rgba(139, 92, 246, 0.5);
+    color: #a78bfa;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .hotel-card-cta:hover {
+    background: rgba(139, 92, 246, 0.15);
+    border-color: #7c3aed;
+    color: #fff;
+  }
+  
+  .hotels-whatsapp-cta {
+    text-align: center;
+    margin-top: 32px;
+    padding: 24px;
+    background: rgba(37, 211, 102, 0.05);
+    border: 1px solid rgba(37, 211, 102, 0.15);
+    border-radius: 12px;
+  }
+  
+  .hotels-whatsapp-cta p {
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 12px;
+  }
+  
+  .whatsapp-btn {
+    display: inline-block;
+    background: #25D366;
+    color: #fff;
+    padding: 12px 28px;
+    border-radius: 50px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: background 0.2s ease;
+  }
+  
+  .whatsapp-btn:hover {
+    background: #128C7E;
+  }
