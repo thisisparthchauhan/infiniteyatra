@@ -5,8 +5,8 @@ import { usePackages } from '../context/PackageContext';
 import { db } from '../firebase';
 import { collection, query, where, limit, getDocs, documentId } from 'firebase/firestore';
 import SEO from '../components/SEO';
-import BookingStep3 from '../components/BookingStep3';
-import HotelBookingConfirmation from '../components/hotels/HotelBookingConfirmation';
+import AnimatedBanner from '../components/AnimatedBanner';
+import PhotoGallery from '../components/PhotoGallery';
 import LinkedVehicleCard from '../components/LinkedVehicleCard';
 import './PackageDetail.css';
 
