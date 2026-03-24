@@ -143,7 +143,7 @@ const Signup = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center relative">
+        <div className="min-h-screen flex items-center justify-center relative pt-24 pb-12">
             <SEO
                 title="Sign Up"
                 description="Create an account with Infinite Yatra to start planning your dream journey."
@@ -159,7 +159,7 @@ const Signup = () => {
                 <div className="absolute inset-0 bg-black/40" />
             </div>
 
-            <div className="relative z-10 w-full max-w-md bg-white p-8 rounded-2xl shadow-xl mx-4 my-8">
+            <div className="relative z-10 w-full max-w-md bg-white p-8 rounded-2xl shadow-xl mx-4 mt-12 mb-8">
                 <Link to="/" className="inline-flex items-center gap-2 text-slate-500 hover:text-blue-600 mb-6 transition-colors">
                     <ArrowLeft size={20} /> Back to Home
                 </Link>
