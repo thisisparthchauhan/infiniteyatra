@@ -4,7 +4,7 @@ const SplashScreen = () => {
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
-    const timer = setTimeout(() => setVisible(false), 2000);
+    const timer = setTimeout(() => setVisible(false), 1000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -47,7 +47,7 @@ const SplashScreen = () => {
         <div style={{
           height: "100%", borderRadius: "2px",
           background: "linear-gradient(90deg, #7c3aed, #60a5fa)",
-          animation: "loadBar 1.8s ease forwards"
+          animation: "loadBar 0.9s ease forwards"
         }} />
       </div>
 
