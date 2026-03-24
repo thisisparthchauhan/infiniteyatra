@@ -93,8 +93,8 @@ const TripPlanner = () => {
     const updateForm = (key, value) => setFormData(prev => ({ ...prev, [key]: value }));
 
     const handleGenerate = async () => {
-        if (!import.meta.env.VITE_GEMINI_API_KEY) {
-            alert("No AI strictly configured (VITE_GEMINI_API_KEY missing). Please add to .env file to continue.");
+        if (!import.meta.env.VITE_ZAI_API_KEY) {
+            alert("No AI is currently configured (VITE_ZAI_API_KEY missing). Please add your key to the live server environment variables.");
             return;
         }
 
