@@ -558,9 +558,6 @@ const TripPlanner = () => {
                 {/* Hero */}
                 {!isGenerating && (
                     <div className="text-center mb-16 pt-8">
-                        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-bold text-zinc-400 uppercase tracking-wider mb-6 backdrop-blur-md">
-                            <Sparkles size={14} className="text-purple-400" /> Gemini 1.5 Powered
-                        </div>
                         <h1 className="text-4xl md:text-6xl font-black text-white mb-6 leading-tight tracking-tight">
                             Plan Your Perfect <br className="md:hidden" />
                             <span className="bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent border-b-4 border-purple-500">

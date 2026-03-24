@@ -172,8 +172,8 @@ const Footer = memo(() => {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-10">
 
                         {/* ── Column 1: Brand ── */}
-                        <div className="space-y-6">
-                            <div className="w-max">
+                        <div className="space-y-6 flex flex-col items-center lg:items-start xl:items-center">
+                            <div className="w-auto flex flex-col items-center">
                                 <h3
                                     className="text-2xl font-black tracking-[0.2em] text-white text-center"
                                     style={{ fontFamily: "'Raleway', sans-serif" }}
@@ -181,7 +181,7 @@ const Footer = memo(() => {
                                     INFINITE YATRA
                                 </h3>
                                 <span
-                                    className="text-[10px] tracking-[0.3em] font-extrabold text-white/80 block w-full text-center"
+                                    className="text-[10px] tracking-[0.3em] font-extrabold text-white/80 block w-full text-center mt-1"
                                     style={{ fontFamily: "'Raleway', sans-serif" }}
                                 >
                                     EXPLORE INFINITE
@@ -189,7 +189,7 @@ const Footer = memo(() => {
                             </div>
 
                             {/* Contact Card */}
-                            <div className="mt-6 p-4 w-max rounded-xl bg-[#1a1a1a] border border-[#222] space-y-3">
+                            <div className="mt-6 p-5 w-auto md:min-w-[260px] rounded-xl bg-[#1a1a1a] border border-[#222] space-y-3 shadow-lg border-b-[#7C3AED]/30">
                                 <a href="tel:+919265799325" className="flex items-center gap-3 text-[#888] text-sm hover:text-white transition-colors">
                                     <Phone size={16} className="text-[#7C3AED] shrink-0" />
                                     <span>+91 9265799325</span>
