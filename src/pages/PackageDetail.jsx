@@ -128,7 +128,7 @@ const PackageDetail = () => {
                 const hotelsSnap = await getDocs(query(
                     collection(db, 'hotels'),
                     where(documentId(), 'in', pkg.linkedHotelIds.slice(0, 10)),
-                    where('visibility', '==', true)
+                    where('isVisible', '==', true)
                 ));
 
                 setLinkedHotels(hotelsSnap.docs.map(d => ({ id: d.id, ...d.data() })));

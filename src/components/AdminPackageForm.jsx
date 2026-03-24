@@ -57,7 +57,7 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
             try {
                 const hotelsSnap = await getDocs(query(
                     collection(db, 'hotels'),
-                    where('visibility', '==', true),
+                    where('isVisible', '==', true),
                     orderBy('name', 'asc')
                 ));
                 const fetchedHotels = hotelsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
