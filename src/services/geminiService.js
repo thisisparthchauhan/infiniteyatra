@@ -1,9 +1,10 @@
-import Groq from 'groq-sdk';
+import OpenAI from 'openai';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../firebase';
 
-const groq = new Groq({ 
-    apiKey: import.meta.env.VITE_GROQ_API_KEY, 
+const ai = new OpenAI({ 
+    apiKey: import.meta.env.VITE_ZAI_API_KEY, 
+    baseURL: "https://api.z.ai/api/paas/v4",
     dangerouslyAllowBrowser: true 
 });
 // Fetch active hotels matching the destination city
@@ -138,12 +139,11 @@ export const generatePlanWithGemini = async (formData) => {
         console.log(`Found ${iyHotels.length} IY hotels and ${iyTransport.length} IY vehicles.`);
         const prompt = buildPrompt(formData, iyHotels, iyTransport);
 
-        console.log("Calling Groq API...");
-        const response = await groq.chat.completions.create({
+        console.log("Calling Z.AI API...");
+        const response = await ai.chat.completions.create({
             messages: [{ role: "user", content: prompt }],
-            model: "llama3-8b-8192",
-            temperature: 0.7,
-            response_format: { type: "json_object" }
+            model: "glm-4-flash",
+            temperature: 0.7
         });
 
         const text = response.choices[0]?.message?.content || "";
@@ -158,7 +158,7 @@ export const generatePlanWithGemini = async (formData) => {
             throw new Error("AI generated an invalid format. Please try again.");
         }
     } catch (error) {
-        console.error('Groq / AI error:', error);
+        console.error('Z.AI error:', error);
         throw new Error("Failed to generate plan securely. Please try again. " + (error.message || ""));
     }
 };
