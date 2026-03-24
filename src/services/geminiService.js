@@ -28,7 +28,7 @@ const fetchIYHotels = async (destination) => {
 // Fetch active transport fleet
 const fetchIYTransport = async () => {
     try {
-        const snapshot = await getDocs(query(collection(db, 'transportation'), where('isActive', '==', true)));
+        const snapshot = await getDocs(query(collection(db, 'transport_vehicles'), where('isActive', '==', true)));
         return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     } catch (error) {
         console.error("Error fetching IY Transport:", error);
@@ -157,6 +157,9 @@ export const generatePlanWithGemini = async (formData) => {
         }
     } catch (error) {
         console.error('Gemini error:', error);
-        throw error;
+        if (error.message?.includes('429')) {
+             throw new Error("Free tier rate limit exceeded. Please wait 1 minute before generating another plan.");
+        }
+        throw new Error("Failed to generate plan securely. Please try again. " + (error.message || ""));
     }
 };
