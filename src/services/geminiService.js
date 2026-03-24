@@ -1,11 +1,6 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { puter } from '@heyputer/puter.js';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../firebase';
-
-const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || '');
-// Use gemini-2.0-flash as supported by the provided API key
-const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-
 // Fetch active hotels matching the destination city
 const fetchIYHotels = async (destination) => {
     try {
@@ -128,10 +123,6 @@ RESPOND WITH THIS EXACT JSON STRUCTURE:
 };
 
 export const generatePlanWithGemini = async (formData) => {
-    if (!import.meta.env.VITE_GEMINI_API_KEY) {
-        throw new Error("Missing VITE_GEMINI_API_KEY in .env file.");
-    }
-
     try {
         console.log("Fetching IY data for:", formData.destination);
         const [iyHotels, iyTransport] = await Promise.all([
@@ -142,9 +133,8 @@ export const generatePlanWithGemini = async (formData) => {
         console.log(`Found ${iyHotels.length} IY hotels and ${iyTransport.length} IY vehicles.`);
         const prompt = buildPrompt(formData, iyHotels, iyTransport);
 
-        console.log("Calling Gemini 1.5 Flash...");
-        const result = await model.generateContent(prompt);
-        const text = result.response.text();
+        console.log("Calling OpenAI (via Puter.js)...");
+        const text = await puter.ai.chat(prompt, { model: "gpt-5.4" });
 
         // Clean JSON (remove any markdown fences if present)
         const cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim();
@@ -156,10 +146,7 @@ export const generatePlanWithGemini = async (formData) => {
             throw new Error("AI generated an invalid format. Please try again.");
         }
     } catch (error) {
-        console.error('Gemini error:', error);
-        if (error.message?.includes('429')) {
-             throw new Error("Free tier rate limit exceeded. Please wait 1 minute before generating another plan.");
-        }
+        console.error('Puter / OpenAI error:', error);
         throw new Error("Failed to generate plan securely. Please try again. " + (error.message || ""));
     }
 };

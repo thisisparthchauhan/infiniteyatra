@@ -516,7 +516,7 @@ const TripPlanner = () => {
             </div>
 
             <h2 className="text-2xl font-bold text-white mb-2">Planning your perfect trip...</h2>
-            <p className="text-zinc-500 mb-8">Gemini AI is crafting a bespoke experience for you.</p>
+            <p className="text-zinc-500 mb-8">Our Advanced AI is crafting a bespoke experience for you.</p>
 
             <div className="w-full max-w-sm space-y-4 text-left">
                 {[
@@ -545,7 +545,7 @@ const TripPlanner = () => {
 
     return (
         <div className="min-h-screen bg-[#0a0a0a] pt-24 pb-20 relative overflow-hidden font-sans">
-            <SEO title="AI Trip Planner | Infinite Yatra" description="Plan your perfect trip with our Gemini AI-powered itinerary generator." />
+            <SEO title="AI Trip Planner | Infinite Yatra" description="Plan your perfect trip with our cutting-edge AI-powered itinerary generator." />
 
             {/* Cinematic Background */}
             <div className="absolute inset-0 z-0 opacity-40">
