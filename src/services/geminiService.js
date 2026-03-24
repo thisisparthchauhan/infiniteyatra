@@ -1,6 +1,11 @@
-import { puter } from '@heyputer/puter.js';
+import Groq from 'groq-sdk';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../firebase';
+
+const groq = new Groq({ 
+    apiKey: import.meta.env.VITE_GROQ_API_KEY, 
+    dangerouslyAllowBrowser: true 
+});
 // Fetch active hotels matching the destination city
 const fetchIYHotels = async (destination) => {
     try {
@@ -133,8 +138,15 @@ export const generatePlanWithGemini = async (formData) => {
         console.log(`Found ${iyHotels.length} IY hotels and ${iyTransport.length} IY vehicles.`);
         const prompt = buildPrompt(formData, iyHotels, iyTransport);
 
-        console.log("Calling OpenAI (via Puter.js)...");
-        const text = await puter.ai.chat(prompt, { model: "gpt-5.4" });
+        console.log("Calling Groq API...");
+        const response = await groq.chat.completions.create({
+            messages: [{ role: "user", content: prompt }],
+            model: "llama3-8b-8192",
+            temperature: 0.7,
+            response_format: { type: "json_object" }
+        });
+
+        const text = response.choices[0]?.message?.content || "";
 
         // Clean JSON (remove any markdown fences if present)
         const cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim();
@@ -142,11 +154,11 @@ export const generatePlanWithGemini = async (formData) => {
         try {
             return JSON.parse(cleaned);
         } catch (parseError) {
-            console.error("Failed to parse Gemini output:", cleaned);
+            console.error("Failed to parse AI output:", cleaned);
             throw new Error("AI generated an invalid format. Please try again.");
         }
     } catch (error) {
-        console.error('Puter / OpenAI error:', error);
+        console.error('Groq / AI error:', error);
         throw new Error("Failed to generate plan securely. Please try again. " + (error.message || ""));
     }
 };
