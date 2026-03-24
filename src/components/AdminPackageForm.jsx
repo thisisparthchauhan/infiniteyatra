@@ -55,12 +55,16 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
         const fetchHotels = async () => {
             setFetchingHotels(true);
             try {
+                // Remove orderBy to prevent Firestore Composite Index errors
                 const hotelsSnap = await getDocs(query(
                     collection(db, 'hotels'),
-                    where('isVisible', '==', true),
-                    orderBy('name', 'asc')
+                    where('isVisible', '==', true)
                 ));
-                const fetchedHotels = hotelsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+                // Sort client-side instead
+                const fetchedHotels = hotelsSnap.docs
+                    .map(d => ({ id: d.id, ...d.data() }))
+                    .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+                
                 setAllHotels(fetchedHotels);
             } catch (err) {
                 console.error("Error fetching hotels:", err);
