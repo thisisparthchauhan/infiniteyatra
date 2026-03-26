@@ -40,6 +40,8 @@ import AdminSpaceWaitlist from '../components/admin/space/AdminSpaceWaitlist';
 import AdminPassport from '../components/admin/AdminPassport';
 import AdminCars from '../components/admin/transport/AdminCars';
 import AdminCarBookings from '../components/admin/transport/AdminCarBookings';
+import AdminCruiseBookings from '../components/admin/cruise/AdminCruiseBookings';
+import AdminCycleBookings from '../components/admin/cruise/AdminCycleBookings';
 
 const AdminDashboard = () => {
     const { hasPermission, getFirstAllowedTab, currentRole, setCurrentRole, currentWorkspace } = useRole();
@@ -87,6 +89,8 @@ const AdminDashboard = () => {
             'space-waitlist': 'IY Space Waitlist',
             'car-management': 'Manage Cars',
             'car-bookings': 'Car Bookings',
+            'cruise-bookings': 'Cruise Bookings',
+            'cycle-bookings': 'Cycle Bookings',
             'passport': 'IY Passport'
         };
         return titles[activeTab] || 'Admin Panel';
@@ -137,6 +141,8 @@ const AdminDashboard = () => {
             case 'passport': return <AdminPassport />;
             case 'car-management': return <AdminCars />;
             case 'car-bookings': return <AdminCarBookings />;
+            case 'cruise-bookings': return <AdminCruiseBookings />;
+            case 'cycle-bookings': return <AdminCycleBookings />;
             case 'staff':
                 return (
                     <div className="text-center py-20">

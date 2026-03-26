@@ -70,6 +70,8 @@ import Passport from './pages/Passport';
 
 import TransportationHub from './pages/TransportationHub';
 import VehicleDetail from './pages/VehicleDetail';
+import CruisePage from './pages/CruisePage';
+import CyclesPage from './pages/CyclesPage';
 import SplashScreen from './components/SplashScreen';
 
 const Layout = ({ children }) => {
@@ -211,6 +213,8 @@ function App() {
                         <Route path="/transport/book/:id" element={<TransportDetails />} />
                         <Route path="/transportation" element={<TransportationHub />} />
                         <Route path="/transportation/:vehicleId" element={<VehicleDetail />} />
+                        <Route path="/cruise" element={<CruisePage />} />
+                        <Route path="/cycles" element={<CyclesPage />} />
                       </Routes>
                     </Layout>
                   </Router>

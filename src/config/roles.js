@@ -22,7 +22,9 @@ import {
     Award,
     Star,
     Shield,
-    Sparkles
+    Sparkles,
+    Anchor,
+    Bike
 } from 'lucide-react';
 
 export const USER_ROLES = {
@@ -46,7 +48,7 @@ export const WORKSPACES = {
             'bookings', 'crm', 'packages', 'operations',
             'finance', 'hotel-finance', 'influencers',
             'homepage', 'experiences', 'stories', 'media',
-            'hotels', 'hotel-inquiries', 'hotel-reviews', 'hotel-availability', 'hotel-vendors', 'transport-overview', 'transport-vehicles', 'transport-cities', 'transport-bookings', 'transport-content', 'transport-settings', 'car-management', 'car-bookings', 'space-waitlist', 'passport', 'ai-planner-analytics'
+            'hotels', 'hotel-inquiries', 'hotel-reviews', 'hotel-availability', 'hotel-vendors', 'transport-overview', 'transport-vehicles', 'transport-cities', 'transport-bookings', 'transport-content', 'transport-settings', 'car-management', 'car-bookings', 'cruise-bookings', 'cycle-bookings', 'space-waitlist', 'passport', 'ai-planner-analytics'
         ]
     },
     TOUR_MANAGER: {
@@ -98,7 +100,7 @@ export const ROLE_WORKSPACE_MAP = {
 
 // Flattened permissions for legacy checks if needed, but we should rely on Workspace modules
 export const ROLE_PERMISSIONS = {
-    [USER_ROLES.SUPER_ADMIN]: ['overview', 'staff', 'sitemap', 'bookings', 'crm', 'packages', 'operations', 'finance', 'hotel-finance', 'influencers', 'homepage', 'experiences', 'stories', 'media', 'hotels', 'hotel-inquiries', 'hotel-reviews', 'hotel-availability', 'hotel-vendors', 'transport-overview', 'transport-vehicles', 'transport-cities', 'transport-bookings', 'transport-content', 'transport-settings', 'car-management', 'car-bookings', 'space-waitlist', 'passport', 'ai-planner-analytics'],
+    [USER_ROLES.SUPER_ADMIN]: ['overview', 'staff', 'sitemap', 'bookings', 'crm', 'packages', 'operations', 'finance', 'hotel-finance', 'influencers', 'homepage', 'experiences', 'stories', 'media', 'hotels', 'hotel-inquiries', 'hotel-reviews', 'hotel-availability', 'hotel-vendors', 'transport-overview', 'transport-vehicles', 'transport-cities', 'transport-bookings', 'transport-content', 'transport-settings', 'car-management', 'car-bookings', 'cruise-bookings', 'cycle-bookings', 'space-waitlist', 'passport', 'ai-planner-analytics'],
     [USER_ROLES.TOUR_MANAGER]: ['bookings', 'crm', 'packages', 'operations'],
     [USER_ROLES.FINANCE_MANAGER]: ['finance', 'hotel-finance', 'influencers', 'analytics'],
     [USER_ROLES.CONTENT_MANAGER]: ['homepage', 'experiences', 'stories', 'media'],
@@ -152,6 +154,12 @@ export const MENU_ITEMS = [
     // Cars (With Driver)
     { id: 'car-management', label: 'Manage Cars', icon: Car },
     { id: 'car-bookings', label: 'Car Bookings', icon: CalendarCheck },
+
+    // Cruise
+    { id: 'cruise-bookings', label: 'Cruise Bookings', icon: Anchor },
+
+    // Cycles
+    { id: 'cycle-bookings', label: 'Cycle Bookings', icon: Bike },
 
     // Space
     { id: 'space-waitlist', label: 'IY Space', icon: Globe },

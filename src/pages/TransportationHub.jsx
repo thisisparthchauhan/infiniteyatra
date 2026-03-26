@@ -15,6 +15,8 @@ const vehicles = [
   { id: 'flights', name: 'Flights', category: 'Air', tagline: 'Sky is not the limit', price: 'From ₹2,500', accent: '#0ea5e9', imgUrl: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&q=80&w=800', size: 'small' },
   { id: 'jet-planes', name: 'Jet Planes', category: 'Air', tagline: 'Above the ordinary', price: 'On Request', accent: '#f59e0b', imgUrl: 'https://images.unsplash.com/photo-1540962351504-03099e0a754b?auto=format&fit=crop&q=80&w=800', size: 'large' },
   { id: 'cruise', name: 'Cruise', category: 'Sea', tagline: 'Where horizons have no end', price: 'From ₹15,000', accent: '#06b6d4', imgUrl: '/assets/transport/cruise.jpg', size: 'large' },
+  { id: 'river-cruise', name: 'River Cruise', category: 'Experiences', tagline: 'Dine & sail on Ahmedabad\'s most luxurious river cruise', price: 'From ₹1,199', accent: '#1e3a5f', imgUrl: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&q=80', size: 'large', subtitle: 'Sabarmati Riverfront, Ahmedabad', emoji: '🚢', link: '/cruise' },
+  { id: 'cycles-ecycles', name: 'Cycles & E-Cycles', category: 'Experiences', tagline: 'Explore the riverfront on two wheels — regular & electric options', price: 'From ₹50/15min', accent: '#16a34a', imgUrl: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80', size: 'small', subtitle: 'Sabarmati Riverfront, Ahmedabad', emoji: '🚲', link: '/cycles' },
 ];
 
 const filters = [
@@ -22,13 +24,14 @@ const filters = [
   { id: 'Land', label: '🚲 Land', icon: null },
   { id: 'Air', label: '✈️ Air', icon: null },
   { id: 'Sea', label: '🚢 Sea', icon: null },
+  { id: 'Experiences', label: '🎭 Experiences', icon: null },
 ];
 
 const stats = [
   { label: 'Vehicles', value: 500, suffix: '+' },
   { label: 'Cities', value: 50, suffix: '+' },
   { label: 'Happy Travelers', value: 10000, suffix: '+' },
-  { label: 'Vehicle Types', value: 9, suffix: '' },
+  { label: 'Vehicle Types', value: 11, suffix: '' },
 ];
 
 // ─── Animated Canvas Component ───
@@ -223,7 +226,7 @@ const VehicleCard = ({ vehicle, index }) => {
       whileInView={{ opacity: 1, y: 0, scale: 1 }}
       viewport={{ once: true, margin: '-50px' }}
       transition={{ duration: 0.5, delay: index * 0.06 }}
-      onClick={() => navigate(`/transportation/${vehicle.id}`)}
+      onClick={() => navigate(vehicle.link || `/transportation/${vehicle.id}`)}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       className={`relative rounded-3xl overflow-hidden cursor-pointer group ${
