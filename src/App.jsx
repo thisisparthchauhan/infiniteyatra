@@ -16,38 +16,38 @@ import EnquiryPopup from './components/EnquiryPopup';
 import AIChatbot from './components/AIChatbot';
 import MaintenanceBanner from './components/MaintenanceBanner';
 
-// Pages
-import Home from './pages/Home';
-import DestinationsPage from './pages/DestinationsPage';
-import PackageDetail from './pages/PackageDetail';
-import TripPlanner from './pages/TripPlanner';
-import BlogPage from './pages/BlogPage';
-import BlogPost from './pages/BlogPost';
-import Careers from './pages/Careers';
-import Login from './pages/Login';
-import Signup from './pages/Signup';
-import BookingPage from './pages/BookingPage';
-import MyBookings from './pages/MyBookings';
-import MyTrips from './pages/MyTrips';
-import QRLanding from './pages/QRLanding';
-import TripDetails from './pages/TripDetails';
-import SharedPlan from './pages/SharedPlan';
-import ContactUs from './pages/ContactUs';
-import WishlistPage from './pages/WishlistPage';
-import ContactNew from './pages/ContactNew';
-import UserDashboard from './pages/UserDashboard';
-import StoriesPage from './pages/StoriesPage';
-import StoryDetail from './pages/StoryDetail';
-import Profile from './pages/Profile';
-import Hotels from './pages/Hotels';
-import AllHotels from './pages/AllHotels';
-import HotelDetail from './pages/HotelDetail';
-import HotelBookingPage from './pages/HotelBookingPage';
-import HotelBookingSuccess from './pages/HotelBookingSuccess';
-import HotelBookingConfirmation from './pages/HotelBookingConfirmation';
-import HotelPartnerOnboarding from './pages/HotelPartnerOnboarding';
-import MyHotelBookings from './pages/MyHotelBookings';
-import HotelCompare from './pages/HotelCompare';
+// Pages (lazy-loaded for initial bundle performance)
+const Home = lazy(() => import('./pages/Home'));
+const DestinationsPage = lazy(() => import('./pages/DestinationsPage'));
+const PackageDetail = lazy(() => import('./pages/PackageDetail'));
+const TripPlanner = lazy(() => import('./pages/TripPlanner'));
+const BlogPage = lazy(() => import('./pages/BlogPage'));
+const BlogPost = lazy(() => import('./pages/BlogPost'));
+const Careers = lazy(() => import('./pages/Careers'));
+const Login = lazy(() => import('./pages/Login'));
+const Signup = lazy(() => import('./pages/Signup'));
+const BookingPage = lazy(() => import('./pages/BookingPage'));
+const MyBookings = lazy(() => import('./pages/MyBookings'));
+const MyTrips = lazy(() => import('./pages/MyTrips'));
+const QRLanding = lazy(() => import('./pages/QRLanding'));
+const TripDetails = lazy(() => import('./pages/TripDetails'));
+const SharedPlan = lazy(() => import('./pages/SharedPlan'));
+const ContactUs = lazy(() => import('./pages/ContactUs'));
+const WishlistPage = lazy(() => import('./pages/WishlistPage'));
+const ContactNew = lazy(() => import('./pages/ContactNew'));
+const UserDashboard = lazy(() => import('./pages/UserDashboard'));
+const StoriesPage = lazy(() => import('./pages/StoriesPage'));
+const StoryDetail = lazy(() => import('./pages/StoryDetail'));
+const Profile = lazy(() => import('./pages/Profile'));
+const Hotels = lazy(() => import('./pages/Hotels'));
+const AllHotels = lazy(() => import('./pages/AllHotels'));
+const HotelDetail = lazy(() => import('./pages/HotelDetail'));
+const HotelBookingPage = lazy(() => import('./pages/HotelBookingPage'));
+const HotelBookingSuccess = lazy(() => import('./pages/HotelBookingSuccess'));
+const HotelBookingConfirmation = lazy(() => import('./pages/HotelBookingConfirmation'));
+const HotelPartnerOnboarding = lazy(() => import('./pages/HotelPartnerOnboarding'));
+const MyHotelBookings = lazy(() => import('./pages/MyHotelBookings'));
+const HotelCompare = lazy(() => import('./pages/HotelCompare'));
 
 // Vendor Pages
 import VendorLogin from './pages/vendor/VendorLogin';
@@ -114,9 +114,10 @@ function App() {
                 <PackageProvider>
                   <Router>
                     <Layout>
-                      <Routes>
-                        <Route path="/" element={<Home />} />
-                        <Route path="/destinations" element={<DestinationsPage />} />
+                  <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-white">Loading...</div>}>
+                    <Routes>
+                      <Route path="/" element={<Home />} />
+                      <Route path="/destinations" element={<DestinationsPage />} />
                         <Route path="/trip-planner" element={<TripPlanner />} />
                         <Route path="/login" element={<Login />} />
                         <Route path="/signup" element={<Signup />} />
@@ -216,6 +217,7 @@ function App() {
                         <Route path="/cruise" element={<CruisePage />} />
                         <Route path="/cycles" element={<CyclesPage />} />
                       </Routes>
+                    </Suspense>
                     </Layout>
                   </Router>
                 </PackageProvider>

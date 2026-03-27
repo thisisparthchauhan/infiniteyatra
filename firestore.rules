@@ -3,18 +3,20 @@ service cloud.firestore {
   match /databases/{database}/documents {
     // Helper function for Admin access
     function isAdmin() {
-      return request.auth != null && (request.auth.token.role == 'admin' || request.auth.token.email == 'chauhanparth165@gmail.com');
+      return request.auth != null && (
+        request.auth.token.role == 'admin' ||
+        request.auth.token.email == 'chauhanparth165@gmail.com' ||
+        request.auth.token.admin == true
+      );
     }
 
-    match /transport_vehicles/{vehicleId} {
-      // Users can read active and visible vehicles. Admin has full read/write.
-      allow read: if isAdmin() || (resource.data.isActive == true && resource.data.isVisible == true);
+    match /vehicles/{vehicleId} {
+      allow read: if true;
       allow write: if isAdmin();
     }
 
-    match /transport_cities/{cityId} {
-      // Users can read active cities. Admin has full read/write.
-      allow read: if isAdmin() || resource.data.isActive == true;
+    match /vehicle_cities/{cityId} {
+      allow read: if true;
       allow write: if isAdmin();
     }
 

@@ -151,18 +151,24 @@ const Hero = () => {
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 1, delay: 0.2, ease: "easeOut" }}
-                    className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight mb-8 drop-shadow-2xl"
+                    className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight mb-8 drop-shadow-2xl leading-tight"
                 >
-                    Discover Your Next <br />
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-purple-300 inline-block min-w-[280px]">
+                    <span className="block">Discover Your Next</span>
+                    <span className="block text-center" style={{ minHeight: '1.2em' }}>
                         <AnimatePresence mode="wait">
                             <motion.span
                                 key={words[index]}
-                                initial={{ opacity: 0, y: 20 }}
+                                initial={{ opacity: 0, y: 30 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -20 }}
-                                transition={{ duration: 0.5 }}
+                                exit={{ opacity: 0, y: -30 }}
+                                transition={{ duration: 0.4, ease: "easeInOut" }}
                                 className="inline-block"
+                                style={{ 
+                                    background: 'linear-gradient(90deg, #a78bfa, #c084fc, #f0abfc)',
+                                    WebkitBackgroundClip: 'text',
+                                    WebkitTextFillColor: 'transparent',
+                                    backgroundClip: 'text'
+                                }}
                             >
                                 {words[index]}
                             </motion.span>

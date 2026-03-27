@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { UploadCloud, Link as LinkIcon, Loader2, X, Image as ImageIcon } from 'lucide-react';
-import { storage } from '../../../firebase';
+import { getStorageAsync } from '../../../firebase';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 
 /**
@@ -26,6 +26,7 @@ const ImageUploadField = ({ value, onChange, storagePath = 'transport/uploads', 
         setProgress(0);
 
         try {
+            const storage = await getStorageAsync();
             const storageRef = ref(storage, `${storagePath}/${Date.now()}_${file.name}`);
             const uploadTask = uploadBytesResumable(storageRef, file);
 

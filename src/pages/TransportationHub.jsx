@@ -6,7 +6,7 @@ import SEO from '../components/SEO';
 
 // ─── Vehicle Data ───
 const vehicles = [
-  { id: 'cycles', name: 'Cycles', category: 'Land', tagline: 'Pedal through paradise', price: 'From ₹50/hr', accent: '#22c55e', imgUrl: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&q=80&w=800', size: 'small' },
+  { id: 'cycles-ecycles', name: 'Cycles', category: 'Land', tagline: 'Pedal through paradise — regular & electric options', price: 'From ₹50/15min', accent: '#16a34a', imgUrl: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&q=80&w=800', size: 'small', subtitle: 'Sabarmati Riverfront, Ahmedabad', emoji: '🚲', link: '/cycles' },
   { id: 'bikes', name: 'Bikes', category: 'Land', tagline: 'Own the open road', price: 'From ₹300/day', accent: '#f97316', imgUrl: 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=80&w=800', size: 'large' },
   { id: 'cars', name: 'Cars', category: 'Land', tagline: 'Your city. Your terms.', price: 'From ₹1,500/day', accent: '#3b82f6', imgUrl: 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&q=80&w=800', size: 'large' },
   { id: 'traveller', name: 'Traveller', category: 'Land', tagline: 'Move together, arrive together', price: 'From ₹3,000/day', accent: '#eab308', imgUrl: '/assets/transport/red-van-nature.jpg', size: 'small' },
@@ -16,7 +16,6 @@ const vehicles = [
   { id: 'jet-planes', name: 'Jet Planes', category: 'Air', tagline: 'Above the ordinary', price: 'On Request', accent: '#f59e0b', imgUrl: 'https://images.unsplash.com/photo-1540962351504-03099e0a754b?auto=format&fit=crop&q=80&w=800', size: 'large' },
   { id: 'cruise', name: 'Cruise', category: 'Sea', tagline: 'Where horizons have no end', price: 'From ₹15,000', accent: '#06b6d4', imgUrl: '/assets/transport/cruise.jpg', size: 'large' },
   { id: 'river-cruise', name: 'River Cruise', category: 'Experiences', tagline: 'Dine & sail on Ahmedabad\'s most luxurious river cruise', price: 'From ₹1,199', accent: '#1e3a5f', imgUrl: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&q=80', size: 'large', subtitle: 'Sabarmati Riverfront, Ahmedabad', emoji: '🚢', link: '/cruise' },
-  { id: 'cycles-ecycles', name: 'Cycles & E-Cycles', category: 'Experiences', tagline: 'Explore the riverfront on two wheels — regular & electric options', price: 'From ₹50/15min', accent: '#16a34a', imgUrl: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80', size: 'small', subtitle: 'Sabarmati Riverfront, Ahmedabad', emoji: '🚲', link: '/cycles' },
 ];
 
 const filters = [

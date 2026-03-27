@@ -5,7 +5,7 @@ import { getPackageById } from '../data/packages';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { motion, AnimatePresence } from 'framer-motion';
-import { db, storage } from '../firebase';
+import { db, getStorageAsync } from '../firebase';
 import { collection, addDoc, serverTimestamp, query, getDocs, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useAuth } from '../context/AuthContext';
@@ -541,6 +541,7 @@ const BookingPage = () => {
 
     const uploadDocFiles = async (bookingId) => {
         const uploadedDocs = [];
+        const storage = await getStorageAsync();
         for (let tIdx = 0; tIdx < bookingData.travelersList.length; tIdx++) {
             const traveler = bookingData.travelersList[tIdx];
             if (!traveler.docFiles || Object.keys(traveler.docFiles).length === 0) continue;

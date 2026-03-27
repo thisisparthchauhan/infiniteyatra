@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, Bell, Search, ShieldAlert, Home, ChevronDown, User, LogOut, Settings, Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -17,31 +17,32 @@ import CustomerCRM from '../components/admin/dashboard/CustomerCRM';
 import Content from '../components/admin/dashboard/Content';
 import AdminExperiences from '../components/admin/experiences/AdminExperiences';
 import InfluencerROI from '../components/admin/dashboard/InfluencerROI';
-import AdminImageUpload from '../components/AdminImageUpload';
-import AddStaffModal from '../components/admin/AddStaffModal';
-import AdminHomepageManager from '../components/admin/dashboard/AdminHomepageManager';
-import AdminHotelManager from '../components/admin/hotels/AdminHotelManager';
-import AdminHotelFinance from '../components/admin/hotels/AdminHotelFinance';
-import AdminHotelBookings from '../components/admin/hotels/AdminHotelBookings';
-import AdminHotelInquiries from '../components/admin/hotels/AdminHotelInquiries';
-import AdminHotelReviews from '../components/admin/hotels/AdminHotelReviews';
-import AdminAvailabilityManager from '../components/admin/hotels/AdminAvailabilityManager';
-import AdminVendorManager from '../components/admin/hotels/AdminVendorManager';
-import LiveAnalytics from '../components/admin/analytics/LiveAnalytics';
+const AdminImageUpload = lazy(() => import('../components/AdminImageUpload'));
+const AddStaffModal = lazy(() => import('../components/admin/AddStaffModal'));
+const AdminHomepageManager = lazy(() => import('../components/admin/dashboard/AdminHomepageManager'));
+const AdminHotelManager = lazy(() => import('../components/admin/hotels/AdminHotelManager'));
+const AdminHotelFinance = lazy(() => import('../components/admin/hotels/AdminHotelFinance'));
+const AdminHotelBookings = lazy(() => import('../components/admin/hotels/AdminHotelBookings'));
+const AdminHotelInquiries = lazy(() => import('../components/admin/hotels/AdminHotelInquiries'));
+const AdminHotelReviews = lazy(() => import('../components/admin/hotels/AdminHotelReviews'));
+const AdminAvailabilityManager = lazy(() => import('../components/admin/hotels/AdminAvailabilityManager'));
+const AdminVendorManager = lazy(() => import('../components/admin/hotels/AdminVendorManager'));
+const LiveAnalytics = lazy(() => import('../components/admin/analytics/LiveAnalytics'));
 
-import AdminTransportCities from '../components/admin/transport/AdminTransportCities';
-import AdminTransportVehicles from '../components/admin/transport/AdminTransportVehicles';
-import AdminTransportBookings from '../components/admin/transport/AdminTransportBookings';
-import AdminTransportContent from '../components/admin/transport/AdminTransportContent';
-import AdminTransportSettings from '../components/admin/transport/AdminTransportSettings';
-import AdminTransportOverview from '../components/admin/transport/AdminTransportOverview';
-import AdminSitemap from '../components/admin/AdminSitemap';
-import AdminSpaceWaitlist from '../components/admin/space/AdminSpaceWaitlist';
-import AdminPassport from '../components/admin/AdminPassport';
-import AdminCars from '../components/admin/transport/AdminCars';
-import AdminCarBookings from '../components/admin/transport/AdminCarBookings';
-import AdminCruiseBookings from '../components/admin/cruise/AdminCruiseBookings';
-import AdminCycleBookings from '../components/admin/cruise/AdminCycleBookings';
+const AdminTransportCities = lazy(() => import('../components/admin/transport/AdminTransportCities'));
+const AdminTransportVehicles = lazy(() => import('../components/admin/transport/AdminTransportVehicles'));
+const AdminTransportBookings = lazy(() => import('../components/admin/transport/AdminTransportBookings'));
+const AdminTransportContent = lazy(() => import('../components/admin/transport/AdminTransportContent'));
+const AdminTransportSettings = lazy(() => import('../components/admin/transport/AdminTransportSettings'));
+const AdminTransportOverview = lazy(() => import('../components/admin/transport/AdminTransportOverview'));
+const AdminSitemap = lazy(() => import('../components/admin/AdminSitemap'));
+const AdminSpaceWaitlist = lazy(() => import('../components/admin/space/AdminSpaceWaitlist'));
+const AdminPassport = lazy(() => import('../components/admin/AdminPassport'));
+const AdminCars = lazy(() => import('../components/admin/transport/AdminCars'));
+const AdminCarBookings = lazy(() => import('../components/admin/transport/AdminCarBookings'));
+const AdminCruiseBookings = lazy(() => import('../components/admin/cruise/AdminCruiseBookings'));
+const AdminCycleBookings = lazy(() => import('../components/admin/cruise/AdminCycleBookings'));
+
 
 const AdminDashboard = () => {
     const { hasPermission, getFirstAllowedTab, currentRole, setCurrentRole, currentWorkspace } = useRole();
@@ -260,7 +261,9 @@ const AdminDashboard = () => {
                                 transition={{ duration: 0.3, ease: "easeOut" }}
                                 className="max-w-7xl mx-auto h-full"
                             >
-                                {renderContent()}
+                                <Suspense fallback={<div className="p-8 text-white text-center">Loading admin content...</div>}>
+                                    {renderContent()}
+                                </Suspense>
                             </motion.div>
                         </AnimatePresence>
                     </main>
@@ -269,7 +272,11 @@ const AdminDashboard = () => {
 
             {/* Modals */}
             <AnimatePresence>
-                {showStaffModal && <AddStaffModal onClose={() => setShowStaffModal(false)} onSuccess={() => setShowStaffModal(false)} />}
+                {showStaffModal && (
+                    <Suspense fallback={<div className="p-6 text-white text-center">Loading staff modal...</div>}>
+                        <AddStaffModal onClose={() => setShowStaffModal(false)} onSuccess={() => setShowStaffModal(false)} />
+                    </Suspense>
+                )}
             </AnimatePresence>
         </div>
     );

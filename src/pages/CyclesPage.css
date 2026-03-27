@@ -1,115 +1,166 @@
 /* ═══════════ Cycles Page Styles ═══════════ */
 
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap');
 
-/* Green mesh background */
-@keyframes greenMesh {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+/* Font utilities */
+.font-cycles-display {
+    font-family: 'Bebas Neue', 'Arial Narrow', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
 }
 
+.font-cycles-sans {
+    font-family: 'DM Sans', sans-serif;
+}
+
+/* Base background */
 .cycles-bg {
-    background: linear-gradient(-45deg, #0a0f0a, #0a1a0f, #0a0f0a, #0d1117, #0a0f0a);
-    background-size: 400% 400%;
-    animation: greenMesh 25s ease infinite;
+    background: #050a06; /* Very dark green-tinted black */
+    color: #f0f8f0;
 }
 
-/* Glass card for cycles */
-.cycle-glass-card {
-    background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+/* Green particle dots in hero */
+.hero-particles {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.hero-particle {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    background: #22c55e;
+    border-radius: 50%;
+    opacity: 0.4;
+    box-shadow: 0 0 10px 2px rgba(34, 197, 94, 0.4);
+    animation: floatParticle 10s infinite ease-in-out;
+}
+
+@keyframes floatParticle {
+    0%, 100% { transform: translateY(0) translateX(0); opacity: 0.2; }
+    50% { transform: translateY(-40px) translateX(20px); opacity: 0.6; }
+}
+
+/* City Selector Pill */
+.city-selector-hero {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(34,197,94,0.4);
+    border-radius: 50px;
+    padding: 14px 24px;
+    margin-top: 32px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: all 0.3s ease;
+}
+
+.city-selector-hero:hover {
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(34,197,94,0.6);
+}
+
+.city-select-dropdown {
+    background: transparent;
+    border: none;
+    color: #22c55e;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    outline: none;
+    appearance: none;
+    padding-right: 18px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2322c55e' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right center;
+}
+
+.city-select-dropdown option {
+    background: #0a0f0a;
+    color: #fff;
+}
+
+/* Cycle Cards */
+.cycle-card {
+    background: #0b1a0f;
+    border: 1px solid rgba(34,197,94,0.15);
     border-radius: 20px;
-    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    overflow: hidden;
+    transition: all 0.3s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
-.cycle-glass-card:hover {
-    background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(34, 197, 94, 0.3);
-    box-shadow: 0 0 30px rgba(34, 197, 94, 0.08);
-    transform: translateY(-4px);
+.cycle-card:hover {
+    border-color: rgba(34,197,94,0.4);
+    transform: translateY(-6px);
+    box-shadow: 0 20px 60px rgba(34,197,94,0.1);
 }
 
-/* Electric badge glow */
-.electric-badge {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(34, 197, 94, 0.2));
-    border: 1px solid rgba(59, 130, 246, 0.4);
-    color: #60a5fa;
-    padding: 4px 12px;
-    border-radius: 9999px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    box-shadow: 0 0 12px rgba(59, 130, 246, 0.2);
+.cycle-card .card-image {
+    width: 100%;
+    aspect-ratio: 4/3;
+    object-fit: cover;
+    background: #111a12;
 }
 
-/* Placeholder image box */
-.cycle-img-placeholder {
-    height: 200px;
-    background: #111;
-    border-radius: 16px;
+.cycle-card .placeholder-image {
+    width: 100%;
+    aspect-ratio: 4/3;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.04);
-    overflow: hidden;
+    background: #0d1a0e;
+    color: #22c55e;
 }
 
-.cycle-img-placeholder img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+/* Why Choose Reason Cards */
+.reason-card {
+    background: rgba(34,197,94,0.04);
+    border: 1px solid rgba(34,197,94,0.12);
     border-radius: 16px;
+    padding: 30px;
+    transition: all 0.3s ease;
 }
 
-.placeholder-icon {
-    font-size: 2.5rem;
-}
-
-.placeholder-label {
-    font-size: 1rem;
-    font-weight: 700;
-    color: #e2e8f0;
-}
-
-.placeholder-sub {
-    font-size: 0.75rem;
-    color: #64748b;
-}
-
-/* Info card with green left border */
-.info-card-green {
-    border-left: 3px solid #22c55e;
-    background: rgba(255, 255, 255, 0.02);
-    border-radius: 0 16px 16px 0;
-    padding: 20px 24px;
-    transition: all 0.3s;
-}
-
-.info-card-green:hover {
-    background: rgba(255, 255, 255, 0.04);
-    border-left-color: #16a34a;
+.reason-card:hover {
+    background: rgba(34,197,94,0.08);
+    border-color: rgba(34,197,94,0.3);
+    transform: translateY(-4px);
 }
 
 /* Step timeline */
-.step-circle {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #22c55e, #16a34a);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 800;
-    font-size: 1rem;
-    color: #000;
-    flex-shrink: 0;
+.step-card {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-left: 3px solid #22c55e;
+    border-radius: 0 16px 16px 0;
+    padding: 24px;
+    transition: all 0.3s ease;
+    height: 100%;
 }
 
-/* Booking modal (reuse cruise pattern) */
+.step-card:hover {
+    background: rgba(255,255,255,0.04);
+    border-left-color: #4ade80;
+}
+
+.step-number {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 48px;
+    font-weight: 700;
+    line-height: 1;
+    color: #22c55e;
+    margin-bottom: 12px;
+}
+
+/* Booking modal */
 .cycles-modal-overlay {
     position: fixed;
     inset: 0;
@@ -124,73 +175,44 @@
 }
 
 .cycles-modal-content {
-    background: #0d1117;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: #0a0f0a;
+    border: 1px solid rgba(34,197,94,0.2);
     border-radius: 24px;
     width: 100%;
-    max-width: 560px;
+    max-width: 600px;
     max-height: 90vh;
     overflow-y: auto;
-    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.8);
 }
 
-/* Pricing table */
-.cycles-pricing-table {
+/* Detail drawer/modal */
+.detail-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.detail-modal-content {
+    background: #050a06;
+    border: 1px solid rgba(34,197,94,0.2);
+    border-radius: 24px;
     width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-}
-
-.cycles-pricing-table thead th {
-    background: rgba(34, 197, 94, 0.15);
-    color: #22c55e;
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    padding: 14px 20px;
-    text-align: left;
-}
-
-.cycles-pricing-table thead th:first-child {
-    border-radius: 12px 0 0 0;
-}
-
-.cycles-pricing-table thead th:last-child {
-    border-radius: 0 12px 0 0;
-}
-
-.cycles-pricing-table tbody td {
-    padding: 14px 20px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-    color: #e2e8f0;
-    font-size: 0.9rem;
-}
-
-.cycles-pricing-table tbody tr:last-child td {
-    border-bottom: none;
-}
-
-.cycles-pricing-table tbody tr:hover {
-    background: rgba(255, 255, 255, 0.02);
-}
-
-.cycles-pricing-table .electric-row {
-    border-left: 3px solid #3b82f6;
-}
-
-/* Font utility */
-.font-cycles-display {
-    font-family: 'Playfair Display', 'Georgia', serif;
+    max-width: 800px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.8);
 }
 
 @media (max-width: 768px) {
-    .cycles-modal-content {
+    .cycles-modal-content, .detail-modal-content {
         max-height: 95vh;
         border-radius: 16px;
-    }
-
-    .cycle-img-placeholder {
-        height: 160px;
     }
 }

@@ -26,9 +26,17 @@ const AdminHotelInquiries = () => {
     const [confirmModal, setConfirmModal] = useState({ open: false, inquiry: null, mode: 'confirm' });
 
     useEffect(() => {
-        const q = query(collection(db, 'hotel_inquiries'), orderBy('createdAt', 'desc'));
+        const q = query(collection(db, 'hotel_inquiries'));
         const unsub = onSnapshot(q, (snapshot) => {
             const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+            
+            // Client-side sorting to bypass Firebase INTERNAL ASSERTION FAILED crashes
+            data.sort((a, b) => {
+                const timeA = a.createdAt?.toMillis ? a.createdAt.toMillis() : (a.createdAt ? new Date(a.createdAt).getTime() : 0);
+                const timeB = b.createdAt?.toMillis ? b.createdAt.toMillis() : (b.createdAt ? new Date(b.createdAt).getTime() : 0);
+                return timeB - timeA;
+            });
+            
             setInquiries(data);
             setLoading(false);
         }, (err) => {
@@ -42,7 +50,7 @@ const AdminHotelInquiries = () => {
         try {
             await updateDoc(doc(db, 'hotel_inquiries', id), {
                 status,
-                updatedAt: serverTimestamp()
+                updatedAt: new Date().toISOString()
             });
 
             // Award passport credits on confirmation

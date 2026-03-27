@@ -316,7 +316,7 @@ const Navbar = () => {
 
 
                                                 {/* Admin Link inside Menu */}
-                                                {currentUser.isAdmin && (
+                                                {(currentUser.isAdmin || currentUser.email === 'chauhanparth165@gmail.com') && (
                                                     <Link
                                                         to="/admin"
                                                         className="flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
@@ -529,7 +529,7 @@ const Navbar = () => {
                                     </div>
                                 </Link>
 
-                                {currentUser.isAdmin && (
+                                {(currentUser.isAdmin || currentUser.email === 'chauhanparth165@gmail.com') && (
                                     <Link
                                         to="/admin"
                                         onClick={() => setIsMobileMenuOpen(false)}

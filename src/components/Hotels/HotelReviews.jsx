@@ -4,7 +4,7 @@ import { Star, MessageCircle, ThumbsUp, User, ShieldCheck, Send, ChevronDown, X,
 import { collection, addDoc, getDocs, query, where, orderBy, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { useAuth } from '../../context/AuthContext';
-import { useToast } from '../common/Toast';
+import { useToast } from '../../context/ToastContext';
 
 // ─── Review Submission Modal ───
 export const HotelReviewModal = ({ isOpen, onClose, hotelId, hotelName }) => {
@@ -115,7 +115,7 @@ export const HotelReviewModal = ({ isOpen, onClose, hotelId, hotelName }) => {
 const HotelReviews = ({ hotelId, hotelName }) => {
     const { user } = useAuth();
     const navigate = useNavigate();
-    const { showToast } = useToast();
+    const { addToast } = useToast();
     const [reviews, setReviews] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
@@ -156,11 +156,8 @@ const HotelReviews = ({ hotelId, hotelName }) => {
         if (user) {
             setShowModal(true);
         } else {
-            showToast({
-                type: 'warning',
-                message: 'Please log in to write a review.',
-                action: { label: 'Log In →', onClick: () => navigate('/login') }
-            });
+            addToast('Please log in to write a review.', 'info');
+            navigate('/login');
         }
     };
 

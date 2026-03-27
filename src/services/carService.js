@@ -12,7 +12,7 @@ import {
     serverTimestamp,
     onSnapshot
 } from 'firebase/firestore';
-import { db, storage } from '../firebase';
+import { db, getStorageAsync } from '../firebase';
 import { ref, deleteObject, listAll } from 'firebase/storage';
 
 // Collections
@@ -102,6 +102,7 @@ export const deleteCar = async (id) => {
     try {
         // Try to delete storage photos
         try {
+            const storage = await getStorageAsync();
             const storageRef = ref(storage, `iy_cars/${id}`);
             const list = await listAll(storageRef);
             await Promise.all(list.items.map(item => deleteObject(item)));

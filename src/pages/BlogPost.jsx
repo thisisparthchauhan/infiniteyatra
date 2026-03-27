@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { getBlogById } from '../data/blogs';
 import { getPackageById } from '../data/packages';
 import { Calendar, User, ArrowLeft, Clock, MapPin, ArrowRight, List, ShieldCheck } from 'lucide-react';
+import DOMPurify from 'dompurify';
 import SEO from '../components/SEO';
 
 const BlogPost = () => {
@@ -170,7 +171,7 @@ const BlogPost = () => {
                             prose-li:text-slate-700 prose-li:text-lg prose-li:leading-relaxed prose-li:mb-2
                             prose-ul:my-6 prose-ol:my-6
                             prose-blockquote:border-l-4 prose-blockquote:border-blue-500 prose-blockquote:pl-6 prose-blockquote:italic prose-blockquote:text-slate-600 prose-blockquote:text-xl prose-blockquote:bg-slate-50 prose-blockquote:py-2 prose-blockquote:pr-4 prose-blockquote:rounded-r-lg"
-                        dangerouslySetInnerHTML={{ __html: blog.content }}
+                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(blog.content) }}
                     />
 
                     {/* Author Bio Box */}

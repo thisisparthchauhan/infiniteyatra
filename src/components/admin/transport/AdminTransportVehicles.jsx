@@ -1,77 +1,104 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Edit2, Trash2, Car, X, Image as ImageIcon, Eye, EyeOff, Search, MapPin, Link as LinkIcon, Loader2, CheckCircle, Upload } from 'lucide-react';
+import { Plus, Edit2, Trash2, Car, X, Image as ImageIcon, Search, CheckCircle, Upload, Star } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { getVehicles, addVehicle, updateVehicle, deleteVehicle, getCities } from '../../../services/transportService';
-
-const AVAILABLE_FEATURES = ['AC', 'GPS', 'Music System', 'Child Seat', 'First Aid Kit', 'Insurance Included'];
+import { listenToVehicles, listenToVehicleCities, addVehicle, updateVehicle, deleteVehicle, addVehicleCity } from '../../../services/vehicleService';
 
 const AdminTransportVehicles = () => {
     const [vehicles, setVehicles] = useState([]);
     const [cities, setCities] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isCityModalOpen, setIsCityModalOpen] = useState(false);
     const [editMode, setEditMode] = useState(false);
-    const [imageUrl, setImageUrl] = useState('');
+    
+    // Filters
+    const [searchQuery, setSearchQuery] = useState('');
+    const [filterType, setFilterType] = useState('all');
+    const [filterCity, setFilterCity] = useState('all');
+    const [filterStatus, setFilterStatus] = useState('all');
+
+    const [formData, setFormData] = useState(getInitialFormData());
+    const [newCityName, setNewCityName] = useState('');
     const [uploading, setUploading] = useState(false);
 
     const CLOUD_NAME = "infiniteyatra";
     const UPLOAD_PRESET = "infinite_unsigned";
 
-    // Filters
-    const [searchQuery, setSearchQuery] = useState('');
-    const [filterType, setFilterType] = useState('all');
-    const [filterCity, setFilterCity] = useState('all');
-
-    const [formData, setFormData] = useState(getInitialFormData());
-
     function getInitialFormData() {
         return {
             id: null,
             name: '',
-            type: 'car',
-            city: '',
-            state: '',
-            country: 'India',
-            pricePerDay: '',
-            pricePerHour: '',
-            pricePerKm: '',
-            seats: '',
+            slug: '',
+            type: 'cycle',
+            subtype: '',
+            tagline: '',
             description: '',
-            features: [],
-            images: [],
-            isActive: true,
-            isVisible: true,
-            driverIncluded: false,
-            fuelIncluded: false,
+            mainImage: '',
+            galleryImages: [],
+            videoUrls: [],
+            cities: [],
+            isAvailable: true,
+            isFeatured: false,
+            featuredOrder: 0,
+            specs: {
+                seatingCapacity: '',
+                engineCC: '',
+                batteryRange: '',
+                maxLoad: '',
+                ageRestriction: '',
+                features: [],
+                isElectric: false,
+            },
+            pricing: {
+                per15min: '',
+                per30min: '',
+                perHour: '',
+                per4hour: '',
+                perDay: '',
+                perWeek: '',
+                perMonth: '',
+                basePrice: '',
+                priceUnit: 'per vehicle',
+                currency: 'INR',
+                gstIncluded: true,
+                gstPercent: '',
+                notes: '',
+            },
+            operatingHours: '',
+            location: '',
+            vendorNotes: ''
         };
     }
 
     useEffect(() => {
-        fetchData();
-    }, []);
+        let mounted = true;
+        setLoading(true);
 
-    const fetchData = async () => {
-        try {
-            setLoading(true);
-            const [vehiclesData, citiesData] = await Promise.all([
-                getVehicles().catch(() => []),
-                getCities().catch(() => [])
-            ]);
-            setVehicles(vehiclesData);
-            setCities(citiesData);
-        } catch (error) {
-            console.error('Error fetching data:', error);
-            setVehicles([]);
-            setCities([]);
-        } finally {
+        const unsubscribeVehicles = listenToVehicles({}, (data) => {
+            if(mounted) setVehicles(data);
             setLoading(false);
-        }
-    }
+        });
+
+        const unsubscribeCities = listenToVehicleCities((data) => {
+            if(mounted) setCities(data);
+        });
+
+        return () => {
+            mounted = false;
+            unsubscribeVehicles();
+            unsubscribeCities();
+        };
+    }, []);
 
     const handleOpenModal = (vehicle = null) => {
         if (vehicle) {
-            setFormData(vehicle);
+            setFormData({
+                ...getInitialFormData(),
+                ...vehicle,
+                specs: { ...getInitialFormData().specs, ...(vehicle.specs || {}) },
+                pricing: { ...getInitialFormData().pricing, ...(vehicle.pricing || {}) }
+            });
             setEditMode(true);
         } else {
             setFormData(getInitialFormData());
@@ -83,97 +110,147 @@ const AdminTransportVehicles = () => {
     const handleCloseModal = () => setIsModalOpen(false);
 
     const handleFeatureToggle = (feature) => {
-        const currentFeatures = [...formData.features];
+        const specs = { ...formData.specs };
+        const currentFeatures = [...(specs.features || [])];
         if (currentFeatures.includes(feature)) {
-            setFormData({ ...formData, features: currentFeatures.filter(f => f !== feature) });
+            specs.features = currentFeatures.filter(f => f !== feature);
         } else {
-            setFormData({ ...formData, features: [...currentFeatures, feature] });
+            specs.features = [...currentFeatures, feature];
+        }
+        setFormData({ ...formData, specs });
+    };
+
+    const handleFeatureInputKeyDown = (e) => {
+        if (e.key === 'Enter' && e.target.value.trim()) {
+            e.preventDefault();
+            handleFeatureToggle(e.target.value.trim());
+            e.target.value = '';
         }
     };
 
-    const handleAddImageUrl = () => {
-        const url = imageUrl.trim();
-        if (!url) return;
-        if (!url.startsWith('http')) {
-            alert('Please enter a valid URL starting with http:// or https://');
-            return;
+    const handleGalleryInputKeyDown = (e) => {
+        if (e.key === 'Enter' && e.target.value.trim()) {
+            e.preventDefault();
+            setFormData({ ...formData, galleryImages: [...formData.galleryImages, e.target.value.trim()] });
+            e.target.value = '';
         }
-        setFormData(prev => ({ ...prev, images: [...prev.images, url] }));
-        setImageUrl('');
     };
 
-    const removeImage = (indexToRemove) => {
-        setFormData(prev => ({
-            ...prev,
-            images: prev.images.filter((_, idx) => idx !== indexToRemove)
-        }));
+    const handleVideoInputKeyDown = (e) => {
+        if (e.key === 'Enter' && e.target.value.trim()) {
+            e.preventDefault();
+            setFormData({ ...formData, videoUrls: [...formData.videoUrls, e.target.value.trim()] });
+            e.target.value = '';
+        }
     };
 
-    const handleFileUpload = async (e) => {
+    const handleCityToggle = (cityName) => {
+        const currentCities = [...(formData.cities || [])];
+        if (currentCities.includes(cityName)) {
+            setFormData({ ...formData, cities: currentCities.filter(c => c !== cityName) });
+        } else {
+            setFormData({ ...formData, cities: [...currentCities, cityName] });
+        }
+    };
+
+    const uploadImage = async (file) => {
+        if (file.size > 5 * 1024 * 1024) throw new Error("File size max 5MB");
+        const uploadData = new FormData();
+        uploadData.append("file", file);
+        uploadData.append("upload_preset", UPLOAD_PRESET);
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: "POST", body: uploadData });
+        if (!res.ok) throw new Error("Upload failed");
+        const data = await res.json();
+        return data.secure_url;
+    };
+
+    const handleMainImageUpload = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
-
-        if (file.size > 5 * 1024 * 1024) {
-            toast.error("File size too large (Max 5MB)");
-            return;
-        }
-
         setUploading(true);
         try {
-            const uploadData = new FormData();
-            uploadData.append("file", file);
-            uploadData.append("upload_preset", UPLOAD_PRESET);
-
-            const response = await fetch(
-                `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
-                { method: "POST", body: uploadData }
-            );
-
-            if (!response.ok) throw new Error("Upload failed");
-
-            const data = await response.json();
-            const url = data.secure_url;
-
-            setFormData(prev => ({ ...prev, images: [...prev.images, url] }));
-            toast.success("Image uploaded successfully!");
+            const url = await uploadImage(file);
+            setFormData(prev => ({ ...prev, mainImage: url }));
+            toast.success("Image uploaded!");
         } catch (error) {
-            console.error("Error uploading image:", error);
-            toast.error("Upload failed: " + error.message);
+            toast.error(error.message);
         } finally {
             setUploading(false);
             e.target.value = null;
         }
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const parseNumber = (val) => {
+        if (val === '' || val === null || val === undefined) return null;
+        const num = Number(val);
+        return isNaN(num) ? null : num;
+    };
+
+    const handleSubmit = async (e, forceDraft = false) => {
+        if (e) e.preventDefault();
+        
+        // Manual Validation since HTML5 validation bubbles often hide in modals
+        if (!formData.name?.trim()) {
+            toast.error("Vehicle Name is required");
+            return;
+        }
+        if (!formData.type) {
+            toast.error("Vehicle Type is required");
+            return;
+        }
+        if (!formData.subtype) {
+            toast.error("Sub-type is required");
+            return;
+        }
+
         try {
             const submitData = {
                 ...formData,
-                pricePerDay: Number(formData.pricePerDay),
-                pricePerHour: Number(formData.pricePerHour || 0),
-                pricePerKm: Number(formData.pricePerKm || 0),
-                seats: Number(formData.seats)
+                slug: formData.slug || formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, ''),
+                featuredOrder: Number(formData.featuredOrder) || 0,
+                isAvailable: forceDraft ? false : formData.isAvailable,
+                specs: {
+                    ...formData.specs,
+                    seatingCapacity: parseNumber(formData.specs.seatingCapacity),
+                    engineCC: parseNumber(formData.specs.engineCC),
+                },
+                pricing: {
+                    ...formData.pricing,
+                    per15min: parseNumber(formData.pricing.per15min),
+                    per30min: parseNumber(formData.pricing.per30min),
+                    perHour: parseNumber(formData.pricing.perHour),
+                    per4hour: parseNumber(formData.pricing.per4hour),
+                    perDay: parseNumber(formData.pricing.perDay),
+                    perWeek: parseNumber(formData.pricing.perWeek),
+                    perMonth: parseNumber(formData.pricing.perMonth),
+                    basePrice: parseNumber(formData.pricing.basePrice),
+                    gstPercent: parseNumber(formData.pricing.gstPercent),
+                }
             };
 
-            // Remove GPS/First Aid Kit text duplication logic if fuel included toggle changes
-            // (Driver/Fuel are already explicit booleans on the document + specific icons in UI, 
-            // but we can also push them to features array for redundancy if user wants)
-            const activeFeatures = new Set(submitData.features);
-            if (submitData.driverIncluded) activeFeatures.add("Driver Included");
-            if (submitData.fuelIncluded) activeFeatures.add("Fuel Included");
-            submitData.features = Array.from(activeFeatures);
+            console.log("Submitting Vehicle Data:", submitData);
 
             if (editMode) {
-                await updateVehicle(submitData.id, submitData);
+                if (!submitData.id) {
+                    throw new Error("Missing Document ID! The form lost the reference to the vehicle.");
+                }
+                
+                // Firestore SDK crashes with 'indexOf' if any field value or ID is strictly null/undefined in a bad way
+                // Clean the payload
+                const cleanData = JSON.parse(JSON.stringify(submitData));
+                delete cleanData.id; // never store the doc ID explicitly inside itself
+
+                await updateVehicle(submitData.id, cleanData);
             } else {
-                await addVehicle(submitData);
+                const cleanData = JSON.parse(JSON.stringify(submitData));
+                delete cleanData.id;
+                await addVehicle(cleanData);
             }
             handleCloseModal();
-            fetchData();
             toast.success(editMode ? 'Vehicle updated successfully!' : 'Vehicle added successfully!');
         } catch (error) {
             console.error('Error saving vehicle:', error);
+            alert(`Javascript Validation Error: ${error.message || 'Unknown error'}`);
             toast.error('Failed to save vehicle');
         }
     };
@@ -182,22 +259,48 @@ const AdminTransportVehicles = () => {
         if (window.confirm('Are you sure you want to delete this vehicle?')) {
             try {
                 await deleteVehicle(id);
-                fetchData();
+                toast.success('Vehicle deleted');
             } catch (error) {
-                console.error('Error deleting vehicle:', error);
                 alert('Failed to delete vehicle');
             }
         }
     };
 
-    const toggleVehicleStatus = async (id, currentStatus, field) => {
+    const toggleAvailability = async (id, currentStatus) => {
         try {
-            await updateVehicle(id, { [field]: !currentStatus });
-            // Optimistic UI update
-            setVehicles(prev => prev.map(v => v.id === id ? { ...v, [field]: !currentStatus } : v));
+            await updateVehicle(id, { isAvailable: !currentStatus });
         } catch (error) {
-            console.error(`Error toggling ${field}:`, error);
-            alert(`Failed to update ${field}`);
+            alert(`Failed to update availability`);
+        }
+    };
+
+    const toggleFeatured = async (id, currentStatus, currentOrder) => {
+        try {
+            if (!currentStatus) {
+                const order = prompt("Enter featured order (1, 2, 3...):", currentOrder || 1);
+                if (order === null) return;
+                await updateVehicle(id, { isFeatured: true, featuredOrder: Number(order) });
+            } else {
+                await updateVehicle(id, { isFeatured: false });
+            }
+        } catch (error) {
+            alert(`Failed to update featured status`);
+        }
+    };
+
+    const addNewCity = async () => {
+        if (!newCityName.trim()) return;
+        try {
+            await addVehicleCity({
+                name: newCityName.trim(),
+                id: newCityName.trim().toLowerCase().replace(/\s+/g, '-'),
+                isActive: true
+            });
+            setNewCityName('');
+            setIsCityModalOpen(false);
+            toast.success('City added!');
+        } catch (e) {
+            toast.error('Failed to add city');
         }
     };
 
@@ -205,497 +308,456 @@ const AdminTransportVehicles = () => {
     const filteredVehicles = vehicles.filter(v => {
         const matchesSearch = v.name.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesType = filterType === 'all' || v.type === filterType;
-        const matchesCity = filterCity === 'all' || v.city === filterCity;
-        return matchesSearch && matchesType && matchesCity;
+        const matchesCity = filterCity === 'all' || (v.cities && v.cities.includes(filterCity));
+        const matchesStatus = filterStatus === 'all' || (filterStatus === 'live' ? v.isAvailable : !v.isAvailable);
+        return matchesSearch && matchesType && matchesCity && matchesStatus;
     });
 
     if (loading) {
-        return (
-            <div className="flex justify-center items-center h-[50vh]">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-            </div>
-        );
+        return <div className="flex justify-center items-center h-[50vh]"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div></div>;
     }
 
-    // Show empty state when collection is genuinely empty (not just filtered out)
-    const isCollectionEmpty = vehicles.length === 0;
-
     return (
-        <div className="p-6">
+        <div className="p-6 pb-24">
+            {/* Header row */}
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4">
                 <div>
                     <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-                        <Car className="text-blue-500" />
-                        Manage Vehicles
+                        <Car className="text-green-500" />
+                        Transportation → Vehicles
                     </h2>
-                    <p className="text-slate-400">Add or edit vehicles available for rent/booking.</p>
+                    <p className="text-slate-400 mt-1">Manage all infinite yatra vehicle types</p>
                 </div>
+                <button
+                    onClick={() => handleOpenModal()}
+                    className="bg-green-600 hover:bg-green-500 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 font-bold transition-colors shadow-lg shadow-green-500/20"
+                >
+                    <Plus size={18} /> Add New Vehicle
+                </button>
+            </div>
 
-                <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
-                    {/* Search */}
-                    <div className="relative flex-1 lg:w-48">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
-                        <input
-                            type="text" placeholder="Search vehicles..."
-                            className="w-full bg-slate-900 border border-slate-700 rounded-lg pl-9 pr-4 py-2 text-white text-sm focus:border-blue-500 focus:outline-none"
-                            value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-                    </div>
-                    {/* Type Filter */}
-                    <select
-                        className="bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white text-sm focus:border-blue-500 focus:outline-none"
-                        value={filterType} onChange={(e) => setFilterType(e.target.value)}
-                    >
-                        <option value="all">All Types</option>
-                        <option value="cycle">Cycle</option>
-                        <option value="ebicycle">E-Bicycle</option>
-                        <option value="bike">Bike</option>
-                        <option value="car">Car</option>
-                        <option value="traveller">Traveller</option>
-                    </select>
-                    {/* City Filter */}
-                    <select
-                        className="bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white text-sm focus:border-blue-500 focus:outline-none"
-                        value={filterCity} onChange={(e) => setFilterCity(e.target.value)}
-                    >
-                        <option value="all">All Cities</option>
-                        {cities.filter(c => c.isActive).map(c => (
-                            <option key={c.id} value={c.cityName}>{c.cityName}</option>
-                        ))}
-                    </select>
+            {/* Filter bar */}
+            <div className="flex flex-wrap items-center gap-3 mb-6 bg-slate-900/50 p-4 rounded-xl border border-slate-800">
+                <select className="bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:border-green-500 outline-none" value={filterType} onChange={e => setFilterType(e.target.value)}>
+                    <option value="all">All Types</option>
+                    <option value="cycle">Cycle</option>
+                    <option value="bike">Bike</option>
+                    <option value="car">Car</option>
+                    <option value="tempo_traveller">Tempo Traveller</option>
+                    <option value="bus">Bus</option>
+                    <option value="other">Other</option>
+                </select>
+                
+                <select className="bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:border-green-500 outline-none" value={filterCity} onChange={e => setFilterCity(e.target.value)}>
+                    <option value="all">All Cities</option>
+                    {cities.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+                </select>
 
-                    <button
-                        onClick={() => handleOpenModal()}
-                        className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium transition-all shadow-lg"
-                    >
-                        <Plus size={18} /> Add New Vehicle
-                    </button>
+                <select className="bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:border-green-500 outline-none" value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
+                    <option value="all">Status: All</option>
+                    <option value="live">Live</option>
+                    <option value="hidden">Hidden</option>
+                </select>
+
+                <div className="relative flex-1 min-w-[200px]">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
+                    <input type="text" placeholder="Search by name..." className="w-full bg-slate-900 border border-slate-700 rounded-lg pl-9 pr-4 py-2.5 text-white text-sm focus:border-green-500 outline-none" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
                 </div>
             </div>
 
-            {/* Empty collection state */}
-            {isCollectionEmpty && (
-                <div className="bg-[#111] border border-white/10 rounded-2xl p-16 text-center">
-                    <Car size={56} className="mx-auto mb-4 text-slate-700" />
-                    <h3 className="text-xl font-bold text-slate-300 mb-2">No vehicles added yet</h3>
-                    <p className="text-slate-500 mb-6">Start building your fleet by adding your first vehicle listing.</p>
-                    <button
-                        onClick={() => handleOpenModal()}
-                        className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white px-6 py-3 rounded-xl flex items-center gap-2 font-bold transition-all shadow-lg mx-auto"
-                    >
-                        <Plus size={18} /> Add New Vehicle
-                    </button>
-                </div>
-            )}
+            {/* Table */}
+            <div className="bg-[#111] border border-slate-800 rounded-2xl overflow-x-auto shadow-xl">
+                <table className="w-full text-left text-sm text-slate-300 min-w-[800px]">
+                    <thead className="bg-[#1a1a1a] border-b border-slate-800 text-slate-400">
+                        <tr>
+                            <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider">Image</th>
+                            <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider">Name</th>
+                            <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider">Type</th>
+                            <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider">City</th>
+                            <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider">Pricing</th>
+                            <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider">Featured</th>
+                            <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider">Status</th>
+                            <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800/50">
+                        {filteredVehicles.map(vehicle => {
+                            let lowestPrice = 'N/A';
+                            if (vehicle.pricing?.per15min) lowestPrice = `₹${vehicle.pricing.per15min} / 15min`;
+                            else if (vehicle.pricing?.basePrice) lowestPrice = `₹${vehicle.pricing.basePrice} base`;
+                            else if (vehicle.pricing?.perHour) lowestPrice = `₹${vehicle.pricing.perHour} / hr`;
 
-            <div className="bg-[#111] border border-white/10 rounded-2xl overflow-hidden shadow-xl">
-                {/* Desktop Table View */}
-                <div className="hidden lg:block overflow-x-auto">
-                    <table className="w-full text-left text-sm text-slate-300">
-                        <thead className="bg-[#1a1a1a] border-b border-white/10 text-slate-400">
-                            <tr>
-                                <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Image</th>
-                                <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Name</th>
-                                <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Type</th>
-                                <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">City</th>
-                                <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Price/Day</th>
-                                <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs whitespace-nowrap">Status (Active/Hidden)</th>
-                                <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Bookings</th>
-                                <th className="px-6 py-4 text-right font-semibold uppercase tracking-wider text-xs">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-white/5">
-                            {filteredVehicles.map(vehicle => (
+                            return (
                                 <tr key={vehicle.id} className="hover:bg-white/5 transition-colors">
                                     <td className="px-6 py-4">
-                                        {vehicle.images?.[0] ? (
-                                            <div className="w-12 h-12 rounded-lg overflow-hidden bg-white/5 border border-white/10">
-                                                <img src={vehicle.images[0]} alt={vehicle.name} className="w-full h-full object-cover" />
+                                        {vehicle.mainImage ? (
+                                            <div className="w-12 h-12 rounded-full overflow-hidden bg-slate-800 border-2 border-slate-700">
+                                                <img src={vehicle.mainImage} alt={vehicle.name} className="w-full h-full object-cover" />
                                             </div>
                                         ) : (
-                                            <div className="w-12 h-12 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-500">
+                                            <div className="w-12 h-12 rounded-full bg-slate-800 border-2 border-slate-700 flex items-center justify-center text-slate-500">
                                                 <ImageIcon size={20} />
                                             </div>
                                         )}
                                     </td>
-                                    <td className="px-6 py-4 font-bold text-white">
-                                        {vehicle.name}
-                                        <div className="text-xs font-normal text-slate-500 mt-0.5">{vehicle.seats} Seats</div>
+                                    <td className="px-6 py-4">
+                                        <div className="font-bold text-white text-base">{vehicle.name}</div>
+                                        {vehicle.subtype && <span className="inline-block mt-1 px-2 py-0.5 bg-slate-800 text-[10px] text-slate-400 rounded-md uppercase tracking-wider border border-slate-700">{vehicle.subtype}</span>}
                                     </td>
-                                    <td className="px-6 py-4 capitalize font-medium">{vehicle.type}</td>
-                                    <td className="px-6 py-4 font-medium text-slate-400">
-                                        <div className="flex items-center gap-1">
-                                            <MapPin size={14} className="text-blue-400" />
-                                            {vehicle.city}
-                                        </div>
+                                    <td className="px-6 py-4 capitalize">
+                                        <span className="px-2.5 py-1 bg-blue-500/10 text-blue-400 rounded-lg text-xs font-semibold border border-blue-500/20">{vehicle.type.replace('_',' ')}</span>
                                     </td>
-                                    <td className="px-6 py-4 font-bold text-white">
-                                        ₹{vehicle.pricePerDay}
+                                    <td className="px-6 py-4 text-xs text-slate-400 max-w-[150px] truncate">
+                                        {(vehicle.cities || []).join(', ') || 'None'}
+                                    </td>
+                                    <td className="px-6 py-4 font-medium text-white">{lowestPrice}</td>
+                                    <td className="px-6 py-4">
+                                        <button onClick={() => toggleFeatured(vehicle.id, vehicle.isFeatured, vehicle.featuredOrder)} className={`p-1.5 rounded-full transition-colors ${vehicle.isFeatured ? 'text-yellow-400 bg-yellow-400/10' : 'text-slate-600 hover:text-yellow-400 hover:bg-slate-800'}`}>
+                                            <Star size={18} fill={vehicle.isFeatured ? "currentColor" : "none"} />
+                                        </button>
+                                        {vehicle.isFeatured && <span className="text-xs text-slate-500 ml-2">#{vehicle.featuredOrder}</span>}
                                     </td>
                                     <td className="px-6 py-4">
-                                        <div className="flex items-center gap-3">
-                                            {/* Active Toggle Switch */}
-                                            <button
-                                                onClick={() => toggleVehicleStatus(vehicle.id, vehicle.isActive, 'isActive')}
-                                                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${vehicle.isActive ? 'bg-green-500' : 'bg-slate-600'}`}
-                                                title={vehicle.isActive ? "Active" : "Inactive"}
-                                            >
-                                                <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${vehicle.isActive ? 'translate-x-5' : 'translate-x-1'}`} />
-                                            </button>
-
-                                            {/* Visible Toggle Icon */}
-                                            <button
-                                                onClick={() => toggleVehicleStatus(vehicle.id, vehicle.isVisible, 'isVisible')}
-                                                className={`p-1.5 rounded-md transition-colors ${vehicle.isVisible ? 'text-blue-400 bg-blue-500/10' : 'text-slate-500 bg-slate-800'}`}
-                                                title={vehicle.isVisible ? "Visible to users" : "Hidden from users"}
-                                            >
-                                                {vehicle.isVisible ? <Eye size={16} /> : <EyeOff size={16} />}
-                                            </button>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 font-medium text-slate-400">
-                                        {vehicle.totalBookings || 0}
+                                        <button onClick={() => toggleAvailability(vehicle.id, vehicle.isAvailable)} className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${vehicle.isAvailable ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
+                                            {vehicle.isAvailable ? 'Live' : 'Hidden'}
+                                        </button>
                                     </td>
                                     <td className="px-6 py-4 text-right">
                                         <div className="flex items-center justify-end gap-2">
-                                            <button onClick={() => handleOpenModal(vehicle)} className="text-blue-400 hover:text-white bg-blue-500/10 hover:bg-blue-500/30 p-2 rounded-lg transition-colors"><Edit2 size={16} /></button>
-                                            <button onClick={() => handleDelete(vehicle.id)} className="text-red-400 hover:text-white bg-red-500/10 hover:bg-red-500/30 p-2 rounded-lg transition-colors"><Trash2 size={16} /></button>
+                                            <button onClick={() => handleOpenModal(vehicle)} className="text-blue-400 hover:text-blue-300 bg-blue-500/10 p-2 rounded-lg transition-colors"><Edit2 size={16} /></button>
+                                            <button onClick={() => handleDelete(vehicle.id)} className="text-red-400 hover:text-red-300 bg-red-500/10 p-2 rounded-lg transition-colors"><Trash2 size={16} /></button>
                                         </div>
                                     </td>
                                 </tr>
-                            ))}
-                            {filteredVehicles.length === 0 && (
-                                <tr>
-                                    <td colSpan="8" className="px-6 py-12 text-center text-slate-500 text-base">No vehicles match your search.</td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-
-                {/* Mobile Card View */}
-                <div className="lg:hidden divide-y divide-white/10">
-                    {filteredVehicles.map(vehicle => (
-                        <div key={vehicle.id} className="p-4 space-y-4 hover:bg-white/5 transition-colors">
-                            <div className="flex gap-4">
-                                <div className="w-16 h-16 shrink-0 rounded-lg overflow-hidden bg-white/5 border border-white/10">
-                                    {vehicle.images?.[0] ? (
-                                        <img src={vehicle.images[0]} alt={vehicle.name} className="w-full h-full object-cover" />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-slate-500"><ImageIcon size={20} /></div>
-                                    )}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex justify-between items-start">
-                                        <div>
-                                            <h4 className="font-bold text-white text-base truncate pr-2">{vehicle.name}</h4>
-                                            <div className="text-xs text-slate-400 capitalize mt-0.5">{vehicle.type} • {vehicle.seats} Seats</div>
-                                        </div>
-                                        <div className="text-right shrink-0">
-                                            <div className="font-bold text-white">₹{vehicle.pricePerDay}</div>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-1 mt-2 text-xs text-slate-400">
-                                        <MapPin size={12} className="text-blue-400" /> {vehicle.city}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center justify-between pt-3 border-t border-white/5">
-                                <div className="flex items-center gap-4">
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] text-slate-500 uppercase mb-1">Status</span>
-                                        <div className="flex gap-2">
-                                            <button
-                                                onClick={() => toggleVehicleStatus(vehicle.id, vehicle.isActive, 'isActive')}
-                                                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${vehicle.isActive ? 'bg-green-500' : 'bg-slate-600'}`}
-                                            >
-                                                <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${vehicle.isActive ? 'translate-x-5' : 'translate-x-1'}`} />
-                                            </button>
-                                            <button
-                                                onClick={() => toggleVehicleStatus(vehicle.id, vehicle.isVisible, 'isVisible')}
-                                                className={`p-1 rounded-md transition-colors ${vehicle.isVisible ? 'text-blue-400 bg-blue-500/10' : 'text-slate-500 bg-slate-800'}`}
-                                            >
-                                                {vehicle.isVisible ? <Eye size={14} /> : <EyeOff size={14} />}
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] text-slate-500 uppercase mb-1">Bookings</span>
-                                        <span className="text-sm font-bold text-white">{vehicle.totalBookings || 0}</span>
-                                    </div>
-                                </div>
-                                <div className="flex gap-2">
-                                    <button onClick={() => handleOpenModal(vehicle)} className="text-blue-400 hover:text-white bg-blue-500/10 p-2.5 rounded-xl transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"><Edit2 size={16} /></button>
-                                    <button onClick={() => handleDelete(vehicle.id)} className="text-red-400 hover:text-white bg-red-500/10 p-2.5 rounded-xl transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"><Trash2 size={16} /></button>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                    {filteredVehicles.length === 0 && (
-                        <div className="p-8 text-center text-slate-500 text-sm">No vehicles match your search.</div>
-                    )}
-                </div>
+                            )
+                        })}
+                        {filteredVehicles.length === 0 && (
+                            <tr><td colSpan="8" className="px-6 py-12 text-center text-slate-500">No vehicles found.</td></tr>
+                        )}
+                    </tbody>
+                </table>
             </div>
 
-            {/* Modal */}
+            {/* Form Modal */}
             <AnimatePresence>
                 {isModalOpen && (
-                    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center md:p-4">
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="bg-[#0a0a0a] md:border border-slate-800 w-full h-full md:h-auto md:max-h-[90vh] md:max-w-4xl md:rounded-3xl overflow-hidden shadow-2xl flex flex-col"
-                        >
-                            <div className="flex justify-between items-center px-8 py-5 border-b border-slate-800 bg-[#111] shrink-0">
-                                <h3 className="text-2xl font-bold text-white">{editMode ? 'Edit Vehicle' : 'Add New Vehicle'}</h3>
+                    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+                        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} className="bg-[#0a0a0a] border border-slate-800 w-full max-w-5xl h-[90vh] rounded-2xl flex flex-col shadow-2xl">
+                            <div className="flex justify-between items-center px-6 py-4 border-b border-slate-800 bg-[#111] shrink-0 rounded-t-2xl">
+                                <h3 className="text-xl font-bold text-white">{editMode ? 'Edit Vehicle' : 'Add New Vehicle'}</h3>
                                 <button onClick={handleCloseModal} className="text-slate-400 hover:text-white p-1 rounded-full hover:bg-slate-800 transition-colors"><X size={24} /></button>
                             </div>
 
-                            <div className="p-8 overflow-y-auto custom-scrollbar flex-1">
-                                <form id="vehicleForm" onSubmit={handleSubmit} className="space-y-8 flex flex-col gap-2">
+                            <div className="p-6 overflow-y-auto custom-scrollbar flex-1 bg-[#0a0f0a]">
+                                <form id="vehicleForm" onSubmit={e => handleSubmit(e, false)} className="space-y-10 max-w-4xl mx-auto">
 
-                                    {/* SECTION 1: Bascis */}
-                                    <div>
-                                        <h4 className="text-sm font-bold text-blue-400 uppercase tracking-wider mb-4">Basic Information</h4>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                                            <div className="lg:col-span-2">
-                                                <label className="block text-sm font-medium text-slate-300 mb-1.5">Vehicle Name</label>
-                                                <input type="text" required placeholder="e.g. Royal Enfield Classic 350"
-                                                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white text-base focus:outline-none focus:border-blue-500 transition-colors min-h-[44px]"
-                                                    value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                                />
+                                    {/* Section A: Basic Info */}
+                                    <section className="bg-[#111] p-6 rounded-2xl border border-slate-800">
+                                        <h4 className="text-sm font-bold text-green-400 uppercase tracking-wider mb-6 pb-2 border-b border-slate-800">Section A — Basic Info</h4>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+                                            <div>
+                                                <label className="block text-sm font-medium text-slate-400 mb-1.5">Vehicle Name *</label>
+                                                <input type="text" required className="w-full bg-[#1a1a1a] border border-slate-700 rounded-xl px-4 py-2.5 text-white outline-none focus:border-green-500" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
                                             </div>
                                             <div>
-                                                <label className="block text-sm font-medium text-slate-300 mb-1.5">Vehicle Type</label>
-                                                <select required
-                                                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white text-base focus:outline-none focus:border-blue-500 transition-colors min-h-[44px]"
-                                                    value={formData.type} onChange={e => setFormData({ ...formData, type: e.target.value })}
-                                                >
-                                                    <option value="cycle">Cycle / E-Bicycle</option>
-                                                    <option value="bike">Bike / Scooter</option>
+                                                <label className="block text-sm font-medium text-slate-400 mb-1.5">Slug (auto-generated if empty)</label>
+                                                <input type="text" className="w-full bg-[#1a1a1a] border border-slate-700 rounded-xl px-4 py-2.5 text-white outline-none focus:border-green-500" value={formData.slug} onChange={e => setFormData({ ...formData, slug: e.target.value })} />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-slate-400 mb-1.5">Vehicle Type *</label>
+                                                <select required className="w-full bg-[#1a1a1a] border border-slate-700 rounded-xl px-4 py-2.5 text-white outline-none focus:border-green-500" value={formData.type} onChange={e => setFormData({ ...formData, type: e.target.value, subtype: '' })}>
+                                                    <option value="cycle">Cycle</option>
+                                                    <option value="bike">Bike</option>
                                                     <option value="car">Car</option>
-                                                    <option value="traveller">Traveller / Van</option>
+                                                    <option value="tempo_traveller">Tempo Traveller</option>
+                                                    <option value="bus">Bus</option>
+                                                    <option value="other">Other</option>
                                                 </select>
                                             </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-slate-400 mb-1.5">Sub-type *</label>
+                                                <select required className="w-full bg-[#1a1a1a] border border-slate-700 rounded-xl px-4 py-2.5 text-white outline-none focus:border-green-500" value={formData.subtype} onChange={e => setFormData({ ...formData, subtype: e.target.value })}>
+                                                    <option value="">Select subtype</option>
+                                                    {formData.type === 'cycle' && <><option value="paddle">Paddle</option><option value="ev">Electric (EV)</option></>}
+                                                    {formData.type === 'bike' && <><option value="petrol">Petrol</option><option value="ev">Electric</option></>}
+                                                    {formData.type === 'car' && <><option value="hatchback">Hatchback</option><option value="sedan">Sedan</option><option value="suv">SUV</option><option value="luxury">Luxury</option><option value="van">Van</option></>}
+                                                    {formData.type === 'tempo_traveller' && <><option value="mini">Mini Tempo</option><option value="full">Full Tempo</option></>}
+                                                    {formData.type === 'bus' && <><option value="mini">Mini Bus</option><option value="full">Full Bus</option></>}
+                                                    {formData.type === 'other' && <option value="other">Other</option>}
+                                                </select>
+                                            </div>
+                                            <div className="md:col-span-2">
+                                                <label className="block text-sm font-medium text-slate-400 mb-1.5">Tagline (max 60 chars)</label>
+                                                <input type="text" maxLength={60} className="w-full bg-[#1a1a1a] border border-slate-700 rounded-xl px-4 py-2.5 text-white outline-none focus:border-green-500" value={formData.tagline} onChange={e => setFormData({ ...formData, tagline: e.target.value })} />
+                                            </div>
+                                            <div className="md:col-span-2">
+                                                <label className="block text-sm font-medium text-slate-400 mb-1.5">Description</label>
+                                                <textarea rows="3" className="w-full bg-[#1a1a1a] border border-slate-700 rounded-xl px-4 py-2.5 text-white outline-none focus:border-green-500 resize-none" value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })}></textarea>
+                                            </div>
                                         </div>
-                                    </div>
+                                    </section>
 
-                                    {/* SECTION 2: Location */}
-                                    <div>
-                                        <h4 className="text-sm font-bold text-blue-400 uppercase tracking-wider mb-4">Location Details</h4>
+                                    {/* Section B: Availability */}
+                                    <section className="bg-[#111] p-6 rounded-2xl border border-slate-800">
+                                        <h4 className="text-sm font-bold text-green-400 uppercase tracking-wider mb-6 pb-2 border-b border-slate-800">Section B — Availability & Cities</h4>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                            <div className="md:col-span-2 bg-[#1a1a1a] p-4 rounded-xl border border-slate-700">
+                                                <div className="flex justify-between items-center mb-3">
+                                                    <label className="block text-sm font-medium text-slate-400">Available In Cities *</label>
+                                                    <button type="button" onClick={() => setIsCityModalOpen(true)} className="text-xs text-green-400 hover:text-green-300 bg-green-500/10 px-2 py-1 rounded">
+                                                        + Add New City
+                                                    </button>
+                                                </div>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {cities.map(c => (
+                                                        <button type="button" key={c.id} onClick={() => handleCityToggle(c.name)} className={`px-3 py-1.5 rounded-lg text-sm transition-colors border ${formData.cities.includes(c.name) ? 'bg-green-600 border-green-500 text-white' : 'bg-[#222] border-slate-700 text-slate-400 hover:bg-[#333]'}`}>
+                                                            {c.name}
+                                                        </button>
+                                                    ))}
+                                                    {cities.length === 0 && <span className="text-sm text-slate-500">No cities configured.</span>}
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-slate-400 mb-1.5">Operating Hours</label>
+                                                <input type="text" placeholder="e.g. 6 AM – 11 PM" className="w-full bg-[#1a1a1a] border border-slate-700 rounded-xl px-4 py-2.5 text-white outline-none focus:border-green-500" value={formData.operatingHours} onChange={e => setFormData({ ...formData, operatingHours: e.target.value })} />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-slate-400 mb-1.5">Location/Station</label>
+                                                <input type="text" placeholder="e.g. Sardar Bridge" className="w-full bg-[#1a1a1a] border border-slate-700 rounded-xl px-4 py-2.5 text-white outline-none focus:border-green-500" value={formData.location} onChange={e => setFormData({ ...formData, location: e.target.value })} />
+                                            </div>
+                                            
+                                            <div className="md:col-span-2 flex flex-wrap gap-8 p-4 bg-slate-900/50 rounded-xl border border-slate-800">
+                                                <label className="flex items-center gap-3 cursor-pointer">
+                                                    <input type="checkbox" className="w-5 h-5 rounded border-slate-600 bg-slate-800 text-green-500 focus:ring-green-500" checked={formData.isAvailable} onChange={e => setFormData({ ...formData, isAvailable: e.target.checked })} />
+                                                    <span className="text-sm text-white font-medium">Is Available</span>
+                                                </label>
+                                                <label className="flex items-center gap-3 cursor-pointer">
+                                                    <input type="checkbox" className="w-5 h-5 rounded border-slate-600 bg-slate-800 text-yellow-500 focus:ring-yellow-500" checked={formData.isFeatured} onChange={e => setFormData({ ...formData, isFeatured: e.target.checked })} />
+                                                    <span className="text-sm text-white font-medium">Is Featured</span>
+                                                </label>
+                                                {formData.isFeatured && (
+                                                    <label className="flex items-center gap-3">
+                                                        <span className="text-sm text-slate-400 font-medium">Order:</span>
+                                                        <input type="number" className="w-16 bg-[#1a1a1a] border border-slate-700 rounded px-2 py-1 text-white text-sm outline-none focus:border-yellow-500" value={formData.featuredOrder} onChange={e => setFormData({ ...formData, featuredOrder: e.target.value })} />
+                                                    </label>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </section>
+
+                                    {/* Section C: Pricing */}
+                                    <section className="bg-[#111] p-6 rounded-2xl border border-slate-800">
+                                        <h4 className="text-sm font-bold text-green-400 uppercase tracking-wider mb-6 pb-2 border-b border-slate-800">Section C — Pricing</h4>
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                                             <div>
-                                                <label className="block text-sm font-medium text-slate-300 mb-1.5">City</label>
-                                                <input type="text" required placeholder="e.g. Manali"
-                                                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white text-base focus:outline-none focus:border-blue-500 transition-colors min-h-[44px]"
-                                                    value={formData.city}
-                                                    onChange={e => setFormData({ ...formData, city: e.target.value })}
-                                                />
+                                                <label className="block text-sm font-medium text-slate-400 mb-1.5">Pricing Unit *</label>
+                                                <select className="w-full bg-[#1a1a1a] border border-slate-700 rounded-xl px-4 py-2.5 text-white outline-none focus:border-green-500" value={formData.pricing.priceUnit} onChange={e => setFormData({ ...formData, pricing: { ...formData.pricing, priceUnit: e.target.value } })}>
+                                                    <option value="per person">Per Person</option>
+                                                    <option value="per vehicle">Per Vehicle</option>
+                                                    <option value="per km">Per Km</option>
+                                                    <option value="per trip">Per Trip</option>
+                                                </select>
                                             </div>
                                             <div>
-                                                <label className="block text-sm font-medium text-slate-300 mb-1.5">State</label>
-                                                <input type="text" required placeholder="e.g. Himachal Pradesh"
-                                                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white text-base focus:outline-none focus:border-blue-500 transition-colors min-h-[44px]"
-                                                    value={formData.state}
-                                                    onChange={e => setFormData({ ...formData, state: e.target.value })}
-                                                />
+                                                <label className="block text-sm font-medium text-slate-400 mb-1.5">Currency</label>
+                                                <input type="text" readOnly value="INR" className="w-full bg-[#1a1a1a] border border-slate-700 rounded-xl px-4 py-2.5 text-slate-500 focus:outline-none cursor-not-allowed" />
                                             </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-slate-300 mb-1.5">Country</label>
-                                                <input type="text" required placeholder="India"
-                                                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white text-base focus:outline-none focus:border-blue-500 transition-colors min-h-[44px]"
-                                                    value={formData.country}
-                                                    onChange={e => setFormData({ ...formData, country: e.target.value })}
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* SECTION 3: Specs & Pricing */}
-                                    <div>
-                                        <h4 className="text-sm font-bold text-blue-400 uppercase tracking-wider mb-4">Specs & Pricing</h4>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-                                            <div>
-                                                <label className="block text-sm font-medium text-slate-300 mb-1.5">Seats / Capacity</label>
-                                                <input type="number" required min="1"
-                                                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white text-base focus:outline-none focus:border-blue-500 transition-colors min-h-[44px]"
-                                                    value={formData.seats} onChange={e => setFormData({ ...formData, seats: e.target.value })}
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-slate-300 mb-1.5">Price Per Km (₹)</label>
-                                                <input type="number" min="0" placeholder="e.g. 12"
-                                                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white text-base focus:outline-none focus:border-blue-500 transition-colors min-h-[44px]"
-                                                    value={formData.pricePerKm} onChange={e => setFormData({ ...formData, pricePerKm: e.target.value })}
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-slate-300 mb-1.5">Price Per Day (₹)</label>
-                                                <input type="number" required min="1"
-                                                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white text-base focus:outline-none focus:border-blue-500 transition-colors min-h-[44px]"
-                                                    value={formData.pricePerDay} onChange={e => setFormData({ ...formData, pricePerDay: e.target.value })}
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-slate-300 mb-1.5">Price Per Hour (₹, Optional)</label>
-                                                <input type="number" min="0" placeholder="0"
-                                                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white text-base focus:outline-none focus:border-blue-500 transition-colors min-h-[44px]"
-                                                    value={formData.pricePerHour} onChange={e => setFormData({ ...formData, pricePerHour: e.target.value })}
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* SECTION 4: Description */}
-                                    <div>
-                                        <h4 className="text-sm font-bold text-blue-400 uppercase tracking-wider mb-4">Description</h4>
-                                        <textarea rows="4" required placeholder="Describe the vehicle..."
-                                            className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white text-base focus:outline-none focus:border-blue-500 transition-colors resize-none min-h-[44px]"
-                                            value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })}
-                                        ></textarea>
-                                    </div>
-
-                                    {/* SECTION 5: Form Features Checkboxes */}
-                                    <div>
-                                        <h4 className="text-sm font-bold text-blue-400 uppercase tracking-wider mb-4">Features</h4>
-                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-5 border border-slate-800 bg-slate-900/50 rounded-2xl">
-                                            {/* Primary booleans */}
-                                            <label className="flex items-center gap-3 cursor-pointer group">
-                                                <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${formData.driverIncluded ? 'bg-purple-500 border-purple-500' : 'bg-transparent border-slate-500 group-hover:border-purple-400'}`}>
-                                                    {formData.driverIncluded && <CheckCircle size={14} className="text-white" />}
-                                                </div>
-                                                <input type="checkbox" checked={formData.driverIncluded} onChange={e => setFormData({ ...formData, driverIncluded: e.target.checked })} className="hidden" />
-                                                <span className="text-sm text-slate-300 font-medium">Driver Included</span>
-                                            </label>
-
-                                            <label className="flex items-center gap-3 cursor-pointer group">
-                                                <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${formData.fuelIncluded ? 'bg-purple-500 border-purple-500' : 'bg-transparent border-slate-500 group-hover:border-purple-400'}`}>
-                                                    {formData.fuelIncluded && <CheckCircle size={14} className="text-white" />}
-                                                </div>
-                                                <input type="checkbox" checked={formData.fuelIncluded} onChange={e => setFormData({ ...formData, fuelIncluded: e.target.checked })} className="hidden" />
-                                                <span className="text-sm text-slate-300 font-medium">Fuel Included</span>
-                                            </label>
-
-                                            {AVAILABLE_FEATURES.map(feature => (
-                                                <label key={feature} className="flex items-center gap-3 cursor-pointer group">
-                                                    <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${formData.features.includes(feature) ? 'bg-blue-500 border-blue-500' : 'bg-transparent border-slate-500 group-hover:border-blue-400'}`}>
-                                                        {formData.features.includes(feature) && <CheckCircle size={14} className="text-white" />}
-                                                    </div>
-                                                    <input type="checkbox" checked={formData.features.includes(feature)} onChange={() => handleFeatureToggle(feature)} className="hidden" />
-                                                    <span className="text-sm text-slate-300 font-medium">{feature}</span>
-                                                </label>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    {/* SECTION 6: Images (Paste URL) */}
-                                    <div>
-                                        <h4 className="text-sm font-bold text-blue-400 uppercase tracking-wider mb-4 flex items-center justify-between">
-                                            <span>Images</span>
-                                            <span className="text-xs font-normal text-slate-500 bg-slate-800 px-2 py-1 rounded">Upload or Paste URL</span>
-                                        </h4>
-                                        <div className="bg-slate-900 border border-slate-700 rounded-2xl p-5">
+                                            <div className="md:col-span-3"><div className="h-px bg-slate-800 w-full my-2"></div></div>
                                             
-                                            {/* File Upload Option */}
-                                            <div className="mb-4">
-                                                <input type="file" id="vehicle-image-upload" className="hidden" accept="image/*" onChange={handleFileUpload} disabled={uploading} />
-                                                <label htmlFor="vehicle-image-upload" className="flex items-center justify-center w-full h-24 px-4 transition bg-slate-800 border-2 border-slate-600 border-dashed rounded-xl appearance-none cursor-pointer hover:border-blue-500 hover:bg-slate-800/80 focus:outline-none">
-                                                    <div className="flex flex-col items-center space-y-2">
-                                                        {uploading ? (
-                                                            <Loader2 className="w-6 h-6 text-blue-500 animate-spin" />
-                                                        ) : (
-                                                            <Upload className="w-6 h-6 text-slate-400" />
-                                                        )}
-                                                        <span className="font-medium text-slate-400">
-                                                            {uploading ? 'Uploading image...' : 'Click to upload from device (Max 5MB)'}
-                                                        </span>
-                                                    </div>
+                                            {/* Time based */}
+                                            {['per15min', 'per30min', 'perHour', 'per4hour', 'perDay', 'perWeek', 'perMonth'].map((field) => (
+                                                <div key={field}>
+                                                    <label className="block text-sm font-medium text-slate-400 mb-1.5 capitalize">{field.replace('per', 'Per ')}</label>
+                                                    <input type="number" placeholder="₹" className="w-full bg-[#1a1a1a] border border-slate-700 rounded-xl px-4 py-2.5 text-white outline-none focus:border-green-500" value={formData.pricing[field]} onChange={e => setFormData({ ...formData, pricing: { ...formData.pricing, [field]: e.target.value } })} />
+                                                </div>
+                                            ))}
+                                            
+                                            <div className="md:col-span-3"><div className="h-px bg-slate-800 w-full my-2"></div></div>
+                                            <div className="md:col-span-1">
+                                                <label className="block text-sm font-medium text-slate-400 mb-1.5">Base Price (Fixed)</label>
+                                                <input type="number" placeholder="₹" className="w-full bg-[#1a1a1a] border border-slate-700 rounded-xl px-4 py-2.5 text-white outline-none focus:border-green-500" value={formData.pricing.basePrice} onChange={e => setFormData({ ...formData, pricing: { ...formData.pricing, basePrice: e.target.value } })} />
+                                            </div>
+
+                                            <div className="md:col-span-2 flex items-center gap-6 p-4 bg-slate-900/50 rounded-xl border border-slate-800">
+                                                <label className="flex items-center gap-3 cursor-pointer">
+                                                    <input type="checkbox" className="w-5 h-5 rounded border-slate-600 bg-slate-800 text-green-500 focus:ring-green-500" checked={formData.pricing.gstIncluded} onChange={e => setFormData({ ...formData, pricing: { ...formData.pricing, gstIncluded: e.target.checked } })} />
+                                                    <span className="text-sm text-white font-medium">GST Included?</span>
+                                                </label>
+                                                {!formData.pricing.gstIncluded && (
+                                                    <label className="flex items-center gap-3">
+                                                        <span className="text-sm text-slate-400 font-medium">GST % :</span>
+                                                        <input type="number" className="w-20 bg-[#1a1a1a] border border-slate-700 rounded px-3 py-1.5 text-white text-sm outline-none focus:border-green-500" value={formData.pricing.gstPercent} onChange={e => setFormData({ ...formData, pricing: { ...formData.pricing, gstPercent: e.target.value } })} />
+                                                    </label>
+                                                )}
+                                            </div>
+
+                                            <div className="md:col-span-3">
+                                                <label className="block text-sm font-medium text-slate-400 mb-1.5">Pricing Notes</label>
+                                                <textarea rows="2" placeholder="e.g. First 15 min ₹50, then ₹50 per 30min" className="w-full bg-[#1a1a1a] border border-slate-700 rounded-xl px-4 py-2.5 text-white outline-none focus:border-green-500 resize-none" value={formData.pricing.notes} onChange={e => setFormData({ ...formData, pricing: { ...formData.pricing, notes: e.target.value } })}></textarea>
+                                            </div>
+
+                                            {/* Preview Box */}
+                                            <div className="md:col-span-3 mt-2 bg-[#0a0f0a] border border-green-500/20 p-4 rounded-xl text-green-400 text-sm font-mono whitespace-pre-line leading-relaxed">
+                                                PRICING PREVIEW<br/>
+                                                {formData.pricing.per15min && <>₹{formData.pricing.per15min} / 15 min<br/></>}
+                                                {formData.pricing.per30min && <>₹{formData.pricing.per30min} / 30 min<br/></>}
+                                                {formData.pricing.basePrice && <>Base: ₹{formData.pricing.basePrice}<br/></>}
+                                                {formData.pricing.gstIncluded ? 'Incl. GST' : `+ ${formData.pricing.gstPercent || 0}% GST`}<br/>
+                                                {formData.pricing.notes && <span className="text-slate-400">{formData.pricing.notes}</span>}
+                                            </div>
+                                        </div>
+                                    </section>
+
+                                    {/* Section D: Specs */}
+                                    <section className="bg-[#111] p-6 rounded-2xl border border-slate-800">
+                                        <h4 className="text-sm font-bold text-green-400 uppercase tracking-wider mb-6 pb-2 border-b border-slate-800">Section D — Specs & Limits</h4>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                            <div className="md:col-span-2">
+                                                <label className="flex items-center gap-3 cursor-pointer">
+                                                    <input type="checkbox" className="w-5 h-5 rounded border-slate-600 bg-slate-800 text-blue-500 focus:ring-blue-500" checked={formData.specs.isElectric} onChange={e => setFormData({ ...formData, specs: { ...formData.specs, isElectric: e.target.checked } })} />
+                                                    <span className="text-sm text-white font-medium">Is Electric (EV)</span>
                                                 </label>
                                             </div>
-
-                                            <div className="flex items-center gap-4 mb-4">
-                                                <div className="h-px bg-slate-700 flex-1"></div>
-                                                <span className="text-xs font-bold text-slate-500 uppercase">OR PASTE URL</span>
-                                                <div className="h-px bg-slate-700 flex-1"></div>
-                                            </div>
-
-                                            {/* Paste URL Option */}
-                                            <div className="flex gap-3">
-                                                <div className="relative flex-1">
-                                                    <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
-                                                    <input
-                                                        type="url"
-                                                        placeholder="Paste image URL (https://...)"
-                                                        className="w-full bg-slate-800 border border-slate-600 rounded-xl pl-10 pr-4 py-3 text-white text-sm focus:outline-none focus:border-blue-500 transition-colors"
-                                                        value={imageUrl}
-                                                        onChange={e => setImageUrl(e.target.value)}
-                                                        onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddImageUrl(); } }}
-                                                    />
+                                            {formData.specs.isElectric && (
+                                                <div>
+                                                    <label className="block text-sm font-medium text-slate-400 mb-1.5">Battery Range</label>
+                                                    <input type="text" placeholder="e.g. 40km" className="w-full bg-[#1a1a1a] border border-slate-700 rounded-xl px-4 py-2.5 text-white outline-none focus:border-green-500" value={formData.specs.batteryRange} onChange={e => setFormData({ ...formData, specs: { ...formData.specs, batteryRange: e.target.value } })} />
                                                 </div>
-                                                <button
-                                                    type="button"
-                                                    onClick={handleAddImageUrl}
-                                                    className="bg-blue-600 hover:bg-blue-500 text-white px-5 py-3 rounded-xl font-bold text-sm transition-colors whitespace-nowrap"
-                                                >
-                                                    + Add
-                                                </button>
+                                            )}
+                                            
+                                            {(['car', 'bus', 'tempo_traveller'].includes(formData.type) || formData.type === 'other') && (
+                                                <div>
+                                                    <label className="block text-sm font-medium text-slate-400 mb-1.5">Seating Capacity</label>
+                                                    <input type="number" className="w-full bg-[#1a1a1a] border border-slate-700 rounded-xl px-4 py-2.5 text-white outline-none focus:border-green-500" value={formData.specs.seatingCapacity} onChange={e => setFormData({ ...formData, specs: { ...formData.specs, seatingCapacity: e.target.value } })} />
+                                                </div>
+                                            )}
+
+                                            {formData.type === 'bike' && (
+                                                <div>
+                                                    <label className="block text-sm font-medium text-slate-400 mb-1.5">Engine CC</label>
+                                                    <input type="number" className="w-full bg-[#1a1a1a] border border-slate-700 rounded-xl px-4 py-2.5 text-white outline-none focus:border-green-500" value={formData.specs.engineCC} onChange={e => setFormData({ ...formData, specs: { ...formData.specs, engineCC: e.target.value } })} />
+                                                </div>
+                                            )}
+
+                                            {formData.type === 'cycle' && (
+                                                <div>
+                                                    <label className="block text-sm font-medium text-slate-400 mb-1.5">Max Load</label>
+                                                    <input type="text" placeholder="e.g. 100kg" className="w-full bg-[#1a1a1a] border border-slate-700 rounded-xl px-4 py-2.5 text-white outline-none focus:border-green-500" value={formData.specs.maxLoad} onChange={e => setFormData({ ...formData, specs: { ...formData.specs, maxLoad: e.target.value } })} />
+                                                </div>
+                                            )}
+
+                                            <div>
+                                                <label className="block text-sm font-medium text-slate-400 mb-1.5">Age Restriction</label>
+                                                <input type="text" placeholder="e.g. 18+ only" className="w-full bg-[#1a1a1a] border border-slate-700 rounded-xl px-4 py-2.5 text-white outline-none focus:border-green-500" value={formData.specs.ageRestriction} onChange={e => setFormData({ ...formData, specs: { ...formData.specs, ageRestriction: e.target.value } })} />
                                             </div>
 
-                                            {/* Preview Grid */}
-                                            {formData.images.length > 0 && (
-                                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-5 pt-5 border-t border-slate-700">
-                                                    {formData.images.map((img, idx) => (
-                                                        <div key={idx} className="relative aspect-video rounded-xl border border-slate-700 overflow-hidden group bg-slate-800">
-                                                            <img src={img} alt={`Preview ${idx}`} className="w-full h-full object-cover" onError={e => { e.target.style.display = 'none'; }} />
-                                                            <button
-                                                                type="button"
-                                                                onClick={(e) => { e.preventDefault(); removeImage(idx); }}
-                                                                className="absolute top-2 right-2 bg-black/70 hover:bg-red-600 text-white p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all backdrop-blur-sm"
-                                                            >
-                                                                <Trash2 size={14} />
-                                                            </button>
+                                            <div className="md:col-span-2 mt-4 bg-[#1a1a1a] p-4 rounded-xl border border-slate-700">
+                                                <label className="block text-sm font-medium text-slate-400 mb-3">Features (Tags)</label>
+                                                <div className="flex flex-wrap gap-2 mb-3">
+                                                    {(formData.specs.features || []).map(f => (
+                                                        <span key={f} className="bg-slate-800 text-slate-300 px-3 py-1 rounded-full text-sm border border-slate-700 flex items-center gap-2">
+                                                            {f} <button type="button" onClick={() => handleFeatureToggle(f)} className="hover:text-red-400"><X size={14}/></button>
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                                <input type="text" placeholder="Type a feature and press Enter (e.g. Helmet included)" onKeyDown={handleFeatureInputKeyDown} className="w-full bg-[#111] border border-slate-700 rounded-lg px-4 py-2 text-white outline-none focus:border-green-500 text-sm" />
+                                            </div>
+                                        </div>
+                                    </section>
+
+                                    {/* Section E: Media */}
+                                    <section className="bg-[#111] p-6 rounded-2xl border border-slate-800">
+                                        <h4 className="text-sm font-bold text-green-400 uppercase tracking-wider mb-6 pb-2 border-b border-slate-800">Section E — Media</h4>
+                                        <div className="space-y-6">
+                                            
+                                            <div>
+                                                <label className="block text-sm font-medium text-slate-400 mb-3">Main Image (Required) *</label>
+                                                <div className="flex flex-col md:flex-row gap-4 items-start">
+                                                    {formData.mainImage && (
+                                                        <div className="w-48 aspect-video rounded-xl border-2 border-green-500/50 overflow-hidden shrink-0">
+                                                            <img src={formData.mainImage} alt="Main" className="w-full h-full object-cover" />
+                                                        </div>
+                                                    )}
+                                                    <div className="flex-1 w-full">
+                                                        <input type="file" id="main-image-upload" className="hidden" accept="image/*" onChange={handleMainImageUpload} disabled={uploading} />
+                                                        <label htmlFor="main-image-upload" className="flex items-center justify-center w-full h-24 mb-3 transition bg-slate-900 border-2 border-slate-700 border-dashed rounded-xl cursor-pointer hover:border-green-500 hover:bg-slate-800">
+                                                            <div className="flex flex-col items-center">
+                                                                {uploading ? <div className="animate-spin w-6 h-6 border-2 border-green-500 border-t-transparent rounded-full mb-2"></div> : <Upload className="w-6 h-6 text-slate-400 mb-2" />}
+                                                                <span className="text-sm text-slate-400">{uploading ? 'Uploading...' : 'Upload Main Image (Max 5MB)'}</span>
+                                                            </div>
+                                                        </label>
+                                                        <input type="url" placeholder="Or paste image URL" className="w-full bg-[#1a1a1a] border border-slate-700 rounded-xl px-4 py-2.5 text-white outline-none focus:border-green-500 text-sm" value={formData.mainImage || ''} onChange={e => setFormData({ ...formData, mainImage: e.target.value })} />
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="pt-4 border-t border-slate-800">
+                                                <label className="block text-sm font-medium text-slate-400 mb-3">Gallery Images (Optional)</label>
+                                                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 mb-3">
+                                                    {(formData.galleryImages || []).map((img, idx) => (
+                                                        <div key={idx} className="relative aspect-square rounded-lg border border-slate-700 overflow-hidden group">
+                                                            <img src={img} alt="Gallery" className="w-full h-full object-cover" />
+                                                            <button type="button" onClick={() => setFormData({...formData, galleryImages: formData.galleryImages.filter((_, i) => i !== idx)})} className="absolute top-1 right-1 bg-black/70 hover:bg-red-600 text-white p-1 rounded opacity-0 group-hover:opacity-100"><X size={12}/></button>
                                                         </div>
                                                     ))}
                                                 </div>
-                                            )}
-                                        </div>
-                                    </div>
+                                                <input type="url" placeholder="Paste image URL and press Enter" onKeyDown={handleGalleryInputKeyDown} className="w-full bg-[#1a1a1a] border border-slate-700 rounded-xl px-4 py-2.5 text-white outline-none focus:border-green-500 text-sm" />
+                                            </div>
 
-                                    {/* SECTION 7: Status Toggles */}
-                                    <div>
-                                        <h4 className="text-sm font-bold text-blue-400 uppercase tracking-wider mb-4">Visibility Toggles</h4>
-                                        <div className="flex gap-8 p-5 border border-slate-800 bg-slate-900/50 rounded-2xl">
-                                            <label className="flex items-center gap-3 cursor-pointer">
-                                                <button type="button" onClick={() => setFormData({ ...formData, isActive: !formData.isActive })} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${formData.isActive ? 'bg-green-500' : 'bg-slate-700'}`}>
-                                                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formData.isActive ? 'translate-x-6' : 'translate-x-1'}`} />
-                                                </button>
-                                                <span className="text-sm text-white font-medium">Is Active (System)</span>
-                                            </label>
-                                            <label className="flex items-center gap-3 cursor-pointer">
-                                                <button type="button" onClick={() => setFormData({ ...formData, isVisible: !formData.isVisible })} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${formData.isVisible ? 'bg-blue-500' : 'bg-slate-700'}`}>
-                                                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formData.isVisible ? 'translate-x-6' : 'translate-x-1'}`} />
-                                                </button>
-                                                <span className="text-sm text-white font-medium">Visible to Users</span>
-                                            </label>
+                                            <div className="pt-4 border-t border-slate-800">
+                                                <label className="block text-sm font-medium text-slate-400 mb-3">Video URLs (Optional - YouTube)</label>
+                                                <div className="space-y-2 mb-3">
+                                                    {(formData.videoUrls || []).map((vid, idx) => (
+                                                        <div key={idx} className="flex items-center gap-2 bg-[#1a1a1a] border border-slate-700 p-2 rounded-lg text-sm text-slate-300">
+                                                            <span className="truncate flex-1">{vid}</span>
+                                                            <button type="button" onClick={() => setFormData({...formData, videoUrls: formData.videoUrls.filter((_, i) => i !== idx)})} className="text-red-400 hover:text-red-300 p-1"><X size={14}/></button>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                                <input type="url" placeholder="Paste YouTube URL and press Enter" onKeyDown={handleVideoInputKeyDown} className="w-full bg-[#1a1a1a] border border-slate-700 rounded-xl px-4 py-2.5 text-white outline-none focus:border-green-500 text-sm" />
+                                            </div>
+
                                         </div>
-                                    </div>
+                                    </section>
+
+                                    {/* Section F: Internal */}
+                                    <section className="bg-[#111] p-6 rounded-2xl border border-slate-800">
+                                        <h4 className="text-sm font-bold text-green-400 uppercase tracking-wider mb-6 pb-2 border-b border-slate-800">Section F — Internal Notes</h4>
+                                        <textarea rows="3" placeholder="Vendor details, internal references (never shown to users)" className="w-full bg-[#1a1a1a] border border-slate-700 rounded-xl px-4 py-2.5 text-white outline-none focus:border-green-500 resize-none" value={formData.vendorNotes} onChange={e => setFormData({ ...formData, vendorNotes: e.target.value })}></textarea>
+                                    </section>
 
                                 </form>
                             </div>
 
-                            {/* Footer */}
-                            <div className="px-8 py-5 border-t border-slate-800 bg-[#111] flex justify-end gap-4 shrink-0 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.5)] z-10">
-                                <button type="button" onClick={handleCloseModal} className="px-6 py-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white font-bold transition-colors">Cancel</button>
-                                <button type="submit" form="vehicleForm" className="px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white rounded-xl font-bold transition-all shadow-lg hover:shadow-blue-500/30">
-                                    {editMode ? 'Save Changes' : 'Create Vehicle Listing'}
-                                </button>
+                            {/* Footer Buttons */}
+                            <div className="px-6 py-5 border-t border-slate-800 bg-[#111] flex justify-end gap-4 shrink-0 rounded-b-2xl">
+                                <button type="button" onClick={handleCloseModal} className="px-6 py-2.5 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white font-medium transition-colors">Cancel</button>
+                                <button type="button" onClick={e => handleSubmit(e, true)} className="px-6 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-medium transition-colors border border-slate-700">Save as Draft</button>
+                                <button type="button" onClick={e => handleSubmit(e, false)} className="px-8 py-2.5 bg-green-600 hover:bg-green-500 text-black rounded-xl font-bold transition-all shadow-lg hover:shadow-green-500/20">Save & Publish →</button>
                             </div>
                         </motion.div>
                     </div>
                 )}
             </AnimatePresence>
+
+            {/* Quick Add City Modal */}
+            <AnimatePresence>
+                {isCityModalOpen && (
+                    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[70] flex items-center justify-center p-4">
+                        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="bg-[#111] border border-slate-800 w-full max-w-sm rounded-2xl overflow-hidden shadow-2xl">
+                            <div className="p-6">
+                                <h3 className="text-lg font-bold text-white mb-4">Add New City</h3>
+                                <input type="text" placeholder="e.g. Ahmedabad" className="w-full bg-[#1a1a1a] border border-slate-700 rounded-xl px-4 py-3 text-white outline-none focus:border-green-500 mb-6" value={newCityName} onChange={e => setNewCityName(e.target.value)} autoFocus />
+                                <div className="flex justify-end gap-3">
+                                    <button type="button" onClick={() => setIsCityModalOpen(false)} className="px-4 py-2 text-slate-400 hover:text-white transition-colors">Cancel</button>
+                                    <button type="button" onClick={addNewCity} className="px-5 py-2 bg-green-600 hover:bg-green-500 text-black font-bold rounded-lg transition-colors">Add</button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
         </div>
     );
 };

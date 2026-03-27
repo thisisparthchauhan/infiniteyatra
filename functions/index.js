@@ -6,24 +6,227 @@ const Razorpay = require('razorpay');
 const crypto = require('crypto');
 const express = require('express');
 const cors = require('cors');
+const rateLimit = require('express-rate-limit');
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const nodemailer = require('nodemailer');
+const helmet = require('helmet');
+
+const {
+    generate2FASecret,
+    verify2FACode,
+    is2FAEnabled,
+    disable2FA,
+    generateOAuth2URL,
+    handleOAuth2Callback,
+    createSessionToken,
+    verifySessionToken,
+    revokeSession,
+    adminAuthMiddleware,
+    logSecurityEvent,
+} = require('./security');
+
+const {
+    inputValidationMiddleware,
+    wafMiddleware,
+    botDetectionMiddleware,
+    corsValidationMiddleware,
+    loginLimiter: loginLimiterWAF,
+    twoFALimiter,
+    apiLimiter,
+    searchLimiter,
+    validateBookingData,
+    validateEmail,
+    validateFileUpload,
+} = require('./waf');
 
 admin.initializeApp();
 const db = admin.firestore();
 const storage = admin.storage();
 
 const app = express();
-app.use(cors({ origin: true }));
-// Razorpay webhooks send raw body, but we can parse JSON usually.
-// For verification, we might need raw body if middleware messes it up, 
-// but here we assume standard body parsing works with the signature check logic.
-app.use(express.json());
 
-// Initialize Razorpay
+const corsConfig = {
+    origin: [
+        'http://localhost:5173',
+        'http://localhost:4173',
+        'https://infiniteyatra.com',
+        'https://www.infiniteyatra.com',
+        'https://infiniteyatra-iy.web.app',
+    ],
+    credentials: true,
+};
+
+app.use(cors(corsConfig));
+app.use(helmet());
+app.use(corsValidationMiddleware);
+app.use(botDetectionMiddleware);
+app.use(wafMiddleware);
+app.use(inputValidationMiddleware);
+
+// --- RATE LIMITING MIDDLEWARE ---
+// General rate limiter: 100 requests per 15 minutes per IP
+const generalLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // limit each IP to 100 requests per windowMs
+    message: 'Too many requests from this IP, please try again later',
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+// Strict rate limiter for payment endpoints: 10 requests per 15 minutes
+const paymentLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 10, // limit each IP to 10 requests per windowMs
+    message: 'Too many payment requests, please try again later',
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+// Auth rate limiter: 5 requests per 15 minutes
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5, // limit each IP to 5 requests per windowMs
+    message: 'Too many auth attempts, please try again later',
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+// Apply general rate limiter to all routes
+app.use(generalLimiter);
+
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// ===================== AUTH & SECURITY ENDPOINTS =====================
+
+// 1. OAuth2 URL generator
+app.get('/api/auth/oauth-url', (req, res) => {
+    try {
+        const provider = req.query.provider || 'google';
+        const authUrl = generateOAuth2URL(provider);
+        res.json({ authUrl });
+    } catch (error) {
+        logSecurityEvent('SYSTEM', 'oauth_url_error', { error: error.message, ipAddress: req.ip });
+        res.status(500).json({ error: 'Unable to generate OAuth URL' });
+    }
+});
+
+// 2. OAuth2 callback handler
+app.post('/api/auth/oauth-callback', authLimiter, async (req, res) => {
+    try {
+        const { code } = req.body;
+        if (!code) return res.status(400).json({ error: 'Missing authorization code' });
+
+        const result = await handleOAuth2Callback(code, 'google');
+        const token = await createSessionToken(result.user.uid, await is2FAEnabled(result.user.uid));
+
+        logSecurityEvent(result.user.uid, 'oauth_login_success', { provider: 'google', ipAddress: req.ip });
+        res.json({ success: true, token, user: { uid: result.user.uid, email: result.user.email, displayName: result.user.displayName }});
+    } catch (error) {
+        logSecurityEvent('SYSTEM', 'oauth_callback_error', { error: error.message, ipAddress: req.ip });
+        res.status(401).json({ error: error.message || 'OAuth callback failed' });
+    }
+});
+
+// 3. Token refresh
+app.post('/api/auth/refresh-token', authLimiter, async (req, res) => {
+    try {
+        const { token } = req.body;
+        if (!token) return res.status(400).json({ error: 'Token required' });
+
+        const session = await verifySessionToken(token);
+        const newToken = await createSessionToken(session.userId, await is2FAEnabled(session.userId));
+
+        res.json({ token: newToken });
+    } catch (error) {
+        res.status(401).json({ error: 'Invalid or expired token' });
+    }
+});
+
+// 4. Logout
+app.post('/api/auth/logout', authLimiter, async (req, res) => {
+    try {
+        const { token } = req.body;
+        if (!token) return res.status(400).json({ error: 'Token required' });
+
+        await revokeSession(token);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: 'Logout failed' });
+    }
+});
+
+// 5. 2FA status
+app.get('/api/auth/2fa-status', adminAuthMiddleware, async (req, res) => {
+    try {
+        const status = await is2FAEnabled(req.user.userId);
+        res.json({ enabled: status });
+    } catch (error) {
+        res.status(500).json({ error: 'Unable to determine 2FA status' });
+    }
+});
+
+// 6. 2FA setup
+app.post('/api/auth/2fa/setup', adminAuthMiddleware, twoFALimiter, async (req, res) => {
+    try {
+        const setup = await generate2FASecret(req.user.userId, req.user.email);
+        logSecurityEvent(req.user.userId, 'twofa_setup_initiated', { ipAddress: req.ip });
+        res.json(setup);
+    } catch (error) {
+        logSecurityEvent(req.user?.userId || 'unknown', 'twofa_setup_failed', { error: error.message, ipAddress: req.ip });
+        res.status(500).json({ error: '2FA setup failed' });
+    }
+});
+
+// 7. 2FA verify
+app.post('/api/auth/2fa/verify', adminAuthMiddleware, twoFALimiter, async (req, res) => {
+    try {
+        const { code } = req.body;
+        if (!code || code.length !== 6) return res.status(400).json({ error: '6-digit 2FA code required' });
+
+        const result = await verify2FACode(req.user.userId, code);
+        logSecurityEvent(req.user.userId, 'twofa_verified', { ipAddress: req.ip });
+        res.json(result);
+    } catch (error) {
+        logSecurityEvent(req.user?.userId || 'unknown', 'twofa_verify_failed', { error: error.message, ipAddress: req.ip });
+        res.status(401).json({ error: 'Invalid 2FA code' });
+    }
+});
+
+// 8. 2FA login verify
+app.post('/api/auth/login-with-2fa', loginLimiterWAF, async (req, res) => {
+    try {
+        const { userId, code } = req.body;
+        if (!userId || !code) return res.status(400).json({ error: 'userId and code required' });
+
+        await verify2FACode(userId, code);
+        const token = await createSessionToken(userId, true);
+        logSecurityEvent(userId, 'logged_in_with_2fa', { ipAddress: req.ip });
+        res.json({ token });
+    } catch (error) {
+        logSecurityEvent(req.body?.userId || 'unknown', 'twofa_login_failed', { error: error.message, ipAddress: req.ip });
+        res.status(401).json({ error: '2FA login failed' });
+    }
+});
+
+// 9. 2FA disable
+app.post('/api/auth/2fa/disable', adminAuthMiddleware, async (req, res) => {
+    try {
+        await disable2FA(req.user.userId);
+        logSecurityEvent(req.user.userId, 'twofa_disabled', { ipAddress: req.ip });
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: 'Unable to disable 2FA' });
+    }
+});
+
+// Re-use existing Razorpay endpoints and others after here
+
+// --- NOTIFICATION CONFIG ---
+// ... rest of file unchanged ...
 const razorpay = new Razorpay({
     key_id: functions.config().razorpay?.key_id || process.env.RAZORPAY_KEY_ID,
     key_secret: functions.config().razorpay?.key_secret || process.env.RAZORPAY_KEY_SECRET
@@ -49,7 +252,7 @@ const RAZORPAY_WEBHOOK_SECRET = functions.config().razorpay?.webhook_secret || p
 /**
  * 🔹 Create Order API
  */
-app.post(['/create-order', '/api/create-order'], async (req, res) => {
+app.post(['/create-order', '/api/create-order'], paymentLimiter, async (req, res) => {
     try {
         const { bookingId, amount } = req.body;
 
@@ -82,7 +285,7 @@ app.post(['/create-order', '/api/create-order'], async (req, res) => {
 /**
  * 🔹 Verify Payment (Client-side callback verification)
  */
-app.post(['/verify-payment', '/api/verify-payment'], async (req, res) => {
+app.post(['/verify-payment', '/api/verify-payment'], paymentLimiter, async (req, res) => {
     try {
         const {
             razorpay_order_id,

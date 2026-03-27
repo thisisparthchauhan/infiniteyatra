@@ -1,54 +1,12 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, X, ChevronDown, Clock, Zap } from 'lucide-react';
+import { MapPin, X, ChevronDown, Check, Zap, Clock } from 'lucide-react';
 import SEO from '../components/SEO';
+import { listenToVehicles, getVehicleCities } from '../services/vehicleService';
 import { addCycleBooking } from '../services/cycleService';
 import './CyclesPage.css';
 
 const WHATSAPP_NUMBER = '919265799325';
-
-// ─── Cycle Models Data ───
-const cycleModels = [
-    { id: 'solo', name: 'Solo', tagline: 'For adults', icon: '🚲', isElectric: false, accentColor: '#22c55e', price15: 50, price30: 50, description: 'Perfect for a solo riverfront ride. Lightweight, comfortable adult cycle for a breezy Sabarmati experience.', idealFor: ['Solo travelers', 'Morning riders', 'Adults'] },
-    { id: 'junior', name: 'Junior', tagline: 'For kids (5–8 yrs)', icon: '🚲', isElectric: false, accentColor: '#f59e0b', price15: 50, price30: 50, description: 'Safe and fun cycle designed for young riders aged 5 to 8 years. Let the kids enjoy the riverfront too.', idealFor: ['Kids 5-8 years', 'Family trips'] },
-    { id: 'balance', name: 'Balance', tagline: 'For toddlers (2–4 yrs)', icon: '🚲', isElectric: false, accentColor: '#ec4899', price15: 50, price30: 50, description: 'Balance bike for tiny adventurers. No pedals — helps toddlers develop balance and confidence.', idealFor: ['Toddlers 2-4 years', 'Family trips'] },
-    { id: 'e1', name: 'E1 ⚡', tagline: 'For young at heart', icon: '⚡', isElectric: true, accentColor: '#3b82f6', price15: 100, price30: 100, description: 'Electric cycle for those who want to cruise effortlessly. Smooth, silent, and surprisingly fun.', idealFor: ['Electric lovers', 'Young adults', 'Effortless rides'] },
-    { id: 'duo', name: 'Duo', tagline: 'For couples', icon: '🚲', isElectric: false, accentColor: '#e879f9', price15: 100, price30: 100, description: 'A tandem cycle built for two. Ride side by side with your partner along the beautiful Sabarmati.', idealFor: ['Couples', 'Friends', 'Duos'] },
-    { id: 'trio', name: 'Trio', tagline: 'For family', icon: '🚲', isElectric: false, accentColor: '#f97316', price15: 150, price30: 150, description: 'Three-seater family cycle — one for you, one for your partner, one for the little one. The perfect family ride.', idealFor: ['Families', 'Groups of 3'] },
-    { id: 'genz', name: 'Gen Z ⚡', tagline: 'For hustlers', icon: '⚡', isElectric: true, accentColor: '#22c55e', price15: 150, price30: 150, description: 'The premium electric cycle. Sleek, fast, and built for the bold. The ultimate riverfront experience.', idealFor: ['Electric enthusiasts', 'Premium riders', 'Speed lovers'] },
-];
-
-const DURATION_OPTIONS = [
-    { label: '15 minutes', mins: 15 },
-    { label: '30 minutes', mins: 30 },
-    { label: '45 minutes', mins: 45 },
-    { label: '1 hour', mins: 60 },
-    { label: '1.5 hours', mins: 90 },
-    { label: '2 hours', mins: 120 },
-];
-
-const INFO_CARDS = [
-    { icon: '🪪', title: 'ID Required', desc: 'Carry a valid Indian Government ID. Under-18 riders need parent/guardian ID.' },
-    { icon: '⏰', title: 'Timings', desc: 'Open 6 AM – 11 PM daily. Return before closing or full-duration rent applies.' },
-    { icon: '🔍', title: 'Inspect Before Riding', desc: 'Check your cycle before starting. Malfunction mid-ride? Swap at station — no refunds.' },
-    { icon: '👶', title: 'Kids Policy', desc: 'Junior cycles for ages 5–8 only. ₹500 penalty if child is found above 8 years.' },
-    { icon: '💳', title: 'Bring Change', desc: 'Cash payment preferred. Carry exact change while renting.' },
-    { icon: '⚠️', title: 'Damage Policy', desc: 'Brake lever ₹50 · Fork ₹500 · Rim ₹200 · Gen Z ₹1,000 · Others as assessed' },
-];
-
-const HOW_STEPS = [
-    { num: 1, title: 'Book', desc: 'Choose your cycle model and preferred time. Book via WhatsApp or submit a request online.' },
-    { num: 2, title: 'Arrive', desc: 'Head to Sardar Bridge, Sabarmati Riverfront. Carry a valid Government ID.' },
-    { num: 3, title: 'Ride', desc: 'Pick up your cycle and enjoy the scenic riverfront. Return before 11 PM.' },
-    { num: 4, title: 'Return', desc: 'Drop back at the station. Simple, hassle-free, done.' },
-];
-
-// ─── Price estimator ───
-function estimatePrice(model, durationMins, numCycles) {
-    if (durationMins <= 15) return model.price15 * numCycles;
-    const extraBlocks = Math.ceil((durationMins - 15) / 30);
-    return (model.price15 + (extraBlocks * model.price30)) * numCycles;
-}
 
 // ─── Fade-in wrapper ───
 const FadeIn = ({ children, delay = 0, className = '' }) => (
@@ -63,52 +21,119 @@ const FadeIn = ({ children, delay = 0, className = '' }) => (
     </motion.div>
 );
 
-const SectionHeading = ({ children, sub }) => (
-    <div className="text-center mb-14">
-        <h2 className="font-cycles-display text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4">{children}</h2>
-        {sub && <p className="text-slate-400 text-lg max-w-2xl mx-auto">{sub}</p>}
-    </div>
-);
-
 export default function CyclesPage() {
-    const [modalOpen, setModalOpen] = useState(false);
-    const [selectedModelId, setSelectedModelId] = useState('solo');
-    const [submitting, setSubmitting] = useState(false);
-    const [submitted, setSubmitted] = useState(false);
-    const [formError, setFormError] = useState('');
-    const modelsRef = useRef(null);
-
+    const [vehicles, setVehicles] = useState([]);
+    const [cities, setCities] = useState([]);
+    const [selectedCity, setSelectedCity] = useState('Ahmedabad');
+    
+    const [loading, setLoading] = useState(true);
+    
+    // UI State
+    const [bookingModalOpen, setBookingModalOpen] = useState(false);
+    const [detailModalOpen, setDetailModalOpen] = useState(false);
+    const [selectedVehicle, setSelectedVehicle] = useState(null);
+    
+    // Booking Form State
     const [form, setForm] = useState({
         name: '', phone: '', email: '',
         date: '', time: '', duration: '30',
-        numCycles: 1, requests: '',
+        numCycles: 1, requests: '', city: 'Ahmedabad'
     });
+    const [submitting, setSubmitting] = useState(false);
+    const [submitted, setSubmitted] = useState(false);
+    const [formError, setFormError] = useState('');
 
-    const selectedModel = cycleModels.find(m => m.id === selectedModelId);
-    const durationMins = Number(form.duration) || 30;
-    const estimatedTotal = selectedModel ? estimatePrice(selectedModel, durationMins, form.numCycles || 1) : 0;
+    const gridRef = useRef(null);
 
-    const handleChange = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
+    // Fetch data
+    useEffect(() => {
+        let mounted = true;
+        
+        getVehicleCities(true).then(citiesData => {
+            if(mounted) setCities(citiesData);
+        }).catch(err => console.error(err));
 
-    const openBookingModal = (modelId) => {
-        setSelectedModelId(modelId);
-        setSubmitted(false);
-        setFormError('');
-        setModalOpen(true);
+        const unsub = listenToVehicles({ type: 'cycle', isAvailable: true }, (data) => {
+            if(mounted) {
+                setVehicles(data);
+                setLoading(false);
+            }
+        });
+
+        return () => {
+            mounted = false;
+            unsub();
+        };
+    }, []);
+
+    // Sync city selection to booking form
+    useEffect(() => {
+        setForm(prev => ({ ...prev, city: selectedCity }));
+    }, [selectedCity]);
+
+    const scrollToGrid = () => {
+        gridRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     };
 
-    const scrollToModels = () => modelsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const handleCityChange = (e) => {
+        setSelectedCity(e.target.value);
+    };
+
+    // Filter vehicles by city and sort
+    const cityVehicles = vehicles.filter(v => v.cities && v.cities.includes(selectedCity));
+    
+    // Sort logic: Featured first (ordered by featuredOrder), then rest
+    const sortedVehicles = [...cityVehicles].sort((a, b) => {
+        if (a.isFeatured && !b.isFeatured) return -1;
+        if (!a.isFeatured && b.isFeatured) return 1;
+        if (a.isFeatured && b.isFeatured) return (a.featuredOrder || 0) - (b.featuredOrder || 0);
+        return 0; // maintain original order for non-featured
+    });
+
+    // Modals
+    const openDetails = (vehicle) => {
+        setSelectedVehicle(vehicle);
+        setDetailModalOpen(true);
+    };
+
+    const openBooking = (vehicle) => {
+        setSelectedVehicle(vehicle);
+        setSubmitted(false);
+        setFormError('');
+        setDetailModalOpen(false); // Close details if open
+        setBookingModalOpen(true);
+    };
+
+    const handleBookingChange = (field, value) => {
+        setForm(prev => ({ ...prev, [field]: value }));
+    };
+
+    // Pricing calculation
+    const estimatePrice = () => {
+        if (!selectedVehicle) return 0;
+        const durationMins = Number(form.duration) || 30;
+        const numCycles = Number(form.numCycles) || 1;
+        
+        const p15 = Number(selectedVehicle.pricing?.per15min) || 0;
+        const p30 = Number(selectedVehicle.pricing?.per30min) || 0;
+        
+        if (durationMins <= 15) return p15 * numCycles;
+        const extraBlocks = Math.ceil((durationMins - 15) / 30);
+        return (p15 + (extraBlocks * p30)) * numCycles;
+    };
+
+    const estimatedTotal = estimatePrice();
 
     const buildWhatsAppUrl = () => {
-        const durationLabel = DURATION_OPTIONS.find(d => d.mins === durationMins)?.label || `${durationMins} minutes`;
-        const msg = `Hi Infinite Yatra! I want to book a Cycle at Sabarmati Riverfront.
-
+        const msg = `Hi Infinite Yatra! I want to book a Cycle.
+        
+City: ${form.city}
 Name: ${form.name}
 Phone: ${form.phone}
-Cycle: ${selectedModel?.name}
+Cycle: ${selectedVehicle?.name}
 Date: ${form.date}
 Time: ${form.time}
-Duration: ${durationLabel}
+Duration: ${form.duration} minutes
 No. of Cycles: ${form.numCycles}
 Special Request: ${form.requests || 'None'}
 Estimated Total: ₹${estimatedTotal.toLocaleString('en-IN')}
@@ -117,7 +142,7 @@ Please confirm availability.`;
         return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
     };
 
-    const handleSubmit = async () => {
+    const submitBooking = async () => {
         if (!form.name || !form.phone || !form.email || !form.date) {
             setFormError('Please fill in all required fields.');
             return;
@@ -125,17 +150,17 @@ Please confirm availability.`;
         setFormError('');
         setSubmitting(true);
         try {
-            const durationLabel = DURATION_OPTIONS.find(d => d.mins === durationMins)?.label || `${durationMins} minutes`;
             await addCycleBooking({
                 name: form.name,
                 phone: form.phone,
                 email: form.email,
-                cycle_model: selectedModel.name,
-                cycle_id: selectedModel.id,
-                price_per_unit: selectedModel.price15,
+                city: form.city,
+                cycle_model: selectedVehicle.name,
+                cycle_id: selectedVehicle.id,
+                price_per_unit: Number(selectedVehicle.pricing?.per15min) || 0,
                 date: form.date,
                 time_slot: form.time,
-                estimated_duration: durationLabel,
+                estimated_duration: `${form.duration} mins`,
                 num_cycles: Number(form.numCycles),
                 special_request: form.requests,
                 estimated_total: estimatedTotal,
@@ -149,118 +174,132 @@ Please confirm availability.`;
         }
     };
 
-    return (
-        <div className="cycles-bg min-h-screen text-white font-sans overflow-x-hidden">
-            <SEO
-                title="Cycles & E-Cycles | Infinite Yatra"
-                description="Explore Ahmedabad's Sabarmati Riverfront on cycles & e-cycles. 7 models from ₹50. Book now!"
-                url="/cycles"
-            />
 
-            {/* ═══ HERO ═══ */}
+    return (
+        <div className="cycles-bg min-h-screen font-cycles-sans overflow-x-hidden">
+            <SEO title="Cycles & E-Cycles | Infinite Yatra" description="Ride the riverfront. Two wheels, infinite freedom. Zero emissions, zero stress." url="/cycles" />
+
+            {/* ═══ 3A. HERO SECTION ═══ */}
             <section className="relative h-screen min-h-[700px] flex items-center justify-center overflow-hidden">
-                <div className="absolute inset-0">
-                    <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1600&q=80" alt="Cycling on riverfront" className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#0a0f0a] via-[#0a0f0a]/75 to-transparent" />
-                    <div className="absolute inset-0 bg-gradient-to-r from-[#0a0f0a]/50 to-transparent" />
+                <div className="absolute inset-0 z-0">
+                    <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1600&q=80" alt="Cycling" className="w-full h-full object-cover" />
+                    {/* Vignette & Fade Gradients */}
+                    <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.7) 100%)' }} />
+                    <div className="absolute inset-x-0 bottom-0 h-[40%]" style={{ background: 'linear-gradient(to top, #0a0f0a 0%, transparent 100%)' }} />
+                </div>
+                
+                {/* Particles */}
+                <div className="hero-particles">
+                    {[...Array(10)].map((_, i) => (
+                        <div key={i} className="hero-particle" style={{
+                            left: `${Math.random() * 100}%`,
+                            top: `${Math.random() * 100}%`,
+                            animationDelay: `${Math.random() * 5}s`,
+                            animationDuration: `${8 + Math.random() * 6}s`
+                        }} />
+                    ))}
                 </div>
 
-                <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
-                    <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1 }}>
-                        <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
-                            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/10 backdrop-blur-sm text-sm text-slate-300">
-                                <MapPin size={14} className="text-green-400" /> Sardar Bridge, Ahmedabad
-                            </span>
-                            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/10 backdrop-blur-sm text-sm text-slate-300">
-                                <Clock size={14} className="text-green-400" /> 6 AM – 11 PM Daily
-                            </span>
-                            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/10 backdrop-blur-sm text-sm text-slate-300">
-                                <Zap size={14} className="text-blue-400" /> Electric options available
-                            </span>
-                        </div>
+                <div className="relative z-10 text-center px-6 w-full max-w-5xl mx-auto flex flex-col items-center">
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1, duration: 2 }}>
+                        <span className="text-[11px] tracking-[0.3em] font-bold text-[#22c55e]/70 uppercase font-cycles-sans mb-6 block">FEEL THE WIND. OWN THE ROAD.</span>
                     </motion.div>
-
-                    <motion.h1 initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.15 }} className="font-cycles-display text-5xl sm:text-6xl md:text-8xl font-bold text-white mb-6 leading-[1.1]">
-                        Ride the Riverfront
+                    
+                    <motion.h1 className="font-cycles-display font-bold text-[#f0f8f0] leading-[0.95] mb-6" style={{ fontSize: 'clamp(56px, 9vw, 120px)' }}>
+                        <motion.span initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 1 }} className="block">Two Wheels.</motion.span>
+                        <motion.span initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 1 }} className="block">
+                            <span className="text-[#22c55e]">Infinite</span> Freedom.
+                        </motion.span>
                     </motion.h1>
 
-                    <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.3 }} className="text-xl md:text-2xl text-slate-300 max-w-2xl mx-auto mb-10">
-                        Explore Ahmedabad's Sabarmati on cycles & e-cycles
+                    <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8, duration: 1 }} className="font-cycles-sans italic font-light text-[18px] text-white/65 max-w-2xl mx-auto mb-2 text-center">
+                        No traffic. No fuel. No stress.<br/>
+                        Just you, the riverfront, and the open air.
                     </motion.p>
 
-                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.5 }} className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                        <a href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Hi, I want to book cycles at Sabarmati Riverfront')}`} target="_blank" rel="noopener noreferrer" className="px-8 py-4 bg-green-600 hover:bg-green-500 text-white rounded-2xl font-bold text-lg transition-all shadow-lg shadow-green-600/30 flex items-center gap-2">
-                            📱 Book via WhatsApp
-                        </a>
-                        <button onClick={scrollToModels} className="px-8 py-4 bg-white/10 hover:bg-white/15 border border-white/20 text-white rounded-2xl font-bold text-lg transition-all backdrop-blur-sm flex items-center gap-2">
-                            View All Cycles <ChevronDown size={18} />
-                        </button>
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1, duration: 0.8 }} className="flex flex-col items-center w-full">
+                        <div className="city-selector-hero shadow-2xl">
+                            <span className="text-xl">🌍</span>
+                            <span className="text-slate-300 font-medium">Riding in</span>
+                            <div className="relative">
+                                <select className="city-select-dropdown" value={selectedCity} onChange={handleCityChange}>
+                                    {cities.length > 0 ? (
+                                        cities.filter(c => c.isActive).map(c => <option key={c.id} value={c.name}>{c.name}</option>)
+                                    ) : (
+                                        <option value="Ahmedabad">Ahmedabad</option>
+                                    )}
+                                </select>
+                            </div>
+                            <button onClick={scrollToGrid} className="ml-2 text-[#22c55e] hover:text-[#4ade80] transition-colors flex items-center gap-1 font-bold text-sm">
+                                → Show Available Cycles
+                            </button>
+                        </div>
+
+                        <div className="flex flex-col sm:flex-row items-center gap-4 mt-8">
+                            <button onClick={scrollToGrid} className="px-8 py-3.5 bg-[#22c55e] hover:bg-[#16a34a] text-black rounded-full font-bold transition-all shadow-lg shadow-green-500/20 w-full sm:w-auto">
+                                🚲 Explore Cycles →
+                            </button>
+                            <a href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(`Hi, I want to rent cycles in ${selectedCity}.`)}`} target="_blank" rel="noopener noreferrer" className="px-8 py-3.5 bg-transparent border border-[#22c55e] text-white hover:bg-[#22c55e]/10 rounded-full font-bold transition-all w-full sm:w-auto text-center">
+                                📱 Book via WhatsApp
+                            </a>
+                        </div>
                     </motion.div>
                 </div>
 
-                <motion.div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-10" animate={{ y: [0, 10, 0] }} transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}>
-                    <ChevronDown size={28} className="text-white/30" />
+                <motion.div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10" animate={{ y: [0, 8, 0] }} transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}>
+                    <ChevronDown size={28} className="text-[#22c55e]/60" />
                 </motion.div>
             </section>
 
-            {/* ═══ SECTION 2 — CYCLE MODELS GRID ═══ */}
-            <section ref={modelsRef} className="relative z-10 py-24 px-6 scroll-mt-24">
+            {/* ═══ 3B. EMOTIONAL PULL SECTION ═══ */}
+            <section className="py-20 px-6 bg-[#050a06] relative z-10 w-full">
+                <div className="max-w-5xl mx-auto">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-20 text-center">
+                        <FadeIn delay={0.1}>
+                            <div className="text-4xl mb-4">🌿</div>
+                            <h3 className="text-[#22c55e] text-xl font-bold mb-2">Zero Emissions</h3>
+                            <p className="text-slate-400">Breathe clean air</p>
+                        </FadeIn>
+                        <FadeIn delay={0.2}>
+                            <div className="text-4xl mb-4">🏙️</div>
+                            <h3 className="text-[#22c55e] text-xl font-bold mb-2">12km Riverfront</h3>
+                            <p className="text-slate-400">Ready to explore</p>
+                        </FadeIn>
+                        <FadeIn delay={0.3}>
+                            <div className="text-4xl mb-4">⚡</div>
+                            <h3 className="text-[#22c55e] text-xl font-bold mb-2">2 mins to start</h3>
+                            <p className="text-slate-400">Pick up & go</p>
+                        </FadeIn>
+                    </div>
+
+                    <FadeIn delay={0.4}>
+                        <div className="max-w-[700px] mx-auto text-center">
+                            <p className="font-cycles-sans italic text-[26px] md:text-[32px] text-white/80 leading-snug">
+                                "The best way to see Ahmedabad is from the seat of a cycle — slow enough to notice, fast enough to feel free."
+                            </p>
+                        </div>
+                    </FadeIn>
+                </div>
+            </section>
+
+            {/* ═══ 3C. WHY CHOOSE CYCLES ═══ */}
+            <section className="py-20 px-6 bg-[#08120a] relative z-10 border-y border-white/5">
                 <div className="max-w-6xl mx-auto">
-                    <FadeIn><SectionHeading sub="7 models for every rider — from toddlers to thrill-seekers">Choose Your Ride</SectionHeading></FadeIn>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {cycleModels.map((cycle, i) => (
-                            <FadeIn key={cycle.id} delay={i * 0.06}>
-                                <div className={`cycle-glass-card overflow-hidden ${cycle.isElectric ? 'border-blue-500/20' : ''}`} style={cycle.isElectric ? { boxShadow: '0 0 20px rgba(59,130,246,0.08)' } : {}}>
-                                    {/* Image placeholder */}
-                                    <div className="cycle-img-placeholder" data-cycle-id={cycle.id}>
-                                        {cycle.realImageUrl ? (
-                                            <img src={cycle.realImageUrl} alt={cycle.name} />
-                                        ) : (
-                                            <>
-                                                <span className="placeholder-icon">{cycle.icon}</span>
-                                                <span className="placeholder-label">{cycle.name}</span>
-                                                <span className="placeholder-sub">Photo coming soon</span>
-                                            </>
-                                        )}
-                                    </div>
-
-                                    <div className="p-6">
-                                        <div className="flex items-center gap-3 mb-2">
-                                            <h3 className="text-xl font-bold text-white">{cycle.name}</h3>
-                                            {cycle.isElectric && <span className="electric-badge">⚡ Electric</span>}
-                                        </div>
-                                        <p className="text-slate-400 text-sm italic mb-3">{cycle.tagline}</p>
-                                        <p className="text-slate-500 text-sm mb-4 leading-relaxed">{cycle.description}</p>
-
-                                        {/* Ideal for tags */}
-                                        <div className="flex flex-wrap gap-2 mb-5">
-                                            {cycle.idealFor.map((tag, j) => (
-                                                <span key={j} className="text-xs px-2.5 py-1 rounded-full bg-white/5 border border-white/8 text-slate-400">{tag}</span>
-                                            ))}
-                                        </div>
-
-                                        {/* Pricing */}
-                                        <div className="bg-white/[0.03] rounded-xl p-4 mb-5 border border-white/5">
-                                            <div className="flex justify-between items-center">
-                                                <span className="text-slate-400 text-sm">First 15 min</span>
-                                                <span className="text-white font-bold text-lg">₹{cycle.price15}</span>
-                                            </div>
-                                            <div className="flex justify-between items-center mt-1">
-                                                <span className="text-slate-500 text-xs">then every 30 min</span>
-                                                <span className="text-slate-300 font-semibold">₹{cycle.price30}</span>
-                                            </div>
-                                        </div>
-
-                                        <button
-                                            onClick={() => openBookingModal(cycle.id)}
-                                            className="w-full py-3 rounded-xl font-bold text-sm transition-all"
-                                            style={{ background: `${cycle.accentColor}22`, color: cycle.accentColor, border: `1px solid ${cycle.accentColor}44` }}
-                                            onMouseEnter={e => { e.target.style.background = `${cycle.accentColor}33`; }}
-                                            onMouseLeave={e => { e.target.style.background = `${cycle.accentColor}22`; }}
-                                        >
-                                            Book This Cycle
-                                        </button>
-                                    </div>
+                    <FadeIn><h2 className="font-cycles-display text-4xl md:text-5xl font-bold text-center mb-16">Why Riders Love This</h2></FadeIn>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {[
+                            { icon: '🌬️', title: 'Feel Every Breeze', desc: "No windows between you and Ahmedabad's morning air." },
+                            { icon: '🛣️', title: "Go Where Cars Can't", desc: "Narrow lanes, riverfront paths, Sabarmati promenades — all yours." },
+                            { icon: '💪', title: 'Ride at Your Pace', desc: "No schedules. No drivers. Just your rhythm, your route." },
+                            { icon: '🌱', title: 'Zero Guilt Travel', desc: "100% eco-friendly. Good for you, great for the city." },
+                            { icon: '💸', title: 'Unbeatable Value', desc: "Starting ₹50 for 15 mins. The best per-minute fun you'll find in the city." },
+                            { icon: '⚡', title: 'Electric Options Available', desc: "No effort needed. Let the E-cycle carry you while you soak it all in." },
+                        ].map((reason, i) => (
+                            <FadeIn key={i} delay={i * 0.1}>
+                                <div className="reason-card h-full">
+                                    <div className="text-3xl mb-4">{reason.icon}</div>
+                                    <h3 className="text-lg font-bold text-white mb-2">{reason.title}</h3>
+                                    <p className="text-slate-400 text-sm leading-relaxed">{reason.desc}</p>
                                 </div>
                             </FadeIn>
                         ))}
@@ -268,49 +307,21 @@ Please confirm availability.`;
                 </div>
             </section>
 
-            {/* ═══ SECTION 3 — PRICING TABLE ═══ */}
-            <section className="relative z-10 py-24 px-6 border-y border-white/5">
-                <div className="max-w-4xl mx-auto">
-                    <FadeIn><SectionHeading sub="No hidden costs — what you see is what you pay">Simple, Transparent Pricing</SectionHeading></FadeIn>
-                    <FadeIn delay={0.1}>
-                        <div className="rounded-2xl overflow-hidden border border-white/5 bg-white/[0.02]">
-                            <table className="cycles-pricing-table">
-                                <thead>
-                                    <tr>
-                                        <th>Cycle</th>
-                                        <th>First 15 Mins</th>
-                                        <th>Every 30 Mins After</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {cycleModels.map(c => (
-                                        <tr key={c.id} className={c.isElectric ? 'electric-row' : ''}>
-                                            <td className="font-bold">
-                                                {c.name}
-                                                {c.isElectric && <span className="ml-2 text-xs text-blue-400 font-semibold">Electric</span>}
-                                            </td>
-                                            <td className="font-semibold text-green-400">₹{c.price15}</td>
-                                            <td className="font-semibold text-slate-300">₹{c.price30}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                        <p className="text-slate-500 text-sm text-center mt-4">* Prices are per cycle. Government ID required at the time of rental.</p>
-                    </FadeIn>
-                </div>
-            </section>
-
-            {/* ═══ SECTION 4 — HOW IT WORKS ═══ */}
-            <section className="relative z-10 py-24 px-6">
-                <div className="max-w-5xl mx-auto">
-                    <FadeIn><SectionHeading>How to Ride with Infinite Yatra</SectionHeading></FadeIn>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {HOW_STEPS.map((step, i) => (
+            {/* ═══ 3D. HOW IT WORKS ═══ */}
+            <section className="py-20 px-6 bg-[#050a06] relative z-10">
+                <div className="max-w-6xl mx-auto">
+                    <FadeIn><h2 className="font-cycles-display text-4xl md:text-5xl font-bold text-center mb-16">How to Rent in 4 Steps</h2></FadeIn>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        {[
+                            { title: 'CHOOSE YOUR CITY', desc: 'Select your city above and browse available cycle models.' },
+                            { title: 'PICK YOUR CYCLE', desc: 'Solo, Duo, Electric, Family — choose what fits your vibe.' },
+                            { title: 'BOOK WITH US', desc: 'Submit a request online or WhatsApp us directly. We confirm within 2 hours.' },
+                            { title: 'RIDE FREE', desc: 'Arrive at the station, show your ID, grab your cycle, and go.' }
+                        ].map((step, i) => (
                             <FadeIn key={i} delay={i * 0.1}>
-                                <div className="cycle-glass-card p-6 h-full">
-                                    <div className="step-circle mb-5">{step.num}</div>
-                                    <h3 className="text-lg font-bold text-white mb-2">{step.title}</h3>
+                                <div className="step-card">
+                                    <div className="step-number">0{i+1}</div>
+                                    <h3 className="text-sm font-bold text-white mb-2 tracking-wide">{step.title}</h3>
                                     <p className="text-slate-400 text-sm leading-relaxed">{step.desc}</p>
                                 </div>
                             </FadeIn>
@@ -319,140 +330,297 @@ Please confirm availability.`;
                 </div>
             </section>
 
-            {/* ═══ SECTION 5 — IMPORTANT INFO ═══ */}
-            <section className="relative z-10 py-24 px-6 border-t border-white/5">
-                <div className="max-w-5xl mx-auto">
-                    <FadeIn><SectionHeading>Good to Know Before You Ride</SectionHeading></FadeIn>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {INFO_CARDS.map((card, i) => (
-                            <FadeIn key={i} delay={i * 0.06}>
-                                <div className="info-card-green">
-                                    <div className="flex items-start gap-4">
-                                        <span className="text-2xl">{card.icon}</span>
-                                        <div>
-                                            <h4 className="text-white font-bold mb-1">{card.title}</h4>
-                                            <p className="text-slate-400 text-sm leading-relaxed">{card.desc}</p>
+            {/* ═══ 3E. FEATURED CYCLES GRID ═══ */}
+            <section ref={gridRef} className="py-24 px-6 bg-[#08120a] relative z-10 scroll-mt-20 border-t border-white/5">
+                <div className="max-w-6xl mx-auto">
+                    <div className="flex flex-col md:flex-row justify-between items-center mb-12 gap-6">
+                        <FadeIn>
+                            <h2 className="font-cycles-display text-4xl md:text-5xl font-bold">Our Best Rides</h2>
+                        </FadeIn>
+                        <FadeIn delay={0.1}>
+                            <div className="bg-[#111a12] border border-[#22c55e]/30 rounded-full px-4 py-2 flex items-center gap-2">
+                                <MapPin size={16} className="text-[#22c55e]" />
+                                <select className="bg-transparent text-white font-medium outline-none cursor-pointer appearance-none pr-4" value={selectedCity} onChange={handleCityChange}>
+                                    {cities.filter(c => c.isActive).map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+                                    {cities.length === 0 && <option value="Ahmedabad">Ahmedabad</option>}
+                                </select>
+                                <ChevronDown size={14} className="text-[#22c55e] -ml-3" />
+                            </div>
+                        </FadeIn>
+                    </div>
+
+                    {loading ? (
+                        <div className="flex justify-center py-20"><div className="animate-spin w-10 h-10 border-4 border-[#22c55e] border-t-transparent rounded-full"></div></div>
+                    ) : sortedVehicles.length > 0 ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {sortedVehicles.map((vehicle, i) => (
+                                <FadeIn key={vehicle.id} delay={i * 0.1}>
+                                    <div className="cycle-card">
+                                        <div className="relative">
+                                            {vehicle.mainImage ? (
+                                                <img src={vehicle.mainImage} alt={vehicle.name} className="card-image" />
+                                            ) : (
+                                                <div className="placeholder-image">
+                                                    <span className="text-5xl mb-2">{vehicle.specs?.isElectric ? '⚡' : '🚲'}</span>
+                                                    <span className="text-sm opacity-60 font-semibold">{vehicle.name}</span>
+                                                    <span className="text-[11px] opacity-40 mt-1">Photo coming soon</span>
+                                                </div>
+                                            )}
+                                            {vehicle.specs?.isElectric && (
+                                                <div className="absolute top-4 right-4 bg-blue-600/90 backdrop-blur text-white text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 shadow-lg">
+                                                    <Zap size={12} fill="currentColor"/> Electric
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="p-6 flex flex-col flex-1">
+                                            <h3 className="text-2xl font-bold text-white mb-1">{vehicle.name}</h3>
+                                            <p className="text-slate-400 text-sm italic mb-4">{vehicle.tagline}</p>
+                                            
+                                            <div className="space-y-2 mb-6">
+                                                <div className="flex items-center gap-2 text-sm text-slate-300">
+                                                    <MapPin size={14} className="text-[#22c55e]"/> {selectedCity}
+                                                </div>
+                                                <div className="flex items-center gap-2 text-sm text-slate-300">
+                                                    <Clock size={14} className="text-[#22c55e]"/> {vehicle.operatingHours || '6 AM – 11 PM'}
+                                                </div>
+                                            </div>
+
+                                            <div className="mt-auto">
+                                                <div className="text-[#22c55e] font-bold text-xl mb-4">
+                                                    {vehicle.pricing?.per15min ? `₹${vehicle.pricing.per15min} / 15 min` : 'Price on request'}
+                                                </div>
+                                                <div className="flex gap-2">
+                                                    <button onClick={() => openDetails(vehicle)} className="flex-1 py-3 text-sm font-bold text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition">View Details</button>
+                                                    <button onClick={() => openBooking(vehicle)} className="flex-1 py-3 text-sm font-bold text-black bg-[#22c55e] hover:bg-[#16a34a] rounded-xl transition shadow-[0_0_15px_rgba(34,197,94,0.3)]">Book This →</button>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </FadeIn>
-                        ))}
+                                </FadeIn>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center py-20 bg-[#111a12] rounded-2xl border border-[#22c55e]/20">
+                            <h3 className="text-2xl font-bold text-white mb-3">No cycles available in {selectedCity} yet.</h3>
+                            <p className="text-slate-400 mb-6">We're expanding soon! Meanwhile, explore what's available in Ahmedabad.</p>
+                            <button onClick={() => setSelectedCity('Ahmedabad')} className="px-6 py-2.5 bg-[#22c55e]/20 text-[#22c55e] hover:bg-[#22c55e]/30 rounded-full font-bold transition">Switch to Ahmedabad →</button>
+                        </div>
+                    )}
+                </div>
+            </section>
+
+            {/* ═══ 3F. CITY AVAILABILITY BANNER ═══ */}
+            <section className="py-12 bg-[#050a06] border-y border-white/5 relative z-10">
+                <div className="max-w-4xl mx-auto px-6 text-center">
+                    <div className="bg-[#111a12] border border-[#22c55e]/30 rounded-2xl p-6 sm:p-8 flex flex-col md:flex-row items-center justify-center gap-4 text-center md:text-left">
+                        <div className="p-3 bg-[#22c55e]/20 rounded-full shrink-0">
+                            <MapPin className="text-[#22c55e]" size={24} />
+                        </div>
+                        <div>
+                            <p className="text-white font-bold text-lg">Currently available in: <span className="text-[#22c55e]">Ahmedabad</span></p>
+                            <p className="text-slate-500 text-sm mt-1">More cities coming soon — Delhi · Mumbai · Jaipur · Surat</p>
+                        </div>
                     </div>
                 </div>
             </section>
 
-            <div className="h-20" />
+            {/* ═══ 3G. READY TO RIDE CTA ═══ */}
+            <section className="py-24 px-6 relative z-10 bg-[#050a06]">
+                <div className="max-w-4xl mx-auto">
+                    <FadeIn>
+                        <div className="relative overflow-hidden rounded-[32px] border border-[#22c55e]/20" style={{ background: 'linear-gradient(135deg, #0a1a0a, #0d2010)'}}>
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-[#22c55e] rounded-full mix-blend-multiply filter blur-[128px] opacity-20"></div>
+                            <div className="relative z-10 px-6 py-20 text-center">
+                                <h2 className="font-cycles-display text-5xl md:text-6xl font-bold text-white mb-6">The riverfront is waiting.</h2>
+                                <div className="text-[#22c55e] font-bold text-2xl md:text-3xl mb-4">Starting from ₹50 / 15 min</div>
+                                <p className="text-slate-400 mb-10 max-w-md mx-auto">No advance payment needed for most bookings. Just show up and ride.</p>
+                                
+                                <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
+                                    <button onClick={scrollToGrid} className="w-full sm:w-auto px-8 py-4 bg-[#22c55e] hover:bg-[#16a34a] text-black font-bold rounded-full transition shadow-[0_0_20px_rgba(34,197,94,0.4)]">
+                                        🚲 Book Your Cycle Now →
+                                    </button>
+                                    <a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto px-8 py-4 bg-transparent border border-[#22c55e]/50 text-white hover:bg-[#22c55e]/10 font-bold rounded-full transition text-center">
+                                        📱 WhatsApp Us
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </FadeIn>
+                </div>
+            </section>
 
-            {/* ═══ SECTION 6 — BOOKING MODAL ═══ */}
+            {/* ═══ DETAIL MODAL ═══ */}
             <AnimatePresence>
-                {modalOpen && (
-                    <motion.div className="cycles-modal-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setModalOpen(false)}>
+                {detailModalOpen && selectedVehicle && (
+                    <motion.div className="detail-modal-overlay" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} onClick={() => setDetailModalOpen(false)}>
+                        <motion.div className="detail-modal-content" initial={{opacity:0, scale:0.95, y:20}} animate={{opacity:1, scale:1, y:0}} exit={{opacity:0, scale:0.95, y:20}} onClick={e=>e.stopPropagation()}>
+                            <div className="sticky top-0 z-20 flex justify-between items-center p-4 bg-[#0a0f0a]/90 backdrop-blur border-b border-white/5">
+                                <h3 className="text-xl font-bold text-white">{selectedVehicle.name}</h3>
+                                <button onClick={() => setDetailModalOpen(false)} className="p-2 bg-white/10 rounded-full text-slate-400 hover:text-white"><X size={18}/></button>
+                            </div>
+                            
+                            <div className="p-6">
+                                {/* Image Gallery Scroll */}
+                                <div className="flex gap-4 overflow-x-auto pb-4 custom-scrollbar snap-x">
+                                    {selectedVehicle.mainImage && (
+                                        <div className="w-[80%] md:w-[60%] shrink-0 aspect-video rounded-xl overflow-hidden snap-center">
+                                            <img src={selectedVehicle.mainImage} alt="Main" className="w-full h-full object-cover" />
+                                        </div>
+                                    )}
+                                    {(selectedVehicle.galleryImages || []).map((img, i) => (
+                                        <div key={i} className="w-[80%] md:w-[60%] shrink-0 aspect-video rounded-xl overflow-hidden snap-center">
+                                            <img src={img} alt={`Gallery ${i}`} className="w-full h-full object-cover" />
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <div className="mt-6 border-t border-white/10 pt-6">
+                                    <p className="text-slate-300 leading-relaxed mb-6">{selectedVehicle.description}</p>
+                                    
+                                    <h4 className="font-bold text-white mb-3">Specifications</h4>
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                                        <div className="bg-white/5 p-3 rounded-lg"><div className="text-xs text-slate-500 mb-1">Max Load</div><div className="text-sm font-semibold text-white">{selectedVehicle.specs?.maxLoad || 'N/A'}</div></div>
+                                        <div className="bg-white/5 p-3 rounded-lg"><div className="text-xs text-slate-500 mb-1">Age Limit</div><div className="text-sm font-semibold text-white">{selectedVehicle.specs?.ageRestriction || 'N/A'}</div></div>
+                                        <div className="bg-white/5 p-3 rounded-lg"><div className="text-xs text-slate-500 mb-1">Type</div><div className="text-sm font-semibold text-white flex items-center gap-1">{selectedVehicle.specs?.isElectric ? <><Zap size={12} className="text-blue-400"/> EV</> : 'Pedal'}</div></div>
+                                        {selectedVehicle.specs?.isElectric && <div className="bg-white/5 p-3 rounded-lg"><div className="text-xs text-slate-500 mb-1">Range</div><div className="text-sm font-semibold text-white">{selectedVehicle.specs?.batteryRange || 'N/A'}</div></div>}
+                                    </div>
+
+                                    {selectedVehicle.specs?.features?.length > 0 && (
+                                        <div className="mb-6">
+                                            <h4 className="font-bold text-white mb-3">Features</h4>
+                                            <div className="flex flex-wrap gap-2">
+                                                {selectedVehicle.specs.features.map(f => <span key={f} className="bg-white/10 text-slate-300 px-3 py-1 rounded-full text-xs font-medium"><Check size={12} className="inline mr-1 text-[#22c55e]"/>{f}</span>)}
+                                            </div>
+                                        </div>
+                                    )}
+                                    
+                                    <h4 className="font-bold text-white mb-3">Pricing</h4>
+                                    <div className="bg-white/5 p-4 rounded-xl mb-8">
+                                        <div className="grid grid-cols-2 gap-y-2 text-sm">
+                                            <div className="text-slate-400">First 15 mins</div><div className="text-white font-bold text-right">₹{selectedVehicle.pricing?.per15min || '-'}</div>
+                                            <div className="text-slate-400">First 30 mins</div><div className="text-white font-bold text-right">₹{selectedVehicle.pricing?.per30min || '-'}</div>
+                                            {selectedVehicle.pricing?.perHour && <><div className="text-slate-400">Per Hour</div><div className="text-white font-bold text-right">₹{selectedVehicle.pricing.perHour}</div></>}
+                                            {selectedVehicle.pricing?.perDay && <><div className="text-slate-400">Full Day</div><div className="text-white font-bold text-right">₹{selectedVehicle.pricing.perDay}</div></>}
+                                        </div>
+                                        {selectedVehicle.pricing?.notes && <p className="mt-3 text-xs text-slate-500 italic text-center">{selectedVehicle.pricing.notes}</p>}
+                                    </div>
+
+                                    <button onClick={() => openBooking(selectedVehicle)} className="w-full py-4 bg-[#22c55e] text-black font-bold rounded-xl text-lg hover:bg-[#16a34a] transition">
+                                        Book This Cycle
+                                    </button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* ═══ 3H. BOOKING MODAL ═══ */}
+            <AnimatePresence>
+                {bookingModalOpen && selectedVehicle && (
+                    <motion.div className="cycles-modal-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setBookingModalOpen(false)}>
                         <motion.div className="cycles-modal-content" initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} transition={{ duration: 0.3 }} onClick={e => e.stopPropagation()}>
                             {/* Header */}
-                            <div className="flex items-center justify-between p-6 border-b border-white/5">
+                            <div className="flex items-center justify-between p-6 border-b border-white/10">
                                 <div>
                                     <h3 className="font-cycles-display text-2xl font-bold text-white">Book Your Ride</h3>
-                                    <p className="text-slate-500 text-sm mt-1">🚲 Sabarmati Riverfront Cycles</p>
+                                    <p className="text-slate-500 text-sm mt-1">🚲 {selectedVehicle.name}</p>
                                 </div>
-                                <button onClick={() => setModalOpen(false)} className="p-2 text-slate-400 hover:text-white bg-white/5 rounded-full transition"><X size={20} /></button>
+                                <button onClick={() => setBookingModalOpen(false)} className="p-2 text-slate-400 hover:text-white bg-white/5 rounded-full transition"><X size={20} /></button>
                             </div>
 
                             {submitted ? (
                                 <div className="p-8 text-center">
-                                    <div className="text-6xl mb-4">🚲</div>
+                                    <div className="text-6xl mb-4">✅</div>
                                     <h3 className="text-2xl font-bold text-white mb-3">Booking Request Received!</h3>
                                     <p className="text-slate-400 mb-2">Our team will confirm your cycle within 2 hours.</p>
-                                    <p className="text-green-400 text-sm mb-6">🪪 Carry your Government ID on the day of ride.</p>
-                                    <button onClick={() => setModalOpen(false)} className="px-8 py-3 bg-white/10 hover:bg-white/15 border border-white/20 text-white rounded-xl font-bold transition">Close</button>
+                                    <p className="text-[#22c55e] text-sm mb-6">🪪 Carry your Government ID on the day of ride.</p>
+                                    <button onClick={() => setBookingModalOpen(false)} className="px-8 py-3 bg-white/10 hover:bg-white/15 border border-white/20 text-white rounded-xl font-bold transition">Close Window</button>
                                 </div>
                             ) : (
                                 <div className="p-6 space-y-5">
-                                    {/* Name */}
-                                    <div>
-                                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Full Name *</label>
-                                        <input type="text" value={form.name} onChange={e => handleChange('name', e.target.value)} placeholder="Your full name" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-green-500/50 transition placeholder:text-slate-600" />
-                                    </div>
-
-                                    {/* Phone + Email */}
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Phone *</label>
-                                            <input type="tel" value={form.phone} onChange={e => handleChange('phone', e.target.value)} placeholder="+91 98765 43210" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-green-500/50 transition placeholder:text-slate-600" />
-                                        </div>
-                                        <div>
-                                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Email *</label>
-                                            <input type="email" value={form.email} onChange={e => handleChange('email', e.target.value)} placeholder="you@email.com" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-green-500/50 transition placeholder:text-slate-600" />
-                                        </div>
-                                    </div>
-
-                                    {/* Model Selector */}
-                                    <div>
-                                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Cycle Model</label>
-                                        <select value={selectedModelId} onChange={e => setSelectedModelId(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-green-500/50 transition appearance-none cursor-pointer">
-                                            {cycleModels.map(m => (
-                                                <option key={m.id} value={m.id} className="bg-[#111] text-white">
-                                                    {m.name} — ₹{m.price15}/15min ({m.tagline})
-                                                </option>
-                                            ))}
+                                    {/* City Info */}
+                                    <div className="bg-[#111a12] border border-[#22c55e]/20 p-3 rounded-lg flex items-center gap-3">
+                                        <MapPin className="text-[#22c55e]" size={16}/>
+                                        <div className="font-medium text-white flex-1">City:</div>
+                                        <select value={form.city} onChange={e => handleBookingChange('city', e.target.value)} className="bg-transparent text-white outline-none font-bold text-right cursor-pointer">
+                                            <option value="Ahmedabad">Ahmedabad</option>
+                                            {cities.filter(c => c.name !== 'Ahmedabad' && c.isActive).map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
                                         </select>
                                     </div>
 
-                                    {/* Date + Time */}
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    {/* Name */}
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Full Name *</label>
+                                        <input type="text" value={form.name} onChange={e => handleBookingChange('name', e.target.value)} placeholder="Your full name" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-[#22c55e]/50 transition" />
+                                    </div>
+
+                                    {/* Phone + Email */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
-                                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Preferred Date *</label>
-                                            <input type="date" value={form.date} onChange={e => handleChange('date', e.target.value)} min={new Date().toISOString().split('T')[0]} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-green-500/50 transition" />
+                                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Phone *</label>
+                                            <input type="tel" value={form.phone} onChange={e => handleBookingChange('phone', e.target.value)} placeholder="+91 98765 43210" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-[#22c55e]/50 transition" />
                                         </div>
                                         <div>
-                                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Preferred Time</label>
-                                            <input type="time" value={form.time} onChange={e => handleChange('time', e.target.value)} min="06:00" max="22:30" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-green-500/50 transition" />
+                                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Email *</label>
+                                            <input type="email" value={form.email} onChange={e => handleBookingChange('email', e.target.value)} placeholder="you@email.com" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-[#22c55e]/50 transition" />
                                         </div>
                                     </div>
 
-                                    {/* Duration + Num Cycles */}
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    {/* Date + Time */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
-                                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Estimated Duration</label>
-                                            <select value={form.duration} onChange={e => handleChange('duration', e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-green-500/50 transition appearance-none cursor-pointer">
-                                                {DURATION_OPTIONS.map(d => (
-                                                    <option key={d.mins} value={d.mins} className="bg-[#111] text-white">{d.label}</option>
-                                                ))}
+                                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Date *</label>
+                                            <input type="date" value={form.date} onChange={e => handleBookingChange('date', e.target.value)} min={new Date().toISOString().split('T')[0]} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-[#22c55e]/50 transition" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Time</label>
+                                            <input type="time" value={form.time} onChange={e => handleBookingChange('time', e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-[#22c55e]/50 transition" />
+                                        </div>
+                                    </div>
+
+                                    {/* Duration + Units */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Duration</label>
+                                            <select value={form.duration} onChange={e => handleBookingChange('duration', e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-[#22c55e]/50 transition appearance-none cursor-pointer">
+                                                <option value="15">15 minutes</option>
+                                                <option value="30">30 minutes</option>
+                                                <option value="45">45 minutes</option>
+                                                <option value="60">1 hour</option>
+                                                <option value="120">2 hours</option>
                                             </select>
                                         </div>
                                         <div>
-                                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Number of Cycles</label>
-                                            <input type="number" min={1} max={10} value={form.numCycles} onChange={e => handleChange('numCycles', Math.max(1, Math.min(10, Number(e.target.value))))} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-green-500/50 transition" />
+                                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">No. of Cycles</label>
+                                            <input type="number" min={1} max={10} value={form.numCycles} onChange={e => handleBookingChange('numCycles', Math.max(1, Number(e.target.value)))} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-[#22c55e]/50 transition" />
                                         </div>
                                     </div>
 
-                                    {/* Special Request */}
+                                    {/* Request */}
                                     <div>
-                                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Special Request (Optional)</label>
-                                        <textarea rows={2} value={form.requests} onChange={e => handleChange('requests', e.target.value)} placeholder="Any preferences or requests..." className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-green-500/50 transition resize-none placeholder:text-slate-600" />
+                                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Special Request</label>
+                                        <textarea rows={2} value={form.requests} onChange={e => handleBookingChange('requests', e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-[#22c55e]/50 transition resize-none" />
                                     </div>
 
-                                    {/* Estimated Total */}
-                                    <div className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/20 rounded-xl p-5">
+                                    {/* Total */}
+                                    <div className="bg-[#111a12] border border-[#22c55e]/30 rounded-xl p-5">
                                         <div className="flex items-center justify-between mb-1">
-                                            <span className="text-slate-400 text-sm">
-                                                {selectedModel?.name} × {form.numCycles} cycle{form.numCycles > 1 ? 's' : ''} × {DURATION_OPTIONS.find(d => d.mins === durationMins)?.label || `${durationMins} min`}
-                                            </span>
-                                            <span className="text-2xl font-black text-green-400">₹{estimatedTotal.toLocaleString('en-IN')}</span>
+                                            <span className="text-slate-400 text-sm">Estimated Total</span>
+                                            <span className="text-2xl font-black text-[#22c55e]">₹{estimatedTotal.toLocaleString('en-IN')}</span>
                                         </div>
-                                        <p className="text-slate-500 text-xs">*Estimate only. Actual charges at rental station.</p>
+                                        <p className="text-slate-500 text-xs">*Estimate only based on base pricing. Final amount at station.</p>
                                     </div>
 
-                                    {formError && (
-                                        <p className="text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">{formError}</p>
-                                    )}
+                                    {formError && <p className="text-red-400 text-sm">{formError}</p>}
 
-                                    {/* Submit buttons */}
+                                    {/* Buttons */}
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                                        <a href={buildWhatsAppUrl()} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 px-6 py-3.5 bg-green-600 hover:bg-green-500 text-white rounded-xl font-bold transition text-sm">
+                                        <a href={buildWhatsAppUrl()} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center py-3.5 bg-transparent border border-white/20 hover:bg-white/10 text-white rounded-xl font-bold transition text-sm">
                                             📱 Book via WhatsApp
                                         </a>
-                                        <button onClick={handleSubmit} disabled={submitting} className="flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-black rounded-xl font-bold transition text-sm disabled:opacity-50">
-                                            {submitting ? <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" /> : <>✅ Submit Request</>}
+                                        <button onClick={submitBooking} disabled={submitting} className="flex items-center justify-center py-3.5 bg-[#22c55e] hover:bg-[#16a34a] text-black rounded-xl font-bold transition text-sm disabled:opacity-50">
+                                            {submitting ? 'Submitting...' : '✅ Submit Request'}
                                         </button>
                                     </div>
                                 </div>

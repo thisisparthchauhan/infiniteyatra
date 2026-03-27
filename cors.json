@@ -1,7 +1,12 @@
 [
     {
         "origin": [
-            "*"
+            "http://localhost:5173",
+            "http://localhost:4174",
+            "https://infiniteyatra.com",
+            "https://www.infiniteyatra.com",
+            "https://infiniteyatra-iy.web.app",
+            "https://infiniteyatra-iy.firebaseapp.com"
         ],
         "method": [
             "GET",
