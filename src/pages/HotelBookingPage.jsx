@@ -115,6 +115,7 @@ const HotelBookingPage = () => {
         }
 
         const newHotelBookingRef = doc(collection(db, 'hotel_bookings'));
+        const amountToPay = paymentMethod === 'full' ? totalAmount : advanceAmount;
 
         const bookingPayload = {
             hotelId: id,

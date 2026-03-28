@@ -93,6 +93,20 @@ const HotelInquiryModal = ({
 
             const docRef = await addDoc(collection(db, 'hotel_inquiries'), inquiryData);
 
+            // Also save as a lead for unified lead tracking
+            await addDoc(collection(db, 'leads'), {
+                name: formData.name.trim(),
+                phone: formData.phone.trim(),
+                email: formData.email.trim(),
+                source_type: 'hotel_inquiry',
+                sourcePage: `/hotels/${hotel.id}`,
+                packageName: `Hotel: ${hotel.name} — ${roomName} (${nights} night${nights > 1 ? 's' : ''})`,
+                packagePrice: `₹${totalAmount.toLocaleString()}`,
+                status: 'new',
+                refId: refId,
+                createdAt: serverTimestamp()
+            });
+
             // Auto-notify admin on WhatsApp
             notifyAdminNewInquiry({ ...inquiryData, id: docRef.id });
 

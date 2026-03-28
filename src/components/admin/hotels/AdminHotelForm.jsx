@@ -243,17 +243,22 @@ const AdminHotelForm = ({ initialData, onSave, onCancel }) => {
                             <div>
                                 <label className={labelClass}>Category *</label>
                                 <select name="category" value={formData.category} onChange={handleChange} className={inputClass}>
+                                    <option value="Budget">Budget</option>
                                     <option value="3 Star">3 Star</option>
                                     <option value="4 Star">4 Star</option>
                                     <option value="5 Star">5 Star</option>
+                                    <option value="Luxury">Luxury</option>
                                     <option value="Resort">Resort</option>
                                     <option value="Homestay">Homestay</option>
                                     <option value="Villa">Villa</option>
                                     <option value="Cottage">Cottage</option>
+                                    <option value="Dormitory">Dormitory</option>
+                                    <option value="Guest House">Guest House</option>
+                                    <option value="Camp">Camp / Tent</option>
                                 </select>
                             </div>
                             <div>
-                                <label className={labelClass}>Starting Price (₹) *</label>
+                                <label className={labelClass}>Selling Price (₹) * <span className="text-zinc-500 text-[10px] ml-1">Customer sees this</span></label>
                                 <input type="number" name="price" value={formData.price} onChange={handleChange} className={inputClass} required />
                             </div>
                             <div>
@@ -261,10 +266,40 @@ const AdminHotelForm = ({ initialData, onSave, onCancel }) => {
                                 <input name="googleMapsUrl" value={formData.googleMapsUrl || ''} onChange={handleChange} className={inputClass} placeholder="https://maps.app.goo.gl/..." />
                             </div>
                         </div>
+
+                        {/* B2B Pricing Section */}
+                        <div className="mt-4 p-4 bg-yellow-500/5 border border-yellow-500/20 rounded-xl">
+                            <h4 className="text-sm font-bold text-yellow-400 mb-3">B2B Pricing (Internal — Not shown to customers)</h4>
+                            <div className="grid grid-cols-3 gap-4">
+                                <div>
+                                    <label className={labelClass}>Cost Price / B2B Rate (₹)</label>
+                                    <input type="number" name="costPrice" value={formData.costPrice || ''} onChange={handleChange} className={inputClass} placeholder="Hotel's B2B rate" />
+                                </div>
+                                <div>
+                                    <label className={labelClass}>IY Commission %</label>
+                                    <input type="number" name="commissionPercent" value={formData.commissionPercent || ''} onChange={handleChange} className={inputClass} placeholder="e.g. 15" min="0" max="100" />
+                                </div>
+                                <div>
+                                    <label className={labelClass}>Margin (₹) <span className="text-green-400 text-[10px]">Auto</span></label>
+                                    <input
+                                        type="text"
+                                        readOnly
+                                        value={formData.price && formData.costPrice ? `₹${(formData.price - formData.costPrice).toLocaleString('en-IN')} (${(((formData.price - formData.costPrice) / formData.price) * 100).toFixed(1)}%)` : '-'}
+                                        className={`${inputClass} opacity-70 cursor-not-allowed`}
+                                    />
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <label className={labelClass}>City / Location *</label>
-                        <input name="location" value={formData.location} onChange={handleChange} className={inputClass} required placeholder="e.g. Shimla" />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label className={labelClass}>City *</label>
+                            <input name="city" value={formData.city || ''} onChange={handleChange} className={inputClass} required placeholder="e.g. Shimla" />
+                        </div>
+                        <div>
+                            <label className={labelClass}>Location / Area</label>
+                            <input name="location" value={formData.location} onChange={handleChange} className={inputClass} placeholder="e.g. Mall Road, Shimla" />
+                        </div>
                     </div>
                     <div>
                         <label className={labelClass}>Full Address / Landmark</label>
@@ -826,20 +861,19 @@ const AdminHotelForm = ({ initialData, onSave, onCancel }) => {
                         </div>
                     </div>
 
-                </form >
+                </form>
 
                 {/* Footer */}
-                < div className="p-6 border-t border-white/10 bg-black/50 backdrop-blur-md flex justify-end gap-4 rounded-b-2xl" >
+                <div className="p-6 border-t border-white/10 bg-black/50 backdrop-blur-md flex justify-end gap-4 rounded-b-2xl">
                     <button onClick={onCancel} className="px-6 py-3 rounded-xl font-bold text-slate-400 hover:text-white hover:bg-white/5 transition-colors">
                         Cancel
                     </button>
-                    {/* Submit via form ID trigger or just keep onClick if logic is robust. Using form="hotelForm" is cleaner. */}
                     <button type="submit" form="hotelForm" disabled={uploading} className="px-8 py-3 rounded-xl font-bold bg-blue-600 text-white hover:bg-blue-500 transition-colors shadow-lg shadow-blue-500/20 flex items-center gap-2">
                         {uploading ? 'Uploading...' : <><Save size={18} /> Save Hotel</>}
                     </button>
-                </div >
-            </div >
-        </div >
+                </div>
+            </div>
+        </div>
     );
 };
 

@@ -68,6 +68,7 @@ import TermsConditions from './pages/TermsConditions';
 import Future from './pages/Future';
 import Passport from './pages/Passport';
 import TeamGuide from './pages/TeamGuide';
+import CityHotels from './pages/CityHotels';
 
 import TransportationHub from './pages/TransportationHub';
 import VehicleDetail from './pages/VehicleDetail';
@@ -198,6 +199,7 @@ function App() {
 
                         {/* NEW: IY Hotels Vertical */}
                         <Route path="/hotels" element={<Hotels />} />
+                        <Route path="/hotels/city/:citySlug" element={<CityHotels />} />
                         <Route path="/hotels/all" element={<AllHotels />} />
                         <Route path="/hotels/booking-confirmation" element={<HotelBookingConfirmation />} />
                         <Route path="/hotels/compare" element={<HotelCompare />} />
