@@ -1,5 +1,7 @@
 import React from 'react';
 import { MessageCircle } from 'lucide-react';
+import { db } from '../firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 const WhatsAppBookingButton = ({ packageTitle, price, mobile = false }) => {
     const phoneNumber = "919265799325"; // Infinite Yatra official number
@@ -8,7 +10,21 @@ const WhatsAppBookingButton = ({ packageTitle, price, mobile = false }) => {
     );
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
 
-    const handleClick = () => {
+    const handleClick = async () => {
+        // Track this WhatsApp click as a lead in Firestore
+        try {
+            await addDoc(collection(db, 'leads'), {
+                name: 'WhatsApp Visitor',
+                source_type: 'whatsapp_click',
+                packageName: packageTitle || '',
+                packagePrice: price || '',
+                sourcePage: window.location.pathname,
+                status: 'new',
+                createdAt: serverTimestamp()
+            });
+        } catch (error) {
+            console.error('Error tracking WhatsApp lead:', error);
+        }
         window.open(whatsappUrl, '_blank');
     };
 

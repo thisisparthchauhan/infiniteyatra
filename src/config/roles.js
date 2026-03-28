@@ -24,7 +24,8 @@ import {
     Shield,
     Sparkles,
     Anchor,
-    Bike
+    Bike,
+    Target
 } from 'lucide-react';
 
 export const USER_ROLES = {
@@ -45,6 +46,7 @@ export const WORKSPACES = {
         allowedRoles: [USER_ROLES.SUPER_ADMIN],
         modules: [
             'overview', 'staff', 'sitemap',
+            'leads',
             'bookings', 'crm', 'packages', 'operations',
             'finance', 'hotel-finance', 'influencers',
             'homepage', 'experiences', 'stories', 'media',
@@ -55,7 +57,7 @@ export const WORKSPACES = {
         id: 'tour_workspace',
         label: 'Tour Manager',
         allowedRoles: [USER_ROLES.SUPER_ADMIN, USER_ROLES.TOUR_MANAGER],
-        modules: ['bookings', 'crm', 'packages', 'operations']
+        modules: ['leads', 'bookings', 'crm', 'packages', 'operations']
     },
     FINANCE_MANAGER: {
         id: 'finance_workspace',
@@ -100,12 +102,12 @@ export const ROLE_WORKSPACE_MAP = {
 
 // Flattened permissions for legacy checks if needed, but we should rely on Workspace modules
 export const ROLE_PERMISSIONS = {
-    [USER_ROLES.SUPER_ADMIN]: ['overview', 'staff', 'sitemap', 'bookings', 'crm', 'packages', 'operations', 'finance', 'hotel-finance', 'influencers', 'homepage', 'experiences', 'stories', 'media', 'hotels', 'hotel-inquiries', 'hotel-reviews', 'hotel-availability', 'hotel-vendors', 'transport-overview', 'transport-vehicles', 'transport-cities', 'transport-bookings', 'transport-content', 'transport-settings', 'car-management', 'car-bookings', 'cruise-bookings', 'cycle-bookings', 'space-waitlist', 'passport', 'ai-planner-analytics'],
-    [USER_ROLES.TOUR_MANAGER]: ['bookings', 'crm', 'packages', 'operations'],
+    [USER_ROLES.SUPER_ADMIN]: ['overview', 'staff', 'sitemap', 'leads', 'bookings', 'crm', 'packages', 'operations', 'finance', 'hotel-finance', 'influencers', 'homepage', 'experiences', 'stories', 'media', 'hotels', 'hotel-inquiries', 'hotel-reviews', 'hotel-availability', 'hotel-vendors', 'transport-overview', 'transport-vehicles', 'transport-cities', 'transport-bookings', 'transport-content', 'transport-settings', 'car-management', 'car-bookings', 'cruise-bookings', 'cycle-bookings', 'space-waitlist', 'passport', 'ai-planner-analytics'],
+    [USER_ROLES.TOUR_MANAGER]: ['leads', 'bookings', 'crm', 'packages', 'operations'],
     [USER_ROLES.FINANCE_MANAGER]: ['finance', 'hotel-finance', 'influencers', 'analytics'],
     [USER_ROLES.CONTENT_MANAGER]: ['homepage', 'experiences', 'stories', 'media'],
     [USER_ROLES.HOTEL_MANAGER]: ['hotels', 'hotel-bookings', 'hotel-inquiries', 'hotel-reviews', 'hotel-availability', 'hotel-vendors', 'hotel-finance', 'analytics'],
-    [USER_ROLES.BOOKING_MANAGER]: ['hotel-bookings', 'hotel-inquiries', 'bookings', 'analytics'],
+    [USER_ROLES.BOOKING_MANAGER]: ['leads', 'hotel-bookings', 'hotel-inquiries', 'bookings', 'analytics'],
     [USER_ROLES.HOTEL_PARTNER]: ['hotels', 'hotel-bookings', 'hotel-inquiries', 'hotel-finance'], // Self-Service
     [USER_ROLES.TOUR_PARTNER]: ['bookings', 'finance'] // Self-Service
 };
@@ -116,6 +118,9 @@ export const MENU_ITEMS = [
     { id: 'overview', label: 'Snapshot', icon: LayoutDashboard },
     { id: 'sitemap', label: 'Site Map', icon: Map },
     { id: 'staff', label: 'Staff & Roles', icon: Users },
+
+    // Leads
+    { id: 'leads', label: 'Lead Management', icon: Target },
 
     // Tour
     { id: 'bookings', label: 'Tour Bookings', icon: Calendar },

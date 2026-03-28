@@ -64,11 +64,25 @@ const ContactNew = () => {
         };
 
         try {
-            // 1. Save to Firestore
+            // 1. Save to Firestore (original collection)
             await addDoc(collection(db, 'enquiries'), {
                 ...submissionData,
                 timestamp: serverTimestamp(),
                 status: 'new'
+            });
+
+            // 1b. Save to unified leads collection
+            await addDoc(collection(db, 'leads'), {
+                name: fullName,
+                firstName: formData.firstName,
+                lastName: formData.lastName,
+                phone: `+${formData.mobile}`,
+                email: formData.email,
+                message: formData.message,
+                source_type: 'contact_form',
+                sourcePage: '/contact',
+                status: 'new',
+                createdAt: serverTimestamp()
             });
 
             // 2. Send Email

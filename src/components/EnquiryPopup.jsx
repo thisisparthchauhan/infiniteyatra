@@ -84,12 +84,27 @@ const EnquiryPopup = () => {
         setIsLoading(true);
 
         try {
+            // Save to original enquiries collection (backward compatible)
             await addDoc(collection(db, 'enquiries'), {
                 ...formData,
                 fullMobile: `+${formData.mobile}`,
                 createdAt: serverTimestamp(),
                 source: window.location.pathname
             });
+
+            // Also save to unified leads collection for Lead Management System
+            await addDoc(collection(db, 'leads'), {
+                name: `${formData.firstName} ${formData.lastName}`.trim(),
+                firstName: formData.firstName,
+                lastName: formData.lastName,
+                phone: `+${formData.mobile}`,
+                email: formData.email,
+                source_type: 'enquiry_popup',
+                sourcePage: window.location.pathname,
+                status: 'new',
+                createdAt: serverTimestamp()
+            });
+
             setIsSubmitted(true);
             setTimeout(() => {
                 setIsVisible(false);

@@ -35,6 +35,7 @@ const AdminTransportBookings = lazy(() => import('../components/admin/transport/
 const AdminTransportContent = lazy(() => import('../components/admin/transport/AdminTransportContent'));
 const AdminTransportSettings = lazy(() => import('../components/admin/transport/AdminTransportSettings'));
 const AdminTransportOverview = lazy(() => import('../components/admin/transport/AdminTransportOverview'));
+const AdminLeads = lazy(() => import('../components/admin/dashboard/AdminLeads'));
 const AdminSitemap = lazy(() => import('../components/admin/AdminSitemap'));
 const AdminSpaceWaitlist = lazy(() => import('../components/admin/space/AdminSpaceWaitlist'));
 const AdminPassport = lazy(() => import('../components/admin/AdminPassport'));
@@ -86,6 +87,7 @@ const AdminDashboard = () => {
             'transport-bookings': 'Transport Bookings',
             'transport-content': 'Transport Content',
             'transport-settings': 'Transport Settings',
+            'leads': 'Lead Management',
             'sitemap': 'Site Architecture Map',
             'space-waitlist': 'IY Space Waitlist',
             'car-management': 'Manage Cars',
@@ -112,6 +114,7 @@ const AdminDashboard = () => {
         }
 
         switch (activeTab) {
+            case 'leads': return <AdminLeads />;
             case 'analytics': return <LiveAnalytics />;
             case 'overview': return <Overview setActiveTab={setActiveTab} />;
             case 'bookings': return <Bookings />;
