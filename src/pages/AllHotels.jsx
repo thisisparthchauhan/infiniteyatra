@@ -9,7 +9,7 @@ import SEO from '../components/SEO';
 const CATEGORY_CHIPS = [
     'All', 'Budget', '3 Star', '4 Star', '5 Star', 'Trek Stay',
     'Spiritual', 'Luxury', 'Family', 'Honeymoon', 'Couple Friendly',
-    'Resort', 'Homestay', 'Villa', 'Cottage'
+    'Resort', 'Homestay', 'Villa', 'Cottage', 'Dormitory', 'Guest House', 'Camp'
 ];
 
 const SORT_OPTIONS = [

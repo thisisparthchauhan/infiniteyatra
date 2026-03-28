@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Building2, CheckCircle, Mail, Phone, MapPin, Upload } from 'lucide-react';
+import { Building2, CheckCircle, Mail, Phone, MapPin, Upload, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { db } from '../firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 const HotelPartnerOnboarding = () => {
     const [submitted, setSubmitted] = useState(false);
@@ -18,12 +20,39 @@ const HotelPartnerOnboarding = () => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = (e) => {
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // Simulate API call
-        setTimeout(() => {
+        setIsSubmitting(true);
+        try {
+            // Save to Firestore partnership_applications collection
+            await addDoc(collection(db, 'partnership_applications'), {
+                ...formData,
+                type: 'hotel_partner',
+                status: 'pending',
+                createdAt: serverTimestamp()
+            });
+
+            // Also save as a lead for follow-up
+            await addDoc(collection(db, 'leads'), {
+                name: formData.contactName,
+                phone: formData.phone,
+                email: formData.email,
+                source_type: 'partner_onboarding',
+                sourcePage: '/partner/hotel-onboarding',
+                packageName: `Hotel Partner: ${formData.hotelName} (${formData.city})`,
+                status: 'new',
+                createdAt: serverTimestamp()
+            });
+
             setSubmitted(true);
-        }, 1000);
+        } catch (error) {
+            console.error('Error submitting partner application:', error);
+            alert('Something went wrong. Please try again.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     if (submitted) {
