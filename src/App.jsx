@@ -49,6 +49,10 @@ const HotelPartnerOnboarding = lazy(() => import('./pages/HotelPartnerOnboarding
 const MyHotelBookings = lazy(() => import('./pages/MyHotelBookings'));
 const HotelCompare = lazy(() => import('./pages/HotelCompare'));
 
+// Private Aviation
+const PrivateJets = lazy(() => import('./pages/PrivateJets'));
+const PrivateJetDetail = lazy(() => import('./pages/PrivateJetDetail'));
+
 // Vendor Pages
 import VendorLogin from './pages/vendor/VendorLogin';
 import VendorDashboard from './pages/vendor/VendorDashboard';
@@ -220,6 +224,10 @@ function App() {
                         <Route path="/transportation/:vehicleId" element={<VehicleDetail />} />
                         <Route path="/cruise" element={<CruisePage />} />
                         <Route path="/cycles" element={<CyclesPage />} />
+
+                        {/* IY Private Aviation */}
+                        <Route path="/private-jets" element={<PrivateJets />} />
+                        <Route path="/private-jets/:jetId" element={<PrivateJetDetail />} />
                       </Routes>
                     </Suspense>
                     </Layout>
