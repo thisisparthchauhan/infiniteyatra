@@ -20,19 +20,20 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom') || id.includes('react-helmet-async')) {
+            // Only match core React packages by exact folder name
+            if (id.includes('/node_modules/react-dom/') || id.includes('/node_modules/react-router-dom/') || id.includes('/node_modules/react-router/') || id.includes('/node_modules/react-helmet-async/')) {
               return 'vendor-react';
             }
-            if (id.includes('firebase')) {
+            // Match react core last (exact path to avoid matching react-hot-toast etc.)
+            if (id.match(/\/node_modules\/react\//)) {
+              return 'vendor-react';
+            }
+            if (id.includes('/node_modules/firebase/')) {
               return 'vendor-firebase';
             }
-            if (id.includes('recharts') || id.includes('framer-motion') || id.includes('lucide-react') || id.includes('html2canvas') || id.includes('jspdf')) {
+            if (id.includes('/node_modules/recharts/') || id.includes('/node_modules/framer-motion/') || id.includes('/node_modules/lucide-react/') || id.includes('/node_modules/html2canvas/') || id.includes('/node_modules/jspdf/')) {
               return 'vendor-ui';
             }
-            if (id.includes('tailwindcss') || id.includes('clsx') || id.includes('date-fns')) {
-              return 'vendor-ui-helpers';
-            }
-            return 'vendor';
           }
 
           if (id.includes('/src/pages/AdminDashboard') || id.includes('/src/pages/admin/AdminDashboard')) {
