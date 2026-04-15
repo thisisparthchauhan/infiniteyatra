@@ -1,5 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MapPin, X, ChevronDown, Anchor } from 'lucide-react';
+import {
+    MapPin, X, ChevronDown, Anchor, Crown, Star, Music, Wine,
+    Users, Camera, PartyPopper, Sparkles, Heart, UtensilsCrossed,
+    GlassWater, Ship, Clock, Waves, Phone, MessageCircle, Mic2,
+    Award, Calendar, ArrowRight
+} from 'lucide-react';
 import SEO from '../components/SEO';
 import { addCruiseBooking } from '../services/cruiseService';
 import './CruisePage.css';
@@ -67,6 +72,82 @@ const SLOTS = [
     }
 ];
 
+const EXPERIENCES = [
+    { icon: UtensilsCrossed, title: '15-Cuisine World Buffet', desc: 'Thai, Chinese, Italian, Mexican, Japanese, Indian & Continental — a global feast on the river.' },
+    { icon: Mic2, title: 'Live Performances', desc: 'Curated artists and soulful melodies against the lit Atal Bridge every evening.' },
+    { icon: GlassWater, title: 'Unlimited Beverages', desc: 'Premium mocktail bar, soft drinks, and signature concoctions flowing all night.' },
+    { icon: Sparkles, title: 'Panoramic Night Views', desc: 'Open deck access with the Ahmedabad skyline and illuminated bridge as your backdrop.' },
+    { icon: Music, title: 'Dance Floor', desc: 'DJ nights with party vibes every Friday & Saturday — let the river move you.' },
+    { icon: Crown, title: 'VIP Treatment', desc: 'Priority boarding, premium seating arrangements, and personal service throughout.' },
+];
+
+const GALLERY_IMAGES = [
+    { src: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&q=80', alt: 'Fine dining on the water', span: 'col-span-1 row-span-1' },
+    { src: 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=600&q=80', alt: 'Signature cocktails and mocktails', span: 'col-span-1 row-span-2' },
+    { src: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=600&q=80', alt: 'Night skyline panorama', span: 'col-span-1 row-span-1' },
+    { src: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=600&q=80', alt: 'Party and celebration vibes', span: 'col-span-1 row-span-1' },
+    { src: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&q=80', alt: 'Elegant dining setup', span: 'col-span-1 row-span-1' },
+    { src: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=600&q=80', alt: 'River at night', span: 'col-span-1 row-span-2' },
+];
+
+const TESTIMONIALS = [
+    {
+        quote: 'The most magical anniversary celebration we could have imagined. The candlelit dinner on the open deck with the Atal Bridge glowing behind us was absolutely breathtaking. The staff made us feel like royalty.',
+        name: 'Priya & Rahul',
+        occasion: 'Anniversary',
+        rating: 5,
+    },
+    {
+        quote: 'Our corporate event on the river was absolutely stunning. From the welcome drinks to the live music, every detail was perfectly orchestrated. Our clients were genuinely impressed.',
+        name: 'Amit Patel',
+        occasion: 'Corporate Event',
+        rating: 5,
+    },
+    {
+        quote: 'Best birthday party venue in Ahmedabad, hands down! The River Blue Party slot was incredible — the DJ, the vibe, the river views. My friends are still talking about it weeks later.',
+        name: 'Sneha Joshi',
+        occasion: 'Birthday Celebration',
+        rating: 5,
+    },
+];
+
+const PRIVATE_EVENTS = [
+    { icon: '🎂', name: 'Birthday', desc: 'Celebrate your special day on the river with custom decor and cake' },
+    { icon: '💍', name: 'Anniversary', desc: 'Romantic candlelit dinner cruise for your milestone moments' },
+    { icon: '💒', name: 'Pre-Wedding', desc: 'A dreamy pre-wedding celebration your guests will never forget' },
+    { icon: '💎', name: 'Ring Ceremony', desc: 'Say yes against the backdrop of the glittering Sabarmati' },
+    { icon: '💼', name: 'Corporate', desc: 'Impress clients and teams with an unforgettable river experience' },
+    { icon: '📸', name: 'Photoshoot', desc: 'Golden hour and night-lit bridge — the perfect frame for every shot' },
+    { icon: '👑', name: 'Kitty Party', desc: 'Luxury lunch or dinner cruise with your favourite people' },
+    { icon: '🥂', name: 'Get-together', desc: 'Friends, family, or reunions — make it an evening to remember' },
+];
+
+const INCLUSIONS = [
+    { icon: '🥂', label: 'Welcome Drink' },
+    { icon: '🍹', label: 'Unlimited Mocktails & Soft Beverages' },
+    { icon: '🥣', label: 'Soup with Condiments' },
+    { icon: '🥗', label: 'Salad Bar' },
+    { icon: '🍢', label: 'Starter Mixed Cuisine' },
+    { icon: '🍜', label: 'Thai & Chinese' },
+    { icon: '🍝', label: 'Italian & Mexican' },
+    { icon: '🍱', label: 'Japanese Cuisine' },
+    { icon: '🍛', label: 'Indian Cuisine' },
+    { icon: '🫓', label: 'Indian Breads' },
+    { icon: '🥘', label: 'Accompaniments' },
+    { icon: '🍽️', label: 'Continental Cuisine' },
+    { icon: '🍮', label: 'Desserts' },
+    { icon: '🧁', label: 'Indian Sweets & Western Desserts' },
+    { icon: '🎵', label: 'Live Music Performance' },
+    { icon: '🌊', label: 'Open Deck Access' },
+];
+
+const SLOT_MOOD_ICONS = {
+    afternoon: <Clock size={22} />,
+    evening: <Crown size={22} />,
+    night: <Star size={22} />,
+    party: <Music size={22} />,
+};
+
 export default function CruisePage() {
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedSlotId, setSelectedSlotId] = useState('dinner1');
@@ -74,6 +155,7 @@ export default function CruisePage() {
     const [submitted, setSubmitted] = useState(false);
     const [formError, setFormError] = useState('');
     const slotsRef = useRef(null);
+    const experienceRef = useRef(null);
 
     // Fade-up observer
     useEffect(() => {
@@ -108,8 +190,9 @@ export default function CruisePage() {
     };
 
     const scrollToSlots = () => slotsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const scrollToExperience = () => experienceRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-    // ── WhatsApp message builder ──
+    // WhatsApp message builder
     const getWhatsAppUrl = (type = 'booking') => {
         let msg = '';
         if (type === 'private') {
@@ -129,7 +212,7 @@ Estimated Total: ₹${estimatedTotal.toLocaleString('en-IN')}`;
         return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
     };
 
-    // ── Firestore submit ──
+    // Firestore submit
     const handleSubmit = async () => {
         if (!form.name || !form.phone || !form.email || !form.date) {
             setFormError('Please fill in all required fields.');
@@ -162,293 +245,399 @@ Estimated Total: ₹${estimatedTotal.toLocaleString('en-IN')}`;
     return (
         <div className="cruise-page">
             <SEO
-                title="River Cruise | Infinite Yatra | Ahmedabad"
-                description="Sail the Sabarmati — Ahmedabad's most luxurious river dining experience. Gourmet buffet, live music, open deck."
+                title="The Royal Sabarmati River Cruise | Infinite Yatra | Ahmedabad"
+                description="Experience Ahmedabad's most luxurious river cruise — 15-cuisine world buffet, live performances, DJ nights, and panoramic views at Atal Bridge, Sabarmati Riverfront."
                 url="/cruise"
             />
 
-            {/* SECTION 1 — HERO */}
-            <section className="cruise-section h-[100vh] min-h-[700px] flex items-center justify-center text-center px-4 relative">
-                {/* Background Image & Overlays */}
+            {/* ═══════════ SECTION 1 — CINEMATIC HERO ═══════════ */}
+            <section className="cruise-section h-[100vh] min-h-[700px] flex items-center justify-center text-center px-4 relative overflow-hidden">
+                {/* Background Image */}
                 <div className="absolute inset-0 z-0">
-                    <img 
-                        src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1920&q=90" 
-                        alt="Night Water" 
+                    <img
+                        src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1920&q=90"
+                        alt="Night Water"
                         className="w-full h-full object-cover"
                     />
-                    <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(4,8,15,0.5) 0%, rgba(4,8,15,0.3) 40%, rgba(4,8,15,0.85) 80%, rgba(4,8,15,1) 100%)' }}></div>
-                    <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at 50% 60%, rgba(200,168,75,0.08) 0%, transparent 60%)' }}></div>
+                    <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(4,8,15,0.55) 0%, rgba(4,8,15,0.3) 30%, rgba(4,8,15,0.85) 75%, rgba(4,8,15,1) 100%)' }} />
+                    <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at 50% 50%, rgba(200,168,75,0.1) 0%, transparent 55%)' }} />
                 </div>
 
-                <div className="relative z-10 w-full max-w-4xl pt-16">
-                    <div className="fade-up inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-8" style={{ background: 'rgba(200,168,75,0.1)', border: '1px solid rgba(200,168,75,0.3)' }}>
+                {/* Floating golden particles */}
+                <div className="absolute inset-0 z-[1] pointer-events-none overflow-hidden">
+                    {[...Array(20)].map((_, i) => (
+                        <div
+                            key={i}
+                            className="absolute rounded-full"
+                            style={{
+                                width: `${Math.random() * 4 + 2}px`,
+                                height: `${Math.random() * 4 + 2}px`,
+                                left: `${Math.random() * 100}%`,
+                                top: `${Math.random() * 100}%`,
+                                background: 'var(--cruise-gold-primary)',
+                                opacity: Math.random() * 0.5 + 0.1,
+                                animation: `floatParticle ${Math.random() * 6 + 4}s ease-in-out infinite`,
+                                animationDelay: `${Math.random() * 5}s`,
+                            }}
+                        />
+                    ))}
+                </div>
+
+                <div className="relative z-10 w-full max-w-5xl pt-16">
+                    {/* Location pill */}
+                    <div className="fade-up inline-flex items-center gap-2 px-5 py-2 rounded-full mb-8" style={{ background: 'rgba(200,168,75,0.08)', border: '1px solid rgba(200,168,75,0.25)' }}>
                         <Anchor size={14} style={{ color: 'var(--cruise-gold-primary)' }} />
-                        <span style={{ color: 'var(--cruise-gold-primary)', fontSize: '13px', letterSpacing: '0.1em', fontWeight: '500' }}>
-                            Atal Bridge · Sabarmati Riverfront · Ahmedabad
+                        <span style={{ color: 'var(--cruise-gold-primary)', fontSize: '13px', letterSpacing: '0.12em', fontWeight: '500' }}>
+                            Atal Bridge &middot; Sabarmati Riverfront &middot; Ahmedabad
                         </span>
                     </div>
 
-                    <div className="fade-up text-[11px] tracking-[0.25em] uppercase mb-4" style={{ color: 'var(--cruise-text-muted)' }}>
+                    {/* Sub-label */}
+                    <div className="fade-up text-[11px] tracking-[0.3em] uppercase mb-5" style={{ color: 'var(--cruise-text-muted)', transitionDelay: '0.05s' }}>
                         An Infinite Yatra Experience
                     </div>
 
-                    <h1 className="fade-up hero-headline mb-6" style={{ transitionDelay: '0.1s' }}>
-                        Sail the Sabarmati
+                    {/* Main headline */}
+                    <h1 className="fade-up hero-headline mb-3" style={{ transitionDelay: '0.1s' }}>
+                        THE ROYAL
+                    </h1>
+                    <h1 className="fade-up hero-headline mb-6" style={{ transitionDelay: '0.15s', color: 'var(--cruise-gold-light)' }}>
+                        SABARMATI
                     </h1>
 
-                    <p className="fade-up italic text-[22px] mb-8" style={{ color: 'var(--cruise-text-secondary)', fontFamily: "'Cormorant Garamond', serif", transitionDelay: '0.3s' }}>
-                        Ahmedabad's most luxurious river dining experience
+                    {/* Subtitle */}
+                    <p className="fade-up italic text-[clamp(18px,3vw,24px)] mb-6" style={{ color: 'var(--cruise-text-secondary)', fontFamily: "'Cormorant Garamond', serif", transitionDelay: '0.3s' }}>
+                        Where Luxury Meets the River
                     </p>
 
-                    <div className="fade-up hero-divider mb-12" style={{ transitionDelay: '0.5s' }}>
-                        <div className="hero-divider-line"></div>
-                        <span className="hero-divider-dot">✦</span>
-                        <div className="hero-divider-line"></div>
+                    {/* Divider */}
+                    <div className="fade-up hero-divider mb-10" style={{ transitionDelay: '0.4s' }}>
+                        <div className="hero-divider-line" />
+                        <span className="hero-divider-dot">&#10022;</span>
+                        <div className="hero-divider-line" />
                     </div>
 
+                    {/* Stats bar */}
+                    <div className="fade-up flex flex-wrap items-center justify-center gap-6 sm:gap-10 mb-12" style={{ transitionDelay: '0.5s' }}>
+                        {[
+                            { value: '500+', label: 'Events Hosted' },
+                            { value: '50,000+', label: 'Happy Guests' },
+                            { value: '4.8', label: 'Google Rating', suffix: <Star size={14} fill="var(--cruise-gold-primary)" stroke="var(--cruise-gold-primary)" className="inline ml-1" /> },
+                        ].map((stat, i) => (
+                            <div key={i} className="text-center">
+                                <div className="text-[clamp(22px,3vw,30px)] font-bold" style={{ fontFamily: "'Cormorant Garamond', serif", color: 'var(--cruise-gold-light)' }}>
+                                    {stat.value}{stat.suffix}
+                                </div>
+                                <div className="text-[11px] tracking-[0.15em] uppercase mt-1" style={{ color: 'var(--cruise-text-muted)' }}>{stat.label}</div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* CTA buttons */}
                     <div className="fade-up flex flex-col sm:flex-row items-center justify-center gap-5" style={{ transitionDelay: '0.6s' }}>
-                        <a href={getWhatsAppUrl('booking')} target="_blank" rel="noopener noreferrer" className="btn-gold-primary w-full sm:w-auto">
-                            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
-                            Book via WhatsApp
-                        </a>
-                        <button onClick={scrollToSlots} className="btn-gold-ghost w-full sm:w-auto">
-                            Check Availability <ChevronDown size={16} />
+                        <button onClick={() => openBookingModal('dinner1')} className="btn-gold-primary w-full sm:w-auto">
+                            <Crown size={18} />
+                            Reserve Your Evening
+                        </button>
+                        <button onClick={scrollToExperience} className="btn-gold-ghost w-full sm:w-auto">
+                            View Experiences <ChevronDown size={16} />
                         </button>
                     </div>
                 </div>
 
+                {/* Scroll indicator */}
                 <div className="absolute bottom-8 left-1/2 -translate-x-1/2 scroll-indicator">
                     <ChevronDown size={28} style={{ color: 'var(--cruise-gold-primary)' }} />
                 </div>
             </section>
 
-            {/* SECTION 2 — EXPERIENCE HIGHLIGHTS */}
-            <section className="cruise-section pt-[120px] pb-[120px]" style={{ background: 'var(--cruise-bg-deep)' }}>
-                <div className="absolute top-0 left-0 w-full h-[1px]" style={{ background: 'linear-gradient(90deg, transparent, rgba(200,168,75,0.2), transparent)' }}></div>
-                
+            {/* ═══════════ SECTION 2 — THE EXPERIENCE ═══════════ */}
+            <section ref={experienceRef} className="cruise-section pt-[120px] pb-[120px]" style={{ background: 'var(--cruise-bg-deep)' }}>
+                <div className="absolute top-0 left-0 w-full h-[1px]" style={{ background: 'linear-gradient(90deg, transparent, rgba(200,168,75,0.2), transparent)' }} />
+
                 <div className="text-center mb-16 fade-up">
-                    <h2 className="text-[clamp(38px,5vw,62px)] font-bold mb-2">Five Reasons to Step Aboard</h2>
-                    <p className="italic text-[18px]" style={{ color: 'var(--cruise-text-secondary)', fontWeight: 300 }}>Every voyage is a world unto itself</p>
-                    <div style={{ width: '60px', height: '2px', background: 'var(--cruise-gold-primary)', margin: '16px auto' }}></div>
+                    <div className="text-[11px] tracking-[0.3em] uppercase mb-4" style={{ color: 'var(--cruise-gold-dim)' }}>The Experience</div>
+                    <h2 className="text-[clamp(36px,5vw,62px)] font-bold mb-3">AN EVENING LIKE NO OTHER</h2>
+                    <p className="italic text-[18px] max-w-xl mx-auto" style={{ color: 'var(--cruise-text-secondary)', fontWeight: 300, fontFamily: "'Cormorant Garamond', serif" }}>
+                        Six reasons why the Royal Sabarmati is Ahmedabad's most unforgettable evening
+                    </p>
+                    <div style={{ width: '60px', height: '2px', background: 'var(--cruise-gold-primary)', margin: '20px auto 0' }} />
                 </div>
 
-                <div className="highlights-grid fade-up-group">
-                    {/* Card 1 - Large */}
-                    <div className="highlight-card card-large fade-up" style={{ borderLeft: '3px solid var(--cruise-gold-primary)' }}>
-                        <div className="text-[32px] mb-4" style={{ color: 'var(--cruise-gold-primary)' }}>⚜</div>
-                        <h3 className="text-[26px] font-semibold mb-3">World Cuisine Buffet</h3>
-                        <p className="text-[15px] leading-[1.7]" style={{ color: 'var(--cruise-text-secondary)', fontWeight: 300 }}>
-                            Thai, Chinese, Italian, Mexican, Japanese, Indian & Continental — <br className="hidden sm:block" /> fifteen cuisines on one magical voyage
-                        </p>
-                    </div>
-
-                    {/* Card 2 - Tall */}
-                    <div className="highlight-card card-tall fade-up flex flex-col">
-                        <div className="text-[32px] mb-4" style={{ color: 'var(--cruise-gold-primary)' }}>♪</div>
-                        <h3 className="text-[26px] font-semibold mb-3">Live Music</h3>
-                        <p className="text-[15px] leading-[1.7]" style={{ color: 'var(--cruise-text-secondary)', fontWeight: 300 }}>
-                            Soothing live performances as the lit Atal Bridge glides past your panoramic window.
-                        </p>
-                        <div className="music-wave-bars mt-auto">
-                            <div className="music-wave-bar"></div>
-                            <div className="music-wave-bar"></div>
-                            <div className="music-wave-bar"></div>
-                            <div className="music-wave-bar"></div>
-                            <div className="music-wave-bar"></div>
-                        </div>
-                    </div>
-
-                    {/* Card 3 - Small */}
-                    <div className="highlight-card card-small fade-up">
-                        <div className="text-[32px] mb-4" style={{ color: 'var(--cruise-gold-primary)' }}>🍸</div>
-                        <h3 className="text-[26px] font-semibold mb-3">Mocktail Bar</h3>
-                        <p className="text-[15px] leading-[1.7]" style={{ color: 'var(--cruise-text-secondary)', fontWeight: 300 }}>
-                            Unlimited mocktails & soft beverages throughout your journey
-                        </p>
-                    </div>
-
-                    {/* Card 4 - Small */}
-                    <div className="highlight-card card-small fade-up">
-                        <div className="text-[32px] mb-4" style={{ color: 'var(--cruise-gold-primary)' }}>🌃</div>
-                        <h3 className="text-[26px] font-semibold mb-3">Night Skyline</h3>
-                        <p className="text-[15px] leading-[1.7]" style={{ color: 'var(--cruise-text-secondary)', fontWeight: 300 }}>
-                            Open deck access — Ahmedabad lit up, perfectly framed
-                        </p>
-                    </div>
-
-                    {/* Card 5 - Full Width */}
-                    <div className="highlight-card fade-up col-span-1 md:col-span-3">
-                        <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-                            <div className="text-[40px]" style={{ color: 'var(--cruise-gold-primary)' }}>✨</div>
-                            <div>
-                                <h3 className="text-[26px] font-semibold mb-2">Private Events</h3>
-                                <p className="text-[15px] leading-[1.7]" style={{ color: 'var(--cruise-text-secondary)', fontWeight: 300 }}>
-                                    Birthdays, anniversaries, pre-wedding, business conferences — fully customizable spatial arrangements and menus.
+                <div className="max-w-[1100px] mx-auto px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 fade-up-group">
+                    {EXPERIENCES.map((exp, i) => {
+                        const IconComp = exp.icon;
+                        return (
+                            <div key={i} className="highlight-card fade-up group" style={{ textAlign: 'center', padding: '44px 32px' }}>
+                                <div
+                                    className="mx-auto mb-6 w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 group-hover:scale-110"
+                                    style={{ background: 'var(--cruise-gold-glow)', border: '1px solid var(--cruise-border)' }}
+                                >
+                                    <IconComp size={28} style={{ color: 'var(--cruise-gold-primary)' }} />
+                                </div>
+                                <h3 className="text-[22px] font-semibold mb-3">{exp.title}</h3>
+                                <p className="text-[14px] leading-[1.7]" style={{ color: 'var(--cruise-text-secondary)', fontWeight: 300 }}>
+                                    {exp.desc}
                                 </p>
                             </div>
-                        </div>
+                        );
+                    })}
+                </div>
+            </section>
+
+            {/* ═══════════ SECTION 3 — CHOOSE YOUR VOYAGE ═══════════ */}
+            <section ref={slotsRef} className="cruise-section pt-[120px] pb-[160px]" style={{ background: 'var(--cruise-bg-primary)' }}>
+                <div className="text-center mb-16 fade-up">
+                    <div className="text-[11px] tracking-[0.3em] uppercase mb-4" style={{ color: 'var(--cruise-gold-dim)' }}>Select Your Slot</div>
+                    <h2 className="text-[clamp(36px,5vw,62px)] font-bold mb-3">CHOOSE YOUR VOYAGE</h2>
+                    <p className="italic text-[18px]" style={{ color: 'var(--cruise-text-secondary)', fontWeight: 300, fontFamily: "'Cormorant Garamond', serif" }}>
+                        Four distinct experiences, one legendary river
+                    </p>
+                    <div style={{ width: '60px', height: '2px', background: 'var(--cruise-gold-primary)', margin: '20px auto 0' }} />
+                </div>
+
+                <div className="max-w-[1100px] mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-6 fade-up-group">
+                    {SLOTS.map((slot) => {
+                        const isParty = slot.id === 'party';
+                        const isFeatured = slot.featured;
+                        return (
+                            <div
+                                key={slot.id}
+                                className={`slot-card fade-up ${isFeatured ? 'featured' : ''}`}
+                                style={{
+                                    background: `linear-gradient(160deg, var(--cruise-bg-card), ${slot.cardGlow})`,
+                                    borderTop: `3px solid ${slot.topBorderColor}`,
+                                    boxShadow: isParty ? '0 0 40px rgba(124,58,237,0.12), inset 0 0 40px rgba(124,58,237,0.03)' : undefined,
+                                }}
+                            >
+                                {/* Top row: mood icon + badges */}
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="flex items-center gap-3">
+                                        <div
+                                            className="w-10 h-10 rounded-full flex items-center justify-center"
+                                            style={{ background: `${slot.cardGlow}`, border: `1px solid ${slot.topBorderColor}33`, color: slot.topBorderColor }}
+                                        >
+                                            {SLOT_MOOD_ICONS[slot.mood]}
+                                        </div>
+                                        <span className="text-[13px] font-medium" style={{ color: slot.topBorderColor }}>{slot.time}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        {isFeatured && (
+                                            <div className="flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-semibold tracking-wide" style={{ background: 'rgba(200,168,75,0.15)', color: 'var(--cruise-gold-primary)', border: '1px solid rgba(200,168,75,0.3)' }}>
+                                                <Crown size={12} /> SIGNATURE
+                                            </div>
+                                        )}
+                                        {isParty && (
+                                            <div className="px-3 py-1 rounded-full text-[11px] font-bold tracking-wider" style={{ background: 'rgba(124,58,237,0.2)', color: '#a78bfa', border: '1px solid rgba(139,92,246,0.4)' }}>
+                                                18+
+                                            </div>
+                                        )}
+                                        <div
+                                            className="slot-badge"
+                                            style={{
+                                                background: `rgba(${parseInt(slot.badgeColor.slice(1, 3), 16)}, ${parseInt(slot.badgeColor.slice(3, 5), 16)}, ${parseInt(slot.badgeColor.slice(5, 7), 16)}, 0.15)`,
+                                                border: `1px solid rgba(${parseInt(slot.badgeColor.slice(1, 3), 16)}, ${parseInt(slot.badgeColor.slice(3, 5), 16)}, ${parseInt(slot.badgeColor.slice(5, 7), 16)}, 0.35)`,
+                                                color: slot.badgeColor,
+                                            }}
+                                        >
+                                            {slot.badge}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Card title */}
+                                <h3 className="text-[28px] font-bold mb-1">{slot.name}</h3>
+                                <p className="italic text-[15px] mb-4" style={{ color: slot.topBorderColor, fontFamily: "'Cormorant Garamond', serif" }}>{slot.tagline}</p>
+                                <p className="text-[14px] leading-[1.7] mb-6 flex-grow" style={{ color: 'var(--cruise-text-secondary)', fontWeight: 300 }}>{slot.description}</p>
+
+                                <div className="h-[1px] w-full mb-6" style={{ background: 'var(--cruise-border)' }} />
+
+                                {/* Price + CTA */}
+                                <div className="flex flex-wrap items-end justify-between gap-4">
+                                    <div>
+                                        <span className="text-[24px] mr-1" style={{ color: 'var(--cruise-gold-dim)', fontFamily: "'Cormorant Garamond', serif" }}>&#8377;</span>
+                                        <span className="font-bold leading-none" style={{ fontSize: 'clamp(38px, 5vw, 52px)', color: 'var(--cruise-gold-light)', fontFamily: "'Cormorant Garamond', serif" }}>
+                                            {slot.price.toLocaleString('en-IN')}
+                                        </span>
+                                        <span className="text-[13px] ml-2" style={{ color: 'var(--cruise-text-muted)' }}>/person</span>
+                                    </div>
+                                    <button
+                                        className="book-slot-btn"
+                                        onClick={() => openBookingModal(slot.id)}
+                                        style={{
+                                            borderColor: `rgba(${parseInt(slot.topBorderColor.slice(1, 3), 16)}, ${parseInt(slot.topBorderColor.slice(3, 5), 16)}, ${parseInt(slot.topBorderColor.slice(5, 7), 16)}, 0.5)`,
+                                            color: slot.topBorderColor,
+                                            border: `1px solid rgba(${parseInt(slot.topBorderColor.slice(1, 3), 16)}, ${parseInt(slot.topBorderColor.slice(3, 5), 16)}, ${parseInt(slot.topBorderColor.slice(5, 7), 16)}, 0.5)`,
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.background = `rgba(${parseInt(slot.topBorderColor.slice(1, 3), 16)}, ${parseInt(slot.topBorderColor.slice(3, 5), 16)}, ${parseInt(slot.topBorderColor.slice(5, 7), 16)}, 0.12)`;
+                                            e.currentTarget.style.borderColor = slot.topBorderColor;
+                                            e.currentTarget.style.transform = 'translateX(4px)';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.background = 'transparent';
+                                            e.currentTarget.style.borderColor = `rgba(${parseInt(slot.topBorderColor.slice(1, 3), 16)}, ${parseInt(slot.topBorderColor.slice(3, 5), 16)}, ${parseInt(slot.topBorderColor.slice(5, 7), 16)}, 0.5)`;
+                                            e.currentTarget.style.transform = 'translateX(0)';
+                                        }}
+                                    >
+                                        Book Now <ArrowRight size={14} className="inline ml-1" />
+                                    </button>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+
+                {/* Animated water ripples */}
+                <div className="water-ripple" />
+                <div className="water-ripple" />
+                <div className="water-ripple" />
+            </section>
+
+            {/* ═══════════ SECTION 4 — GALLERY ═══════════ */}
+            <section className="cruise-section pt-[100px] pb-[100px]" style={{ background: 'var(--cruise-bg-card)' }}>
+                <div className="text-center mb-14 fade-up">
+                    <div className="text-[11px] tracking-[0.3em] uppercase mb-4" style={{ color: 'var(--cruise-gold-dim)' }}>Gallery</div>
+                    <h2 className="text-[clamp(36px,5vw,56px)] font-bold mb-3">MOMENTS THAT DEFINE THE NIGHT</h2>
+                    <p className="italic text-[18px]" style={{ color: 'var(--cruise-text-secondary)', fontWeight: 300, fontFamily: "'Cormorant Garamond', serif" }}>
+                        A glimpse into the Royal Sabarmati experience
+                    </p>
+                    <div style={{ width: '60px', height: '2px', background: 'var(--cruise-gold-primary)', margin: '20px auto 0' }} />
+                </div>
+
+                <div className="max-w-[1100px] mx-auto px-6 fade-up">
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 auto-rows-[200px] md:auto-rows-[240px]">
+                        {GALLERY_IMAGES.map((img, i) => (
+                            <div
+                                key={i}
+                                className={`${img.span} rounded-2xl overflow-hidden relative group`}
+                                style={{ border: '1px solid var(--cruise-border)' }}
+                            >
+                                <img
+                                    src={img.src}
+                                    alt={img.alt}
+                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                    loading="lazy"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                                    <span className="text-[13px] text-white/90 font-medium">{img.alt}</span>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </section>
 
-            {/* SECTION 3 — CHOOSE YOUR VOYAGE */}
-            <section ref={slotsRef} className="cruise-section pt-[120px] pb-[160px]" style={{ background: 'var(--cruise-bg-primary)' }}>
+            {/* ═══════════ SECTION 5 — EVERY VOYAGE INCLUDES ═══════════ */}
+            <section className="cruise-section pt-[120px] pb-[120px]" style={{ background: 'var(--cruise-bg-deep)' }}>
+                <div className="absolute top-0 left-0 w-full h-[1px]" style={{ background: 'linear-gradient(90deg, transparent, rgba(200,168,75,0.2), transparent)' }} />
+
                 <div className="text-center mb-16 fade-up">
-                    <h2 className="text-[clamp(38px,5vw,62px)] font-bold mb-2">Choose Your Voyage</h2>
-                    <p className="italic text-[18px]" style={{ color: 'var(--cruise-text-secondary)', fontWeight: 300 }}>Select the experience that calls to you</p>
-                    <div style={{ width: '60px', height: '2px', background: 'var(--cruise-gold-primary)', margin: '16px auto' }}></div>
+                    <div className="text-[11px] tracking-[0.3em] uppercase mb-4" style={{ color: 'var(--cruise-gold-dim)' }}>All-Inclusive</div>
+                    <h2 className="text-[clamp(36px,5vw,56px)] font-bold mb-3">EVERY VOYAGE INCLUDES</h2>
+                    <p className="italic text-[18px]" style={{ color: 'var(--cruise-text-secondary)', fontWeight: 300, fontFamily: "'Cormorant Garamond', serif" }}>
+                        Premium all-inclusive &mdash; nothing extra to pay
+                    </p>
+                    <div style={{ width: '60px', height: '2px', background: 'var(--cruise-gold-primary)', margin: '20px auto 0' }} />
                 </div>
 
-                <div className="max-w-[1100px] mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-5 fade-up-group">
-                    {SLOTS.map((slot, index) => (
-                        <div key={slot.id} className={`slot-card fade-up ${slot.featured ? 'featured' : ''}`} style={{ borderTopColor: slot.topBorderColor, background: `linear-gradient(160deg, var(--cruise-bg-card), ${slot.cardGlow})` }}>
-                            <div className="flex flex-wrap items-center justify-between gap-4 mb-2">
-                                <h3 className="text-[28px] font-bold">{slot.name}</h3>
-                                <div className="slot-badge" style={{ background: `rgba(${parseInt(slot.badgeColor.slice(1,3), 16)}, ${parseInt(slot.badgeColor.slice(3,5), 16)}, ${parseInt(slot.badgeColor.slice(5,7), 16)}, 0.15)`, borderColor: `rgba(${parseInt(slot.badgeColor.slice(1,3), 16)}, ${parseInt(slot.badgeColor.slice(3,5), 16)}, ${parseInt(slot.badgeColor.slice(5,7), 16)}, 0.4)`, color: slot.badgeColor }}>
-                                    {slot.badge}
-                                </div>
-                            </div>
-                            
-                            <p className="italic text-[16px] mb-4" style={{ color: slot.topBorderColor }}>{slot.tagline}</p>
-                            <p className="text-[15px] leading-[1.6] mb-6 flex-grow" style={{ color: 'var(--cruise-text-secondary)', fontWeight: 300 }}>{slot.description}</p>
-                            
-                            <div className="flex items-center gap-2 mb-6" style={{ color: 'var(--cruise-text-primary)' }}>
-                                <span className="text-lg">⏰</span> <span className="text-[15px] font-medium">{slot.time}</span>
-                            </div>
-
-                            <div className="h-[1px] w-full mb-6" style={{ background: 'var(--cruise-border)' }}></div>
-
-                            <div className="flex flex-wrap items-end justify-between gap-4">
-                                <div>
-                                    <span className="text-[28px] mr-1" style={{ color: 'var(--cruise-gold-dim)', fontFamily: "'Cormorant Garamond', serif" }}>₹</span>
-                                    <span className="font-bold leading-none" style={{ fontSize: 'clamp(40px, 5vw, 56px)', color: 'var(--cruise-gold-light)', fontFamily: "'Cormorant Garamond', serif" }}>
-                                        {slot.price.toLocaleString('en-IN')}
-                                    </span>
-                                    <span className="text-[14px] ml-2" style={{ color: 'var(--cruise-text-muted)' }}>/person</span>
-                                </div>
-                                <button 
-                                    className="book-slot-btn"
-                                    onClick={() => openBookingModal(slot.id)}
-                                    style={{ borderColor: `rgba(${parseInt(slot.topBorderColor.slice(1,3), 16)}, ${parseInt(slot.topBorderColor.slice(3,5), 16)}, ${parseInt(slot.topBorderColor.slice(5,7), 16)}, 0.5)`, color: slot.topBorderColor }}
-                                    onMouseEnter={(e) => { e.currentTarget.style.background = `rgba(${parseInt(slot.topBorderColor.slice(1,3), 16)}, ${parseInt(slot.topBorderColor.slice(3,5), 16)}, ${parseInt(slot.topBorderColor.slice(5,7), 16)}, 0.12)`; e.currentTarget.style.borderColor = slot.topBorderColor; e.currentTarget.style.transform = 'translateX(4px)'; }}
-                                    onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = `rgba(${parseInt(slot.topBorderColor.slice(1,3), 16)}, ${parseInt(slot.topBorderColor.slice(3,5), 16)}, ${parseInt(slot.topBorderColor.slice(5,7), 16)}, 0.5)`; e.currentTarget.style.transform = 'translateX(0)'; }}
-                                >
-                                    Book This Slot →
-                                </button>
-                            </div>
+                <div className="max-w-[1100px] mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-4 fade-up-group">
+                    {INCLUSIONS.map((item, i) => (
+                        <div key={i} className="inclusion-item fade-up">
+                            <div className="inclusion-icon-wrap">{item.icon}</div>
+                            <span className="text-[14px]">{item.label}</span>
                         </div>
                     ))}
                 </div>
 
-                {/* Animated water ripples at bottom */}
-                <div className="water-ripple"></div>
-                <div className="water-ripple"></div>
-                <div className="water-ripple"></div>
-            </section>
-
-            {/* SECTION 4 — EVERY VOYAGE INCLUDES */}
-            <section className="cruise-section pt-[120px] pb-[120px]" style={{ background: 'var(--cruise-bg-deep)' }}>
-                <div className="absolute top-0 left-0 w-full h-[1px]" style={{ background: 'linear-gradient(90deg, transparent, rgba(200,168,75,0.2), transparent)' }}></div>
-                
-                <div className="text-center mb-16 fade-up">
-                    <h2 className="text-[clamp(38px,5vw,62px)] font-bold mb-2">Every Voyage Includes</h2>
-                    <p className="italic text-[18px]" style={{ color: 'var(--cruise-text-secondary)', fontWeight: 300 }}>Premium all-inclusive — nothing extra to order</p>
-                    <div style={{ width: '60px', height: '2px', background: 'var(--cruise-gold-primary)', margin: '16px auto' }}></div>
-                </div>
-
-                <div className="max-w-[1100px] mx-auto px-6 space-y-4 fade-up-group">
-                    {/* Row 1 - Welcome */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 fade-up">
-                        <div className="inclusion-item">
-                            <div className="inclusion-icon-wrap">🥂</div>
-                            <span className="text-[15px]">Welcome Drink</span>
-                        </div>
-                        <div className="inclusion-item">
-                            <div className="inclusion-icon-wrap">🍹</div>
-                            <span className="text-[15px]">Unlimited Mocktails & Soft Beverages Bar</span>
-                        </div>
-                    </div>
-
-                    {/* Row 2 - Food Journey (3 cols) */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 fade-up">
-                        <div className="inclusion-item"><div className="inclusion-icon-wrap">🥣</div><span className="text-[15px]">Soup with Condiments</span></div>
-                        <div className="inclusion-item"><div className="inclusion-icon-wrap">🥗</div><span className="text-[15px]">Salad Bar</span></div>
-                        <div className="inclusion-item"><div className="inclusion-icon-wrap">🍢</div><span className="text-[15px]">Starter Mixed Cuisine</span></div>
-                        <div className="inclusion-item"><div className="inclusion-icon-wrap">🍜</div><span className="text-[15px]">Thai & Chinese</span></div>
-                        <div className="inclusion-item"><div className="inclusion-icon-wrap">🍝</div><span className="text-[15px]">Italian & Mexican</span></div>
-                        <div className="inclusion-item"><div className="inclusion-icon-wrap">🍱</div><span className="text-[15px]">Japanese Cuisine</span></div>
-                    </div>
-
-                    {/* Row 3 - Indian Table (3 cols) */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 fade-up">
-                        <div className="inclusion-item"><div className="inclusion-icon-wrap">🍛</div><span className="text-[15px]">Indian Cuisine</span></div>
-                        <div className="inclusion-item"><div className="inclusion-icon-wrap">🫓</div><span className="text-[15px]">Indian Breads</span></div>
-                        <div className="inclusion-item"><div className="inclusion-icon-wrap">🥘</div><span className="text-[15px]">Accompaniments</span></div>
-                    </div>
-
-                    {/* Row 4 - Desserts (3 cols) */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 fade-up">
-                        <div className="inclusion-item"><div className="inclusion-icon-wrap">🍽️</div><span className="text-[15px]">Continental Cuisine</span></div>
-                        <div className="inclusion-item"><div className="inclusion-icon-wrap">🍮</div><span className="text-[15px]">Desserts</span></div>
-                        <div className="inclusion-item"><div className="inclusion-icon-wrap">🧁</div><span className="text-[15px]">Indian Sweets & Western Dessert</span></div>
-                    </div>
-
-                    {/* Row 5 - Experience */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 fade-up">
-                        <div className="inclusion-item">
-                            <div className="inclusion-icon-wrap">🎵</div>
-                            <span className="text-[15px]">Live Music Performance</span>
-                        </div>
-                        <div className="inclusion-item">
-                            <div className="inclusion-icon-wrap">🌊</div>
-                            <span className="text-[15px]">Open Deck Access</span>
-                        </div>
-                    </div>
-                </div>
-
                 <div className="text-center mt-12 fade-up">
                     <p className="italic text-[14px]" style={{ color: 'var(--cruise-gold-dim)', letterSpacing: '0.08em' }}>
-                        ✦ No hidden charges. No surprises. ✦
+                        &#10022; No hidden charges. No surprises. Just pure luxury. &#10022;
                     </p>
                 </div>
             </section>
 
-            {/* SECTION 5 — MAKE IT UNFORGETTABLE */}
+            {/* ═══════════ SECTION 6 — CELEBRATE WITH US ═══════════ */}
             <section className="cruise-section pt-[100px] pb-[100px] text-center" style={{ background: 'var(--cruise-bg-card)' }}>
+                {/* Giant watermark */}
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none w-full whitespace-nowrap overflow-hidden">
-                    <span style={{ fontSize: '30vw', fontFamily: "'Cormorant Garamond', serif", opacity: 0.03, color: 'var(--cruise-text-primary)' }}>CELEBRATE</span>
+                    <span style={{ fontSize: '28vw', fontFamily: "'Cormorant Garamond', serif", opacity: 0.025, color: 'var(--cruise-text-primary)' }}>CELEBRATE</span>
                 </div>
 
                 <div className="relative z-10 max-w-5xl mx-auto px-6">
-                    <div className="fade-up mb-12">
-                        <h2 className="text-[clamp(38px,5vw,62px)] font-bold mb-2">Make It Unforgettable</h2>
-                        <p className="italic text-[18px]" style={{ color: 'var(--cruise-text-secondary)', fontWeight: 300 }}>Private bookings for life's most precious moments</p>
+                    <div className="fade-up mb-4">
+                        <div className="text-[11px] tracking-[0.3em] uppercase mb-4" style={{ color: 'var(--cruise-gold-dim)' }}>Private Events</div>
+                        <h2 className="text-[clamp(36px,5vw,56px)] font-bold mb-3">YOUR OCCASION, OUR RIVER</h2>
+                        <p className="italic text-[18px] max-w-lg mx-auto" style={{ color: 'var(--cruise-text-secondary)', fontWeight: 300, fontFamily: "'Cormorant Garamond', serif" }}>
+                            Let the Sabarmati be the canvas for your most cherished celebrations
+                        </p>
+                        <div style={{ width: '60px', height: '2px', background: 'var(--cruise-gold-primary)', margin: '20px auto 0' }} />
                     </div>
 
-                    <div className="flex flex-wrap justify-center gap-3 fade-up">
-                        <div className="event-chip"><span className="chip-icon">🎂</span><span className="chip-label">Birthday</span></div>
-                        <div className="event-chip"><span className="chip-icon">💍</span><span className="chip-label">Anniversary</span></div>
-                        <div className="event-chip"><span className="chip-icon">💒</span><span className="chip-label">Pre-Wedding</span></div>
-                        <div className="event-chip"><span className="chip-icon">💍</span><span className="chip-label">Ring Ceremony</span></div>
-                        <div className="event-chip"><span className="chip-icon">💼</span><span className="chip-label">Business Conference</span></div>
-                        <div className="event-chip"><span className="chip-icon">📸</span><span className="chip-label">Photoshoot</span></div>
-                        <div className="event-chip"><span className="chip-icon">👑</span><span className="chip-label">Kitty Party</span></div>
-                        <div className="event-chip"><span className="chip-icon">🥂</span><span className="chip-label">Social Get-together</span></div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-12 fade-up-group">
+                        {PRIVATE_EVENTS.map((evt, i) => (
+                            <div key={i} className="event-chip fade-up" style={{ padding: '24px 16px' }}>
+                                <span className="chip-icon text-[28px]">{evt.icon}</span>
+                                <span className="text-[14px] font-semibold" style={{ color: 'var(--cruise-text-primary)' }}>{evt.name}</span>
+                                <span className="chip-label text-[11px] leading-snug" style={{ textAlign: 'center' }}>{evt.desc}</span>
+                            </div>
+                        ))}
                     </div>
 
-                    <div className="fade-up">
+                    <div className="fade-up mt-12">
                         <a href={getWhatsAppUrl('private')} target="_blank" rel="noopener noreferrer" className="private-enquiry-btn">
-                            Enquire for Private Booking →
+                            <MessageCircle size={20} />
+                            Plan Your Private Celebration
                         </a>
                     </div>
                 </div>
             </section>
 
-            {/* SECTION 6 — FIND US */}
+            {/* ═══════════ SECTION 7 — GUEST REVIEWS ═══════════ */}
             <section className="cruise-section pt-[100px] pb-[100px]" style={{ background: 'var(--cruise-bg-primary)' }}>
+                <div className="text-center mb-14 fade-up">
+                    <div className="text-[11px] tracking-[0.3em] uppercase mb-4" style={{ color: 'var(--cruise-gold-dim)' }}>Testimonials</div>
+                    <h2 className="text-[clamp(36px,5vw,56px)] font-bold mb-3">WHAT OUR GUESTS SAY</h2>
+                    <p className="italic text-[18px]" style={{ color: 'var(--cruise-text-secondary)', fontWeight: 300, fontFamily: "'Cormorant Garamond', serif" }}>
+                        Real experiences from real voyagers
+                    </p>
+                    <div style={{ width: '60px', height: '2px', background: 'var(--cruise-gold-primary)', margin: '20px auto 0' }} />
+                </div>
+
+                <div className="max-w-[1100px] mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-6 fade-up-group">
+                    {TESTIMONIALS.map((t, i) => (
+                        <div key={i} className="highlight-card fade-up" style={{ padding: '40px 32px', display: 'flex', flexDirection: 'column' }}>
+                            {/* Stars */}
+                            <div className="flex items-center gap-1 mb-5">
+                                {[...Array(t.rating)].map((_, j) => (
+                                    <Star key={j} size={16} fill="var(--cruise-gold-primary)" stroke="var(--cruise-gold-primary)" />
+                                ))}
+                            </div>
+
+                            {/* Quote */}
+                            <p className="text-[15px] leading-[1.8] italic flex-grow mb-6" style={{ color: 'var(--cruise-text-secondary)', fontWeight: 300, fontFamily: "'Cormorant Garamond', serif", fontSize: '17px' }}>
+                                &ldquo;{t.quote}&rdquo;
+                            </p>
+
+                            {/* Divider */}
+                            <div className="h-[1px] w-full mb-5" style={{ background: 'var(--cruise-border)' }} />
+
+                            {/* Author */}
+                            <div>
+                                <div className="text-[15px] font-semibold" style={{ color: 'var(--cruise-text-primary)' }}>{t.name}</div>
+                                <div className="text-[12px] tracking-wide mt-1" style={{ color: 'var(--cruise-gold-dim)' }}>{t.occasion}</div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </section>
+
+            {/* ═══════════ SECTION 8 — FIND US ═══════════ */}
+            <section className="cruise-section pt-[100px] pb-[100px]" style={{ background: 'var(--cruise-bg-deep)' }}>
                 <div className="max-w-4xl mx-auto px-6">
                     <div className="text-center mb-12 fade-up">
-                        <h2 className="text-[52px] font-bold" style={{ color: 'var(--cruise-text-primary)' }}>Find Us</h2>
+                        <div className="text-[11px] tracking-[0.3em] uppercase mb-4" style={{ color: 'var(--cruise-gold-dim)' }}>Location</div>
+                        <h2 className="text-[clamp(36px,5vw,52px)] font-bold" style={{ color: 'var(--cruise-text-primary)' }}>FIND US</h2>
                     </div>
 
                     <div className="map-container fade-up">
@@ -470,19 +659,49 @@ Estimated Total: ₹${estimatedTotal.toLocaleString('en-IN')}`;
                             <p className="font-bold text-[18px] mb-1">Near Atal Bridge, Sabarmati Riverfront</p>
                             <p className="text-[15px] mb-3" style={{ color: 'var(--cruise-text-secondary)' }}>West Side, Sardar Bridge, Ahmedabad 380009</p>
                             <p className="italic text-[14px]" style={{ color: 'var(--cruise-gold-primary)' }}>
-                                ⏰ Boarding begins 15 minutes before departure. Please arrive on time.
+                                Boarding begins 15 minutes before departure. Please arrive on time.
                             </p>
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* SECTION 7 — BOOKING MODAL */}
+            {/* ═══════════ SECTION 9 — FINAL CTA ═══════════ */}
+            <section className="cruise-section py-[80px] relative overflow-hidden" style={{ background: 'linear-gradient(135deg, var(--cruise-bg-primary), var(--cruise-bg-card))' }}>
+                {/* Decorative glow */}
+                <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at 50% 50%, rgba(200,168,75,0.06) 0%, transparent 60%)' }} />
+                <div className="absolute top-0 left-0 w-full h-[1px]" style={{ background: 'linear-gradient(90deg, transparent, rgba(200,168,75,0.3), transparent)' }} />
+                <div className="absolute bottom-0 left-0 w-full h-[1px]" style={{ background: 'linear-gradient(90deg, transparent, rgba(200,168,75,0.3), transparent)' }} />
+
+                <div className="relative z-10 text-center max-w-3xl mx-auto px-6 fade-up">
+                    <Ship size={40} style={{ color: 'var(--cruise-gold-primary)', margin: '0 auto 20px' }} />
+                    <h2 className="text-[clamp(32px,5vw,52px)] font-bold mb-4">YOUR ROYAL EVENING AWAITS</h2>
+                    <p className="italic text-[20px] mb-3" style={{ color: 'var(--cruise-text-secondary)', fontFamily: "'Cormorant Garamond', serif" }}>
+                        The Sabarmati has a table reserved for you
+                    </p>
+                    <p className="text-[16px] mb-10" style={{ color: 'var(--cruise-gold-primary)' }}>
+                        Starting from <strong style={{ fontSize: '22px', fontFamily: "'Cormorant Garamond', serif" }}>&#8377;1,199</strong> per person
+                    </p>
+
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-5">
+                        <a href={getWhatsAppUrl('booking')} target="_blank" rel="noopener noreferrer" className="btn-gold-primary w-full sm:w-auto">
+                            <MessageCircle size={18} />
+                            Book via WhatsApp
+                        </a>
+                        <button onClick={() => openBookingModal('dinner1')} className="btn-gold-ghost w-full sm:w-auto">
+                            <Calendar size={16} />
+                            Book Now
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            {/* ═══════════ SECTION 10 — BOOKING MODAL ═══════════ */}
             {modalOpen && (
                 <div className="cruise-modal-overlay" onClick={() => setModalOpen(false)}>
                     <div className="cruise-modal" onClick={e => e.stopPropagation()}>
-                        <button 
-                            onClick={() => setModalOpen(false)} 
+                        <button
+                            onClick={() => setModalOpen(false)}
                             className="absolute top-6 right-6 p-2 rounded-full transition-colors"
                             style={{ color: 'var(--cruise-text-muted)', background: 'rgba(255,255,255,0.05)' }}
                             onMouseEnter={e => { e.currentTarget.style.color = '#fff'; }}
@@ -491,21 +710,25 @@ Estimated Total: ₹${estimatedTotal.toLocaleString('en-IN')}`;
                             <X size={20} />
                         </button>
 
-                        <h3 className="text-center text-[34px] font-bold mb-8" style={{ color: 'var(--cruise-text-primary)' }}>
-                            Reserve Your Voyage
-                        </h3>
+                        {/* Modal header */}
+                        <div className="text-center mb-8">
+                            <Crown size={28} style={{ color: 'var(--cruise-gold-primary)', margin: '0 auto 12px' }} />
+                            <h3 className="text-[32px] font-bold" style={{ color: 'var(--cruise-text-primary)' }}>
+                                Reserve Your Voyage
+                            </h3>
+                            <p className="text-[14px] mt-2" style={{ color: 'var(--cruise-text-muted)' }}>Fill in your details and we will confirm within 2 hours</p>
+                        </div>
 
                         {submitted ? (
                             <div className="text-center py-6">
-                                <div className="text-6xl mb-6">🚢</div>
+                                <div className="text-6xl mb-6">
+                                    <Ship size={56} style={{ color: 'var(--cruise-gold-primary)', margin: '0 auto' }} />
+                                </div>
                                 <h4 className="text-[24px] font-bold mb-3" style={{ color: 'var(--cruise-gold-light)' }}>Request Received!</h4>
                                 <p className="text-[16px] mb-8" style={{ color: 'var(--cruise-text-secondary)' }}>
                                     Our team will contact you within 2 hours to confirm your voyage details.
                                 </p>
-                                <button 
-                                    className="btn-gold-ghost"
-                                    onClick={() => setModalOpen(false)}
-                                >
+                                <button className="btn-gold-ghost" onClick={() => setModalOpen(false)}>
                                     Close
                                 </button>
                             </div>
@@ -532,7 +755,7 @@ Estimated Total: ₹${estimatedTotal.toLocaleString('en-IN')}`;
                                     <select className="cruise-input appearance-none" value={selectedSlotId} onChange={e => setSelectedSlotId(e.target.value)} style={{ cursor: 'pointer' }}>
                                         {SLOTS.map(s => (
                                             <option key={s.id} value={s.id} style={{ background: '#0b1220', color: '#f0e8d0' }}>
-                                                {s.name} — ₹{s.price.toLocaleString('en-IN')}/person ({s.time}){s.id === 'party' ? ' [18+ only]' : ''}
+                                                {s.name} — &#8377;{s.price.toLocaleString('en-IN')}/person ({s.time}){s.id === 'party' ? ' [18+ only]' : ''}
                                             </option>
                                         ))}
                                     </select>
@@ -560,14 +783,14 @@ Estimated Total: ₹${estimatedTotal.toLocaleString('en-IN')}`;
 
                                 <div>
                                     <label className="cruise-input-label">Special Requests (Optional)</label>
-                                    <textarea rows={2} className="cruise-input resize-none" placeholder="Dietary restrictions, celebrations..." value={form.requests} onChange={e => handleChange('requests', e.target.value)}></textarea>
+                                    <textarea rows={2} className="cruise-input resize-none" placeholder="Dietary restrictions, celebrations..." value={form.requests} onChange={e => handleChange('requests', e.target.value)} />
                                 </div>
 
                                 <div className="price-display">
                                     <div className="total-label mb-1">Estimated Total</div>
-                                    <div className="total-amount">₹{estimatedTotal.toLocaleString('en-IN')}</div>
+                                    <div className="total-amount">&#8377;{estimatedTotal.toLocaleString('en-IN')}</div>
                                     <div className="text-[12px] mt-2" style={{ color: 'var(--cruise-text-muted)' }}>
-                                        {selectedSlot?.name} × {form.guests} guest{form.guests !== 1 ? 's' : ''} <br/>
+                                        {selectedSlot?.name} &times; {form.guests} guest{form.guests !== 1 ? 's' : ''} <br />
                                         *Final price subject to GST.
                                     </div>
                                 </div>
@@ -580,11 +803,12 @@ Estimated Total: ₹${estimatedTotal.toLocaleString('en-IN')}`;
 
                                 <div className="flex flex-col sm:flex-row gap-3 pt-2">
                                     <a href={getWhatsAppUrl('booking')} target="_blank" rel="noopener noreferrer" className="btn-gold-primary text-center flex-1 justify-center whitespace-nowrap" style={{ padding: '14px 28px', fontSize: '14px', fontWeight: '600' }}>
+                                        <MessageCircle size={16} />
                                         Book via WhatsApp
                                     </a>
-                                    <button 
-                                        onClick={handleSubmit} 
-                                        disabled={submitting} 
+                                    <button
+                                        onClick={handleSubmit}
+                                        disabled={submitting}
                                         className="btn-gold-ghost flex-1 justify-center whitespace-nowrap"
                                         style={{ padding: '14px 28px', fontSize: '14px', fontWeight: '600', opacity: submitting ? 0.7 : 1 }}
                                     >
@@ -596,6 +820,16 @@ Estimated Total: ₹${estimatedTotal.toLocaleString('en-IN')}`;
                     </div>
                 </div>
             )}
+
+            {/* Inline keyframes for floating particles */}
+            <style>{`
+                @keyframes floatParticle {
+                    0%, 100% { transform: translateY(0px) translateX(0px); opacity: 0.2; }
+                    25% { transform: translateY(-20px) translateX(10px); opacity: 0.5; }
+                    50% { transform: translateY(-10px) translateX(-5px); opacity: 0.3; }
+                    75% { transform: translateY(-30px) translateX(15px); opacity: 0.4; }
+                }
+            `}</style>
         </div>
     );
 }
