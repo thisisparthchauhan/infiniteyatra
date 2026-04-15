@@ -226,8 +226,8 @@ function App() {
                         <Route path="/cycles" element={<CyclesPage />} />
 
                         {/* IY Private Aviation */}
-                        <Route path="/private-jets" element={<PrivateJets />} />
-                        <Route path="/private-jets/:jetId" element={<PrivateJetDetail />} />
+                        <Route path="/private-aviation" element={<PrivateJets />} />
+                        <Route path="/private-aviation/:jetId" element={<PrivateJetDetail />} />
                       </Routes>
                     </Suspense>
                     </Layout>

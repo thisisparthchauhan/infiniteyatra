@@ -13,7 +13,7 @@ const vehicles = [
   { id: 'bus', name: 'Bus', category: 'Land', tagline: 'Comfort in numbers', price: 'From ₹500/seat', accent: '#14b8a6', imgUrl: '/assets/transport/bus.jpg', size: 'small' },
   { id: 'trains', name: 'Trains', category: 'Land', tagline: 'India in motion', price: 'From ₹250/seat', accent: '#6366f1', imgUrl: '/assets/transport/jaden-william-qVeqpMrZQGk-unsplash.jpg', size: 'large' },
   { id: 'flights', name: 'Flights', category: 'Air', tagline: 'Sky is not the limit', price: 'From ₹2,500', accent: '#0ea5e9', imgUrl: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&q=80&w=800', size: 'small' },
-  { id: 'jet-planes', name: 'Jet Planes', category: 'Air', tagline: 'Above the ordinary', price: 'On Request', accent: '#f59e0b', imgUrl: 'https://images.unsplash.com/photo-1540962351504-03099e0a754b?auto=format&fit=crop&q=80&w=800', size: 'large' },
+  { id: 'jet-planes', name: 'Private Aviation', category: 'Air', tagline: 'Above the ordinary', price: 'On Request', accent: '#f59e0b', imgUrl: 'https://images.unsplash.com/photo-1540962351504-03099e0a754b?auto=format&fit=crop&q=80&w=800', size: 'large', link: '/private-aviation' },
   { id: 'cruise', name: 'Cruise', category: 'Sea', tagline: 'Where horizons have no end', price: 'From ₹15,000', accent: '#06b6d4', imgUrl: '/assets/transport/cruise.jpg', size: 'large' },
   { id: 'river-cruise', name: 'River Cruise', category: 'Experiences', tagline: 'Dine & sail on Ahmedabad\'s most luxurious river cruise', price: 'From ₹1,199', accent: '#1e3a5f', imgUrl: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&q=80', size: 'large', subtitle: 'Sabarmati Riverfront, Ahmedabad', emoji: '🚢', link: '/cruise' },
 ];
