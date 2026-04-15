@@ -248,7 +248,7 @@ function Fleet() {
                   <div className="flex items-center justify-between">
                     <span className="text-amber-400 font-semibold text-sm">{formatPrice(jet.pricePerHour)}/hr</span>
                     <Link
-                      to={`/private-jets/${jet.id}`}
+                      to={`/private-aviation/${jet.id}`}
                       className="flex items-center gap-1 text-xs uppercase tracking-wider text-zinc-400 hover:text-amber-400 transition-colors font-semibold"
                     >
                       View Details <ChevronRight className="w-3.5 h-3.5" />
@@ -606,7 +606,7 @@ export default function PrivateJets() {
         title="Private Jets"
         description="Charter private jets across India and beyond. Luxury air travel with 24/7 concierge, vetted fleet, and transparent pricing. Infinite Yatra Private Aviation."
         keywords="private jet india, charter flight, luxury aviation, private plane hire, jet charter mumbai delhi"
-        url="/private-jets"
+        url="/private-aviation"
       />
       <Hero />
       <Services />

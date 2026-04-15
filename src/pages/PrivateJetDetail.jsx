@@ -68,7 +68,7 @@ const PrivateJetDetail = () => {
                 phone: formData.phone,
                 email: formData.email,
                 source_type: 'private_jet_inquiry',
-                sourcePage: `/private-jets/${jet.id}`,
+                sourcePage: `/private-aviation/${jet.id}`,
                 packageName: `Private Jet: ${jet.name} (${formData.from} → ${formData.to})`,
                 status: 'new',
                 createdAt: serverTimestamp()
@@ -93,7 +93,7 @@ const PrivateJetDetail = () => {
             <Plane size={48} className="text-amber-400" />
             <h1 className="text-3xl font-bold">Aircraft Not Found</h1>
             <p className="text-zinc-500">The aircraft you're looking for is not in our fleet.</p>
-            <Link to="/private-jets" className="px-6 py-3 bg-amber-400 text-black rounded-xl font-bold hover:bg-amber-300 transition-colors">
+            <Link to="/private-aviation" className="px-6 py-3 bg-amber-400 text-black rounded-xl font-bold hover:bg-amber-300 transition-colors">
                 View Our Fleet
             </Link>
         </div>
@@ -114,7 +114,7 @@ const PrivateJetDetail = () => {
                 <nav className="flex items-center gap-2 text-xs text-zinc-500">
                     <Link to="/" className="hover:text-white transition-colors flex items-center gap-1"><Home size={12} /> Home</Link>
                     <ChevronRight size={10} />
-                    <Link to="/private-jets" className="hover:text-amber-400 transition-colors">Private Jets</Link>
+                    <Link to="/private-aviation" className="hover:text-amber-400 transition-colors">Private Jets</Link>
                     <ChevronRight size={10} />
                     <span className="text-amber-400">{jet.name}</span>
                 </nav>
@@ -480,7 +480,7 @@ const PrivateJetDetail = () => {
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {otherJets.slice(0, 3).map(j => (
-                            <Link key={j.id} to={`/private-jets/${j.id}`}
+                            <Link key={j.id} to={`/private-aviation/${j.id}`}
                                 className="group bg-white/[0.03] border border-white/5 rounded-xl overflow-hidden hover:border-amber-400/20 transition-all">
                                 <div className="h-44 overflow-hidden">
                                     <img src={j.image} alt={j.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />

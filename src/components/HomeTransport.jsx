@@ -97,11 +97,12 @@ export const transportItems = [
         }
     },
     {
-        title: "Jet Planes",
-        desc: "Private luxury aviation",
+        title: "Private Aviation",
+        desc: "Luxury charter flights",
         image: "https://images.unsplash.com/photo-1540962351504-03099e0a754b?auto=format&fit=crop&q=80",
         type: "Jet Planes",
         icon: "Rocket",
+        link: "/private-aviation",
         animation: {
             y: [5, -40],
             x: [-5, 40],
@@ -238,7 +239,7 @@ const HomeTransport = () => {
                         ))}
                     </div>
                     <Link
-                        to={`/transportation/${activeItem.id || activeItem.type.toLowerCase().replace(/\s+/g, '-')}`}
+                        to={activeItem.link || `/transportation/${activeItem.id || activeItem.type.toLowerCase().replace(/\s+/g, '-')}`}
                         className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white px-8 py-4 rounded-xl font-bold transition-all shadow-lg hover:shadow-blue-500/25 group"
                     >
                         {config.buttonPrefix} {activeItem.title} <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -251,7 +252,7 @@ const HomeTransport = () => {
                     viewport={{ once: true }}
                     className="flex-1 w-full relative h-[400px] md:h-[500px]"
                 >
-                    <Link to={`/transportation/${activeItem.id || activeItem.type.toLowerCase().replace(/\s+/g, '-')}`} className="block w-full h-full rounded-3xl overflow-hidden relative shadow-2xl border border-white/10 group cursor-pointer">
+                    <Link to={activeItem.link || `/transportation/${activeItem.id || activeItem.type.toLowerCase().replace(/\s+/g, '-')}`} className="block w-full h-full rounded-3xl overflow-hidden relative shadow-2xl border border-white/10 group cursor-pointer">
                         <AnimatePresence mode="wait">
                             <motion.img
                                 key={activeIndex}
