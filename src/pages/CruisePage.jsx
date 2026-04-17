@@ -6,6 +6,7 @@ import {
     Award, Calendar, ArrowRight
 } from 'lucide-react';
 import SEO from '../components/SEO';
+import ExploreOtherTransport from '../components/ExploreOtherTransport';
 import { addCruiseBooking } from '../services/cruiseService';
 import './CruisePage.css';
 
@@ -695,6 +696,9 @@ Estimated Total: ₹${estimatedTotal.toLocaleString('en-IN')}`;
                     </div>
                 </div>
             </section>
+
+            {/* ═══════════ EXPLORE OTHER TRANSPORT ═══════════ */}
+            <ExploreOtherTransport currentKey="cruise" />
 
             {/* ═══════════ SECTION 10 — BOOKING MODAL ═══════════ */}
             {modalOpen && (

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import TransportationBookingDrawer from '../components/TransportationBookingDrawer';
 import CarBookingDrawer from '../components/CarBookingDrawer';
+import ExploreOtherTransport from '../components/ExploreOtherTransport';
 import { motion } from 'framer-motion';
 import { 
   ArrowRight, ShieldCheck, Map, Clock, 
@@ -326,7 +327,10 @@ export default function VehicleDetail() {
 
       </div>
 
-      {/* 5. MOBILE STICKY BOOKING BUTTON */}
+      {/* 5. EXPLORE OTHER TRANSPORT */}
+      <ExploreOtherTransport currentKey={vehicleId} />
+
+      {/* 6. MOBILE STICKY BOOKING BUTTON */}
       <div className="md:hidden fixed bottom-6 left-4 right-4 z-50 flex flex-col gap-2">
         {vehicleId === 'cars' && (
           <button 

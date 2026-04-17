@@ -3,22 +3,22 @@
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap');
 
 .cruise-page {
-  /* Override site globals only for /cruise page */
-  --cruise-bg-deep:        #04080f;   /* deepest background */
-  --cruise-bg-primary:     #070d1a;   /* main page bg */
-  --cruise-bg-card:        #0b1220;   /* card surfaces */
-  --cruise-bg-card-hover:  #0e1628;   /* card hover */
-  --cruise-gold-primary:   #c8a84b;   /* main gold */
-  --cruise-gold-light:     #e8cc7a;   /* light gold for headings */
-  --cruise-gold-dim:       #8a7030;   /* muted gold for borders */
-  --cruise-gold-glow:      rgba(200,168,75,0.12); /* gold glow bg */
+  /* Override site globals only for /cruise page — Rich Midnight Sapphire + Gold */
+  --cruise-bg-deep:        #060a14;   /* deepest background */
+  --cruise-bg-primary:     #0a1020;   /* main page bg — deep sapphire */
+  --cruise-bg-card:        #0f1830;   /* card surfaces — midnight blue */
+  --cruise-bg-card-hover:  #141e3a;   /* card hover — lighter midnight */
+  --cruise-gold-primary:   #d4a843;   /* main gold — richer, warmer */
+  --cruise-gold-light:     #f0d080;   /* light gold for headings */
+  --cruise-gold-dim:       #937530;   /* muted gold for borders */
+  --cruise-gold-glow:      rgba(212,168,67,0.10); /* gold glow bg */
   --cruise-teal:           #0e7490;   /* water accent */
   --cruise-teal-light:     #22d3ee;   /* highlight teal */
-  --cruise-text-primary:   #f0e8d0;   /* warm white */
-  --cruise-text-secondary: #8a9ab8;   /* muted blue-grey */
-  --cruise-text-muted:     #4a5a78;   /* very muted */
-  --cruise-border:         rgba(200,168,75,0.15); /* default border */
-  --cruise-border-hover:   rgba(200,168,75,0.35); /* hover border */
+  --cruise-text-primary:   #f5edd8;   /* warm cream white */
+  --cruise-text-secondary: #94a3c0;   /* soft blue-grey */
+  --cruise-text-muted:     #4d5f80;   /* muted steel */
+  --cruise-border:         rgba(212,168,67,0.12); /* default border */
+  --cruise-border-hover:   rgba(212,168,67,0.30); /* hover border */
 
   background: var(--cruise-bg-primary);
   font-family: 'DM Sans', 'Inter', sans-serif;
