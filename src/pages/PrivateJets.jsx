@@ -8,6 +8,7 @@ import {
   DollarSign, Send, Mountain, HeartPulse, PlaneTakeoff,
 } from 'lucide-react';
 import SEO from '../components/SEO';
+import ExploreOtherTransport from '../components/ExploreOtherTransport';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { privateJetFleet, jetServices, popularRoutes, jetTestimonials } from '../data/privateJets';
@@ -616,6 +617,7 @@ export default function PrivateJets() {
       <WhyChooseUs />
       <Testimonials />
       <InquiryForm />
+      <ExploreOtherTransport currentKey="private-aviation" />
       <FooterNote />
     </div>
   );
