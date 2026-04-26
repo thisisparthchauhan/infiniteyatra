@@ -131,19 +131,19 @@ const Navbar = () => {
     return (
         <>
             <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${navBackground}`}>
-                <div className="container mx-auto px-6 lg:px-8">
-                    <div className="flex items-center justify-between h-20">
+                <div className="w-full max-w-[100rem] mx-auto px-4 lg:px-6 xl:px-8">
+                    <div className="flex items-center justify-between h-16 lg:h-20">
                         {/* Logo */}
                         <Link
                             to="/"
-                            className="flex flex-col items-center group relative z-10"
+                            className="flex flex-col items-center group relative z-10 shrink-0"
                         >
-                            <span className={`text-2xl font-black tracking-[0.2em] ${textColor === 'text-white' ? 'text-white' : 'text-slate-950'} drop-shadow-sm whitespace-nowrap`} style={{ fontFamily: "'Raleway', sans-serif" }}>INFINITE YATRA</span>
-                            <span className={`text-[10px] tracking-[0.3em] font-extrabold ${textColor === 'text-white' ? 'text-white/90' : 'text-slate-800'}`} style={{ fontFamily: "'Raleway', sans-serif" }}>EXPLORE INFINITE</span>
+                            <span className={`text-[17px] xl:text-2xl font-black tracking-[0.1em] xl:tracking-[0.2em] ${textColor === 'text-white' ? 'text-white' : 'text-slate-950'} drop-shadow-sm whitespace-nowrap`} style={{ fontFamily: "'Raleway', sans-serif" }}>INFINITE YATRA</span>
+                            <span className={`text-[7px] xl:text-[10px] tracking-[0.15em] xl:tracking-[0.3em] font-extrabold ${textColor === 'text-white' ? 'text-white/90' : 'text-slate-800'}`} style={{ fontFamily: "'Raleway', sans-serif" }}>EXPLORE INFINITE</span>
                         </Link>
 
                         {/* Desktop Navigation */}
-                        <div className="hidden md:flex items-center gap-1 lg:gap-2 ml-10">
+                        <div className="hidden lg:flex items-center gap-0 xl:gap-1 2xl:gap-2 ml-2 xl:ml-6">
                             {!isAuthPage && navItems.map((item) => {
                                 const Icon = item.icon;
                                 const isActive = item.name === 'Home'
@@ -167,18 +167,18 @@ const Navbar = () => {
                                                 }
                                             }}
                                             className={`
-                                                relative px-4 py-2 text-sm font-medium rounded-lg 
+                                                relative px-1.5 xl:px-2.5 2xl:px-3 py-1.5 text-[11px] xl:text-[13px] 2xl:text-sm font-medium rounded-lg 
                                                 transition-all duration-300 group
-                                                flex items-center gap-2
+                                                flex items-center gap-1 xl:gap-1.5 2xl:gap-2 whitespace-nowrap
                                                 ${item.highlight
-                                                    ? `glass-btn !px-4 !py-2 !text-xs hover:!bg-white/20 ${textColor === 'text-slate-900' ? '!bg-[#0f172a] !border-white/10 text-white shadow-lg' : 'border-white/20 bg-white/10 text-white'}`
+                                                    ? `glass-btn !px-2 xl:!px-3 2xl:!px-4 !py-1 xl:!py-1.5 2xl:!py-2 !text-[10px] xl:!text-xs hover:!bg-white/20 ${textColor === 'text-slate-900' ? '!bg-[#0f172a] !border-white/10 text-white shadow-lg' : 'border-white/20 bg-white/10 text-white'}`
                                                     : isActive
                                                         ? activeTextClass
                                                         : baseTextClass
                                                 }
                                             `}
                                         >
-                                            <Icon size={16} className="transition-transform duration-300 group-hover:scale-110" />
+                                            <Icon size={12} className="xl:w-3.5 xl:h-3.5 2xl:w-4 2xl:h-4 transition-transform duration-300 group-hover:scale-110" />
                                             <span>{item.name}</span>
                                             <span className={`
                                                 absolute bottom-0 left-1/2 -translate-x-1/2 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 
@@ -195,16 +195,16 @@ const Navbar = () => {
                                         href={item.href}
                                         onClick={(e) => handleNavClick(e, item.href)}
                                         className={`
-                                            relative px-4 py-2 text-sm font-medium rounded-lg 
+                                            relative px-1.5 xl:px-2.5 2xl:px-3 py-1.5 text-[11px] xl:text-[13px] 2xl:text-sm font-medium rounded-lg 
                                             transition-all duration-300 group
-                                            flex items-center gap-2
+                                            flex items-center gap-1 xl:gap-1.5 2xl:gap-2 whitespace-nowrap
                                             ${isActive
                                                 ? activeTextClass
                                                 : baseTextClass
                                             }
                                         `}
                                     >
-                                        <Icon size={16} className="transition-transform duration-300 group-hover:scale-110" />
+                                        <Icon size={12} className="xl:w-3.5 xl:h-3.5 2xl:w-4 2xl:h-4 transition-transform duration-300 group-hover:scale-110" />
                                         <span>{item.name}</span>
                                         <span className={`
                                             absolute bottom-0 left-1/2 -translate-x-1/2 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 
@@ -217,7 +217,7 @@ const Navbar = () => {
                         </div>
 
                         {/* Actions */}
-                        <div className="hidden md:flex items-center gap-3">
+                        <div className="hidden lg:flex items-center gap-1 xl:gap-2 2xl:gap-3 shrink-0 ml-auto">
                             {!isAuthPage && (
                                 <button
                                     className={`
@@ -349,9 +349,9 @@ const Navbar = () => {
                                     <Link
                                         to="/login"
                                         className={`
-                                            px-5 py-2.5 rounded-full font-medium transition-all duration-300
+                                            px-3 xl:px-4 2xl:px-5 py-1.5 xl:py-2 2xl:py-2.5 rounded-full text-xs xl:text-sm font-medium transition-all duration-300
                                             text-white hover:bg-white/10 border border-transparent hover:border-white/10
-                                            hover:scale-105
+                                            hover:scale-105 whitespace-nowrap
                                         `}
                                     >
                                         Log In
@@ -362,10 +362,10 @@ const Navbar = () => {
                                             relative overflow-hidden group
                                             bg-gradient-to-r from-blue-600 to-purple-600 
                                             hover:from-blue-700 hover:to-purple-700
-                                            text-white px-6 py-2.5 rounded-full font-medium 
+                                            text-white px-4 xl:px-5 2xl:px-6 py-1.5 xl:py-2 2xl:py-2.5 rounded-full text-xs xl:text-sm font-medium 
                                             transition-all duration-300 
                                             shadow-lg shadow-blue-600/30 hover:shadow-xl hover:shadow-blue-600/40
-                                            hover:scale-105
+                                            hover:scale-105 whitespace-nowrap
                                         "
                                     >
                                         <span className="relative z-10">Sign Up</span>
@@ -378,7 +378,7 @@ const Navbar = () => {
                         {/* Mobile Menu Button */}
                         <button
                             className={`
-                                md:hidden p-2 rounded-lg transition-all duration-300
+                                lg:hidden p-2 rounded-lg transition-all duration-300
                                 text-white hover:bg-white/10
                             `}
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -393,7 +393,7 @@ const Navbar = () => {
             {/* Mobile Menu Overlay */}
             <div
                 className={`
-                    fixed inset-0 bg-black/80 backdrop-blur-sm z-[9990] md:hidden 
+                    fixed inset-0 bg-black/80 backdrop-blur-sm z-[9990] lg:hidden 
                     transition-opacity duration-300
                     ${isMobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}
                 `}
@@ -403,7 +403,7 @@ const Navbar = () => {
             {/* Mobile Menu */}
             <div
                 className={`
-                    fixed top-0 right-0 bottom-0 w-[85vw] max-w-sm bg-[#0a0a0a] shadow-2xl z-[9999] md:hidden
+                    fixed top-0 right-0 bottom-0 w-[85vw] max-w-sm bg-[#0a0a0a] shadow-2xl z-[9999] lg:hidden
                     transform transition-transform duration-300 cubic-bezier(0.4, 0, 0.2, 1) border-l border-white/10
                     ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}
                 `}
