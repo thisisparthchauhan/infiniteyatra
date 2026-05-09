@@ -6,7 +6,7 @@ const SEO = ({ title, description, keywords, image, url }) => {
     const defaultDescription = "Explore the world's most breathtaking destinations with Infinite Yatra. Curated travel experiences for the modern explorer.";
     const defaultKeywords = 'travel, tours, vacations, infinite yatra, adventure, destinations';
     const defaultImage = 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=2070&auto=format&fit=crop';
-    const siteUrl = 'https://infiniteyatra.vercel.app';
+    const siteUrl = 'https://www.infiniteyatra.com';
 
     const fullTitle = title ? `${title} | ${siteTitle}` : `${siteTitle} | Discover Your Next Adventure`;
     const metaDescription = description || defaultDescription;
@@ -19,7 +19,7 @@ const SEO = ({ title, description, keywords, image, url }) => {
         "@type": "TravelAgency",
         "name": "Infinite Yatra",
         "url": siteUrl,
-        "logo": `${siteUrl}/vite.svg`,
+        "logo": `${siteUrl}/favicon.png`,
         "description": defaultDescription,
         "sameAs": [
             "https://facebook.com/infiniteyatra",

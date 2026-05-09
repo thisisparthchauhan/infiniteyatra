@@ -201,25 +201,38 @@ function wafMiddleware(req, res, next) {
  */
 function botDetectionMiddleware(req, res, next) {
     const userAgent = req.headers['user-agent'] || '';
-    
-    // Block common bot/crawler user agents
-    const blockedBots = [
-        /bot/i,
-        /crawler/i,
-        /spider/i,
-        /scraper/i,
-        /curl/i,
-        /wget/i,
+
+    // Public crawl bots must be able to fetch metadata and previews.
+    // Abuse protection should target sensitive API actions, not legitimate crawlers.
+    const allowedBots = [
+        /googlebot/i,
+        /bingbot/i,
+        /linkedinbot/i,
+        /whatsapp/i,
+        /facebookexternalhit/i,
+        /twitterbot/i,
+        /slurp/i,
+        /duckduckbot/i,
     ];
 
-    for (let pattern of blockedBots) {
-        if (pattern.test(userAgent)) {
-            console.warn(`Blocked bot request: ${userAgent}`);
-            return res.status(403).json({
-                error: 'Access denied',
-                details: 'Automated requests not allowed',
-            });
-        }
+    if (allowedBots.some(pattern => pattern.test(userAgent))) {
+        return next();
+    }
+
+    // Only block obvious scraping tools on sensitive write/payment/auth APIs.
+    const sensitivePath = /^\/api\/(auth|payments?|bookings?|admin|hotels\/book|transport\/book)/i.test(req.originalUrl || req.path || '');
+    const blockedAutomationClients = [
+        /scraper/i,
+        /python-requests/i,
+        /libwww-perl/i,
+    ];
+
+    if (sensitivePath && blockedAutomationClients.some(pattern => pattern.test(userAgent))) {
+        console.warn(`Blocked automated sensitive request: ${userAgent}`);
+        return res.status(403).json({
+            error: 'Access denied',
+            details: 'Automated requests not allowed for this action',
+        });
     }
 
     next();
