@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { collection, getDocs, doc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { packages as staticPackages } from '../data/packages';
@@ -55,39 +55,43 @@ export const PackageProvider = ({ children }) => {
         fetchPackages();
     }, []);
 
-    const refreshPackages = () => {
+    const refreshPackages = useCallback(() => {
         return fetchPackages();
-    };
+    }, []);
 
-    // Public getter returns valid visible packages
-    const getVisiblePackages = () => {
-        return packages.filter(p => p.isVisible !== false); // Default to true if undefined
-    };
+    const visiblePackages = useMemo(
+        () => packages.filter(p => p.isVisible !== false),
+        [packages]
+    );
 
-    const getPackageById = (id) => {
+    const getPackageById = useCallback((id) => {
         return packages.find(pkg => pkg.id === id);
-    };
+    }, [packages]);
 
-    const updatePackageHomepageSettings = async (packageId, settings) => {
+    const updatePackageHomepageSettings = useCallback(async (packageId, settings) => {
         try {
             const packageRef = doc(db, 'packages', packageId);
             await setDoc(packageRef, settings, { merge: true });
-            await fetchPackages(); // Refresh packages after update
+            await fetchPackages();
             return { success: true };
         } catch (error) {
             console.error('Error updating package homepage settings:', error);
             return { success: false, error };
         }
-    };
+    }, []);
 
-    const getFeaturedPackages = () => {
-        return packages
+    const featuredPackages = useMemo(
+        () => packages
             .filter(pkg => pkg.featuredOnHomepage === true)
-            .sort((a, b) => (a.displayOrder || 999) - (b.displayOrder || 999));
-    };
+            .sort((a, b) => (a.displayOrder || 999) - (b.displayOrder || 999)),
+        [packages]
+    );
+
+    // Keep getFeaturedPackages as a stable function for backward compat
+    const getFeaturedPackages = useCallback(() => featuredPackages, [featuredPackages]);
 
     return (
-        <PackageContext.Provider value={{ packages: getVisiblePackages(), allPackages: packages, loading, refreshPackages, getPackageById, updatePackageHomepageSettings, getFeaturedPackages }}>
+        <PackageContext.Provider value={{ packages: visiblePackages, allPackages: packages, loading, refreshPackages, getPackageById, updatePackageHomepageSettings, getFeaturedPackages, featuredPackages }}>
             {children}
         </PackageContext.Provider>
     );

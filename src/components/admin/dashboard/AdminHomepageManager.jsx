@@ -3,7 +3,7 @@ import { Home, Star, Eye, EyeOff, Save, RefreshCw, GripVertical, Image as ImageI
 import { usePackages } from '../../../context/PackageContext';
 import { getTransportConfig, updateTransportConfig } from '../../../services/transportService';
 import { uploadToCloudinary } from '../../../services/cloudinary';
-import { transportItems as defaultTransportItems } from '../../HomeTransport';
+import { transportItems as defaultTransportItems } from '../../home/HomeTransport';
 
 const AdminHomepageManager = () => {
     const { allPackages, updatePackageHomepageSettings, loading } = usePackages();

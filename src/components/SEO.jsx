@@ -3,28 +3,35 @@ import { Helmet } from 'react-helmet-async';
 
 const SEO = ({ title, description, keywords, image, url }) => {
     const siteTitle = 'Infinite Yatra';
-    const defaultDescription = "Explore the world's most breathtaking destinations with Infinite Yatra. Curated travel experiences for the modern explorer.";
-    const defaultKeywords = 'travel, tours, vacations, infinite yatra, adventure, destinations';
-    const defaultImage = 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=2070&auto=format&fit=crop';
-    const siteUrl = 'https://infiniteyatra.vercel.app';
+    const defaultDescription = "Plan Kedarnath Yatra, Char Dham Yatra, Himalayan treks and spiritual travel packages with Infinite Yatra. Curated itinerary support, travel assistance and easy enquiry options.";
+    const defaultKeywords = 'Kedarnath Yatra, Char Dham Yatra, Do Dham, Himalayan treks, spiritual travel, Uttarakhand packages, Infinite Yatra, group tours, trekking packages India';
+    const defaultImage = 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=1200&auto=format&fit=crop';
+    const siteUrl = 'https://www.infiniteyatra.com';
 
-    const fullTitle = title ? `${title} | ${siteTitle}` : `${siteTitle} | Discover Your Next Adventure`;
+    const fullTitle = title ? `${title} | ${siteTitle}` : `${siteTitle} – Kedarnath, Char Dham, Treks & Spiritual Travel Packages`;
     const metaDescription = description || defaultDescription;
     const metaKeywords = keywords || defaultKeywords;
     const metaImage = image || defaultImage;
-    const metaUrl = url ? `${siteUrl}${url}` : siteUrl;
+    const metaUrl = url ? `${siteUrl}${url}` : `${siteUrl}/`;
 
     const structuredData = {
         "@context": "https://schema.org",
         "@type": "TravelAgency",
         "name": "Infinite Yatra",
         "url": siteUrl,
-        "logo": `${siteUrl}/vite.svg`,
+        "logo": `${siteUrl}/favicon.png`,
         "description": defaultDescription,
+        "telephone": "+91-9265799325",
+        "email": "info@infiniteyatra.com",
+        "address": {
+            "@type": "PostalAddress",
+            "addressCountry": "IN"
+        },
         "sameAs": [
-            "https://facebook.com/infiniteyatra",
-            "https://instagram.com/infiniteyatra",
-            "https://twitter.com/infiniteyatra"
+            "https://instagram.com/infinite.yatra",
+            "https://x.com/infiniteyatra",
+            "https://www.youtube.com/channel/UCdWYIKLuKMh_hZIJleWajdg",
+            "https://whatsapp.com/channel/0029VbBX7rv3gvWStqSdXf08"
         ]
     };
 

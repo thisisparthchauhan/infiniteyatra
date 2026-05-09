@@ -7,51 +7,49 @@ import { ToastProvider } from './context/ToastContext';
 import { RoleProvider } from './context/RoleContext';
 import { PackageProvider } from './context/PackageContext';
 import { CurrencyProvider } from './context/CurrencyContext.jsx';
-import Navbar from './components/Navbar';
-import Footer from './components/Footer';
-import ScrollToTop from './components/ScrollToTop';
-import ProtectedRoute from './components/ProtectedRoute';
-import RoleRoute from './components/RoleRoute';
-import EnquiryPopup from './components/EnquiryPopup';
-import AIChatbot from './components/AIChatbot';
-import MaintenanceBanner from './components/MaintenanceBanner';
+import Navbar from './components/layout/Navbar';
+import Footer from './components/layout/Footer';
+import ScrollToTop from './components/layout/ScrollToTop';
+import ProtectedRoute from './components/auth/ProtectedRoute';
+import RoleRoute from './components/auth/RoleRoute';
+import EnquiryPopup from './components/booking/EnquiryPopup';
+import AIChatbot from './components/ai/AIChatbot';
 
 // Pages (lazy-loaded for initial bundle performance)
-const Home = lazy(() => import('./pages/Home'));
-const DestinationsPage = lazy(() => import('./pages/DestinationsPage'));
-const PackageDetail = lazy(() => import('./pages/PackageDetail'));
-const TripPlanner = lazy(() => import('./pages/TripPlanner'));
-const BlogPage = lazy(() => import('./pages/BlogPage'));
-const BlogPost = lazy(() => import('./pages/BlogPost'));
-const Careers = lazy(() => import('./pages/Careers'));
-const Login = lazy(() => import('./pages/Login'));
-const Signup = lazy(() => import('./pages/Signup'));
-const BookingPage = lazy(() => import('./pages/BookingPage'));
-const MyBookings = lazy(() => import('./pages/MyBookings'));
-const MyTrips = lazy(() => import('./pages/MyTrips'));
-const QRLanding = lazy(() => import('./pages/QRLanding'));
-const TripDetails = lazy(() => import('./pages/TripDetails'));
-const SharedPlan = lazy(() => import('./pages/SharedPlan'));
-const ContactUs = lazy(() => import('./pages/ContactUs'));
-const WishlistPage = lazy(() => import('./pages/WishlistPage'));
-const ContactNew = lazy(() => import('./pages/ContactNew'));
-const UserDashboard = lazy(() => import('./pages/UserDashboard'));
-const StoriesPage = lazy(() => import('./pages/StoriesPage'));
-const StoryDetail = lazy(() => import('./pages/StoryDetail'));
-const Profile = lazy(() => import('./pages/Profile'));
-const Hotels = lazy(() => import('./pages/Hotels'));
-const AllHotels = lazy(() => import('./pages/AllHotels'));
-const HotelDetail = lazy(() => import('./pages/HotelDetail'));
-const HotelBookingPage = lazy(() => import('./pages/HotelBookingPage'));
-const HotelBookingSuccess = lazy(() => import('./pages/HotelBookingSuccess'));
-const HotelBookingConfirmation = lazy(() => import('./pages/HotelBookingConfirmation'));
-const HotelPartnerOnboarding = lazy(() => import('./pages/HotelPartnerOnboarding'));
-const MyHotelBookings = lazy(() => import('./pages/MyHotelBookings'));
-const HotelCompare = lazy(() => import('./pages/HotelCompare'));
+const Home = lazy(() => import('./pages/home/Home'));
+const DestinationsPage = lazy(() => import('./pages/packages/DestinationsPage'));
+const PackageDetail = lazy(() => import('./pages/packages/PackageDetail'));
+const TripPlanner = lazy(() => import('./pages/planner/TripPlanner'));
+const BlogPage = lazy(() => import('./pages/content/BlogPage'));
+const BlogPost = lazy(() => import('./pages/content/BlogPost'));
+const Careers = lazy(() => import('./pages/static/Careers'));
+const Login = lazy(() => import('./pages/auth/Login'));
+const Signup = lazy(() => import('./pages/auth/Signup'));
+const BookingPage = lazy(() => import('./pages/packages/BookingPage'));
+const MyBookings = lazy(() => import('./pages/user/MyBookings'));
+const MyTrips = lazy(() => import('./pages/user/MyTrips'));
+const QRLanding = lazy(() => import('./pages/planner/QRLanding'));
+const TripDetails = lazy(() => import('./pages/user/TripDetails'));
+const SharedPlan = lazy(() => import('./pages/planner/SharedPlan'));
+const WishlistPage = lazy(() => import('./pages/user/WishlistPage'));
+const ContactNew = lazy(() => import('./pages/static/ContactNew'));
+const UserDashboard = lazy(() => import('./pages/user/UserDashboard'));
+const StoriesPage = lazy(() => import('./pages/content/StoriesPage'));
+const StoryDetail = lazy(() => import('./pages/content/StoryDetail'));
+const Profile = lazy(() => import('./pages/user/Profile'));
+const Hotels = lazy(() => import('./pages/hotels/Hotels'));
+const AllHotels = lazy(() => import('./pages/hotels/AllHotels'));
+const HotelDetail = lazy(() => import('./pages/hotels/HotelDetail'));
+const HotelBookingPage = lazy(() => import('./pages/hotels/HotelBookingPage'));
+const HotelBookingSuccess = lazy(() => import('./pages/hotels/HotelBookingSuccess'));
+const HotelBookingConfirmation = lazy(() => import('./pages/hotels/HotelBookingConfirmation'));
+const HotelPartnerOnboarding = lazy(() => import('./pages/hotels/HotelPartnerOnboarding'));
+const MyHotelBookings = lazy(() => import('./pages/hotels/MyHotelBookings'));
+const HotelCompare = lazy(() => import('./pages/hotels/HotelCompare'));
 
 // Private Aviation
-const PrivateJets = lazy(() => import('./pages/PrivateJets'));
-const PrivateJetDetail = lazy(() => import('./pages/PrivateJetDetail'));
+const PrivateJets = lazy(() => import('./pages/aviation/PrivateJets'));
+const PrivateJetDetail = lazy(() => import('./pages/aviation/PrivateJetDetail'));
 
 // Vendor Pages
 import VendorLogin from './pages/vendor/VendorLogin';
@@ -62,23 +60,23 @@ import TransportListings from './pages/transport/TransportListings';
 import TransportDetails from './pages/transport/TransportDetails';
 import MyTransportBookings from './pages/transport/MyTransportBookings';
 
-import AdminDashboard from './pages/AdminDashboard';
-import BookingSuccess from './pages/BookingSuccess';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import BookingSuccess from './pages/packages/BookingSuccess';
 
-import MigrateData from './pages/MigrateData';
+import MigrateData from './pages/internal/MigrateData';
 
-import TermsConditions from './pages/TermsConditions';
+import TermsConditions from './pages/static/TermsConditions';
 
-import Future from './pages/Future';
-import Passport from './pages/Passport';
-import TeamGuide from './pages/TeamGuide';
-import CityHotels from './pages/CityHotels';
+import Future from './pages/internal/Future';
+import Passport from './pages/user/Passport';
+import TeamGuide from './pages/internal/TeamGuide';
+import CityHotels from './pages/hotels/CityHotels';
 
-import TransportationHub from './pages/TransportationHub';
-import VehicleDetail from './pages/VehicleDetail';
-import CruisePage from './pages/CruisePage';
-import CyclesPage from './pages/CyclesPage';
-import SplashScreen from './components/SplashScreen';
+import TransportationHub from './pages/transport/TransportationHub';
+import VehicleDetail from './pages/transport/VehicleDetail';
+import CruisePage from './pages/transport/CruisePage';
+import CyclesPage from './pages/transport/CyclesPage';
+import SplashScreen from './components/layout/SplashScreen';
 
 const Layout = ({ children }) => {
   const location = useLocation();
@@ -89,7 +87,7 @@ const Layout = ({ children }) => {
 
   return (
     <>
-      {!isAdminPage && <MaintenanceBanner />}
+
       <ScrollToTop />
       {!shouldHideLayout && <Navbar />}
       <main>

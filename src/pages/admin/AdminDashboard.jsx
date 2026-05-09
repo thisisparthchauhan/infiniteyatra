@@ -1,0 +1,288 @@
+import React, { useState, useEffect, lazy, Suspense } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Menu, Bell, Search, ShieldAlert, Home, ChevronDown, User, LogOut, Settings, Shield } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import SEO from '../../components/SEO';
+import AdminSidebar from '../../components/admin/AdminSidebar';
+import { useRole } from '../../context/RoleContext';
+import { USER_ROLES } from '../../config/roles';
+
+// Sub-Modules
+import Overview from '../../components/admin/dashboard/Overview';
+import Bookings from '../../components/admin/dashboard/Bookings';
+import Inventory from '../../components/admin/dashboard/Inventory';
+import Operations from '../../components/admin/dashboard/Operations';
+import Financials from '../../components/admin/dashboard/Financials';
+import CustomerCRM from '../../components/admin/dashboard/CustomerCRM';
+import Content from '../../components/admin/dashboard/Content';
+import AdminExperiences from '../../components/admin/experiences/AdminExperiences';
+import InfluencerROI from '../../components/admin/dashboard/InfluencerROI';
+const AdminImageUpload = lazy(() => import('../../components/AdminImageUpload'));
+const AddStaffModal = lazy(() => import('../../components/admin/AddStaffModal'));
+const AdminHomepageManager = lazy(() => import('../../components/admin/dashboard/AdminHomepageManager'));
+const AdminHotelManager = lazy(() => import('../../components/admin/hotels/AdminHotelManager'));
+const AdminHotelFinance = lazy(() => import('../../components/admin/hotels/AdminHotelFinance'));
+const AdminHotelBookings = lazy(() => import('../../components/admin/hotels/AdminHotelBookings'));
+const AdminHotelInquiries = lazy(() => import('../../components/admin/hotels/AdminHotelInquiries'));
+const AdminHotelReviews = lazy(() => import('../../components/admin/hotels/AdminHotelReviews'));
+const AdminAvailabilityManager = lazy(() => import('../../components/admin/hotels/AdminAvailabilityManager'));
+const AdminVendorManager = lazy(() => import('../../components/admin/hotels/AdminVendorManager'));
+const LiveAnalytics = lazy(() => import('../../components/admin/analytics/LiveAnalytics'));
+
+const AdminTransportCities = lazy(() => import('../../components/admin/transport/AdminTransportCities'));
+const AdminTransportVehicles = lazy(() => import('../../components/admin/transport/AdminTransportVehicles'));
+const AdminTransportBookings = lazy(() => import('../../components/admin/transport/AdminTransportBookings'));
+const AdminTransportContent = lazy(() => import('../../components/admin/transport/AdminTransportContent'));
+const AdminTransportSettings = lazy(() => import('../../components/admin/transport/AdminTransportSettings'));
+const AdminTransportOverview = lazy(() => import('../../components/admin/transport/AdminTransportOverview'));
+const AdminLeads = lazy(() => import('../../components/admin/dashboard/AdminLeads'));
+const AdminSitemap = lazy(() => import('../../components/admin/AdminSitemap'));
+const AdminSpaceWaitlist = lazy(() => import('../../components/admin/space/AdminSpaceWaitlist'));
+const AdminPassport = lazy(() => import('../../components/admin/AdminPassport'));
+const AdminCars = lazy(() => import('../../components/admin/transport/AdminCars'));
+const AdminCarBookings = lazy(() => import('../../components/admin/transport/AdminCarBookings'));
+const AdminCruiseBookings = lazy(() => import('../../components/admin/cruise/AdminCruiseBookings'));
+const AdminCycleBookings = lazy(() => import('../../components/admin/cruise/AdminCycleBookings'));
+
+
+const AdminDashboard = () => {
+    const { hasPermission, getFirstAllowedTab, currentRole, setCurrentRole, currentWorkspace } = useRole();
+    const [activeTab, setActiveTab] = useState(getFirstAllowedTab());
+    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [showStaffModal, setShowStaffModal] = useState(false);
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
+
+    // Reset active tab when role or workspace changes
+    useEffect(() => {
+        const firstTab = getFirstAllowedTab();
+        setActiveTab(firstTab);
+    }, [currentRole, currentWorkspace]);
+
+    // Dynamic Title based on active tab
+    const getTitle = () => {
+        const titles = {
+            overview: 'Dashboard Overview',
+            bookings: 'Tour Booking Management',
+            finance: 'Financials (Tours)',
+            crm: 'Tour Clients',
+            packages: 'Package Inventory',
+            homepage: 'Homepage Manager',
+            operations: 'Trip Operations Center',
+            staff: 'Team & Permissions',
+            stories: 'Blog & Stories',
+            media: 'Media Library',
+            experiences: 'Experiences',
+            influencers: 'Influencer ROI',
+            hotels: 'Hotel Management',
+            'hotel-finance': 'Hotel Financials',
+            'hotel-bookings': 'Hotel Bookings',
+            'hotel-inquiries': 'Hotel Inquiries CRM',
+            'hotel-reviews': 'Hotel Reviews',
+            'hotel-availability': 'Availability Manager',
+            'hotel-vendors': 'Vendor Management',
+            analytics: 'Live Command Center',
+            'transport-overview': 'Transport Overview',
+            'transport-vehicles': 'Manage Vehicles',
+            'transport-cities': 'Manage Cities',
+            'transport-bookings': 'Transport Bookings',
+            'transport-content': 'Transport Content',
+            'transport-settings': 'Transport Settings',
+            'leads': 'Lead Management',
+            'sitemap': 'Site Architecture Map',
+            'space-waitlist': 'IY Space Waitlist',
+            'car-management': 'Manage Cars',
+            'car-bookings': 'Car Bookings',
+            'cruise-bookings': 'Cruise Bookings',
+            'cycle-bookings': 'Cycle Bookings',
+            'passport': 'IY Passport'
+        };
+        return titles[activeTab] || 'Admin Panel';
+    };
+
+    // Render logic for content
+    const renderContent = () => {
+        if (!hasPermission(activeTab)) {
+            return (
+                <div className="flex flex-col items-center justify-center h-[60vh] text-center">
+                    <ShieldAlert size={64} className="text-red-500 mb-6" />
+                    <h2 className="text-3xl font-bold text-white mb-2">Access Denied</h2>
+                    <p className="text-slate-400 max-w-md">
+                        Your role as <strong>{currentRole}</strong> does not have permission to view this section.
+                    </p>
+                </div>
+            );
+        }
+
+        switch (activeTab) {
+            case 'leads': return <AdminLeads />;
+            case 'analytics': return <LiveAnalytics />;
+            case 'overview': return <Overview setActiveTab={setActiveTab} />;
+            case 'bookings': return <Bookings />;
+            case 'packages': return <Inventory />;
+            case 'homepage': return <AdminHomepageManager />;
+            case 'hotels': return <AdminHotelManager />;
+            case 'hotel-bookings': return <AdminHotelBookings />;
+            case 'hotel-inquiries': return <AdminHotelInquiries />;
+            case 'hotel-reviews': return <AdminHotelReviews />;
+            case 'hotel-availability': return <AdminAvailabilityManager />;
+            case 'hotel-vendors': return <AdminVendorManager />;
+            case 'hotel-finance': return <AdminHotelFinance />;
+            case 'operations': return <Operations />;
+            case 'finance': return <Financials />;
+            case 'crm': return <CustomerCRM />;
+            case 'stories': return <Content />;
+            case 'experiences': return <AdminExperiences />;
+            case 'media': return <AdminImageUpload />;
+            case 'influencers': return <InfluencerROI />;
+            case 'transport-overview': return <AdminTransportOverview />;
+            case 'transport-vehicles': return <AdminTransportVehicles />;
+            case 'transport-cities': return <AdminTransportCities />;
+            case 'transport-bookings': return <AdminTransportBookings />;
+            case 'transport-content': return <AdminTransportContent />;
+            case 'transport-settings': return <AdminTransportSettings />;
+            case 'sitemap': return <AdminSitemap />;
+            case 'space-waitlist': return <AdminSpaceWaitlist />;
+            case 'passport': return <AdminPassport />;
+            case 'car-management': return <AdminCars />;
+            case 'car-bookings': return <AdminCarBookings />;
+            case 'cruise-bookings': return <AdminCruiseBookings />;
+            case 'cycle-bookings': return <AdminCycleBookings />;
+            case 'staff':
+                return (
+                    <div className="text-center py-20">
+                        <button onClick={() => setShowStaffModal(true)} className="px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-500 transition-colors">
+                            Open Staff Manager
+                        </button>
+                        <p className="mt-4 text-slate-500">Staff module refactor pending...</p>
+                    </div>
+                );
+            default: return null;
+        }
+    };
+
+    return (
+        <div className="min-h-screen bg-[#050505] text-white font-sans selection:bg-blue-500/30 overflow-hidden">
+            <SEO title="Admin OS 2.0" description="Infinite Yatra Operating System" url="/admin" />
+
+            {/* Background Ambient Glow */}
+            <div className="fixed inset-0 z-0 pointer-events-none">
+                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-900/10 rounded-full blur-[128px]"></div>
+                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-900/10 rounded-full blur-[128px]"></div>
+            </div>
+
+            {/* Layout Grid */}
+            <div className="flex h-screen relative z-10">
+
+                {/* Sidebar */}
+                <AdminSidebar activeTab={activeTab} setActiveTab={setActiveTab} isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
+
+                {/* Main Content Area */}
+                <div className="flex-1 flex flex-col h-screen overflow-hidden lg:ml-64 relative transition-all duration-300">
+
+                    {/* Glass Header */}
+                    <header className="h-20 shrink-0 flex items-center justify-between px-8 border-b border-white/5 bg-[#050505]/50 backdrop-blur-xl z-20">
+                        <div className="flex items-center gap-4">
+                            <button className="lg:hidden p-2 text-slate-400 hover:text-white" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
+                                <Menu size={20} />
+                            </button>
+                            <h1 className="text-xl font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
+                                {getTitle()}
+                            </h1>
+                        </div>
+
+                        <div className="flex items-center gap-6">
+                            {/* Global Search */}
+                            <div className="hidden md:flex items-center gap-2 bg-white/5 rounded-full px-4 py-2 border border-white/10 hover:border-white/20 transition-colors cursor-text group w-64">
+                                <Search size={16} className="text-slate-500 group-hover:text-slate-300" />
+                                <span className="text-sm text-slate-500 group-hover:text-slate-300">Cmd+K to search...</span>
+                            </div>
+
+                            {/* Home Button */}
+                            <Link to="/" className="p-2 text-slate-400 hover:text-white transition-colors" title="Back to Website">
+                                <Home size={20} />
+                            </Link>
+
+                            <div className="flex items-center gap-4 border-l border-white/10 pl-6">
+                                {/* Profile Dropdown */}
+                                <div className="relative">
+                                    <button
+                                        onClick={() => setIsProfileOpen(!isProfileOpen)}
+                                        className="flex items-center gap-3 p-1 pr-3 rounded-full hover:bg-white/5 transition-colors group"
+                                    >
+                                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 ring-2 ring-white/10 group-hover:ring-white/20 flex items-center justify-center text-sm font-bold text-white shadow-lg shadow-blue-500/20">
+                                            PC
+                                        </div>
+                                        <div className="hidden md:block text-left">
+                                            <p className="text-xs font-bold text-white group-hover:text-blue-400 transition-colors">Parth Chauhan</p>
+                                            <p className="text-[10px] text-slate-400">chauhanparth165@gmail.com</p>
+                                        </div>
+                                        <ChevronDown size={14} className={`text-slate-500 transition-transform duration-200 ${isProfileOpen ? 'rotate-180' : ''}`} />
+                                    </button>
+
+                                    <AnimatePresence>
+                                        {isProfileOpen && (
+                                            <>
+                                                {/* Backdrop to close */}
+                                                <div
+                                                    className="fixed inset-0 z-40"
+                                                    onClick={() => setIsProfileOpen(false)}
+                                                />
+
+                                                {/* Dropdown Menu */}
+                                                <motion.div
+                                                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                    transition={{ duration: 0.2 }}
+                                                    className="absolute top-full right-0 mt-2 w-72 bg-[#111] border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden"
+                                                >
+                                                    {/* Header */}
+                                                    <div className="px-5 py-4 border-b border-white/5 bg-white/5">
+                                                        <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Account</p>
+                                                        <Link to="/profile" className="block group/profile">
+                                                            <p className="text-sm font-bold text-white group-hover/profile:text-blue-400 transition-colors">Parth Chauhan</p>
+                                                            <p className="text-xs text-slate-400">chauhanparth165@gmail.com</p>
+                                                        </Link>
+                                                    </div>
+                                                </motion.div>
+                                            </>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
+                            </div>
+                        </div>
+                    </header>
+
+                    {/* Scrollable Workspace */}
+                    <main className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar relative">
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key={activeTab}
+                                initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                exit={{ opacity: 0, y: -10, scale: 0.98 }}
+                                transition={{ duration: 0.3, ease: "easeOut" }}
+                                className="max-w-7xl mx-auto h-full"
+                            >
+                                <Suspense fallback={<div className="p-8 text-white text-center">Loading admin content...</div>}>
+                                    {renderContent()}
+                                </Suspense>
+                            </motion.div>
+                        </AnimatePresence>
+                    </main>
+                </div>
+            </div>
+
+            {/* Modals */}
+            <AnimatePresence>
+                {showStaffModal && (
+                    <Suspense fallback={<div className="p-6 text-white text-center">Loading staff modal...</div>}>
+                        <AddStaffModal onClose={() => setShowStaffModal(false)} onSuccess={() => setShowStaffModal(false)} />
+                    </Suspense>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+};
+
+export default AdminDashboard;
