@@ -6,7 +6,7 @@ import { db } from '../firebase';
 import { useAuth } from '../context/AuthContext';
 import StoryCard from '../components/StoryCard';
 import CreateStoryModal from '../components/CreateStoryModal';
-import SEO from '../components/SEO';
+import SEO from '../components/common/SEO';
 import { seededStories } from '../data/seededStories';
 import parthImg from '../assets/parth-chauhan-new.jpg';
 

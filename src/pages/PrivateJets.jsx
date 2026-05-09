@@ -7,7 +7,7 @@ import {
   Gauge, Navigation, CheckCircle, Heart, Globe, Headphones,
   DollarSign, Send, Mountain, HeartPulse, PlaneTakeoff,
 } from 'lucide-react';
-import SEO from '../components/SEO';
+import SEO from '../components/common/SEO';
 import ExploreOtherTransport from '../components/ExploreOtherTransport';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';

@@ -44,6 +44,7 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
         category: initialData?.category
             ? (Array.isArray(initialData.category) ? initialData.category : [initialData.category])
             : ['trek'],
+        batchDates: initialData?.batchDates || [],
         linkedHotelIds: initialData?.linkedHotelIds || [],
         linkedVehicleIds: initialData?.linkedVehicleIds || [],
         packageRoute: initialData?.packageRoute || '',
@@ -55,6 +56,9 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
     const [allVehicles, setAllVehicles] = useState([]);
     const [fetchingVehicles, setFetchingVehicles] = useState(false);
     const [vehicleSearch, setVehicleSearch] = useState('');
+
+    const [tempBatchDate, setTempBatchDate] = useState('');
+    const [tempAvailableSeats, setTempAvailableSeats] = useState('');
 
     // Fetch visible hotels on mount
     useEffect(() => {
@@ -464,6 +468,90 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
                                 rows={4}
                                 className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-blue-500 outline-none resize-none"
                             />
+                        </div>
+                    </div>
+
+                    {/* Batch Dates & Availability */}
+                    <div className="space-y-4 pt-6 border-t border-white/10">
+                        <div className="flex justify-between items-center">
+                            <div>
+                                <h3 className="text-lg font-bold text-blue-400">Batch Dates & Availability</h3>
+                                <p className="text-xs text-slate-400">Manage real-time seat availability for specific dates.</p>
+                            </div>
+                        </div>
+
+                        <div className="bg-black/20 p-4 rounded-xl border border-white/10">
+                            <div className="flex gap-4 mb-4">
+                                <div className="flex-1">
+                                    <label className="block text-sm text-slate-400 mb-1">Select Date</label>
+                                    <input 
+                                        type="date" 
+                                        value={tempBatchDate} 
+                                        onChange={(e) => setTempBatchDate(e.target.value)}
+                                        className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-white" 
+                                    />
+                                </div>
+                                <div className="w-32">
+                                    <label className="block text-sm text-slate-400 mb-1">Available Seats</label>
+                                    <input 
+                                        type="number" 
+                                        value={tempAvailableSeats} 
+                                        onChange={(e) => setTempAvailableSeats(e.target.value)}
+                                        className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-white" 
+                                        min="0"
+                                    />
+                                </div>
+                                <div className="flex items-end">
+                                    <button 
+                                        type="button"
+                                        onClick={() => {
+                                            if (!tempBatchDate || !tempAvailableSeats) {
+                                                alert("Please select a date and enter available seats.");
+                                                return;
+                                            }
+                                            const newBatch = { date: tempBatchDate, availableSeats: parseInt(tempAvailableSeats, 10) };
+                                            // Remove if date already exists
+                                            const filtered = formData.batchDates.filter(b => b.date !== tempBatchDate);
+                                            const updated = [...filtered, newBatch].sort((a, b) => new Date(a.date) - new Date(b.date));
+                                            setFormData(prev => ({ ...prev, batchDates: updated }));
+                                            setTempBatchDate('');
+                                            setTempAvailableSeats('');
+                                        }}
+                                        className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg font-bold transition-colors h-[42px]"
+                                    >
+                                        Add
+                                    </button>
+                                </div>
+                            </div>
+
+                            {formData.batchDates && formData.batchDates.length > 0 ? (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                                    {formData.batchDates.map((batch, idx) => (
+                                        <div key={idx} className="flex justify-between items-center bg-white/5 border border-white/10 p-3 rounded-lg">
+                                            <div>
+                                                <div className="text-sm font-bold text-white">
+                                                    {new Date(batch.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                                </div>
+                                                <div className={`text-xs ${batch.availableSeats > 10 ? 'text-green-400' : batch.availableSeats > 0 ? 'text-yellow-400' : 'text-red-400'}`}>
+                                                    {batch.availableSeats} spots left
+                                                </div>
+                                            </div>
+                                            <button 
+                                                type="button" 
+                                                onClick={() => {
+                                                    const updated = formData.batchDates.filter((_, i) => i !== idx);
+                                                    setFormData(prev => ({ ...prev, batchDates: updated }));
+                                                }}
+                                                className="text-slate-500 hover:text-red-500 transition-colors"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-sm text-slate-500 italic">No batch dates added yet. The package will not have specific date availability shown.</p>
+                            )}
                         </div>
                     </div>
 

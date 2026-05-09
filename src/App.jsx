@@ -7,14 +7,14 @@ import { ToastProvider } from './context/ToastContext';
 import { RoleProvider } from './context/RoleContext';
 import { PackageProvider } from './context/PackageContext';
 import { CurrencyProvider } from './context/CurrencyContext.jsx';
-import Navbar from './components/Navbar';
-import Footer from './components/Footer';
-import ScrollToTop from './components/ScrollToTop';
-import ProtectedRoute from './components/ProtectedRoute';
-import RoleRoute from './components/RoleRoute';
+import Navbar from './components/layout/Navbar';
+import Footer from './components/layout/Footer';
+import ScrollToTop from './components/layout/ScrollToTop';
+import ProtectedRoute from './components/auth/ProtectedRoute';
+import RoleRoute from './components/auth/RoleRoute';
 import EnquiryPopup from './components/EnquiryPopup';
 import AIChatbot from './components/AIChatbot';
-import MaintenanceBanner from './components/MaintenanceBanner';
+import MaintenanceBanner from './components/layout/MaintenanceBanner';
 
 // Pages (lazy-loaded for initial bundle performance)
 const Home = lazy(() => import('./pages/Home'));
@@ -78,7 +78,7 @@ import TransportationHub from './pages/TransportationHub';
 import VehicleDetail from './pages/VehicleDetail';
 import CruisePage from './pages/CruisePage';
 import CyclesPage from './pages/CyclesPage';
-import SplashScreen from './components/SplashScreen';
+import SplashScreen from './components/layout/SplashScreen';
 
 const Layout = ({ children }) => {
   const location = useLocation();

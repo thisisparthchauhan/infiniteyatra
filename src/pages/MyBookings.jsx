@@ -4,7 +4,7 @@ import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
 import { Loader, Calendar, MapPin, Clock, AlertCircle, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import SEO from '../components/SEO';
+import SEO from '../components/common/SEO';
 
 const MyBookings = () => {
     const { currentUser } = useAuth();

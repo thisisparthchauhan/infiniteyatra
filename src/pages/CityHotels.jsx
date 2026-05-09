@@ -10,7 +10,7 @@ import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../firebase';
 import { hotels as staticHotels } from '../data/hotels';
 import HotelCard from '../components/Hotels/HotelCard';
-import SEO from '../components/SEO';
+import SEO from '../components/common/SEO';
 
 const PROPERTY_TYPES = ['All', 'Hotel', 'Resort', 'Homestay', 'Villa', 'Cottage', 'Dormitory', 'Guest House', 'Camp'];
 

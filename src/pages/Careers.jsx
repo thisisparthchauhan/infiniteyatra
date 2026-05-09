@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Briefcase, Globe, Heart, Rocket, ArrowRight, Mail } from 'lucide-react';
-import SEO from '../components/SEO';
+import SEO from '../components/common/SEO';
 
 const Careers = () => {
     useEffect(() => {

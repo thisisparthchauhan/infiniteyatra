@@ -5,7 +5,7 @@ import {
     GlassWater, Ship, Clock, Waves, Phone, MessageCircle, Mic2,
     Award, Calendar, ArrowRight
 } from 'lucide-react';
-import SEO from '../components/SEO';
+import SEO from '../components/common/SEO';
 import ExploreOtherTransport from '../components/ExploreOtherTransport';
 import { addCruiseBooking } from '../services/cruiseService';
 import './CruisePage.css';

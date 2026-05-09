@@ -7,7 +7,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { getPassport, initPassport, applyReferralCode } from '../services/passportService';
-import SEO from '../components/SEO';
+import SEO from '../components/common/SEO';
 
 // ── Animated credit counter ──
 const CreditCounter = ({ target }) => {

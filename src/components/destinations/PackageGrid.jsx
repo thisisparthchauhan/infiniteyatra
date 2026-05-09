@@ -4,6 +4,7 @@ import { Search, Heart, MapPin, Clock, Users, Star, X, ChevronDown, ChevronUp, S
 import { useWishlist } from '../../context/WishlistContext';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
+import LazyImage from '../common/LazyImage';
 
 const CATEGORY_FILTERS = ['All', 'Trek', 'Spiritual', 'International', 'Leisure', 'Domestic', 'Beach', 'Wildlife'];
 
@@ -107,10 +108,10 @@ const PackageCard = ({ pkg, onWishlistClick, isWishlisted }) => {
     >
       {/* Image */}
       <div className="relative overflow-hidden" style={{ aspectRatio: '4/3' }}>
-        <img
+        <LazyImage
           src={pkg.image}
           alt={pkg.title}
-          loading="lazy"
+          containerClassName="w-full h-full"
           className="w-full h-full object-cover transition-transform duration-500"
           style={{ transform: hovered ? 'scale(1.06)' : 'scale(1)' }}
         />

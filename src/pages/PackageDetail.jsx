@@ -4,10 +4,12 @@ import { MapPin, Calendar, ChevronDown, Check, X, Phone, MessageCircle, Plus, Mi
 import { usePackages } from '../context/PackageContext';
 import { db } from '../firebase';
 import { collection, query, where, limit, getDocs, documentId } from 'firebase/firestore';
-import SEO from '../components/SEO';
+import SEO from '../components/common/SEO';
 import AnimatedBanner from '../components/AnimatedBanner';
 import PhotoGallery from '../components/PhotoGallery';
 import LinkedVehicleCard from '../components/LinkedVehicleCard';
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import './PackageDetail.css';
 
 const LinkedHotelCard = ({ hotel, navigate }) => {
@@ -88,8 +90,12 @@ const PackageDetail = () => {
         if (packageData) {
             setPkg(packageData);
             // Set first available date if exists
-            if (packageData.availableDates && packageData.availableDates.length > 0) {
-                setSelectedDate(packageData.availableDates[0]);
+            if (packageData.batchDates && packageData.batchDates.length > 0) {
+                const sorted = [...packageData.batchDates].sort((a,b) => new Date(a.date) - new Date(b.date));
+                const firstAvailable = sorted.find(d => d.availableSeats > 0);
+                setSelectedDate(firstAvailable ? new Date(firstAvailable.date) : new Date(sorted[0].date));
+            } else if (packageData.availableDates && packageData.availableDates.length > 0) {
+                setSelectedDate(new Date(packageData.availableDates[0]));
             }
             window.scrollTo(0, 0);
 
@@ -704,25 +710,59 @@ const PackageDetail = () => {
                         </div>
 
                         {/* Date Selection */}
-                        {pkg.availableDates && pkg.availableDates.length > 0 && (
-                            <div className="date-selection">
-                                {pkg.availableDates.slice(0, 2).map((date, index) => (
-                                    <div
-                                        key={index}
-                                        className={`date-option ${selectedDate === date ? 'selected' : ''}`}
-                                        onClick={() => setSelectedDate(date)}
-                                    >
-                                        <div className="date-radio">
-                                            {selectedDate === date && <div className="radio-dot"></div>}
+                        <div className="date-selection-calendar">
+                            <h3 className="calendar-title">Select Departure Date</h3>
+                            <DatePicker
+                                selected={selectedDate}
+                                onChange={(date) => setSelectedDate(date)}
+                                inline
+                                renderDayContents={(day, date) => {
+                                    if (!pkg?.batchDates) return <span>{day}</span>;
+                                    const dateString = date.toLocaleDateString('en-CA');
+                                    const batch = pkg.batchDates.find(b => b.date === dateString);
+                                    
+                                    let indicatorClass = '';
+                                    let tooltipText = '';
+
+                                    if (batch) {
+                                        if (batch.availableSeats === 0) {
+                                            indicatorClass = 'sold-out';
+                                            tooltipText = 'Sold Out';
+                                        } else if (batch.availableSeats <= 10) {
+                                            indicatorClass = 'filling-fast';
+                                            tooltipText = `Only ${batch.availableSeats} spots left!`;
+                                        } else {
+                                            indicatorClass = 'available';
+                                            tooltipText = 'Available';
+                                        }
+                                    }
+
+                                    return (
+                                        <div className={`custom-day ${indicatorClass}`} title={tooltipText}>
+                                            <span>{day}</span>
+                                            {batch && <div className="day-indicator"></div>}
                                         </div>
-                                        <div className="date-info">
-                                            <div className="date-range">{formatDate(date)}</div>
-                                            <div className="date-price">₹{pkg.price.toLocaleString()} <span>/ person • {pkg.duration.split('/')[0].trim()} left</span></div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
+                                    );
+                                }}
+                                filterDate={(date) => {
+                                    if (!pkg?.batchDates) {
+                                        // fallback for old availableDates array
+                                        if (!pkg?.availableDates) return true;
+                                        const dString = date.toLocaleDateString('en-CA');
+                                        return pkg.availableDates.includes(dString);
+                                    }
+                                    const dateString = date.toLocaleDateString('en-CA');
+                                    return pkg.batchDates.some(b => b.date === dateString);
+                                }}
+                            />
+                            {selectedDate && (
+                                <div className="selected-date-info">
+                                    <div className="date-range">{selectedDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+                                    <div className="date-price">₹{pkg.price.toLocaleString()} <span>/ person</span></div>
+                                </div>
+                            )}
+                        </div>
+
 
 
 

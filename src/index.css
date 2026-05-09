@@ -369,6 +369,35 @@ input:-webkit-autofill:active {
     z-index: 9999 !important;
 }
 
+/* Custom Day Rendering (Global) */
+.custom-day {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+    position: relative;
+}
+
+.day-indicator {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    position: absolute;
+    bottom: 2px;
+}
+
+.custom-day.available .day-indicator { background-color: #10b981; }
+.custom-day.filling-fast .day-indicator { background-color: #f59e0b; }
+.custom-day.sold-out .day-indicator { background-color: #ef4444; }
+
+.custom-day.sold-out span {
+    text-decoration: line-through;
+    color: #ef4444;
+    opacity: 0.6;
+}
+
 /* ═══════════ Footer Animations ═══════════ */
 
 /* Slow shimmer gradient for Quick Book strip */

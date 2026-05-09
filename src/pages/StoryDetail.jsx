@@ -4,7 +4,7 @@ import { doc, getDoc, updateDoc, increment } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../context/AuthContext';
 import { MapPin, Calendar, User, ArrowLeft, Heart, Share2, Tag } from 'lucide-react';
-import SEO from '../components/SEO';
+import SEO from '../components/common/SEO';
 import { motion } from 'framer-motion';
 
 const StoryDetail = () => {

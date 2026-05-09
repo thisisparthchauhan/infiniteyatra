@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, X, ChevronDown, Check, Zap, Clock } from 'lucide-react';
-import SEO from '../components/SEO';
+import SEO from '../components/common/SEO';
 import ExploreOtherTransport from '../components/ExploreOtherTransport';
 import { listenToVehicles, getVehicleCities } from '../services/vehicleService';
 import { addCycleBooking } from '../services/cycleService';

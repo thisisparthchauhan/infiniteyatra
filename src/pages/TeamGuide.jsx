@@ -8,7 +8,7 @@ import {
     ArrowRight, ExternalLink, Home, LogIn
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import SEO from '../components/SEO';
+import SEO from '../components/common/SEO';
 
 const sections = [
     {

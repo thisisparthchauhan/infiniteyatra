@@ -4,7 +4,7 @@ import { getBlogById } from '../data/blogs';
 import { getPackageById } from '../data/packages';
 import { Calendar, User, ArrowLeft, Clock, MapPin, ArrowRight, List, ShieldCheck } from 'lucide-react';
 import DOMPurify from 'dompurify';
-import SEO from '../components/SEO';
+import SEO from '../components/common/SEO';
 
 const BlogPost = () => {
     const { id } = useParams();

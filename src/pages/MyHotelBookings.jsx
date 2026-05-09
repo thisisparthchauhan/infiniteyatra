@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../context/AuthContext';
-import SEO from '../components/SEO';
+import SEO from '../components/common/SEO';
 import { Building2, Calendar, Clock, CheckCircle2, CreditCard, XCircle, ChevronRight, Loader2, MessageCircle, MapPin, ArrowLeft, Eye, Search, Filter } from 'lucide-react';
 
 const STATUS_CONFIG = {

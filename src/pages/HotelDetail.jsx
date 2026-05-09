@@ -14,11 +14,13 @@ import {
     ExternalLink, Navigation, ChevronLeft, ImageIcon, Flame, TrendingUp
 } from 'lucide-react';
 import { calculateDynamicPrice } from '../utils/pricingEngine';
-import SEO from '../components/SEO';
+import SEO from '../components/common/SEO';
 import RoomCard from '../components/RoomCard';
 import HotelInquiryModal from '../components/Hotels/HotelInquiryModal';
 import HotelReviews from '../components/Hotels/HotelReviews';
 import HotelGallery from '../components/Hotels/HotelGallery';
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 // ─── MOCK DATA FOR DEV/PREVIEW ──────────────────────────────
 const MOCK_HOTEL = {
@@ -285,6 +287,71 @@ const HotelDetail = () => {
     const nights = useMemo(() => {
         return Math.max(1, Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24)));
     }, [checkIn, checkOut]);
+
+    const getDateAvailability = (dateString) => {
+        if (!hotel || !hotel.rooms) return null; 
+        
+        let totalInventory = 0;
+        let totalAvailable = 0;
+
+        hotel.rooms.forEach(room => {
+            const inventory = parseInt(room.count || 0, 10);
+            totalInventory += inventory;
+            
+            if (room.pricing && room.pricing.length > 0) {
+                const specificRate = room.pricing.find(p => p.date === dateString);
+                if (specificRate && specificRate.availableRooms !== undefined) {
+                    totalAvailable += parseInt(specificRate.availableRooms, 10);
+                } else {
+                    totalAvailable += inventory;
+                }
+            } else {
+                totalAvailable += inventory;
+            }
+        });
+
+        if (totalInventory === 0) return null;
+
+        return {
+            total: totalInventory,
+            available: totalAvailable
+        };
+    };
+
+    const renderCustomDay = (day, date) => {
+        const dateString = date.toLocaleDateString('en-CA');
+        const availability = getDateAvailability(dateString);
+        
+        let indicatorClass = '';
+        let tooltipText = '';
+
+        if (availability) {
+            if (availability.available === 0) {
+                indicatorClass = 'sold-out';
+                tooltipText = 'Sold Out';
+            } else if (availability.available <= 3) {
+                indicatorClass = 'filling-fast';
+                tooltipText = `Only ${availability.available} rooms left`;
+            } else {
+                indicatorClass = 'available';
+                tooltipText = 'Available';
+            }
+        }
+
+        return (
+            <div className={`custom-day ${indicatorClass}`} title={tooltipText}>
+                <span>{day}</span>
+                {availability && <div className="day-indicator"></div>}
+            </div>
+        );
+    };
+
+    const isDateAvailable = (date) => {
+        const dateString = date.toLocaleDateString('en-CA');
+        const availability = getDateAvailability(dateString);
+        if (availability && availability.available === 0) return false;
+        return true;
+    };
 
     const displayRoom = hotel?.rooms?.[0];
     const nightlyPrice = selectedVariant?.price || selectedRoom?.price || displayRoom?.price || hotel?.price || 0;
@@ -948,34 +1015,37 @@ const HotelDetail = () => {
                                 </div>
 
                                 {/* Date & Guest Picker */}
-                                <div className="border border-zinc-700 rounded-xl overflow-hidden mb-4">
+                                <div className="border border-zinc-700 rounded-xl mb-4 hotel-date-picker-wrapper relative">
                                     <div className="grid grid-cols-2">
                                         <div className="p-3 border-r border-b border-zinc-700 bg-white/[0.02] hover:bg-white/[0.05] transition-colors relative">
                                             <label className="text-[10px] uppercase font-bold text-zinc-500 block mb-1">Check-in</label>
-                                            <input
-                                                type="date"
-                                                value={checkIn}
-                                                onChange={(e) => {
-                                                    setCheckIn(e.target.value);
-                                                    // Auto-adjust checkout if needed
-                                                    if (new Date(e.target.value) >= new Date(checkOut)) {
-                                                        const next = new Date(e.target.value);
+                                            <DatePicker
+                                                selected={new Date(checkIn)}
+                                                onChange={(date) => {
+                                                    const newCheckIn = date.toLocaleDateString('en-CA');
+                                                    setCheckIn(newCheckIn);
+                                                    if (new Date(newCheckIn) >= new Date(checkOut)) {
+                                                        const next = new Date(newCheckIn);
                                                         next.setDate(next.getDate() + 1);
-                                                        setCheckOut(next.toISOString().split('T')[0]);
+                                                        setCheckOut(next.toLocaleDateString('en-CA'));
                                                     }
                                                 }}
-                                                min={new Date().toISOString().split('T')[0]}
-                                                className="w-full bg-transparent text-sm font-medium text-white focus:outline-none cursor-pointer [color-scheme:dark]"
+                                                minDate={new Date()}
+                                                renderDayContents={renderCustomDay}
+                                                filterDate={isDateAvailable}
+                                                dateFormat="MMM d, yyyy"
+                                                className="w-full bg-transparent text-sm font-medium text-white focus:outline-none cursor-pointer placeholder-zinc-500"
                                             />
                                         </div>
                                         <div className="p-3 border-b border-zinc-700 bg-white/[0.02] hover:bg-white/[0.05] transition-colors relative">
                                             <label className="text-[10px] uppercase font-bold text-zinc-500 block mb-1">Check-out</label>
-                                            <input
-                                                type="date"
-                                                value={checkOut}
-                                                onChange={(e) => setCheckOut(e.target.value)}
-                                                min={checkIn}
-                                                className="w-full bg-transparent text-sm font-medium text-white focus:outline-none cursor-pointer [color-scheme:dark]"
+                                            <DatePicker
+                                                selected={new Date(checkOut)}
+                                                onChange={(date) => setCheckOut(date.toLocaleDateString('en-CA'))}
+                                                minDate={new Date(checkIn)}
+                                                renderDayContents={renderCustomDay}
+                                                dateFormat="MMM d, yyyy"
+                                                className="w-full bg-transparent text-sm font-medium text-white focus:outline-none cursor-pointer placeholder-zinc-500"
                                             />
                                         </div>
                                     </div>

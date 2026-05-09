@@ -2,7 +2,7 @@ import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, Bell, Search, ShieldAlert, Home, ChevronDown, User, LogOut, Settings, Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import SEO from '../components/SEO';
+import SEO from '../components/common/SEO';
 import AdminSidebar from '../components/admin/AdminSidebar';
 import { useRole } from '../context/RoleContext';
 import { USER_ROLES } from '../config/roles';

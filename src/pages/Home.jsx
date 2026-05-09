@@ -6,9 +6,9 @@ import TravelStories from '../components/TravelStories';
 import HomeHotels from '../components/HomeHotels';
 import HomeTransport from '../components/HomeTransport';
 
-import SEO from '../components/SEO';
+import SEO from '../components/common/SEO';
 import InstagramFeed from '../components/InstagramFeed';
-import RevealOnScroll from '../components/RevealOnScroll';
+import RevealOnScroll from '../components/common/RevealOnScroll';
 import { usePackages } from '../context/PackageContext';
 
 const Home = () => {

@@ -9,7 +9,7 @@ import {
   LayoutGrid, Check
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import SEO from '../components/SEO';
+import SEO from '../components/common/SEO';
 import HotelCard from '../components/Hotels/HotelCard';
 
 // --- Constants ---

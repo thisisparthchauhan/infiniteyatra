@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { db, auth } from '../firebase';
 import { collection, addDoc, serverTimestamp, doc, updateDoc, increment, arrayUnion } from 'firebase/firestore';
 import { generatePlanWithGemini } from '../services/geminiService';
-import SEO from '../components/SEO';
+import SEO from '../components/common/SEO';
 import {
     MapPin, Calendar, Users, Sparkles, Compass, Leaf, Hotel, Heart, ChevronRight,
     ArrowLeft, Check, Plane, TrendingUp, DollarSign, Wallet, ShieldCheck, Camera,

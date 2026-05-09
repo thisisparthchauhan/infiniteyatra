@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { db } from '../firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { MapPin, Calendar, Clock, TrendingUp, Sparkles, Share2, ArrowLeft, Loader2 } from 'lucide-react';
-import SEO from '../components/SEO';
+import SEO from '../components/common/SEO';
 import { useToast } from '../context/ToastContext';
 
 const TripDetails = () => {

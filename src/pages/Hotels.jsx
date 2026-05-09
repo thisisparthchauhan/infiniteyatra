@@ -11,7 +11,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../firebase';
 import { hotels as staticHotels } from '../data/hotels';
-import SEO from '../components/SEO';
+import SEO from '../components/common/SEO';
 
 // ---------------------------------------------------------------------------
 // Constants

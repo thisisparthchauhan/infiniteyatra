@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, lazy, Suspense } from 'react';
-import SEO from '../components/SEO';
+import SEO from '../components/common/SEO';
 import { usePackages } from '../context/PackageContext';
 
 import HeroSection from '../components/destinations/HeroSection';

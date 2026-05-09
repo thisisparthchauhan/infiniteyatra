@@ -7,7 +7,7 @@ import {
     MapPin, Calendar, Clock, DollarSign, Users, Sparkles, Share2, ArrowLeft,
     Loader2, Bed, Car, Compass, CheckCircle2, ChevronDown, Check, Download
 } from 'lucide-react';
-import SEO from '../components/SEO';
+import SEO from '../components/common/SEO';
 
 const SharedPlan = () => {
     const { shareId } = useParams();

@@ -658,6 +658,13 @@ const AdminHotelForm = ({ initialData, onSave, onCancel }) => {
                                                 value={room.tempPrice || ''}
                                                 onChange={(e) => updateRoom(idx, 'tempPrice', e.target.value)}
                                             />
+                                            <input
+                                                type="number"
+                                                placeholder="Avail. Rooms"
+                                                className="w-28 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors"
+                                                value={room.tempAvailableRooms || ''}
+                                                onChange={(e) => updateRoom(idx, 'tempAvailableRooms', e.target.value)}
+                                            />
                                             <button
                                                 type="button"
                                                 onClick={() => {
@@ -667,12 +674,17 @@ const AdminHotelForm = ({ initialData, onSave, onCancel }) => {
                                                     }
                                                     // Filter out existing entry to update
                                                     const existingFiltered = (room.pricing || []).filter(r => r.date !== room.tempDate);
-                                                    const newPricing = [...existingFiltered, { date: room.tempDate, price: room.tempPrice }].sort((a, b) => new Date(a.date) - new Date(b.date));
+                                                    const newPricing = [...existingFiltered, { 
+                                                        date: room.tempDate, 
+                                                        price: room.tempPrice,
+                                                        availableRooms: room.tempAvailableRooms ? parseInt(room.tempAvailableRooms, 10) : room.count
+                                                    }].sort((a, b) => new Date(a.date) - new Date(b.date));
 
                                                     // Update room directly
                                                     updateRoom(idx, 'pricing', newPricing);
                                                     updateRoom(idx, 'tempDate', '');
                                                     updateRoom(idx, 'tempPrice', '');
+                                                    updateRoom(idx, 'tempAvailableRooms', '');
                                                 }}
                                                 className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-bold transition-colors"
                                             >
@@ -689,7 +701,12 @@ const AdminHotelForm = ({ initialData, onSave, onCancel }) => {
                                                             {new Date(rate.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                                                         </span>
                                                         <div className="flex items-center gap-3">
-                                                            <span className="text-sm font-bold text-green-400">₹{parseInt(rate.price).toLocaleString()}</span>
+                                                            <div className="flex flex-col items-end mr-2">
+                                                                <span className="text-sm font-bold text-green-400">₹{parseInt(rate.price).toLocaleString()}</span>
+                                                                <span className={`text-[10px] ${rate.availableRooms === 0 ? 'text-red-400' : rate.availableRooms <= 3 ? 'text-yellow-400' : 'text-slate-400'}`}>
+                                                                    {rate.availableRooms} rooms
+                                                                </span>
+                                                            </div>
                                                             <button
                                                                 type="button"
                                                                 onClick={() => {
