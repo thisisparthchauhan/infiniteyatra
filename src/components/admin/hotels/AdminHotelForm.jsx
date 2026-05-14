@@ -3,7 +3,7 @@ import { X, Plus, Trash2, Save, Upload, Image as ImageIcon, CheckCircle2, XCircl
 import { uploadMultipleToCloudinary, uploadToCloudinary } from '../../../services/cloudinary';
 import PricingSimulator from './PricingSimulator';
 
-const AdminHotelForm = ({ initialData, onSave, onCancel }) => {
+const AdminHotelForm = ({ initialData, onSave, onCancel, cities = [] }) => {
     const AMENITY_OPTIONS = [
         'WiFi', 'Breakfast Included', 'Swimming Pool', 'Gym / Fitness Centre', 'Parking',
         'Air Conditioning', 'Restaurant', 'Room Service', 'Spa', 'Bar/Lounge',
@@ -36,6 +36,10 @@ const AdminHotelForm = ({ initialData, onSave, onCancel }) => {
         // Policies
         cancellationPolicy: '',
         propertyPolicy: '',
+
+        // Partner info
+        partner: 'bloom',
+        partnerHotelSlug: '', // e.g. bloom-hotel-sg-highway
 
         ...initialData,
         // Ensure arrays are initialized if editing old data
@@ -291,14 +295,48 @@ const AdminHotelForm = ({ initialData, onSave, onCancel }) => {
                             </div>
                         </div>
                     </div>
+                    {/* Partner + City Row */}
+                    <div className="p-4 bg-amber-500/5 border border-amber-500/20 rounded-xl space-y-4">
+                        <h4 className="text-sm font-bold text-amber-400">Partner & Location</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label className={labelClass}>Partner *</label>
+                                <select name="partner" value={formData.partner || 'bloom'} onChange={handleChange} className={inputClass}>
+                                    <option value="bloom">Bloom Hotels</option>
+                                    <option value="iy">IY Direct</option>
+                                    <option value="other">Other Partner</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className={labelClass}>Partner Hotel Slug <span className="text-zinc-500 text-[10px]">(for reference)</span></label>
+                                <input name="partnerHotelSlug" value={formData.partnerHotelSlug || ''} onChange={handleChange} className={inputClass} placeholder="e.g. bloom-hotel-sg-highway" />
+                            </div>
+                            <div>
+                                <label className={labelClass}>City *</label>
+                                {cities.length > 0 ? (
+                                    <select name="city" value={formData.city || ''} onChange={handleChange} className={inputClass} required>
+                                        <option value="">Select city…</option>
+                                        {cities.map(c => (
+                                            <option key={c.id} value={c.name}>{c.name}, {c.state}</option>
+                                        ))}
+                                    </select>
+                                ) : (
+                                    <input name="city" value={formData.city || ''} onChange={handleChange} className={inputClass} required placeholder="e.g. Mumbai" />
+                                )}
+                            </div>
+                        </div>
+                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label className={labelClass}>City *</label>
-                            <input name="city" value={formData.city || ''} onChange={handleChange} className={inputClass} required placeholder="e.g. Shimla" />
+                            <label className={labelClass}>Location / Area</label>
+                            <input name="location" value={formData.location} onChange={handleChange} className={inputClass} placeholder="e.g. SG Highway, Ahmedabad" />
                         </div>
                         <div>
-                            <label className={labelClass}>Location / Area</label>
-                            <input name="location" value={formData.location} onChange={handleChange} className={inputClass} placeholder="e.g. Mall Road, Shimla" />
+                            <label className={labelClass}>Check-in / Check-out Times</label>
+                            <div className="flex gap-2">
+                                <input name="checkInTime" value={formData.checkInTime || ''} onChange={handleChange} className={inputClass} placeholder="2:00 PM" />
+                                <input name="checkOutTime" value={formData.checkOutTime || ''} onChange={handleChange} className={inputClass} placeholder="11:00 AM" />
+                            </div>
                         </div>
                     </div>
                     <div>
