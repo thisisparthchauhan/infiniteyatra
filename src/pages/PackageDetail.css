@@ -930,6 +930,12 @@
         display: none;
     }
 
+    /* Hide the full inline calendar in the fixed bottom bar on mobile —
+       it takes the entire screen. Users select dates in the booking flow. */
+    .date-selection-calendar {
+        display: none;
+    }
+
     .guest-counter {
         margin-bottom: 1rem;
     }

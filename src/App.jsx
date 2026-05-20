@@ -14,7 +14,6 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import RoleRoute from './components/auth/RoleRoute';
 import EnquiryPopup from './components/EnquiryPopup';
 import AIChatbot from './components/AIChatbot';
-import MaintenanceBanner from './components/layout/MaintenanceBanner';
 
 // Pages (lazy-loaded for initial bundle performance)
 const Home = lazy(() => import('./pages/Home'));
@@ -89,7 +88,6 @@ const Layout = ({ children }) => {
 
   return (
     <>
-      {!isAdminPage && <MaintenanceBanner />}
       <ScrollToTop />
       {!shouldHideLayout && <Navbar />}
       <main>
