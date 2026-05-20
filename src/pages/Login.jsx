@@ -54,6 +54,10 @@ const Login = () => {
                     : 'Incorrect phone number or password.';
             } else if (err.code === 'auth/too-many-requests') {
                 errorMessage = 'Too many failed attempts. Please try again later.';
+            } else if (err.code) {
+                errorMessage = `Error: ${err.code}`;
+            } else if (err.message) {
+                errorMessage = err.message;
             }
             setError(errorMessage);
         }

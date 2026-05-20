@@ -555,12 +555,20 @@ const PackageDetail = () => {
                             {expandedSection === 'cancellation' && (
                                 <div className="policy-content">
                                     <ul className="info-list policy-list">
-                                        {pkg.cancellationPolicy.map((item, index) => (
-                                            <li key={index} style={{ alignItems: 'flex-start', display: 'flex', gap: '8px', marginBottom: '8px' }}>
-                                                <span className="info-bullet" style={{ color: '#ef4444' }}>•</span>
-                                                <span>{item}</span>
-                                            </li>
-                                        ))}
+                                        {pkg.cancellationPolicy.map((item, index) => {
+                                            // Replace any hardcoded ₹ token amount with the actual tokenPrice from admin
+                                            let displayItem = item;
+                                            if (pkg.tokenPrice && /token/i.test(item)) {
+                                                const formatted = `₹${Number(pkg.tokenPrice).toLocaleString('en-IN')}`;
+                                                displayItem = item.replace(/₹[\d,]+/, formatted);
+                                            }
+                                            return (
+                                                <li key={index} style={{ alignItems: 'flex-start', display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                                                    <span className="info-bullet" style={{ color: '#ef4444' }}>•</span>
+                                                    <span>{displayItem}</span>
+                                                </li>
+                                            );
+                                        })}
                                     </ul>
                                 </div>
                             )}
