@@ -369,6 +369,22 @@ const PackageDetail = () => {
                                         <div className="itinerary-content">
                                             <p>{day.description}</p>
 
+                                            {/* Day Stats — only shown if admin filled them */}
+                                            {(day.distance || day.time || day.altitude) && (
+                                                <div className="day-stats">
+                                                    {day.distance && <div className="stat-item" title="Distance"><span>🚗/🥾</span> {day.distance}</div>}
+                                                    {day.time && <div className="stat-item" title="Time"><span>⏱</span> {day.time}</div>}
+                                                    {day.altitude && <div className="stat-item" title="Altitude"><span>⛰</span> {day.altitude}</div>}
+                                                </div>
+                                            )}
+
+                                            {/* Stay & Meals — only shown if admin filled them */}
+                                            {(day.stay || day.meals) && (
+                                                <div className="day-logistics">
+                                                    {day.stay && <div className="logistics-item"><strong>Stay:</strong> {day.stay}</div>}
+                                                    {day.meals && <div className="logistics-item"><strong>Meals:</strong> {day.meals}</div>}
+                                                </div>
+                                            )}
 
                                             {day.activities && day.activities.length > 0 && (
                                                 <div className="activities">
