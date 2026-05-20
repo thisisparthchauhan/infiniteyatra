@@ -36,7 +36,7 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
             { question: '', answer: '' }
         ],
         itinerary: [
-            { day: 1, title: '', description: '', activities: [''], distance: '', time: '', altitude: '', stay: '', meals: '' }
+            { day: 1, title: '', description: '', activities: [''], distance: '', time: '', trekDistance: '', trekTime: '', altitude: '', stay: '', meals: '' }
         ],
         images: [], // Array of URLs
         ...initialData,
@@ -165,7 +165,7 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
             ...prev,
             itinerary: [
                 ...prev.itinerary,
-                { day: prev.itinerary.length + 1, title: '', description: '', activities: [''], distance: '', time: '', altitude: '', stay: '', meals: '' }
+                { day: prev.itinerary.length + 1, title: '', description: '', activities: [''], distance: '', time: '', trekDistance: '', trekTime: '', altitude: '', stay: '', meals: '' }
             ]
         }));
     };
@@ -809,21 +809,42 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
                                         {/* Day Info (optional) */}
                                         <div className="space-y-2">
                                             <label className="text-xs font-bold text-slate-400 uppercase">Day Info <span className="text-slate-600 normal-case font-normal">(optional — leave blank to hide)</span></label>
-                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                                            {/* Drive */}
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                                                 <input
                                                     type="text"
                                                     value={day.distance || ''}
                                                     onChange={(e) => handleItineraryChange(dayIndex, 'distance', e.target.value)}
                                                     className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white text-sm"
-                                                    placeholder="🚗 Distance (e.g. 180 km)"
+                                                    placeholder="🚗 Drive Distance (e.g. 180 km)"
                                                 />
                                                 <input
                                                     type="text"
                                                     value={day.time || ''}
                                                     onChange={(e) => handleItineraryChange(dayIndex, 'time', e.target.value)}
                                                     className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white text-sm"
-                                                    placeholder="⏱ Time (e.g. 7-8 hours)"
+                                                    placeholder="⏱ Drive Time (e.g. 7-8 hours)"
                                                 />
+                                            </div>
+                                            {/* Trek */}
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                                <input
+                                                    type="text"
+                                                    value={day.trekDistance || ''}
+                                                    onChange={(e) => handleItineraryChange(dayIndex, 'trekDistance', e.target.value)}
+                                                    className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white text-sm"
+                                                    placeholder="🥾 Trek Distance (e.g. 18-20 km)"
+                                                />
+                                                <input
+                                                    type="text"
+                                                    value={day.trekTime || ''}
+                                                    onChange={(e) => handleItineraryChange(dayIndex, 'trekTime', e.target.value)}
+                                                    className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white text-sm"
+                                                    placeholder="⏱ Trek Time (e.g. 8-10 hours)"
+                                                />
+                                            </div>
+                                            {/* Altitude, Stay, Meals */}
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                                                 <input
                                                     type="text"
                                                     value={day.altitude || ''}
@@ -831,8 +852,6 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
                                                     className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white text-sm"
                                                     placeholder="⛰ Altitude (e.g. 12,100 ft)"
                                                 />
-                                            </div>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                                                 <input
                                                     type="text"
                                                     value={day.stay || ''}

@@ -370,10 +370,12 @@ const PackageDetail = () => {
                                             <p>{day.description}</p>
 
                                             {/* Day Stats — only shown if admin filled them */}
-                                            {(day.distance || day.time || day.altitude) && (
+                                            {(day.distance || day.time || day.trekDistance || day.trekTime || day.altitude) && (
                                                 <div className="day-stats">
-                                                    {day.distance && <div className="stat-item" title="Distance"><span>🚗/🥾</span> {day.distance}</div>}
-                                                    {day.time && <div className="stat-item" title="Time"><span>⏱</span> {day.time}</div>}
+                                                    {day.distance && <div className="stat-item" title="Drive Distance"><span>🚗</span> {day.distance}</div>}
+                                                    {day.time && <div className="stat-item" title="Drive Time"><span>⏱</span> {day.time}</div>}
+                                                    {day.trekDistance && <div className="stat-item" title="Trek Distance"><span>🥾</span> {day.trekDistance}</div>}
+                                                    {day.trekTime && <div className="stat-item" title="Trek Time"><span>⏱</span> {day.trekTime}</div>}
                                                     {day.altitude && <div className="stat-item" title="Altitude"><span>⛰</span> {day.altitude}</div>}
                                                 </div>
                                             )}
