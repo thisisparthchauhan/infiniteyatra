@@ -369,42 +369,6 @@ const PackageDetail = () => {
                                         <div className="itinerary-content">
                                             <p>{day.description}</p>
 
-                                            {/* Day Stats */}
-                                            {day.stats && (
-                                                <div className="day-stats">
-                                                    {day.stats.distance && (
-                                                        <div className="stat-item" title="Distance">
-                                                            <span>🚗/🥾</span> {day.stats.distance}
-                                                        </div>
-                                                    )}
-                                                    {day.stats.time && (
-                                                        <div className="stat-item" title="Time">
-                                                            <span>⏱</span> {day.stats.time}
-                                                        </div>
-                                                    )}
-                                                    {day.stats.altitude && (
-                                                        <div className="stat-item" title="Altitude">
-                                                            <span>⛰</span> {day.stats.altitude}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            )}
-
-                                            {/* Stay and Meals */}
-                                            {(day.stay || day.meals) && (
-                                                <div className="day-logistics">
-                                                    {day.stay && (
-                                                        <div className="logistics-item">
-                                                            <strong>Stay:</strong> {day.stay}
-                                                        </div>
-                                                    )}
-                                                    {day.meals && (
-                                                        <div className="logistics-item">
-                                                            <strong>Meals:</strong> {day.meals}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            )}
 
                                             {day.activities && day.activities.length > 0 && (
                                                 <div className="activities">
