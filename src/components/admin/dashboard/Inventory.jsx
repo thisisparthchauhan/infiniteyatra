@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Package, Plus, Edit, Calendar, Users, Database, Zap, Copy } from 'lucide-react';
-import { doc, setDoc } from 'firebase/firestore';
+import { Package, Plus, Edit, Calendar, Users, Database, Zap, Copy, Eye, EyeOff } from 'lucide-react';
+import { doc, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../../../firebase';
 
 import { usePackages } from '../../../context/PackageContext';
@@ -29,6 +29,16 @@ const Inventory = () => {
             console.error(err);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const toggleVisibility = async (pkg, e) => {
+        e.stopPropagation();
+        try {
+            await updateDoc(doc(db, 'packages', pkg.id), { isVisible: !pkg.isVisible });
+            await refreshPackages();
+        } catch (err) {
+            alert('Failed to update visibility.');
         }
     };
 
@@ -75,11 +85,25 @@ const Inventory = () => {
             {/* GRID */}
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {packages.map(pkg => (
-                    <div key={pkg.id} className="glass-card group rounded-2xl overflow-hidden border border-white/10 hover:border-white/20 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/10 hover:-translate-y-1">
+                    <div key={pkg.id} className={`glass-card group rounded-2xl overflow-hidden border transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 ${pkg.isVisible === false ? 'border-red-500/30 opacity-70 hover:opacity-90 hover:shadow-red-500/10' : 'border-white/10 hover:border-white/20 hover:shadow-purple-500/10'}`}>
                         <div className="h-48 relative overflow-hidden">
                             <img src={pkg.image} alt={pkg.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                            <div className="absolute top-4 right-4">
+                            {/* Visibility Badge — top left */}
+                            <div className="absolute top-3 left-3">
+                                <button
+                                    onClick={(e) => toggleVisibility(pkg, e)}
+                                    title={pkg.isVisible === false ? 'Hidden from site — click to publish' : 'Live on site — click to hide'}
+                                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold backdrop-blur-md border transition-all hover:scale-105 ${pkg.isVisible === false
+                                        ? 'bg-red-600/80 border-red-500/40 text-white'
+                                        : 'bg-green-600/80 border-green-500/40 text-white'}`}
+                                >
+                                    {pkg.isVisible === false
+                                        ? <><EyeOff size={11} /> Hidden</>
+                                        : <><Eye size={11} /> Live</>}
+                                </button>
+                            </div>
+                            <div className="absolute top-3 right-3">
                                 <span className="bg-black/60 backdrop-blur-md px-2 py-1 rounded-lg text-[10px] font-bold text-white border border-white/10 flex items-center gap-1">
                                     <Zap size={10} className="text-yellow-400" fill="currentColor" /> Dynamic Pricing On
                                 </span>
