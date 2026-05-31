@@ -16,7 +16,25 @@ const hasChanges = (original, updated) => {
     return JSON.stringify(clean(original)) !== JSON.stringify(clean(updated));
 };
 
-// Password verification dialog
+// Confirm dialog (step 1)
+const ConfirmDialog = ({ message, onConfirm, onCancel }) => (
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 backdrop-blur-sm">
+        <div className="bg-[#1a1f2e] border border-white/10 rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl">
+            <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center flex-shrink-0">
+                    <AlertTriangle size={20} className="text-red-400" />
+                </div>
+                <p className="text-white text-sm font-medium">{message}</p>
+            </div>
+            <div className="flex gap-3 justify-end">
+                <button onClick={onCancel} className="px-4 py-2 bg-white/5 hover:bg-white/10 text-slate-300 rounded-lg text-sm border border-white/10 transition-colors">No, Cancel</button>
+                <button onClick={onConfirm} className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg text-sm font-medium transition-colors">Yes, Delete</button>
+            </div>
+        </div>
+    </div>
+);
+
+// Password verification dialog (step 2)
 const PasswordDialog = ({ title, message, onVerified, onCancel }) => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
