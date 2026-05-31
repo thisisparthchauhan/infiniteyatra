@@ -377,10 +377,11 @@ const BookingPage = () => {
     const navigate = useNavigate();
     const { currentUser } = useAuth();
     const locationState = window.history.state?.usr || {}; // from navigate(..., {state:{...}})
-    const selectedLocation = locationState.selectedLocation || null;
-    const locationPrice = locationState.locationPrice || null;
+    const preselectedLocationName = locationState.selectedLocation || null;
     const preselectedDate = locationState.selectedDate || null; // date string 'YYYY-MM-DD'
     const [pkg, setPkg] = useState(null);
+    // Location selector state — initialized after pkg loads
+    const [selectedLocIdx, setSelectedLocIdx] = useState(0);
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
@@ -430,6 +431,11 @@ const BookingPage = () => {
                 }
                 if (!packageData) { navigate('/'); return; }
                 setPkg(packageData);
+                // Set initial location index based on preselected name
+                if (packageData.pickupLocations && packageData.pickupLocations.length > 0 && preselectedLocationName) {
+                    const idx = packageData.pickupLocations.findIndex(l => l.location === preselectedLocationName);
+                    if (idx >= 0) setSelectedLocIdx(idx);
+                }
                 setLoading(false);
 
                 if (packageData.location) {
@@ -534,8 +540,9 @@ const BookingPage = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    // Price Calculations — use location-specific price if passed from PackageDetail
-    const effectivePrice = pkg ? (locationPrice || pkg.price) : 0;
+    // Price Calculations — use selected location price if package has pickup locations
+    const hasLocations = pkg?.pickupLocations && pkg.pickupLocations.length > 0;
+    const effectivePrice = pkg ? (hasLocations ? (pkg.pickupLocations[selectedLocIdx]?.price || pkg.price) : pkg.price) : 0;
     const tourTotal = pkg ? effectivePrice * Number(bookingData.travelers) : 0;
     let hotelTotal = 0, bundleDiscount = 0;
     if (selectedHotel) {
@@ -792,28 +799,44 @@ const BookingPage = () => {
                                 Trip Details & Contact
                             </h2>
 
-                            {/* Pickup location + departure type info */}
-                            {(selectedLocation || pkg?.departureType) && (
-                                <div className="flex flex-wrap gap-3 mb-2">
-                                    {selectedLocation && (
-                                        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-500/10 border border-blue-500/20 text-sm text-blue-300">
-                                            <MapPin size={14} /> Pickup: <strong>{selectedLocation}</strong>
-                                            {locationPrice && <span className="text-blue-400 font-bold ml-1">· ₹{Number(locationPrice).toLocaleString('en-IN')}/person</span>}
-                                        </div>
-                                    )}
+                            {/* Pickup Location Selector */}
+                            {hasLocations && (
+                                <div className="mb-4">
+                                    <label className="block text-xs text-slate-400 mb-2 font-semibold uppercase tracking-wider">📍 Select Pickup Location</label>
+                                    <div className="flex flex-wrap gap-2">
+                                        {pkg.pickupLocations.map((loc, idx) => (
+                                            <button
+                                                key={idx} type="button"
+                                                onClick={() => setSelectedLocIdx(idx)}
+                                                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-all ${selectedLocIdx === idx ? 'bg-blue-600/20 border-blue-500 text-blue-300' : 'bg-white/5 border-white/10 text-slate-400 hover:border-white/30 hover:text-white'}`}
+                                            >
+                                                <MapPin size={13} />
+                                                {loc.location}
+                                                <span className={`font-bold ${selectedLocIdx === idx ? 'text-blue-400' : 'text-slate-500'}`}>
+                                                    ₹{Number(loc.price).toLocaleString('en-IN')}
+                                                </span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Departure + Season info badges */}
+                            {(pkg?.departureType || pkg?.seasonStartDate || pkg?.seasonEndDate) && (
+                                <div className="flex flex-wrap gap-2 mb-4">
                                     {pkg?.departureType && (
-                                        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm text-slate-300">
+                                        <span className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs text-slate-300">
                                             {pkg.departureType === 'daily' && '📅 Daily Departures'}
-                                            {pkg.departureType === 'weekly' && '📆 Weekly Departures'}
-                                            {pkg.departureType === 'minimum-clients' && `👥 Min. ${pkg.minimumClients || ''} clients required`}
-                                        </div>
+                                            {pkg.departureType === 'weekly' && `📆 Every ${['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][pkg.weeklyDay ?? 5]}`}
+                                            {pkg.departureType === 'minimum-clients' && `👥 Min. ${pkg.minimumClients || ''} clients`}
+                                        </span>
                                     )}
                                     {(pkg?.seasonStartDate || pkg?.seasonEndDate) && (
-                                        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-green-500/10 border border-green-500/20 text-sm text-green-300">
+                                        <span className="px-3 py-1.5 rounded-lg bg-green-500/10 border border-green-500/20 text-xs text-green-300">
                                             🗓 Season: {pkg.seasonStartDate ? new Date(pkg.seasonStartDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : ''}
                                             {pkg.seasonStartDate && pkg.seasonEndDate ? ' – ' : ''}
                                             {pkg.seasonEndDate ? new Date(pkg.seasonEndDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}
-                                        </div>
+                                        </span>
                                     )}
                                 </div>
                             )}
@@ -829,9 +852,15 @@ const BookingPage = () => {
                                         placeholderText="Select a date"
                                         filterDate={(date) => {
                                             if (pkg?.departureType === 'daily') return true;
+                                            if (pkg?.departureType === 'weekly') {
+                                                const isWeeklyDay = pkg.weeklyDay !== null && pkg.weeklyDay !== undefined && date.getDay() === Number(pkg.weeklyDay);
+                                                const isSpecialBatch = pkg.batchDates && pkg.batchDates.some(b => b.date === date.toLocaleDateString('en-CA'));
+                                                return isWeeklyDay || isSpecialBatch;
+                                            }
                                             if (!pkg?.batchDates || pkg.batchDates.length === 0) return true;
                                             return pkg.batchDates.some(b => b.date === date.toLocaleDateString('en-CA'));
                                         }}
+                                        calendarClassName="booking-datepicker-calendar"
                                         className={`w-full bg-white/5 border rounded-xl p-3.5 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 ${validationErrors.date ? 'border-red-500/50' : 'border-white/10'}`}
                                     />
                                     {validationErrors.date && <p className="text-red-400 text-xs mt-1">{validationErrors.date}</p>}

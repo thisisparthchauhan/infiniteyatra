@@ -512,3 +512,60 @@ input:-webkit-autofill:active {
     animation: rocketFloat 2s ease-in-out infinite;
     display: inline-block;
 }
+/* ── Booking Page DatePicker Calendar ── */
+.booking-datepicker-calendar {
+    background: #1a1f2e !important;
+    border: 1px solid rgba(255,255,255,0.12) !important;
+    border-radius: 16px !important;
+    font-family: inherit !important;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5) !important;
+    padding: 8px !important;
+}
+.booking-datepicker-calendar .react-datepicker__header {
+    background: transparent !important;
+    border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+    padding-bottom: 8px !important;
+}
+.booking-datepicker-calendar .react-datepicker__current-month {
+    color: #fff !important;
+    font-size: 1rem !important;
+    font-weight: 700 !important;
+}
+.booking-datepicker-calendar .react-datepicker__navigation-icon::before {
+    border-color: #94a3b8 !important;
+}
+.booking-datepicker-calendar .react-datepicker__day-name {
+    color: #64748b !important;
+    font-size: 0.78rem !important;
+    font-weight: 600 !important;
+    width: 2.4rem !important;
+    line-height: 2rem !important;
+    margin: 2px !important;
+}
+.booking-datepicker-calendar .react-datepicker__day {
+    color: #e2e8f0 !important;
+    width: 2.4rem !important;
+    line-height: 2.4rem !important;
+    margin: 2px !important;
+    border-radius: 50% !important;
+    font-size: 0.9rem !important;
+    transition: all 0.15s !important;
+}
+.booking-datepicker-calendar .react-datepicker__day:hover:not(.react-datepicker__day--disabled) {
+    background: rgba(59,130,246,0.2) !important;
+    color: #93c5fd !important;
+}
+.booking-datepicker-calendar .react-datepicker__day--selected,
+.booking-datepicker-calendar .react-datepicker__day--keyboard-selected {
+    background: #3b82f6 !important;
+    color: #fff !important;
+    font-weight: 700 !important;
+}
+.booking-datepicker-calendar .react-datepicker__day--disabled {
+    color: #334155 !important;
+    cursor: not-allowed !important;
+}
+.booking-datepicker-calendar .react-datepicker__day--today {
+    font-weight: 700 !important;
+    text-decoration: underline !important;
+}
