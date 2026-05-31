@@ -379,6 +379,7 @@ const BookingPage = () => {
     const locationState = window.history.state?.usr || {}; // from navigate(..., {state:{...}})
     const selectedLocation = locationState.selectedLocation || null;
     const locationPrice = locationState.locationPrice || null;
+    const preselectedDate = locationState.selectedDate || null; // date string 'YYYY-MM-DD'
     const [pkg, setPkg] = useState(null);
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(true);
@@ -391,7 +392,7 @@ const BookingPage = () => {
     const [selectedHotel, setSelectedHotel] = useState(null);
 
     const [bookingData, setBookingData] = useState({
-        date: '',
+        date: preselectedDate || '',
         travelers: 2,
         name: '',
         email: '',
