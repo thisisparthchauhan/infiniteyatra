@@ -498,12 +498,17 @@ const PackageDetail = () => {
                             </div>
                         ) : (
                             <div className="carry-tags">
-                                {(pkg.thingsToCarry || thingsToCarry).map((item, index) => (
-                                    <span key={index} className="carry-tag">
-                                        <span className="carry-icon">{item.icon}</span>
-                                        {item.category}
-                                    </span>
-                                ))}
+                                {(pkg.thingsToCarry && pkg.thingsToCarry.length > 0 ? pkg.thingsToCarry : thingsToCarry).map((item, index) => {
+                                    // Support both plain strings (from admin) and legacy {icon, category} objects
+                                    const label = typeof item === 'string' ? item : item.category;
+                                    const icon = typeof item === 'string' ? null : item.icon;
+                                    return (
+                                        <span key={index} className="carry-tag">
+                                            {icon && <span className="carry-icon">{icon}</span>}
+                                            {label}
+                                        </span>
+                                    );
+                                })}
                             </div>
                         )}
                     </section>
