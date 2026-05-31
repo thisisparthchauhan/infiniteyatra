@@ -533,7 +533,7 @@ const PackageDetail = () => {
                         </button>
                         {expandedSection === 'general' && (
                             <div className="policy-content">
-                                <p>All participants must carry valid ID proof. Follow trek leader instructions at all times. Respect local culture and environment.</p>
+                                <p>{pkg.generalPolicy || 'All participants must carry valid ID proof. Follow trek leader instructions at all times. Respect local culture and environment.'}</p>
                             </div>
                         )}
                     </section>

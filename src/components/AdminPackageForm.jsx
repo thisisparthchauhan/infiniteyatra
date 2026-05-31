@@ -32,7 +32,13 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
         goodToKnow: [''],
         whoIsThisFor: [''],
         thingsToCarry: [''],
-        cancellationPolicy: initialData?.cancellationPolicy?.length ? initialData.cancellationPolicy : [''],
+        cancellationPolicy: initialData?.cancellationPolicy?.length ? initialData.cancellationPolicy : [
+            'Token Amount: ₹2,000 per person (Non-Refundable & Non-Transferable)',
+            'More than 7 days before trip: Full refund minus token amount',
+            '4–7 days before trip: 50% refund only',
+            'Less than 72 hours / No Show: No refund',
+        ],
+        generalPolicy: initialData?.generalPolicy || 'All participants must carry valid ID proof. Follow trek leader instructions at all times. Respect local culture and environment.',
         faqs: [
             { question: '', answer: '' }
         ],
@@ -330,6 +336,7 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
             whoIsThisFor: formData.whoIsThisFor.filter(i => i.trim()),
             thingsToCarry: formData.thingsToCarry.filter(i => i.trim()),
             cancellationPolicy: formData.cancellationPolicy.filter(i => i.trim()),
+            generalPolicy: formData.generalPolicy?.trim() || '',
             faqs: formData.faqs.filter(f => f.question.trim() && f.answer.trim()),
             itinerary: formData.itinerary.map(day => ({
                 ...day,
@@ -874,18 +881,31 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
                             </button>
                         </div>
 
+                        {/* General Policy */}
+                        <div className="space-y-2">
+                            <label className="block text-sm font-bold text-slate-300">📋 General Policy</label>
+                            <p className="text-xs text-slate-500">Applies to all clients. Edit freely.</p>
+                            <textarea
+                                value={formData.generalPolicy || ''}
+                                onChange={(e) => setFormData(prev => ({ ...prev, generalPolicy: e.target.value }))}
+                                rows={3}
+                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white resize-y"
+                                placeholder="All participants must carry valid ID proof. Follow trek leader instructions at all times..."
+                            />
+                        </div>
+
                         {/* Cancellation Policy */}
                         <div className="space-y-2">
                             <label className="block text-sm font-bold text-slate-300">❌ Cancellation Policy</label>
-                            <p className="text-xs text-slate-500">Use <code className="bg-white/10 px-1 rounded">₹{'{tokenPrice}'}</code> as placeholder — it auto-fills from Token Price field on the package page.</p>
-                            {(formData.cancellationPolicy || ['']).map((item, index) => (
+                            <p className="text-xs text-slate-500">Token amount auto-updates from Token Price field. Edit each item as needed.</p>
+                            {(formData.cancellationPolicy || []).map((item, index) => (
                                 <div key={index} className="flex gap-2">
                                     <input
                                         type="text"
                                         value={item}
                                         onChange={(e) => handleListChange('cancellationPolicy', index, e.target.value)}
                                         className="flex-1 bg-black/40 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white"
-                                        placeholder={index === 0 ? 'Token Amount: ₹2,000 per person (Non-Refundable & Non-Transferable)' : 'e.g. More than 7 days: Full refund minus token amount'}
+                                        placeholder="e.g. More than 7 days: Full refund minus token amount"
                                     />
                                     <button onClick={() => removeListItem('cancellationPolicy', index)} className="text-slate-500 hover:text-red-400"><X size={16} /></button>
                                 </div>
