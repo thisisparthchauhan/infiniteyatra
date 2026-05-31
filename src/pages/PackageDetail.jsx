@@ -724,9 +724,9 @@ const PackageDetail = () => {
                             const displayPrice = activeLoc ? activeLoc.price : pkg.price;
                             return (
                                 <>
-                                    {/* Pickup Location Selector */}
+                                    {/* Pickup Location Selector — hidden on mobile fixed bar */}
                                     {hasLocations && (
-                                        <div style={{ marginBottom: '12px' }}>
+                                        <div className="mobile-hide-in-bar" style={{ marginBottom: '12px' }}>
                                             <label style={{ display: 'block', fontSize: '12px', color: '#94a3b8', marginBottom: '6px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>📍 Select Pickup Location</label>
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                                 {pkg.pickupLocations.map((loc, idx) => (
@@ -761,9 +761,9 @@ const PackageDetail = () => {
                             );
                         })()}
 
-                        {/* Departure Type Badge */}
+                        {/* Departure Type Badge — hidden on mobile fixed bar */}
                         {pkg.departureType && (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '8px 0', padding: '8px 12px', background: 'rgba(255,255,255,0.04)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                            <div className="mobile-hide-in-bar" style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '8px 0', padding: '8px 12px', background: 'rgba(255,255,255,0.04)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
                                 <span style={{ fontSize: '13px', color: '#94a3b8' }}>
                                     {pkg.departureType === 'daily' && '📅 Daily Departures'}
                                     {pkg.departureType === 'weekly' && `📆 Every ${['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][pkg.weeklyDay ?? 5]}`}
@@ -772,9 +772,9 @@ const PackageDetail = () => {
                             </div>
                         )}
 
-                        {/* Season Dates Badge */}
+                        {/* Season Dates Badge — hidden on mobile fixed bar */}
                         {(pkg.seasonStartDate || pkg.seasonEndDate) && (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', padding: '8px 12px', background: 'rgba(34,197,94,0.06)', borderRadius: '8px', border: '1px solid rgba(34,197,94,0.15)' }}>
+                            <div className="mobile-hide-in-bar" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', padding: '8px 12px', background: 'rgba(34,197,94,0.06)', borderRadius: '8px', border: '1px solid rgba(34,197,94,0.15)' }}>
                                 <span style={{ fontSize: '13px', color: '#86efac' }}>
                                     🗓 Season: {pkg.seasonStartDate ? new Date(pkg.seasonStartDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}
                                     {pkg.seasonStartDate && pkg.seasonEndDate ? ' – ' : ''}

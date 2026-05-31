@@ -941,6 +941,8 @@
 @media (max-width: 1024px) {
     .content-container {
         grid-template-columns: 1fr;
+        /* Add bottom padding so content isn't hidden behind fixed bar */
+        padding-bottom: 90px;
     }
 
     .booking-sidebar {
@@ -949,39 +951,60 @@
         left: 0;
         right: 0;
         top: auto;
+        max-height: none;
+        overflow: visible;
         z-index: 50;
         background-color: #1a1a1a;
         border-top: 1px solid #2d2d2d;
         border-radius: 16px 16px 0 0;
-        padding: 1rem;
+        padding: 0.75rem 1rem;
     }
 
     .booking-card {
         padding: 0;
         background-color: transparent;
         border: none;
+        /* Single row: price left, book now right */
+        display: flex;
+        align-items: center;
+        gap: 1rem;
     }
 
+    /* Keep price visible on mobile bar */
     .pricing-section {
-        display: none;
+        display: block !important;
+        margin-bottom: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+        flex: 1;
     }
 
-    .date-selection {
-        display: none;
+    .price-display {
+        flex-direction: row;
+        align-items: baseline;
+        gap: 4px;
     }
 
-    /* Hide the full inline calendar in the fixed bottom bar on mobile —
-       it takes the entire screen. Users select dates in the booking flow. */
-    .date-selection-calendar {
-        display: none;
+    .from-text { font-size: 0.7rem; }
+    .price { font-size: 1.4rem; }
+    .per-person { font-size: 0.7rem; }
+
+    /* Hide everything except price + book button on mobile bar */
+    .date-selection,
+    .date-selection-calendar,
+    .guest-counter,
+    .questions-section,
+    .mobile-hide-in-bar {
+        display: none !important;
     }
 
-    .guest-counter {
-        margin-bottom: 1rem;
-    }
-
-    .questions-section {
-        display: none;
+    /* Book Now button fills remaining space */
+    .book-now-btn {
+        flex: 0 0 auto;
+        width: auto;
+        padding: 0.75rem 1.5rem;
+        font-size: 0.95rem;
+        margin-top: 0;
     }
 }
 
