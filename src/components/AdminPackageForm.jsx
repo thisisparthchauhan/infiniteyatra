@@ -32,6 +32,7 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
         goodToKnow: [''],
         whoIsThisFor: [''],
         thingsToCarry: [''],
+        cancellationPolicy: initialData?.cancellationPolicy?.length ? initialData.cancellationPolicy : [''],
         faqs: [
             { question: '', answer: '' }
         ],
@@ -326,6 +327,7 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
             goodToKnow: formData.goodToKnow.filter(i => i.trim()),
             whoIsThisFor: formData.whoIsThisFor.filter(i => i.trim()),
             thingsToCarry: formData.thingsToCarry.filter(i => i.trim()),
+            cancellationPolicy: formData.cancellationPolicy.filter(i => i.trim()),
             faqs: formData.faqs.filter(f => f.question.trim() && f.answer.trim()),
             itinerary: formData.itinerary.map(day => ({
                 ...day,
@@ -858,6 +860,27 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
                             ))}
                             <button onClick={() => addListItem('thingsToCarry')} className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1">
                                 <Plus size={14} /> Add Item
+                            </button>
+                        </div>
+
+                        {/* Cancellation Policy */}
+                        <div className="space-y-2">
+                            <label className="block text-sm font-bold text-slate-300">❌ Cancellation Policy</label>
+                            <p className="text-xs text-slate-500">Use <code className="bg-white/10 px-1 rounded">₹{'{tokenPrice}'}</code> as placeholder — it auto-fills from Token Price field on the package page.</p>
+                            {(formData.cancellationPolicy || ['']).map((item, index) => (
+                                <div key={index} className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        value={item}
+                                        onChange={(e) => handleListChange('cancellationPolicy', index, e.target.value)}
+                                        className="flex-1 bg-black/40 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white"
+                                        placeholder={index === 0 ? 'Token Amount: ₹2,000 per person (Non-Refundable & Non-Transferable)' : 'e.g. More than 7 days: Full refund minus token amount'}
+                                    />
+                                    <button onClick={() => removeListItem('cancellationPolicy', index)} className="text-slate-500 hover:text-red-400"><X size={16} /></button>
+                                </div>
+                            ))}
+                            <button onClick={() => addListItem('cancellationPolicy')} className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1">
+                                <Plus size={14} /> Add Policy Item
                             </button>
                         </div>
 

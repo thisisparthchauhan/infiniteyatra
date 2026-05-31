@@ -701,21 +701,23 @@
 
 .react-datepicker__day-name {
     color: #9ca3af;
-    width: 3rem;
-    line-height: 3rem;
-    margin: 0.2rem;
-    font-size: 0.85rem;
+    width: 2.8rem;
+    line-height: 2.8rem;
+    margin: 0.15rem;
+    font-size: 0.82rem;
+    font-weight: 600;
 }
 
 .react-datepicker__day {
     color: #e5e7eb;
-    width: 3rem;
-    line-height: 3rem;
-    margin: 0.2rem;
+    width: 2.8rem;
+    line-height: 2.8rem;
+    margin: 0.15rem;
     border-radius: 50%;
     transition: all 0.2s;
     position: relative;
     font-size: 0.95rem;
+    font-weight: 500;
 }
 
 .react-datepicker__day:hover:not(.react-datepicker__day--disabled) {
