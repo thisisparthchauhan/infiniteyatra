@@ -766,7 +766,7 @@ const PackageDetail = () => {
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '8px 0', padding: '8px 12px', background: 'rgba(255,255,255,0.04)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
                                 <span style={{ fontSize: '13px', color: '#94a3b8' }}>
                                     {pkg.departureType === 'daily' && '📅 Daily Departures'}
-                                    {pkg.departureType === 'weekly' && '📆 Weekly Departures'}
+                                    {pkg.departureType === 'weekly' && `📆 Every ${['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][pkg.weeklyDay ?? 5]}`}
                                     {pkg.departureType === 'minimum-clients' && `👥 Min. ${pkg.minimumClients || ''} clients required`}
                                 </span>
                             </div>
@@ -824,8 +824,15 @@ const PackageDetail = () => {
                                     // Season window restriction
                                     if (pkg.seasonStartDate && date < new Date(pkg.seasonStartDate)) return false;
                                     if (pkg.seasonEndDate && date > new Date(pkg.seasonEndDate)) return false;
-                                    // Batch dates filter (if set)
+                                    // Daily: all dates allowed
                                     if (pkg.departureType === 'daily') return true;
+                                    // Weekly: every matching weekday + any special batch dates
+                                    if (pkg.departureType === 'weekly') {
+                                        const isWeeklyDay = pkg.weeklyDay !== null && pkg.weeklyDay !== undefined && date.getDay() === Number(pkg.weeklyDay);
+                                        const isSpecialBatch = pkg.batchDates && pkg.batchDates.some(b => b.date === date.toLocaleDateString('en-CA'));
+                                        return isWeeklyDay || isSpecialBatch;
+                                    }
+                                    // Batch / minimum-clients: only batch dates
                                     if (!pkg?.batchDates || pkg.batchDates.length === 0) {
                                         if (!pkg?.availableDates) return true;
                                         return pkg.availableDates.includes(date.toLocaleDateString('en-CA'));

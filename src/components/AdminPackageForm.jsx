@@ -53,6 +53,7 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
         // Departure type
         departureType: initialData?.departureType || 'daily',
         minimumClients: initialData?.minimumClients || '',
+        weeklyDay: initialData?.weeklyDay !== undefined ? initialData.weeklyDay : 5, // 5 = Friday default
         // Season window
         seasonStartDate: initialData?.seasonStartDate || '',
         seasonEndDate: initialData?.seasonEndDate || '',
@@ -338,6 +339,7 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
                 .map(p => ({ location: p.location.trim(), price: Number(p.price) || 0, b2bPrice: Number(p.b2bPrice) || 0 })),
             departureType: formData.departureType || 'daily',
             minimumClients: formData.departureType === 'minimum-clients' ? (Number(formData.minimumClients) || 0) : 0,
+            weeklyDay: formData.departureType === 'weekly' ? Number(formData.weeklyDay) : null,
             seasonStartDate: formData.seasonStartDate || '',
             seasonEndDate: formData.seasonEndDate || '',
         };
@@ -484,6 +486,23 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
                                         </label>
                                     ))}
                                 </div>
+                                {formData.departureType === 'weekly' && (
+                                    <div className="space-y-2">
+                                        <label className="text-sm text-slate-400">Departure Day (every week):</label>
+                                        <div className="flex gap-2 flex-wrap">
+                                            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, idx) => (
+                                                <button
+                                                    key={idx} type="button"
+                                                    onClick={() => setFormData(prev => ({ ...prev, weeklyDay: idx }))}
+                                                    className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-all ${Number(formData.weeklyDay) === idx ? 'bg-blue-600 border-blue-600 text-white' : 'bg-black/40 border-white/10 text-slate-400 hover:border-white/30 hover:text-white'}`}
+                                                >
+                                                    {day}
+                                                </button>
+                                            ))}
+                                        </div>
+                                        <p className="text-xs text-slate-500">All batch dates below will also appear as special departure dates alongside weekly ones.</p>
+                                    </div>
+                                )}
                                 {formData.departureType === 'minimum-clients' && (
                                     <div className="flex items-center gap-3">
                                         <label className="text-sm text-slate-400 whitespace-nowrap">Minimum Clients Required:</label>
