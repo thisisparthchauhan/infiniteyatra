@@ -761,6 +761,13 @@ const PackageDetail = () => {
                             );
                         })()}
 
+                        {/* Minimum Persons Badge — hidden on mobile fixed bar */}
+                        {pkg.minimumPersons && pkg.minimumPersons > 1 && (
+                            <div className="mobile-hide-in-bar" style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '8px 0', padding: '8px 12px', background: 'rgba(251,191,36,0.06)', borderRadius: '8px', border: '1px solid rgba(251,191,36,0.2)' }}>
+                                <span style={{ fontSize: '13px', color: '#fcd34d' }}>👥 Min. {pkg.minimumPersons} persons per booking</span>
+                            </div>
+                        )}
+
                         {/* Departure Type Badge — hidden on mobile fixed bar */}
                         {pkg.departureType && (
                             <div className="mobile-hide-in-bar" style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '8px 0', padding: '8px 12px', background: 'rgba(255,255,255,0.04)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>

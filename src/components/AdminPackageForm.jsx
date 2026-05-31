@@ -55,6 +55,8 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
         departureType: initialData?.departureType || 'daily',
         minimumClients: initialData?.minimumClients || '',
         weeklyDay: initialData?.weeklyDay !== undefined ? initialData.weeklyDay : 5, // 5 = Friday default
+        // Minimum persons per booking (applies to all departure types)
+        minimumPersons: initialData?.minimumPersons || '',
         // Season window
         seasonStartDate: initialData?.seasonStartDate || '',
         seasonEndDate: initialData?.seasonEndDate || '',
@@ -342,6 +344,7 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
             departureType: formData.departureType || 'daily',
             minimumClients: formData.departureType === 'minimum-clients' ? (Number(formData.minimumClients) || 0) : 0,
             weeklyDay: formData.departureType === 'weekly' ? Number(formData.weeklyDay) : null,
+            minimumPersons: Number(formData.minimumPersons) || 1,
             seasonStartDate: formData.seasonStartDate || '',
             seasonEndDate: formData.seasonEndDate || '',
         };
@@ -507,12 +510,20 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
                                 )}
                                 {formData.departureType === 'minimum-clients' && (
                                     <div className="flex items-center gap-3">
-                                        <label className="text-sm text-slate-400 whitespace-nowrap">Minimum Clients Required:</label>
+                                        <label className="text-sm text-slate-400 whitespace-nowrap">Minimum Clients Required (to run trip):</label>
                                         <input type="number" name="minimumClients" value={formData.minimumClients}
                                             onChange={handleChange} min="1" placeholder="e.g. 6"
                                             className="w-28 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white text-sm" />
                                     </div>
                                 )}
+                                {/* Minimum persons per booking — applies to ALL departure types */}
+                                <div className="flex items-center gap-3 mt-1 pt-3 border-t border-white/10">
+                                    <label className="text-sm text-slate-300 font-medium whitespace-nowrap">👥 Minimum Persons per Booking:</label>
+                                    <input type="number" name="minimumPersons" value={formData.minimumPersons}
+                                        onChange={handleChange} min="1" placeholder="e.g. 4"
+                                        className="w-28 bg-black/40 border border-blue-500/30 rounded-lg px-3 py-2 text-white text-sm" />
+                                    <span className="text-xs text-slate-500">(clients must book at least this many — then any date is open)</span>
+                                </div>
                             </div>
 
                             {/* ── Season Dates ── */}

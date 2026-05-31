@@ -436,6 +436,10 @@ const BookingPage = () => {
                     const idx = packageData.pickupLocations.findIndex(l => l.location === preselectedLocationName);
                     if (idx >= 0) setSelectedLocIdx(idx);
                 }
+                // Pre-set travelers to minimumPersons if set
+                if (packageData.minimumPersons && packageData.minimumPersons > 1) {
+                    setBookingData(prev => ({ ...prev, travelers: Math.max(prev.travelers, packageData.minimumPersons) }));
+                }
                 setLoading(false);
 
                 if (packageData.location) {
@@ -510,7 +514,8 @@ const BookingPage = () => {
         const errors = {};
         if (stepNum === 1) {
             if (!bookingData.date) errors.date = 'Please select a travel date';
-            if (!bookingData.travelers || bookingData.travelers < 1) errors.travelers = 'At least 1 traveler required';
+            const minP = pkg?.minimumPersons || 1;
+            if (!bookingData.travelers || bookingData.travelers < minP) errors.travelers = minP > 1 ? `Minimum ${minP} persons required for this package` : 'At least 1 traveler required';
             if (!bookingData.name.trim()) errors.name = 'Name is required';
             if (!bookingData.email.trim()) errors.email = 'Email is required';
             else if (!/\S+@\S+\.\S+/.test(bookingData.email)) errors.email = 'Enter a valid email';
@@ -866,12 +871,20 @@ const BookingPage = () => {
                                     {validationErrors.date && <p className="text-red-400 text-xs mt-1">{validationErrors.date}</p>}
                                 </div>
                                 <div>
-                                    <label className="block text-sm text-slate-400 mb-2 font-medium">Number of Travelers *</label>
+                                    <label className="block text-sm text-slate-400 mb-2 font-medium">
+                                        Number of Travelers *
+                                        {pkg?.minimumPersons > 1 && (
+                                            <span className="ml-2 text-xs text-yellow-400 font-normal">👥 Min. {pkg.minimumPersons} required</span>
+                                        )}
+                                    </label>
                                     <div className="flex items-center gap-3">
-                                        <button type="button" onClick={() => setBookingData(prev => ({ ...prev, travelers: Math.max(1, Number(prev.travelers) - 1) }))} className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-white/10 transition-colors text-xl font-bold">−</button>
+                                        <button type="button" onClick={() => setBookingData(prev => ({ ...prev, travelers: Math.max(pkg?.minimumPersons || 1, Number(prev.travelers) - 1) }))} className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-white/10 transition-colors text-xl font-bold">−</button>
                                         <div className="flex-1 bg-white/5 border border-white/10 rounded-xl p-3.5 text-center text-white text-xl font-bold">{bookingData.travelers}</div>
                                         <button type="button" onClick={() => setBookingData(prev => ({ ...prev, travelers: Number(prev.travelers) + 1 }))} className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-white/10 transition-colors text-xl font-bold">+</button>
                                     </div>
+                                    {pkg?.minimumPersons > 1 && Number(bookingData.travelers) < pkg.minimumPersons && (
+                                        <p className="text-yellow-400 text-xs mt-1">⚠️ Minimum {pkg.minimumPersons} persons required for this package</p>
+                                    )}
                                 </div>
                             </div>
 
