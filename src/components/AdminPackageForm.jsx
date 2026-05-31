@@ -48,6 +48,14 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
         linkedHotelIds: initialData?.linkedHotelIds || [],
         linkedVehicleIds: initialData?.linkedVehicleIds || [],
         packageRoute: initialData?.packageRoute || '',
+        // Pickup locations with per-location pricing
+        pickupLocations: initialData?.pickupLocations || [],
+        // Departure type
+        departureType: initialData?.departureType || 'daily',
+        minimumClients: initialData?.minimumClients || '',
+        // Season window
+        seasonStartDate: initialData?.seasonStartDate || '',
+        seasonEndDate: initialData?.seasonEndDate || '',
     });
 
     const [allHotels, setAllHotels] = useState([]);
@@ -151,6 +159,25 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
             ...prev,
             [field]: prev[field].filter((_, i) => i !== index)
         }));
+    };
+
+    // Handle Pickup Locations
+    const addPickupLocation = () => {
+        setFormData(prev => ({
+            ...prev,
+            pickupLocations: [...prev.pickupLocations, { location: '', price: '', b2bPrice: '' }]
+        }));
+    };
+    const removePickupLocation = (index) => {
+        setFormData(prev => ({
+            ...prev,
+            pickupLocations: prev.pickupLocations.filter((_, i) => i !== index)
+        }));
+    };
+    const updatePickupLocation = (index, field, value) => {
+        const updated = [...formData.pickupLocations];
+        updated[index] = { ...updated[index], [field]: value };
+        setFormData(prev => ({ ...prev, pickupLocations: updated }));
     };
 
     // Handle Itinerary
@@ -306,6 +333,13 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
             linkedHotelIds: formData.linkedHotelIds || [],
             linkedVehicleIds: formData.linkedVehicleIds || [],
             packageRoute: formData.packageRoute || '',
+            pickupLocations: (formData.pickupLocations || [])
+                .filter(p => p.location.trim())
+                .map(p => ({ location: p.location.trim(), price: Number(p.price) || 0, b2bPrice: Number(p.b2bPrice) || 0 })),
+            departureType: formData.departureType || 'daily',
+            minimumClients: formData.departureType === 'minimum-clients' ? (Number(formData.minimumClients) || 0) : 0,
+            seasonStartDate: formData.seasonStartDate || '',
+            seasonEndDate: formData.seasonEndDate || '',
         };
 
         onSave(cleanedData);
@@ -408,6 +442,75 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
                                     className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-blue-500 outline-none"
                                 />
                             </div>
+                            {/* ── Pickup Locations with Per-Location Pricing ── */}
+                            <div className="col-span-1 md:col-span-2 border border-white/10 rounded-xl p-4 space-y-3 bg-black/20">
+                                <div className="flex items-center justify-between">
+                                    <label className="text-sm font-bold text-slate-300">📍 Pickup Locations & Pricing <span className="text-slate-500 font-normal text-xs">(optional — leave empty to use main price above)</span></label>
+                                    <button type="button" onClick={addPickupLocation} className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1 border border-blue-500/30 px-2 py-1 rounded-lg">
+                                        <Plus size={12} /> Add Location
+                                    </button>
+                                </div>
+                                {formData.pickupLocations.length === 0 && (
+                                    <p className="text-xs text-slate-500 italic">No pickup locations added. All clients pay the main Selling Price above.</p>
+                                )}
+                                {formData.pickupLocations.map((loc, idx) => (
+                                    <div key={idx} className="grid grid-cols-3 gap-2 items-center">
+                                        <input type="text" value={loc.location} onChange={(e) => updatePickupLocation(idx, 'location', e.target.value)}
+                                            className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white text-sm" placeholder="📍 Location (e.g. Delhi)" />
+                                        <input type="number" value={loc.price} onChange={(e) => updatePickupLocation(idx, 'price', e.target.value)}
+                                            className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white text-sm" placeholder="₹ Client Price" />
+                                        <div className="flex gap-2">
+                                            <input type="number" value={loc.b2bPrice} onChange={(e) => updatePickupLocation(idx, 'b2bPrice', e.target.value)}
+                                                className="flex-1 bg-black/40 border border-purple-500/20 rounded-lg px-3 py-2 text-white text-sm" placeholder="₹ B2B Price" />
+                                            <button type="button" onClick={() => removePickupLocation(idx)} className="text-slate-500 hover:text-red-400 shrink-0"><X size={16} /></button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* ── Departure Type ── */}
+                            <div className="col-span-1 md:col-span-2 border border-white/10 rounded-xl p-4 space-y-3 bg-black/20">
+                                <label className="text-sm font-bold text-slate-300">🚀 Departure Type</label>
+                                <div className="flex gap-3 flex-wrap">
+                                    {[
+                                        { value: 'daily', label: '📅 Daily Departure' },
+                                        { value: 'weekly', label: '📆 Weekly Departure' },
+                                        { value: 'minimum-clients', label: '👥 Minimum Clients' },
+                                    ].map(opt => (
+                                        <label key={opt.value} className={`flex items-center gap-2 cursor-pointer px-4 py-2 rounded-lg border transition-all text-sm ${formData.departureType === opt.value ? 'bg-blue-600/20 border-blue-500 text-white' : 'bg-black/40 border-white/10 text-slate-400 hover:border-white/30'}`}>
+                                            <input type="radio" name="departureType" value={opt.value} checked={formData.departureType === opt.value}
+                                                onChange={handleChange} className="accent-blue-500" />
+                                            {opt.label}
+                                        </label>
+                                    ))}
+                                </div>
+                                {formData.departureType === 'minimum-clients' && (
+                                    <div className="flex items-center gap-3">
+                                        <label className="text-sm text-slate-400 whitespace-nowrap">Minimum Clients Required:</label>
+                                        <input type="number" name="minimumClients" value={formData.minimumClients}
+                                            onChange={handleChange} min="1" placeholder="e.g. 6"
+                                            className="w-28 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white text-sm" />
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* ── Season Dates ── */}
+                            <div className="col-span-1 md:col-span-2 border border-white/10 rounded-xl p-4 space-y-3 bg-black/20">
+                                <label className="text-sm font-bold text-slate-300">📅 Season / Booking Window <span className="text-slate-500 font-normal text-xs">(optional — leave empty to allow any date)</span></label>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label className="text-xs text-slate-400 mb-1 block">Season Opens</label>
+                                        <input type="date" name="seasonStartDate" value={formData.seasonStartDate} onChange={handleChange}
+                                            className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white text-sm" />
+                                    </div>
+                                    <div>
+                                        <label className="text-xs text-slate-400 mb-1 block">Season Closes</label>
+                                        <input type="date" name="seasonEndDate" value={formData.seasonEndDate} onChange={handleChange}
+                                            className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white text-sm" />
+                                    </div>
+                                </div>
+                            </div>
+
                             <div>
                                 <label className="block text-sm text-slate-400 mb-1">Categories</label>
                                 <div className="flex flex-wrap gap-2">

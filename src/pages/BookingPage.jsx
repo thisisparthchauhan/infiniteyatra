@@ -376,6 +376,9 @@ const BookingPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const { currentUser } = useAuth();
+    const locationState = window.history.state?.usr || {}; // from navigate(..., {state:{...}})
+    const selectedLocation = locationState.selectedLocation || null;
+    const locationPrice = locationState.locationPrice || null;
     const [pkg, setPkg] = useState(null);
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(true);
@@ -530,8 +533,9 @@ const BookingPage = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    // Price Calculations
-    const tourTotal = pkg ? pkg.price * Number(bookingData.travelers) : 0;
+    // Price Calculations — use location-specific price if passed from PackageDetail
+    const effectivePrice = pkg ? (locationPrice || pkg.price) : 0;
+    const tourTotal = pkg ? effectivePrice * Number(bookingData.travelers) : 0;
     let hotelTotal = 0, bundleDiscount = 0;
     if (selectedHotel) {
         hotelTotal = selectedHotel.originalPrice;
@@ -787,14 +791,46 @@ const BookingPage = () => {
                                 Trip Details & Contact
                             </h2>
 
+                            {/* Pickup location + departure type info */}
+                            {(selectedLocation || pkg?.departureType) && (
+                                <div className="flex flex-wrap gap-3 mb-2">
+                                    {selectedLocation && (
+                                        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-500/10 border border-blue-500/20 text-sm text-blue-300">
+                                            <MapPin size={14} /> Pickup: <strong>{selectedLocation}</strong>
+                                            {locationPrice && <span className="text-blue-400 font-bold ml-1">· ₹{Number(locationPrice).toLocaleString('en-IN')}/person</span>}
+                                        </div>
+                                    )}
+                                    {pkg?.departureType && (
+                                        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm text-slate-300">
+                                            {pkg.departureType === 'daily' && '📅 Daily Departures'}
+                                            {pkg.departureType === 'weekly' && '📆 Weekly Departures'}
+                                            {pkg.departureType === 'minimum-clients' && `👥 Min. ${pkg.minimumClients || ''} clients required`}
+                                        </div>
+                                    )}
+                                    {(pkg?.seasonStartDate || pkg?.seasonEndDate) && (
+                                        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-green-500/10 border border-green-500/20 text-sm text-green-300">
+                                            🗓 Season: {pkg.seasonStartDate ? new Date(pkg.seasonStartDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : ''}
+                                            {pkg.seasonStartDate && pkg.seasonEndDate ? ' – ' : ''}
+                                            {pkg.seasonEndDate ? new Date(pkg.seasonEndDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <label className="block text-sm text-slate-400 mb-2 font-medium">Travel Date *</label>
                                     <DatePicker
                                         selected={bookingData.date ? new Date(bookingData.date) : null}
                                         onChange={handleDateChange}
-                                        minDate={new Date()}
+                                        minDate={pkg?.seasonStartDate ? new Date(pkg.seasonStartDate) : new Date()}
+                                        maxDate={pkg?.seasonEndDate ? new Date(pkg.seasonEndDate) : undefined}
                                         placeholderText="Select a date"
+                                        filterDate={(date) => {
+                                            if (pkg?.departureType === 'daily') return true;
+                                            if (!pkg?.batchDates || pkg.batchDates.length === 0) return true;
+                                            return pkg.batchDates.some(b => b.date === date.toLocaleDateString('en-CA'));
+                                        }}
                                         className={`w-full bg-white/5 border rounded-xl p-3.5 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 ${validationErrors.date ? 'border-red-500/50' : 'border-white/10'}`}
                                     />
                                     {validationErrors.date && <p className="text-red-400 text-xs mt-1">{validationErrors.date}</p>}
@@ -984,7 +1020,7 @@ const BookingPage = () => {
                             <div className="bg-gradient-to-br from-blue-500/5 to-purple-500/5 border border-white/10 rounded-2xl p-5 space-y-3">
                                 <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider">Price Breakdown</h3>
                                 <div className="space-y-2">
-                                    <div className="flex justify-between text-sm"><span className="text-slate-400">Tour Package ({bookingData.travelers} × ₹{pkg.price?.toLocaleString()})</span><span className="font-medium">₹{tourTotal.toLocaleString()}</span></div>
+                                    <div className="flex justify-between text-sm"><span className="text-slate-400">Tour Package ({bookingData.travelers} × ₹{effectivePrice?.toLocaleString()})</span><span className="font-medium">₹{tourTotal.toLocaleString()}</span></div>
                                     {selectedHotel && (
                                         <>
                                             <div className="flex justify-between text-sm"><span className="text-slate-400">Hotel: {selectedHotel.name}</span><span className="font-medium">₹{hotelTotal.toLocaleString()}</span></div>

@@ -82,6 +82,7 @@ const PackageDetail = () => {
     const [transportOptions, setTransportOptions] = useState([]);
     const [linkedHotels, setLinkedHotels] = useState([]);
     const [linkedVehicles, setLinkedVehicles] = useState([]);
+    const [selectedLocationIdx, setSelectedLocationIdx] = useState(0);
     const { getPackageById, loading } = usePackages();
 
     useEffect(() => {
@@ -191,7 +192,15 @@ const PackageDetail = () => {
     };
 
     const handleBookNow = () => {
-        navigate(`/booking/${id}`);
+        const hasLocations = pkg?.pickupLocations && pkg.pickupLocations.length > 0;
+        const selectedLoc = hasLocations ? pkg.pickupLocations[selectedLocationIdx] : null;
+        navigate(`/booking/${id}`, {
+            state: {
+                selectedLocation: selectedLoc ? selectedLoc.location : null,
+                locationPrice: selectedLoc ? selectedLoc.price : null,
+                selectedDate: selectedDate ? selectedDate.toLocaleDateString('en-CA') : null,
+            }
+        });
     };
 
     const handleSendEnquiry = () => {
@@ -708,14 +717,71 @@ const PackageDetail = () => {
                 {/* Right Column - Sticky Booking Sidebar */}
                 <div className="booking-sidebar">
                     <div className="booking-card">
-                        {/* Pricing */}
-                        <div className="pricing-section">
-                            <div className="price-display">
-                                <span className="from-text">From</span>
-                                <span className="price">₹{pkg.price.toLocaleString()}</span>
-                                <span className="per-person">/person</span>
+                        {/* Pricing — dynamic based on selected location */}
+                        {(() => {
+                            const hasLocations = pkg.pickupLocations && pkg.pickupLocations.length > 0;
+                            const activeLoc = hasLocations ? pkg.pickupLocations[selectedLocationIdx] : null;
+                            const displayPrice = activeLoc ? activeLoc.price : pkg.price;
+                            return (
+                                <>
+                                    {/* Pickup Location Selector */}
+                                    {hasLocations && (
+                                        <div style={{ marginBottom: '12px' }}>
+                                            <label style={{ display: 'block', fontSize: '12px', color: '#94a3b8', marginBottom: '6px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>📍 Select Pickup Location</label>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                                {pkg.pickupLocations.map((loc, idx) => (
+                                                    <button
+                                                        key={idx}
+                                                        type="button"
+                                                        onClick={() => setSelectedLocationIdx(idx)}
+                                                        style={{
+                                                            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                                                            padding: '10px 14px', borderRadius: '10px', border: `1.5px solid ${selectedLocationIdx === idx ? '#3b82f6' : 'rgba(255,255,255,0.1)'}`,
+                                                            background: selectedLocationIdx === idx ? 'rgba(59,130,246,0.12)' : 'rgba(0,0,0,0.2)',
+                                                            cursor: 'pointer', transition: 'all 0.2s', width: '100%', textAlign: 'left'
+                                                        }}
+                                                    >
+                                                        <span style={{ color: selectedLocationIdx === idx ? '#93c5fd' : '#cbd5e1', fontSize: '14px', fontWeight: 500 }}>{loc.location}</span>
+                                                        <span style={{ color: selectedLocationIdx === idx ? '#60a5fa' : '#94a3b8', fontSize: '15px', fontWeight: 700 }}>₹{Number(loc.price).toLocaleString('en-IN')}</span>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Price Display */}
+                                    <div className="pricing-section">
+                                        <div className="price-display">
+                                            <span className="from-text">From</span>
+                                            <span className="price">₹{Number(displayPrice).toLocaleString()}</span>
+                                            <span className="per-person">/person</span>
+                                        </div>
+                                    </div>
+                                </>
+                            );
+                        })()}
+
+                        {/* Departure Type Badge */}
+                        {pkg.departureType && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '8px 0', padding: '8px 12px', background: 'rgba(255,255,255,0.04)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                                <span style={{ fontSize: '13px', color: '#94a3b8' }}>
+                                    {pkg.departureType === 'daily' && '📅 Daily Departures'}
+                                    {pkg.departureType === 'weekly' && '📆 Weekly Departures'}
+                                    {pkg.departureType === 'minimum-clients' && `👥 Min. ${pkg.minimumClients || ''} clients required`}
+                                </span>
                             </div>
-                        </div>
+                        )}
+
+                        {/* Season Dates Badge */}
+                        {(pkg.seasonStartDate || pkg.seasonEndDate) && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', padding: '8px 12px', background: 'rgba(34,197,94,0.06)', borderRadius: '8px', border: '1px solid rgba(34,197,94,0.15)' }}>
+                                <span style={{ fontSize: '13px', color: '#86efac' }}>
+                                    🗓 Season: {pkg.seasonStartDate ? new Date(pkg.seasonStartDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}
+                                    {pkg.seasonStartDate && pkg.seasonEndDate ? ' – ' : ''}
+                                    {pkg.seasonEndDate ? new Date(pkg.seasonEndDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}
+                                </span>
+                            </div>
+                        )}
 
                         {/* Date Selection */}
                         <div className="date-selection-calendar">
@@ -724,11 +790,13 @@ const PackageDetail = () => {
                                 selected={selectedDate}
                                 onChange={(date) => setSelectedDate(date)}
                                 inline
+                                minDate={pkg.seasonStartDate ? new Date(pkg.seasonStartDate) : undefined}
+                                maxDate={pkg.seasonEndDate ? new Date(pkg.seasonEndDate) : undefined}
                                 renderDayContents={(day, date) => {
                                     if (!pkg?.batchDates) return <span>{day}</span>;
                                     const dateString = date.toLocaleDateString('en-CA');
                                     const batch = pkg.batchDates.find(b => b.date === dateString);
-                                    
+
                                     let indicatorClass = '';
                                     let tooltipText = '';
 
@@ -753,20 +821,27 @@ const PackageDetail = () => {
                                     );
                                 }}
                                 filterDate={(date) => {
-                                    if (!pkg?.batchDates) {
-                                        // fallback for old availableDates array
+                                    // Season window restriction
+                                    if (pkg.seasonStartDate && date < new Date(pkg.seasonStartDate)) return false;
+                                    if (pkg.seasonEndDate && date > new Date(pkg.seasonEndDate)) return false;
+                                    // Batch dates filter (if set)
+                                    if (pkg.departureType === 'daily') return true;
+                                    if (!pkg?.batchDates || pkg.batchDates.length === 0) {
                                         if (!pkg?.availableDates) return true;
-                                        const dString = date.toLocaleDateString('en-CA');
-                                        return pkg.availableDates.includes(dString);
+                                        return pkg.availableDates.includes(date.toLocaleDateString('en-CA'));
                                     }
-                                    const dateString = date.toLocaleDateString('en-CA');
-                                    return pkg.batchDates.some(b => b.date === dateString);
+                                    return pkg.batchDates.some(b => b.date === date.toLocaleDateString('en-CA'));
                                 }}
                             />
                             {selectedDate && (
                                 <div className="selected-date-info">
                                     <div className="date-range">{selectedDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
-                                    <div className="date-price">₹{pkg.price.toLocaleString()} <span>/ person</span></div>
+                                    <div className="date-price">
+                                        ₹{(() => {
+                                            const hasLoc = pkg.pickupLocations && pkg.pickupLocations.length > 0;
+                                            return hasLoc ? Number(pkg.pickupLocations[selectedLocationIdx].price).toLocaleString() : pkg.price.toLocaleString();
+                                        })()} <span>/ person</span>
+                                    </div>
                                 </div>
                             )}
                         </div>
