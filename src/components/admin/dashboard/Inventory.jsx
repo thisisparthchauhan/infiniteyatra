@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { Package, Plus, Edit, Calendar, Users, Database, Zap, Copy, Eye, EyeOff, Trash2, RotateCcw, AlertTriangle } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Package, Plus, Edit, Calendar, Users, Database, Zap, Copy, Eye, EyeOff, Trash2, RotateCcw, AlertTriangle, Lock, Loader2 } from 'lucide-react';
 import { doc, setDoc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { db } from '../../../firebase';
+import { db, auth } from '../../../firebase';
+import { EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
 
 import { usePackages } from '../../../context/PackageContext';
 import { useToast } from '../../../context/ToastContext';
@@ -15,23 +16,75 @@ const hasChanges = (original, updated) => {
     return JSON.stringify(clean(original)) !== JSON.stringify(clean(updated));
 };
 
-// Confirm dialog component
-const ConfirmDialog = ({ message, onConfirm, onCancel }) => (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 backdrop-blur-sm">
-        <div className="bg-[#1a1f2e] border border-white/10 rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl">
-            <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center flex-shrink-0">
-                    <AlertTriangle size={20} className="text-red-400" />
+// Password verification dialog
+const PasswordDialog = ({ title, message, onVerified, onCancel }) => {
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const [checking, setChecking] = useState(false);
+    const inputRef = useRef(null);
+
+    const verify = async () => {
+        if (!password.trim()) { setError('Please enter your password.'); return; }
+        setChecking(true);
+        setError('');
+        try {
+            const user = auth.currentUser;
+            if (!user || !user.email) throw new Error('Not logged in');
+            const credential = EmailAuthProvider.credential(user.email, password);
+            await reauthenticateWithCredential(user, credential);
+            onVerified(); // password correct → proceed
+        } catch (err) {
+            if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+                setError('❌ Incorrect password. Deletion blocked.');
+            } else if (err.code === 'auth/too-many-requests') {
+                setError('Too many attempts. Try again later.');
+            } else {
+                setError('Verification failed. Please try again.');
+            }
+        } finally {
+            setChecking(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/80 backdrop-blur-sm">
+            <div className="bg-[#1a1f2e] border border-red-500/30 rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl">
+                <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center flex-shrink-0">
+                        <Lock size={20} className="text-red-400" />
+                    </div>
+                    <div>
+                        <h3 className="text-white font-bold text-sm">{title}</h3>
+                        <p className="text-slate-400 text-xs mt-0.5">{message}</p>
+                    </div>
                 </div>
-                <p className="text-white text-sm font-medium">{message}</p>
-            </div>
-            <div className="flex gap-3 justify-end">
-                <button onClick={onCancel} className="px-4 py-2 bg-white/5 hover:bg-white/10 text-slate-300 rounded-lg text-sm border border-white/10 transition-colors">No, Cancel</button>
-                <button onClick={onConfirm} className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg text-sm font-medium transition-colors">Yes, Delete</button>
+
+                <div className="mb-4">
+                    <label className="block text-xs text-slate-400 mb-2 font-medium">Enter your login password to confirm:</label>
+                    <input
+                        ref={inputRef}
+                        type="password"
+                        value={password}
+                        onChange={(e) => { setPassword(e.target.value); setError(''); }}
+                        onKeyDown={(e) => e.key === 'Enter' && verify()}
+                        autoFocus
+                        placeholder="Your password"
+                        className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2.5 text-white text-sm placeholder:text-slate-600 focus:outline-none focus:border-red-500/50 focus:ring-1 focus:ring-red-500/30"
+                    />
+                    {error && <p className="text-red-400 text-xs mt-2">{error}</p>}
+                </div>
+
+                <div className="flex gap-3">
+                    <button onClick={onCancel} className="flex-1 py-2 bg-white/5 hover:bg-white/10 text-slate-300 rounded-lg text-sm border border-white/10 transition-colors">Cancel</button>
+                    <button onClick={verify} disabled={checking}
+                        className="flex-1 py-2 bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2">
+                        {checking ? <><Loader2 size={14} className="animate-spin" /> Verifying...</> : '🗑 Confirm Delete'}
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
-);
+    );
+};
 
 const Inventory = () => {
     const { allPackages, refreshPackages } = usePackages();
@@ -42,7 +95,8 @@ const Inventory = () => {
     const [originalPackage, setOriginalPackage] = useState(null); // snapshot before editing
     const [showPackageForm, setShowPackageForm] = useState(false);
     const [showDepartureManager, setShowDepartureManager] = useState(false);
-    const [confirmDelete, setConfirmDelete] = useState(null);
+    const [confirmDelete, setConfirmDelete] = useState(null); // pkg pending delete
+    const [passwordAction, setPasswordAction] = useState(null); // { type: 'delete'|'emptyBin'|'permanentDelete', pkg?, onVerified }
     const [showBin, setShowBin] = useState(false);
 
     // Split live vs hidden (sort live first)
@@ -76,38 +130,70 @@ const Inventory = () => {
         } catch (err) { alert('Failed to update visibility.'); }
     };
 
-    const handleDeleteConfirmed = async () => {
+    // Step 1: user clicks delete → show confirm dialog
+    // Step 2: user confirms → show password dialog
+    // Step 3: password verified → soft delete
+
+    const handleDeleteConfirmed = () => {
         const pkg = confirmDelete;
         setConfirmDelete(null);
-        try {
-            // Soft delete — mark with deletedAt timestamp
-            await updateDoc(doc(db, 'packages', pkg.id), { deletedAt: Date.now(), isVisible: false });
-            await refreshPackages();
-        } catch (err) { alert('Failed to delete.'); }
+        // Ask for password before soft-deleting
+        setPasswordAction({
+            type: 'delete',
+            title: 'Password Required to Delete',
+            message: `Deleting "${pkg.title}". Enter your login password to confirm.`,
+            onVerified: async () => {
+                setPasswordAction(null);
+                try {
+                    await updateDoc(doc(db, 'packages', pkg.id), { deletedAt: Date.now(), isVisible: false });
+                    await refreshPackages();
+                    addToast(`"${pkg.title}" moved to Bin.`, 'warning', 4000);
+                } catch (err) { addToast('Failed to delete. Try again.', 'error'); }
+            }
+        });
     };
 
     const handleRestore = async (pkg) => {
         try {
             await updateDoc(doc(db, 'packages', pkg.id), { deletedAt: null });
             await refreshPackages();
-        } catch (err) { alert('Failed to restore.'); }
+            addToast(`"${pkg.title}" restored successfully!`, 'success', 3000);
+        } catch (err) { addToast('Failed to restore.', 'error'); }
     };
 
-    const handlePermanentDelete = async (pkg) => {
-        try {
-            await deleteDoc(doc(db, 'packages', pkg.id));
-            await refreshPackages();
-        } catch (err) { alert('Failed to permanently delete.'); }
-    };
-
-    const handleEmptyBin = async () => {
-        if (!window.confirm(`Permanently delete all ${recentlyDeleted.length + expiredDeleted.length} packages in the bin? This cannot be undone.`)) return;
-        try {
-            for (const pkg of [...recentlyDeleted, ...expiredDeleted]) {
-                await deleteDoc(doc(db, 'packages', pkg.id));
+    const handlePermanentDelete = (pkg) => {
+        setPasswordAction({
+            type: 'permanentDelete',
+            title: 'Password Required — Permanent Delete',
+            message: `This will permanently delete "${pkg.title}". This cannot be undone.`,
+            onVerified: async () => {
+                setPasswordAction(null);
+                try {
+                    await deleteDoc(doc(db, 'packages', pkg.id));
+                    await refreshPackages();
+                    addToast(`"${pkg.title}" permanently deleted.`, 'warning', 4000);
+                } catch (err) { addToast('Failed to delete permanently.', 'error'); }
             }
-            await refreshPackages();
-        } catch (err) { alert('Failed to empty bin.'); }
+        });
+    };
+
+    const handleEmptyBin = () => {
+        const total = recentlyDeleted.length + expiredDeleted.length;
+        setPasswordAction({
+            type: 'emptyBin',
+            title: 'Password Required — Empty Bin',
+            message: `This will permanently delete all ${total} packages in the bin. This cannot be undone.`,
+            onVerified: async () => {
+                setPasswordAction(null);
+                try {
+                    for (const pkg of [...recentlyDeleted, ...expiredDeleted]) {
+                        await deleteDoc(doc(db, 'packages', pkg.id));
+                    }
+                    await refreshPackages();
+                    addToast(`Bin emptied — ${total} packages permanently deleted.`, 'warning', 4000);
+                } catch (err) { addToast('Failed to empty bin.', 'error'); }
+            }
+        });
     };
 
     const handleSavePackage = async (packageData) => {
@@ -263,7 +349,7 @@ const Inventory = () => {
                                                 <RotateCcw size={12} /> Restore
                                             </button>
                                         )}
-                                        <button onClick={() => { if (window.confirm(`Permanently delete "${pkg.title}"? This cannot be undone.`)) handlePermanentDelete(pkg); }}
+                                        <button onClick={() => handlePermanentDelete(pkg)}
                                             className="flex-1 py-1.5 bg-red-600/10 hover:bg-red-600/20 text-red-400 border border-red-600/20 rounded-lg text-xs font-medium transition-colors flex items-center justify-center gap-1">
                                             <Trash2 size={12} /> Delete Forever
                                         </button>
@@ -303,12 +389,22 @@ const Inventory = () => {
                 </div>
             )}
 
-            {/* Delete Confirm Dialog */}
+            {/* Step 1: Confirm delete */}
             {confirmDelete && (
                 <ConfirmDialog
                     message={`Are you sure you want to delete "${confirmDelete.title}"? It will be moved to the Bin and permanently deleted after 30 days.`}
                     onConfirm={handleDeleteConfirmed}
                     onCancel={() => setConfirmDelete(null)}
+                />
+            )}
+
+            {/* Step 2: Password verification */}
+            {passwordAction && (
+                <PasswordDialog
+                    title={passwordAction.title}
+                    message={passwordAction.message}
+                    onVerified={passwordAction.onVerified}
+                    onCancel={() => setPasswordAction(null)}
                 />
             )}
 
