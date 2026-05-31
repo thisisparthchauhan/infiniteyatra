@@ -1,5 +1,5 @@
-import React, { useState, useEffect, createContext, useContext } from 'react';
-import { X, CheckCircle, Info, AlertTriangle } from 'lucide-react';
+import React, { useState, createContext, useContext } from 'react';
+import { X, CheckCircle, Info, AlertTriangle, AlertCircle } from 'lucide-react';
 
 const ToastContext = createContext();
 
@@ -31,22 +31,24 @@ export const ToastProvider = ({ children }) => {
                     <div
                         key={toast.id}
                         className={`
-                            flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg
+                            flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg min-w-[280px] max-w-sm
                             transform transition-all duration-300 animate-slide-in-right
-                            ${toast.type === 'success' ? 'bg-white text-slate-800 border-l-4 border-green-500' : ''}
-                            ${toast.type === 'error' ? 'bg-white text-slate-800 border-l-4 border-red-500' : ''}
-                            ${toast.type === 'info' ? 'bg-white text-slate-800 border-l-4 border-blue-500' : ''}
+                            ${toast.type === 'success' ? 'bg-[#0f2a1a] text-green-100 border border-green-500/40 border-l-4 border-l-green-500' : ''}
+                            ${toast.type === 'error' ? 'bg-[#2a0f0f] text-red-100 border border-red-500/40 border-l-4 border-l-red-500' : ''}
+                            ${toast.type === 'warning' ? 'bg-[#2a220a] text-yellow-100 border border-yellow-500/40 border-l-4 border-l-yellow-400' : ''}
+                            ${toast.type === 'info' ? 'bg-[#0f1a2a] text-blue-100 border border-blue-500/40 border-l-4 border-l-blue-500' : ''}
                         `}
                     >
-                        {toast.type === 'success' && <CheckCircle size={20} className="text-green-500" />}
-                        {toast.type === 'error' && <AlertTriangle size={20} className="text-red-500" />}
-                        {toast.type === 'info' && <Info size={20} className="text-blue-500" />}
+                        {toast.type === 'success' && <CheckCircle size={20} className="text-green-400 flex-shrink-0" />}
+                        {toast.type === 'error' && <AlertTriangle size={20} className="text-red-400 flex-shrink-0" />}
+                        {toast.type === 'warning' && <AlertCircle size={20} className="text-yellow-400 flex-shrink-0" />}
+                        {toast.type === 'info' && <Info size={20} className="text-blue-400 flex-shrink-0" />}
 
-                        <p className="font-medium text-sm">{toast.message}</p>
+                        <p className="font-medium text-sm flex-1">{toast.message}</p>
 
                         <button
                             onClick={() => removeToast(toast.id)}
-                            className="ml-2 text-slate-400 hover:text-slate-600"
+                            className="ml-2 opacity-60 hover:opacity-100 flex-shrink-0"
                         >
                             <X size={16} />
                         </button>

@@ -4,9 +4,16 @@ import { doc, setDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../../../firebase';
 
 import { usePackages } from '../../../context/PackageContext';
+import { useToast } from '../../../context/ToastContext';
 import { packages as staticPackages } from '../../../data/packages';
 import AdminPackageForm from '../../AdminPackageForm';
 import AdminDepartureManager from './AdminDepartureManager';
+
+// Deep compare helper — strips undefined/null for clean comparison
+const hasChanges = (original, updated) => {
+    const clean = (obj) => JSON.parse(JSON.stringify(obj ?? {}));
+    return JSON.stringify(clean(original)) !== JSON.stringify(clean(updated));
+};
 
 // Confirm dialog component
 const ConfirmDialog = ({ message, onConfirm, onCancel }) => (
@@ -28,12 +35,14 @@ const ConfirmDialog = ({ message, onConfirm, onCancel }) => (
 
 const Inventory = () => {
     const { allPackages, refreshPackages } = usePackages();
+    const { addToast } = useToast();
     const packages = allPackages || [];
     const [loading, setLoading] = useState(false);
     const [currentPackage, setCurrentPackage] = useState(null);
+    const [originalPackage, setOriginalPackage] = useState(null); // snapshot before editing
     const [showPackageForm, setShowPackageForm] = useState(false);
     const [showDepartureManager, setShowDepartureManager] = useState(false);
-    const [confirmDelete, setConfirmDelete] = useState(null); // pkg to delete
+    const [confirmDelete, setConfirmDelete] = useState(null);
     const [showBin, setShowBin] = useState(false);
 
     // Split live vs hidden (sort live first)
@@ -103,6 +112,18 @@ const Inventory = () => {
 
     const handleSavePackage = async (packageData) => {
         setLoading(true);
+        const isNew = !originalPackage?.id;
+
+        // Check for no changes on existing packages
+        if (!isNew && !hasChanges(originalPackage, packageData)) {
+            addToast('No changes detected — nothing was updated.', 'warning', 4000);
+            setLoading(false);
+            setShowPackageForm(false);
+            setCurrentPackage(null);
+            setOriginalPackage(null);
+            return;
+        }
+
         try {
             let pkgId = packageData.id;
             if (!pkgId) pkgId = packageData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -110,7 +131,16 @@ const Inventory = () => {
             await refreshPackages();
             setShowPackageForm(false);
             setCurrentPackage(null);
-        } catch (err) { alert("Failed to save."); } finally { setLoading(false); }
+            setOriginalPackage(null);
+            addToast(
+                isNew ? '✅ Package created successfully!' : '✅ Changes saved — package updated on site!',
+                'success', 4000
+            );
+        } catch (err) {
+            addToast('❌ Changes could not be saved. Please try again.', 'error', 5000);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const PackageCard = ({ pkg }) => (
@@ -159,7 +189,7 @@ const Inventory = () => {
                         className="px-3 py-2 bg-purple-600/10 hover:bg-purple-600/20 text-purple-400 border border-purple-600/20 rounded-lg transition-colors flex items-center justify-center" title="Duplicate">
                         <Copy size={14} />
                     </button>
-                    <button onClick={() => { setCurrentPackage(pkg); setShowPackageForm(true); }}
+                    <button onClick={() => { setCurrentPackage(pkg); setOriginalPackage(JSON.parse(JSON.stringify(pkg))); setShowPackageForm(true); }}
                         className="flex-1 py-2 bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 border border-blue-600/20 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2">
                         <Edit size={14} /> Edit
                     </button>
@@ -287,7 +317,7 @@ const Inventory = () => {
                 <AdminPackageForm
                     initialData={currentPackage}
                     onSave={handleSavePackage}
-                    onCancel={() => { setShowPackageForm(false); setCurrentPackage(null); }}
+                    onCancel={() => { setShowPackageForm(false); setCurrentPackage(null); setOriginalPackage(null); }}
                 />
             )}
 
