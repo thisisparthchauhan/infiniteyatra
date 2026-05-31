@@ -536,7 +536,12 @@ const PackageDetail = () => {
                             </button>
                             {expandedSection === 'cancellation' && (
                                 <div className="policy-content">
-                                    <ul className="info-list policy-list">
+                                    <div style={{
+                                        display: 'grid',
+                                        gridTemplateColumns: 'repeat(2, 1fr)',
+                                        gap: '12px',
+                                        padding: '4px 0'
+                                    }}>
                                         {pkg.cancellationPolicy.map((item, index) => {
                                             // Replace any hardcoded ₹ token amount with the actual tokenPrice from admin
                                             let displayItem = item;
@@ -545,13 +550,21 @@ const PackageDetail = () => {
                                                 displayItem = item.replace(/₹[\d,]+/, formatted);
                                             }
                                             return (
-                                                <li key={index} style={{ alignItems: 'flex-start', display: 'flex', gap: '8px', marginBottom: '8px' }}>
-                                                    <span className="info-bullet" style={{ color: '#ef4444' }}>•</span>
-                                                    <span>{displayItem}</span>
-                                                </li>
+                                                <div key={index} style={{
+                                                    background: 'rgba(255,255,255,0.05)',
+                                                    border: '1px solid rgba(255,255,255,0.1)',
+                                                    borderRadius: '12px',
+                                                    padding: '16px',
+                                                    display: 'flex',
+                                                    alignItems: 'flex-start',
+                                                    gap: '10px'
+                                                }}>
+                                                    <span style={{ color: '#ef4444', fontSize: '18px', lineHeight: '1.4', flexShrink: 0 }}>•</span>
+                                                    <span style={{ fontSize: '14px', lineHeight: '1.5', color: 'inherit' }}>{displayItem}</span>
+                                                </div>
                                             );
                                         })}
-                                    </ul>
+                                    </div>
                                 </div>
                             )}
                         </section>

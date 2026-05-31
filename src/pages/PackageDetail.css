@@ -554,6 +554,13 @@
     border-top: var(--glass-border);
 }
 
+/* Cancellation grid — 1 col on mobile */
+@media (max-width: 640px) {
+    .policy-content > div[style*="grid-template-columns"] {
+        grid-template-columns: 1fr !important;
+    }
+}
+
 .policy-content p {
     color: #d1d5db;
     line-height: 1.6;
