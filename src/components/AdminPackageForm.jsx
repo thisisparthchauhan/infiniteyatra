@@ -500,7 +500,7 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
                                 </div>
                                 {formData.departureType === 'weekly' && (
                                     <div className="space-y-2">
-                                        <label className="text-sm text-slate-400">Departure Day (every week):</label>
+                                        <label className="text-sm text-slate-400">Departure Day — small groups join every week on:</label>
                                         <div className="flex gap-2 flex-wrap">
                                             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, idx) => (
                                                 <button
@@ -512,7 +512,7 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
                                                 </button>
                                             ))}
                                         </div>
-                                        <p className="text-xs text-slate-500">All batch dates below will also appear as special departure dates alongside weekly ones.</p>
+                                        <p className="text-xs text-slate-500">1 person or any size group → only this day of the week.</p>
                                     </div>
                                 )}
                                 {formData.departureType === 'minimum-clients' && (
@@ -523,13 +523,23 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
                                             className="w-28 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white text-sm" />
                                     </div>
                                 )}
-                                {/* Minimum persons per booking — applies to ALL departure types */}
-                                <div className="flex items-center gap-3 mt-1 pt-3 border-t border-white/10">
-                                    <label className="text-sm text-slate-300 font-medium whitespace-nowrap">👥 Minimum Persons per Booking:</label>
-                                    <input type="number" name="minimumPersons" value={formData.minimumPersons}
-                                        onChange={handleChange} min="1" placeholder="e.g. 4"
-                                        className="w-28 bg-black/40 border border-blue-500/30 rounded-lg px-3 py-2 text-white text-sm" />
-                                    <span className="text-xs text-slate-500">(clients must book at least this many — then any date is open)</span>
+
+                                {/* Private Group — any-date departure (works alongside weekly/daily) */}
+                                <div className="mt-2 pt-3 border-t border-white/10 space-y-2">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-sm font-bold text-amber-300">🚀 Private Group Departure</span>
+                                        <span className="text-xs text-slate-500">(works alongside weekly/daily above)</span>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <label className="text-sm text-slate-400 whitespace-nowrap">If group has</label>
+                                        <input type="number" name="minimumPersons" value={formData.minimumPersons}
+                                            onChange={handleChange} min="1" placeholder="e.g. 4"
+                                            className="w-24 bg-black/40 border border-amber-500/30 rounded-lg px-3 py-2 text-white text-sm" />
+                                        <label className="text-sm text-slate-400">or more persons → they can pick <strong className="text-amber-300">any date</strong></label>
+                                    </div>
+                                    <p className="text-xs text-slate-500">
+                                        Example: Weekly (Fridays) + Private Group (4+) → 1–3 people book only Fridays. 4+ people pick any date.
+                                    </p>
                                 </div>
                             </div>
 
