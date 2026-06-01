@@ -1,12 +1,11 @@
 import React, { useState, useRef } from 'react';
-import { Package, Plus, Edit, Calendar, Users, Database, Zap, Copy, Eye, EyeOff, Trash2, RotateCcw, AlertTriangle, Lock, Loader2 } from 'lucide-react';
+import { Package, Plus, Edit, Calendar, Users, Zap, Copy, Eye, EyeOff, Trash2, RotateCcw, AlertTriangle, Lock, Loader2 } from 'lucide-react';
 import { doc, setDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db, auth } from '../../../firebase';
 import { EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
 
 import { usePackages } from '../../../context/PackageContext';
 import { useToast } from '../../../context/ToastContext';
-import { packages as staticPackages } from '../../../data/packages';
 import AdminPackageForm from '../../AdminPackageForm';
 import AdminDepartureManager from './AdminDepartureManager';
 
@@ -128,17 +127,6 @@ const Inventory = () => {
     const recentlyDeleted = deletedPackages.filter(p => (now - p.deletedAt) < THIRTY_DAYS);
     const expiredDeleted = deletedPackages.filter(p => (now - p.deletedAt) >= THIRTY_DAYS);
 
-    const handleMigratePackages = async () => {
-        if (!window.confirm("Overwrite database with static data?")) return;
-        setLoading(true);
-        try {
-            for (const pkg of staticPackages) {
-                await setDoc(doc(db, 'packages', pkg.id), pkg);
-            }
-            await refreshPackages();
-            alert("Reset successful!");
-        } catch (err) { console.error(err); } finally { setLoading(false); }
-    };
 
     const toggleVisibility = async (pkg, e) => {
         e.stopPropagation();
@@ -324,9 +312,6 @@ const Inventory = () => {
                             <Trash2 size={16} /> Bin ({totalDeleted})
                         </button>
                     )}
-                    <button onClick={handleMigratePackages} className="px-4 py-2 bg-white/5 hover:bg-white/10 text-slate-300 rounded-xl text-sm font-medium transition-colors border border-white/10 flex items-center gap-2">
-                        <Database size={16} /> Reset
-                    </button>
                     <button onClick={() => { setCurrentPackage(null); setShowPackageForm(true); }}
                         className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm font-medium transition-colors shadow-lg shadow-blue-500/20 flex items-center gap-2">
                         <Plus size={16} /> Add Package
