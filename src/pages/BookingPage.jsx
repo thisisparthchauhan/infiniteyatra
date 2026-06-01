@@ -469,6 +469,36 @@ const BookingPage = () => {
         fetchPackageAndHotels();
     }, [id, navigate, currentUser]);
 
+    // Check if a date is valid under the package's departure rules (for non-group bookings)
+    const isDateValidForDepartureType = (dateStr) => {
+        if (!dateStr || !pkg) return true;
+        const date = new Date(dateStr);
+        if (pkg.seasonStartDate && date < new Date(pkg.seasonStartDate)) return false;
+        if (pkg.seasonEndDate && date > new Date(pkg.seasonEndDate)) return false;
+        if (pkg.departureType === 'daily') return true;
+        if (pkg.departureType === 'weekly') {
+            const isWeeklyDay = pkg.weeklyDay !== null && pkg.weeklyDay !== undefined && date.getDay() === Number(pkg.weeklyDay);
+            const isSpecialBatch = pkg.batchDates && pkg.batchDates.some(b => b.date === dateStr);
+            return isWeeklyDay || isSpecialBatch;
+        }
+        if (!pkg.batchDates || pkg.batchDates.length === 0) return true;
+        return pkg.batchDates.some(b => b.date === dateStr);
+    };
+
+    // Handle traveler count change — if dropping below minimum, validate current date
+    const handleTravelerChange = (delta) => {
+        setBookingData(prev => {
+            const newCount = Math.max(1, Number(prev.travelers) + delta);
+            const belowMin = pkg?.minimumPersons > 1 && newCount < pkg.minimumPersons;
+            // If dropping below minimum, check if current date is still valid
+            let newDate = prev.date;
+            if (belowMin && prev.date && !isDateValidForDepartureType(prev.date)) {
+                newDate = ''; // clear the invalid date
+            }
+            return { ...prev, travelers: newCount, date: newDate };
+        });
+    };
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setBookingData(prev => ({ ...prev, [name]: value }));
@@ -880,15 +910,22 @@ const BookingPage = () => {
                                         )}
                                     </label>
                                     <div className="flex items-center gap-3">
-                                        <button type="button" onClick={() => setBookingData(prev => ({ ...prev, travelers: Math.max(pkg?.minimumPersons || 1, Number(prev.travelers) - 1) }))} className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-white/10 transition-colors text-xl font-bold">−</button>
+                                        <button type="button" onClick={() => handleTravelerChange(-1)} className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-white/10 transition-colors text-xl font-bold">−</button>
                                         <div className="flex-1 bg-white/5 border border-white/10 rounded-xl p-3.5 text-center text-white text-xl font-bold">{bookingData.travelers}</div>
-                                        <button type="button" onClick={() => setBookingData(prev => ({ ...prev, travelers: Number(prev.travelers) + 1 }))} className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-white/10 transition-colors text-xl font-bold">+</button>
+                                        <button type="button" onClick={() => handleTravelerChange(+1)} className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-white/10 transition-colors text-xl font-bold">+</button>
                                     </div>
                                     {pkg?.minimumPersons > 1 && Number(bookingData.travelers) < pkg.minimumPersons && (
-                                        <p className="text-yellow-400 text-xs mt-1">⚠️ Minimum {pkg.minimumPersons} persons required — add more travelers to unlock any date</p>
+                                        <p className="text-yellow-400 text-xs mt-1">
+                                            {pkg.departureType === 'weekly'
+                                                ? `📆 Booking as small group — only ${['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][pkg.weeklyDay ?? 5]} departures available. Add ${pkg.minimumPersons - Number(bookingData.travelers)} more to pick any date.`
+                                                : pkg.departureType === 'daily'
+                                                    ? `📅 Daily departures available. Add ${pkg.minimumPersons - Number(bookingData.travelers)} more for private group on any date.`
+                                                    : `⚠️ Add ${pkg.minimumPersons - Number(bookingData.travelers)} more travelers to unlock any date.`
+                                            }
+                                        </p>
                                     )}
                                     {pkg?.minimumPersons > 1 && Number(bookingData.travelers) >= pkg.minimumPersons && (
-                                        <p className="text-green-400 text-xs mt-1">✅ Group qualifies! You can pick <strong>any available date</strong></p>
+                                        <p className="text-green-400 text-xs mt-1">✅ Private group! You can pick <strong>any available date</strong></p>
                                     )}
                                 </div>
                             </div>
