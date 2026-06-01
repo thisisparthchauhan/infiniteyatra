@@ -856,6 +856,8 @@ const BookingPage = () => {
                                         maxDate={pkg?.seasonEndDate ? new Date(pkg.seasonEndDate) : undefined}
                                         placeholderText="Select a date"
                                         filterDate={(date) => {
+                                            // Group meets minimum persons → any date is open
+                                            if (pkg?.minimumPersons > 1 && Number(bookingData.travelers) >= pkg.minimumPersons) return true;
                                             if (pkg?.departureType === 'daily') return true;
                                             if (pkg?.departureType === 'weekly') {
                                                 const isWeeklyDay = pkg.weeklyDay !== null && pkg.weeklyDay !== undefined && date.getDay() === Number(pkg.weeklyDay);
@@ -883,7 +885,10 @@ const BookingPage = () => {
                                         <button type="button" onClick={() => setBookingData(prev => ({ ...prev, travelers: Number(prev.travelers) + 1 }))} className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-white/10 transition-colors text-xl font-bold">+</button>
                                     </div>
                                     {pkg?.minimumPersons > 1 && Number(bookingData.travelers) < pkg.minimumPersons && (
-                                        <p className="text-yellow-400 text-xs mt-1">⚠️ Minimum {pkg.minimumPersons} persons required for this package</p>
+                                        <p className="text-yellow-400 text-xs mt-1">⚠️ Minimum {pkg.minimumPersons} persons required — add more travelers to unlock any date</p>
+                                    )}
+                                    {pkg?.minimumPersons > 1 && Number(bookingData.travelers) >= pkg.minimumPersons && (
+                                        <p className="text-green-400 text-xs mt-1">✅ Group qualifies! You can pick <strong>any available date</strong></p>
                                     )}
                                 </div>
                             </div>

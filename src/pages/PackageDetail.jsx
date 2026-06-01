@@ -763,8 +763,9 @@ const PackageDetail = () => {
 
                         {/* Minimum Persons Badge — hidden on mobile fixed bar */}
                         {pkg.minimumPersons && pkg.minimumPersons > 1 && (
-                            <div className="mobile-hide-in-bar" style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '8px 0', padding: '8px 12px', background: 'rgba(251,191,36,0.06)', borderRadius: '8px', border: '1px solid rgba(251,191,36,0.2)' }}>
-                                <span style={{ fontSize: '13px', color: '#fcd34d' }}>👥 Min. {pkg.minimumPersons} persons per booking</span>
+                            <div className="mobile-hide-in-bar" style={{ margin: '8px 0', padding: '10px 12px', background: 'rgba(251,191,36,0.08)', borderRadius: '10px', border: '1px solid rgba(251,191,36,0.25)' }}>
+                                <div style={{ fontSize: '13px', color: '#fcd34d', fontWeight: 600, marginBottom: '2px' }}>👥 Min. {pkg.minimumPersons} persons per booking</div>
+                                <div style={{ fontSize: '11px', color: '#ca8a04' }}>Have a group of {pkg.minimumPersons}+? Pick <strong>any date</strong> you want!</div>
                             </div>
                         )}
 
@@ -828,12 +829,14 @@ const PackageDetail = () => {
                                     );
                                 }}
                                 filterDate={(date) => {
-                                    // Season window restriction
+                                    // Season window restriction always applies
                                     if (pkg.seasonStartDate && date < new Date(pkg.seasonStartDate)) return false;
                                     if (pkg.seasonEndDate && date > new Date(pkg.seasonEndDate)) return false;
-                                    // Daily: all dates allowed
+                                    // If minimumPersons is set → group can book ANY date
+                                    if (pkg.minimumPersons && pkg.minimumPersons > 1) return true;
+                                    // Daily: all dates
                                     if (pkg.departureType === 'daily') return true;
-                                    // Weekly: every matching weekday + any special batch dates
+                                    // Weekly: every matching weekday + special batch dates
                                     if (pkg.departureType === 'weekly') {
                                         const isWeeklyDay = pkg.weeklyDay !== null && pkg.weeklyDay !== undefined && date.getDay() === Number(pkg.weeklyDay);
                                         const isSpecialBatch = pkg.batchDates && pkg.batchDates.some(b => b.date === date.toLocaleDateString('en-CA'));
