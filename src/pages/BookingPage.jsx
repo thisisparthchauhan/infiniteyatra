@@ -436,10 +436,7 @@ const BookingPage = () => {
                     const idx = packageData.pickupLocations.findIndex(l => l.location === preselectedLocationName);
                     if (idx >= 0) setSelectedLocIdx(idx);
                 }
-                // Pre-set travelers to minimumPersons if set
-                if (packageData.minimumPersons && packageData.minimumPersons > 1) {
-                    setBookingData(prev => ({ ...prev, travelers: Math.max(prev.travelers, packageData.minimumPersons) }));
-                }
+                // Start at 1 traveler — no hard lock on minimum
                 setLoading(false);
 
                 if (packageData.location) {
@@ -544,8 +541,7 @@ const BookingPage = () => {
         const errors = {};
         if (stepNum === 1) {
             if (!bookingData.date) errors.date = 'Please select a travel date';
-            const minP = pkg?.minimumPersons || 1;
-            if (!bookingData.travelers || bookingData.travelers < minP) errors.travelers = minP > 1 ? `Minimum ${minP} persons required for this package` : 'At least 1 traveler required';
+            if (!bookingData.travelers || bookingData.travelers < 1) errors.travelers = 'At least 1 traveler required';
             if (!bookingData.name.trim()) errors.name = 'Name is required';
             if (!bookingData.email.trim()) errors.email = 'Email is required';
             else if (!/\S+@\S+\.\S+/.test(bookingData.email)) errors.email = 'Enter a valid email';
@@ -906,7 +902,7 @@ const BookingPage = () => {
                                     <label className="block text-sm text-slate-400 mb-2 font-medium">
                                         Number of Travelers *
                                         {pkg?.minimumPersons > 1 && (
-                                            <span className="ml-2 text-xs text-yellow-400 font-normal">👥 Min. {pkg.minimumPersons} required</span>
+                                            <span className="ml-2 text-xs text-amber-400 font-normal">🚀 {pkg.minimumPersons}+ = any date</span>
                                         )}
                                     </label>
                                     <div className="flex items-center gap-3">
