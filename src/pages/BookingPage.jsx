@@ -881,6 +881,8 @@ const BookingPage = () => {
                                         minDate={pkg?.seasonStartDate ? new Date(pkg.seasonStartDate) : new Date()}
                                         maxDate={pkg?.seasonEndDate ? new Date(pkg.seasonEndDate) : undefined}
                                         placeholderText="Select a date"
+                                        onChangeRaw={(e) => e.preventDefault()}
+                                        readOnly
                                         filterDate={(date) => {
                                             // Group meets minimum persons → any date is open
                                             if (pkg?.minimumPersons > 1 && Number(bookingData.travelers) >= pkg.minimumPersons) return true;
