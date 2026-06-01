@@ -483,7 +483,7 @@ const BookingPage = () => {
     };
 
     // Handle traveler count change — if dropping below minimum, validate current date
-    const handleTravelerChange = (delta) => {
+    const handleTravelerCountChange = (delta) => {
         setBookingData(prev => {
             const newCount = Math.max(1, Number(prev.travelers) + delta);
             const belowMin = pkg?.minimumPersons > 1 && newCount < pkg.minimumPersons;
@@ -906,9 +906,9 @@ const BookingPage = () => {
                                         )}
                                     </label>
                                     <div className="flex items-center gap-3">
-                                        <button type="button" onClick={() => handleTravelerChange(-1)} className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-white/10 transition-colors text-xl font-bold">−</button>
+                                        <button type="button" onClick={() => handleTravelerCountChange(-1)} className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-white/10 transition-colors text-xl font-bold">−</button>
                                         <div className="flex-1 bg-white/5 border border-white/10 rounded-xl p-3.5 text-center text-white text-xl font-bold">{bookingData.travelers}</div>
-                                        <button type="button" onClick={() => handleTravelerChange(+1)} className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-white/10 transition-colors text-xl font-bold">+</button>
+                                        <button type="button" onClick={() => handleTravelerCountChange(+1)} className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-white/10 transition-colors text-xl font-bold">+</button>
                                     </div>
                                     {pkg?.minimumPersons > 1 && Number(bookingData.travelers) < pkg.minimumPersons && (
                                         <p className="text-yellow-400 text-xs mt-1">
