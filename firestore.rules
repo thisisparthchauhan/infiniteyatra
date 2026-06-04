@@ -58,6 +58,14 @@ service cloud.firestore {
       allow read: if true;
       allow write: if request.auth != null;
     }
+    match /reviews/{reviewId} {
+      // Anyone can read reviews (package pages show approved ones; admin reads all)
+      allow read: if true;
+      // Logged-in users can submit their own review
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      // Only admin can approve / reject / edit / delete
+      allow update, delete: if isAdmin();
+    }
     match /hotels/{hotelId} {
       allow read: if true;
       allow write: if request.auth != null;

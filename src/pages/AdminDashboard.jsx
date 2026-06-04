@@ -11,6 +11,7 @@ import { USER_ROLES } from '../config/roles';
 import Overview from '../components/admin/dashboard/Overview';
 import Bookings from '../components/admin/dashboard/Bookings';
 import Inventory from '../components/admin/dashboard/Inventory';
+const AdminPackageReviews = lazy(() => import('../components/admin/dashboard/AdminPackageReviews'));
 import Operations from '../components/admin/dashboard/Operations';
 import Financials from '../components/admin/dashboard/Financials';
 import CustomerCRM from '../components/admin/dashboard/CustomerCRM';
@@ -66,6 +67,7 @@ const AdminDashboard = () => {
             finance: 'Financials (Tours)',
             crm: 'Tour Clients',
             packages: 'Package Inventory',
+            'package-reviews': 'Package Reviews',
             homepage: 'Homepage Manager',
             operations: 'Trip Operations Center',
             staff: 'Team & Permissions',
@@ -119,6 +121,7 @@ const AdminDashboard = () => {
             case 'overview': return <Overview setActiveTab={setActiveTab} />;
             case 'bookings': return <Bookings />;
             case 'packages': return <Inventory />;
+            case 'package-reviews': return <AdminPackageReviews />;
             case 'homepage': return <AdminHomepageManager />;
             case 'hotels': return <AdminHotelManager />;
             case 'hotel-bookings': return <AdminHotelBookings />;

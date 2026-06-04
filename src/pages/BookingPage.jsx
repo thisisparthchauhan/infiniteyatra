@@ -18,7 +18,7 @@ import { COUNTRIES } from '../data/countries';
 const steps = [
     { id: 1, label: 'Trip Details', icon: Calendar },
     { id: 2, label: 'Travelers', icon: Users },
-    { id: 3, label: 'Review & Pay', icon: CheckCircle },
+    { id: 3, label: 'Review & Confirm', icon: CheckCircle },
 ];
 
 // Document types by nationality
@@ -635,6 +635,7 @@ const BookingPage = () => {
                 totalPrice: finalTotal,
                 tourAmount: tourTotal,
                 hotelAmount: hotelTotal - bundleDiscount,
+                pickupLocation: selectedLocation || null,
                 status: 'pending',
                 bookingStatus: 'pending',
                 paymentStatus: 'pending',
@@ -643,82 +644,54 @@ const BookingPage = () => {
                 bundledHotelName: selectedHotel?.name || null
             });
 
-            await payWithRazorpay(
-                {
-                    id: newBookingRef.id,
-                    amount: finalTotal,
-                    currency: 'INR',
-                    user: { name: bookingData.name, email: bookingData.email, phone: bookingData.phone },
-                    description: `Trip Booking - ${pkg.title}`
-                },
-                async (paymentResult) => {
-                    try {
-                        await updateDoc(newBookingRef, {
-                            razorpayOrderId: paymentResult.orderId || '',
-                            razorpayPaymentId: paymentResult.paymentId || '',
-                            status: 'confirmed',
-                            bookingStatus: 'confirmed',
-                            paymentStatus: 'paid',
-                        });
-
-                        // Upload document files
-                        const uploadedDocs = await uploadDocFiles(newBookingRef.id);
-                        if (uploadedDocs.length > 0) {
-                            await addDoc(collection(db, 'bookings', newBookingRef.id, 'documents'), {
-                                docs: uploadedDocs,
-                                createdAt: serverTimestamp()
-                            });
-                        }
-
-                        if (selectedHotel) {
-                            await addDoc(collection(db, 'hotel_bookings'), {
-                                hotelId: selectedHotel.id, hotelName: selectedHotel.name,
-                                roomId: selectedHotel.roomId, roomName: selectedHotel.roomName,
-                                userId: currentUser.uid, customerName: bookingData.name,
-                                customerEmail: bookingData.email, customerPhone: bookingData.phone,
-                                checkIn: bookingData.date, checkOut: bookingData.date,
-                                pricePerNight: selectedHotel.originalPrice,
-                                totalAmount: hotelTotal - bundleDiscount,
-                                paymentStatus: 'Paid (Bundle)', bookingStatus: 'Confirmed',
-                                bundledWithTour: newBookingRef.id, createdAt: serverTimestamp()
-                            });
-                            await addDoc(collection(db, 'hotel_finance'), {
-                                bookingId: 'BUNDLE_' + newBookingRef.id, hotelId: selectedHotel.id,
-                                grossAmount: hotelTotal - bundleDiscount,
-                                iyCommission: (hotelTotal - bundleDiscount) * 0.15,
-                                hotelPayout: (hotelTotal - bundleDiscount) * 0.85,
-                                createdAt: serverTimestamp(), note: 'Bundle Booking'
-                            });
-                        }
-
-                        // Award IY Passport credits
-                        if (currentUser?.uid) {
-                            try {
-                                await addCredits(currentUser.uid, 'booking', `Booked ${pkg.title} trip`, 100, newBookingRef.id);
-                            } catch (e) { console.log('Passport credit skip:', e); }
-                        }
-
-                        navigate('/booking-success', {
-                            state: {
-                                bookingId: newBookingRef.id, packageTitle: pkg.title,
-                                totalAmount: finalTotal, amountPaid: finalTotal, date: bookingData.date
-                            }
-                        });
-                    } catch (err) {
-                        console.error('Save booking error:', err);
-                        setError('Payment successful but saving booking failed. Contact support.');
-                        setSubmitting(false);
-                    }
-                },
-                (errorMsg) => {
-                    setError(errorMsg || 'Payment failed or was cancelled.');
-                    setSubmitting(false);
+            // Upload document files (best-effort)
+            try {
+                const uploadedDocs = await uploadDocFiles(newBookingRef.id);
+                if (uploadedDocs.length > 0) {
+                    await addDoc(collection(db, 'bookings', newBookingRef.id, 'documents'), {
+                        docs: uploadedDocs,
+                        createdAt: serverTimestamp()
+                    });
                 }
-            );
+            } catch (docErr) {
+                console.warn('Document upload skipped:', docErr);
+            }
+
+            // Bundled hotel request (pending — confirmed by team)
+            if (selectedHotel) {
+                try {
+                    await addDoc(collection(db, 'hotel_bookings'), {
+                        hotelId: selectedHotel.id, hotelName: selectedHotel.name,
+                        roomId: selectedHotel.roomId, roomName: selectedHotel.roomName,
+                        userId: currentUser.uid, customerName: bookingData.name,
+                        customerEmail: bookingData.email, customerPhone: bookingData.phone,
+                        checkIn: bookingData.date, checkOut: bookingData.date,
+                        pricePerNight: selectedHotel.originalPrice,
+                        totalAmount: hotelTotal - bundleDiscount,
+                        paymentStatus: 'Pending', bookingStatus: 'Pending',
+                        bundledWithTour: newBookingRef.id, createdAt: serverTimestamp()
+                    });
+                } catch (hErr) { console.warn('Hotel bundle skipped:', hErr); }
+            }
+
+            // Award IY Passport credits (best-effort)
+            if (currentUser?.uid) {
+                try {
+                    await addCredits(currentUser.uid, 'booking', `Booked ${pkg.title} trip`, 100, newBookingRef.id);
+                } catch (e) { console.log('Passport credit skip:', e); }
+            }
+
+            navigate('/booking-success', {
+                state: {
+                    bookingId: newBookingRef.id, packageTitle: pkg.title,
+                    totalAmount: finalTotal, amountPaid: 0, date: bookingData.date,
+                    isRequest: true
+                }
+            });
 
         } catch (error) {
             console.error(error);
-            setError(error.message);
+            setError(error.message || 'Could not submit your booking. Please try again.');
             setSubmitting(false);
         }
     };
@@ -1120,7 +1093,7 @@ const BookingPage = () => {
                             <div className="flex flex-wrap items-center justify-center gap-6 py-2 text-xs text-slate-500">
                                 <span className="flex items-center gap-1"><Shield size={14} className="text-green-500" /> Secure Booking</span>
                                 <span className="flex items-center gap-1"><Star size={14} className="text-amber-400" /> Trusted by 1000+ travelers</span>
-                                <span className="flex items-center gap-1"><CheckCircle size={14} className="text-blue-400" /> Instant Confirmation</span>
+                                <span className="flex items-center gap-1"><CheckCircle size={14} className="text-blue-400" /> Pay after team confirms</span>
                             </div>
 
                             <div className="flex justify-between pt-4">
@@ -1128,7 +1101,7 @@ const BookingPage = () => {
                                     <ArrowLeft size={18} /> Back
                                 </button>
                                 <button onClick={handleConfirm} disabled={submitting} className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-10 py-4 rounded-xl font-bold flex items-center gap-2 transition-all hover:scale-[1.02] shadow-xl shadow-blue-600/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100">
-                                    {submitting ? <><Loader size={20} className="animate-spin" /> Processing...</> : <>Confirm & Pay ₹{finalTotal.toLocaleString()}</>}
+                                    {submitting ? <><Loader size={20} className="animate-spin" /> Submitting...</> : <>Confirm Booking Request</>}
                                 </button>
                             </div>
                         </div>

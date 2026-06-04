@@ -130,13 +130,13 @@ const PackageCard = ({ pkg, onWishlistClick, isWishlisted }) => {
         >
           <Heart size={14} className={isWishlisted ? 'fill-red-500 text-red-500' : 'text-white'} />
         </button>
-        {/* Rating */}
-        {pkg.rating && (
+        {/* Rating — only shown when real approved reviews exist */}
+        {pkg.reviewCount > 0 && pkg.rating && (
           <span
             className="absolute bottom-3 right-3 flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full"
             style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', color: '#fcd34d' }}
           >
-            <Star size={11} className="fill-yellow-400 text-yellow-400" /> {pkg.rating}
+            <Star size={11} className="fill-yellow-400 text-yellow-400" /> {Number(pkg.rating).toFixed(1)} ({pkg.reviewCount})
           </span>
         )}
       </div>

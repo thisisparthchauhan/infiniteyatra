@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { MapPin, Calendar, ChevronDown, Check, X, Phone, MessageCircle, Plus, Minus, Car } from 'lucide-react';
+import { MapPin, Calendar, ChevronDown, Check, X, Phone, MessageCircle, Plus, Minus, Car, Star } from 'lucide-react';
 import { usePackages } from '../context/PackageContext';
 import { db } from '../firebase';
-import { collection, query, where, limit, getDocs, documentId } from 'firebase/firestore';
+import { collection, query, where, limit, getDocs, documentId, orderBy } from 'firebase/firestore';
 import SEO from '../components/common/SEO';
 import AnimatedBanner from '../components/AnimatedBanner';
 import PhotoGallery from '../components/PhotoGallery';
@@ -83,6 +83,8 @@ const PackageDetail = () => {
     const [linkedHotels, setLinkedHotels] = useState([]);
     const [linkedVehicles, setLinkedVehicles] = useState([]);
     const [selectedLocationIdx, setSelectedLocationIdx] = useState(0);
+    const [reviews, setReviews] = useState([]);
+    const [reviewPhotoModal, setReviewPhotoModal] = useState(null);
     const { getPackageById, loading } = usePackages();
 
     useEffect(() => {
@@ -173,6 +175,24 @@ const PackageDetail = () => {
 
         fetchLinkedVehicles();
     }, [pkg?.linkedVehicleIds]);
+
+    // Fetch approved reviews for this package
+    useEffect(() => {
+        const fetchReviews = async () => {
+            if (!pkg?.id) return;
+            try {
+                const snap = await getDocs(query(
+                    collection(db, 'reviews'),
+                    where('packageId', '==', pkg.id),
+                    where('status', '==', 'approved')
+                ));
+                const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                data.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+                setReviews(data);
+            } catch (err) { console.error('Failed to fetch reviews', err); }
+        };
+        fetchReviews();
+    }, [pkg?.id]);
 
     const toggleDay = (dayIndex) => {
         setExpandedDay(expandedDay === dayIndex ? null : dayIndex);
@@ -712,6 +732,58 @@ const PackageDetail = () => {
                             </div>
                         </section>
                     )}
+                    {/* ── Traveler Reviews ── */}
+                    {reviews.length > 0 && (
+                        <section style={{ marginBottom: '4rem' }}>
+                            <h2>⭐ Traveler Reviews</h2>
+                            {/* Average rating */}
+                            {(() => {
+                                const avg = reviews.reduce((s, r) => s + r.rating, 0) / reviews.length;
+                                return (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem', padding: '12px 16px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                                        <span style={{ fontSize: '2.5rem', fontWeight: 800, color: '#facc15' }}>{avg.toFixed(1)}</span>
+                                        <div>
+                                            <div style={{ display: 'flex', gap: '3px', marginBottom: '4px' }}>
+                                                {[1,2,3,4,5].map(s => (
+                                                    <Star key={s} size={16} className={s <= Math.round(avg) ? 'fill-yellow-400 text-yellow-400' : 'text-slate-600'} />
+                                                ))}
+                                            </div>
+                                            <p style={{ fontSize: '13px', color: '#94a3b8' }}>{reviews.length} verified review{reviews.length !== 1 ? 's' : ''}</p>
+                                        </div>
+                                    </div>
+                                );
+                            })()}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                {reviews.map(r => (
+                                    <div key={r.id} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '20px' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+                                            <div>
+                                                <div style={{ display: 'flex', gap: '2px', marginBottom: '4px' }}>
+                                                    {[1,2,3,4,5].map(s => (
+                                                        <Star key={s} size={14} className={s <= r.rating ? 'fill-yellow-400 text-yellow-400' : 'text-slate-600'} />
+                                                    ))}
+                                                </div>
+                                                {r.title && <p style={{ fontWeight: 700, color: '#fff', fontSize: '15px' }}>{r.title}</p>}
+                                                <p style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
+                                                    {r.userName} · {r.createdAt?.toDate?.()?.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) || ''}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <p style={{ color: '#cbd5e1', fontSize: '14px', lineHeight: '1.6' }}>{r.review}</p>
+                                        {r.photos && r.photos.length > 0 && (
+                                            <div style={{ display: 'flex', gap: '8px', marginTop: '12px', flexWrap: 'wrap' }}>
+                                                {r.photos.map((photo, idx) => (
+                                                    <img key={idx} src={photo} alt="" onClick={() => setReviewPhotoModal(photo)}
+                                                        style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '8px', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.1)' }} />
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </section>
+                    )}
+
                 </div>
 
                 {/* Right Column - Sticky Booking Sidebar */}
@@ -889,6 +961,16 @@ const PackageDetail = () => {
 
             {/* Animated Banner at the end */}
             <AnimatedBanner />
+
+            {/* Review Photo Viewer */}
+            {reviewPhotoModal && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/90 p-4" onClick={() => setReviewPhotoModal(null)}>
+                    <img src={reviewPhotoModal} alt="" className="max-w-full max-h-[90vh] rounded-xl" />
+                    <button onClick={() => setReviewPhotoModal(null)} className="absolute top-6 right-6 bg-white/10 p-2 rounded-full hover:bg-white/20 transition-colors text-white">
+                        <X size={24} />
+                    </button>
+                </div>
+            )}
 
             {/* Full Screen Gallery Overlay */}
             {showGallery && (
