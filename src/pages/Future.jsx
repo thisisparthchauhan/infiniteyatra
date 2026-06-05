@@ -513,9 +513,9 @@ const Future = () => {
                             </Link>
 
                             <Link to="/"
-                                className="group flex items-center gap-2 border border-white/30 hover:bg-white hover:text-black hover:border-white px-4 py-2 transition-all duration-500">
-                                <span className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] text-[13px] tracking-[3px] font-medium">
-                                    ← RETURN TO EARTH
+                                className="group flex items-center gap-1.5 border border-white/30 hover:bg-white hover:text-black hover:border-white px-3 md:px-4 py-1.5 md:py-2 transition-all duration-500 shrink-0">
+                                <span className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] text-[10px] md:text-[13px] tracking-[2px] md:tracking-[3px] font-medium whitespace-nowrap">
+                                    ← <span className="hidden sm:inline">RETURN TO </span>EARTH
                                 </span>
                             </Link>
                         </div>
@@ -535,7 +535,7 @@ const Future = () => {
                         </FadeUp>
                     </div>
 
-                    <div className="relative z-10 px-6 md:px-16 lg:px-24 pb-20 md:pb-32">
+                    <div className="relative z-10 px-6 md:px-16 lg:px-24 pb-12 md:pb-32">
                         <div className="max-w-7xl mx-auto">
                             <FadeUp delay={0.5}>
                                 <p className="font-mono text-[13px] tracking-[2.5px] text-white/50 mb-6">
@@ -545,13 +545,17 @@ const Future = () => {
 
                             <FadeUp delay={0.7}>
                                 <h1 className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-white leading-[0.95] tracking-tight mb-8 break-words"
-                                    style={{ fontSize: 'clamp(52px, 9.5vw, 150px)' }}>
+                                    style={{
+                                        fontSize: 'clamp(44px, 11vw, 150px)',
+                                        overflowWrap: 'normal',
+                                        wordBreak: 'keep-all'
+                                    }}>
                                     INFINITE<br />YATRA
                                 </h1>
                             </FadeUp>
 
                             <FadeUp delay={0.9}>
-                                <div className="grid md:grid-cols-2 gap-12 max-w-5xl">
+                                <div className="grid md:grid-cols-2 gap-8 md:gap-12 max-w-5xl">
                                     <p className="text-white/70 text-lg md:text-xl leading-relaxed font-light"
                                         style={{ fontFamily: "'Inter', 'Helvetica Neue', sans-serif", textTransform: 'lowercase' }}>
                                         The journey doesn't end on Earth. One day, Infinite Yatra will take travelers beyond our planet — and into the infinite.
@@ -595,7 +599,7 @@ const Future = () => {
                 {/* ══════════════════════════════════════════
                     SECTION 1: FLEET
                 ══════════════════════════════════════════ */}
-                <section className="relative px-6 md:px-16 lg:px-24 py-28 md:py-40 z-20">
+                <section className="relative px-6 md:px-16 lg:px-24 py-20 md:py-40 z-20">
                     <div className="max-w-7xl mx-auto">
                         <FadeUp>
                             <div className="flex items-center gap-3 mb-12">
@@ -605,7 +609,7 @@ const Future = () => {
                             </div>
                         </FadeUp>
 
-                        <div className="grid md:grid-cols-12 gap-12 mb-20">
+                        <div className="grid md:grid-cols-12 gap-8 md:gap-12 mb-12 md:mb-20">
                             <div className="md:col-span-7 min-w-0">
                                 <FadeUp delay={0.1}>
                                     <h2 className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-white leading-[1.05] tracking-tight"
@@ -677,7 +681,7 @@ const Future = () => {
                 {/* ══════════════════════════════════════════
                     SECTION 2: TIMELINE
                 ══════════════════════════════════════════ */}
-                <section className="relative px-6 md:px-16 lg:px-24 py-28 md:py-40 z-20">
+                <section className="relative px-6 md:px-16 lg:px-24 py-20 md:py-40 z-20">
                     <div className="max-w-7xl mx-auto">
                         <FadeUp>
                             <div className="flex items-center gap-3 mb-12">
@@ -727,7 +731,7 @@ const Future = () => {
                 {/* ══════════════════════════════════════════
                     SECTION 3: RESERVE
                 ══════════════════════════════════════════ */}
-                <section className="relative px-6 md:px-16 lg:px-24 py-28 md:py-40 z-20">
+                <section className="relative px-6 md:px-16 lg:px-24 py-20 md:py-40 z-20">
                     <div className="max-w-7xl mx-auto">
                         <FadeUp>
                             <div className="flex items-center gap-3 mb-12">

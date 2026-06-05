@@ -57,7 +57,7 @@ const SectionHeading = ({ children, className = '', delay = 0.1 }) => (
    SECTION CONTAINER
 ───────────────────────────────────────────── */
 const Section = ({ id, children, className = '' }) => (
-    <section id={id} className={`relative px-6 md:px-16 lg:px-24 py-28 md:py-40 ${className}`}>
+    <section id={id} className={`relative px-6 md:px-16 lg:px-24 py-20 md:py-40 ${className}`}>
         <div className="max-w-7xl mx-auto">
             {children}
         </div>
@@ -154,14 +154,15 @@ const AscensionProject = () => {
                     NAV BAR — SpaceX style
                 ══════════════════════════════════════════ */}
                 <nav className={`fixed top-0 left-0 w-full z-[100] transition-all duration-500 ${scrolled ? 'bg-black/90 backdrop-blur-md border-b border-white/[0.06]' : 'bg-transparent'}`}>
-                    <div className="px-6 md:px-12 h-[68px] flex items-center justify-between">
+                    <div className="px-4 md:px-12 h-[60px] md:h-[68px] flex items-center justify-between">
                         <Link to="/future" className="flex items-center gap-2 text-white/60 hover:text-white transition-colors duration-300 group">
                             <ArrowLeft size={14} className="transition-transform duration-300 group-hover:-translate-x-1" />
                             <span className="font-medium text-[13px] tracking-[2px] uppercase">Future</span>
                         </Link>
 
-                        <div className="absolute left-1/2 -translate-x-1/2 text-center">
-                            <p className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-[13px] tracking-[3px] text-white uppercase">
+                        {/* Centered title — hidden on small screens to prevent overlap */}
+                        <div className="hidden md:block absolute left-1/2 -translate-x-1/2 text-center pointer-events-none">
+                            <p className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-[13px] tracking-[3px] text-white uppercase whitespace-nowrap">
                                 The Ascension Project
                             </p>
                         </div>
@@ -246,7 +247,7 @@ const AscensionProject = () => {
                     </div>
 
                     {/* Bottom content area */}
-                    <div className="relative z-10 px-6 md:px-16 lg:px-24 pb-20 md:pb-32">
+                    <div className="relative z-10 px-6 md:px-16 lg:px-24 pb-12 md:pb-32">
                         <div className="max-w-7xl mx-auto">
                             <FadeIn delay={0.5}>
                                 <p className="font-mono text-[13px] tracking-[2.5px] text-white/50 uppercase mb-6">
@@ -255,14 +256,18 @@ const AscensionProject = () => {
                             </FadeIn>
 
                             <FadeIn delay={0.7}>
-                                <h1 className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-white leading-[0.95] tracking-tight uppercase mb-8 break-words"
-                                    style={{ fontSize: 'clamp(52px, 10vw, 140px)' }}>
+                                <h1 className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-white leading-[0.95] tracking-tight uppercase mb-6 md:mb-8"
+                                    style={{
+                                        fontSize: 'clamp(40px, 11vw, 140px)',
+                                        overflowWrap: 'normal',
+                                        wordBreak: 'keep-all'
+                                    }}>
                                     The<br />Ascension<br />Project
                                 </h1>
                             </FadeIn>
 
                             <FadeIn delay={0.9}>
-                                <div className="grid md:grid-cols-2 gap-12 max-w-5xl">
+                                <div className="grid md:grid-cols-2 gap-8 md:gap-12 max-w-5xl">
                                     <p className="text-white/70 text-lg md:text-xl leading-relaxed font-light">
                                         Humanity's next frontier. A long-term initiative focused on exploration, knowledge, artificial intelligence, research, and civilization development — beyond a single world.
                                     </p>
@@ -387,7 +392,7 @@ const AscensionProject = () => {
                 ══════════════════════════════════════════ */}
                 <Section id="principles">
                     <SectionLabel number="03" text="Core Principles" />
-                    <div className="grid md:grid-cols-12 gap-12 mb-20">
+                    <div className="grid md:grid-cols-12 gap-8 md:gap-12 mb-12 md:mb-20">
                         <div className="md:col-span-6 min-w-0">
                             <SectionHeading>How we operate.</SectionHeading>
                         </div>
@@ -473,7 +478,7 @@ const AscensionProject = () => {
                         On artificial intelligence.
                     </SectionHeading>
 
-                    <div className="grid md:grid-cols-12 gap-12 mb-20">
+                    <div className="grid md:grid-cols-12 gap-8 md:gap-12 mb-12 md:mb-20">
                         <div className="md:col-span-7 min-w-0">
                             <FadeIn delay={0.2}>
                                 <p className="text-white/70 text-lg leading-relaxed font-light mb-6">
@@ -796,7 +801,7 @@ const AscensionProject = () => {
                 ══════════════════════════════════════════ */}
                 <Section id="future">
                     <SectionLabel number="11" text="Future of Humanity" />
-                    <div className="grid md:grid-cols-12 gap-12 mb-20">
+                    <div className="grid md:grid-cols-12 gap-8 md:gap-12 mb-12 md:mb-20">
                         <div className="md:col-span-7 min-w-0">
                             <SectionHeading className="mb-10">
                                 What we believe is possible.
