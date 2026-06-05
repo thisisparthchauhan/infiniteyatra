@@ -525,7 +525,7 @@ const Future = () => {
                 {/* ══════════════════════════════════════════
                     SECTION 0: HERO — full-bleed bottom-left
                 ══════════════════════════════════════════ */}
-                <section className="relative w-full min-h-screen flex flex-col justify-end overflow-hidden z-20">
+                <section id="hero" className="relative w-full min-h-screen flex flex-col justify-end overflow-hidden z-20" style={{scrollMarginTop: "80px"}}>
                     {/* Centered top text */}
                     <div className="absolute top-[100px] left-0 w-full text-center">
                         <FadeUp delay={0.3}>
@@ -599,7 +599,7 @@ const Future = () => {
                 {/* ══════════════════════════════════════════
                     SECTION 1: FLEET
                 ══════════════════════════════════════════ */}
-                <section className="relative px-6 md:px-16 lg:px-24 py-20 md:py-40 z-20">
+                <section id="fleet" style={{scrollMarginTop: "80px"}} className="relative px-6 md:px-16 lg:px-24 py-20 md:py-40 z-20">
                     <div className="max-w-7xl mx-auto">
                         <FadeUp>
                             <div className="flex items-center gap-3 mb-12">
@@ -681,7 +681,7 @@ const Future = () => {
                 {/* ══════════════════════════════════════════
                     SECTION 2: TIMELINE
                 ══════════════════════════════════════════ */}
-                <section className="relative px-6 md:px-16 lg:px-24 py-20 md:py-40 z-20">
+                <section id="timeline" style={{scrollMarginTop: "80px"}} className="relative px-6 md:px-16 lg:px-24 py-20 md:py-40 z-20">
                     <div className="max-w-7xl mx-auto">
                         <FadeUp>
                             <div className="flex items-center gap-3 mb-12">
@@ -731,7 +731,7 @@ const Future = () => {
                 {/* ══════════════════════════════════════════
                     SECTION 3: RESERVE
                 ══════════════════════════════════════════ */}
-                <section className="relative px-6 md:px-16 lg:px-24 py-20 md:py-40 z-20">
+                <section id="reservation" style={{scrollMarginTop: "80px"}} className="relative px-6 md:px-16 lg:px-24 py-20 md:py-40 z-20">
                     <div className="max-w-7xl mx-auto">
                         <FadeUp>
                             <div className="flex items-center gap-3 mb-12">
@@ -803,7 +803,7 @@ const Future = () => {
                 {/* ══════════════════════════════════════════
                     SECTION 4: THE ASCENSION PROJECT
                 ══════════════════════════════════════════ */}
-                <section className="relative w-full py-32 px-6 md:px-16 z-20">
+                <section id="ascension" style={{scrollMarginTop: "80px"}} className="relative w-full py-32 px-6 md:px-16 z-20">
                     <div className="max-w-7xl mx-auto">
                         <FadeUp>
                             <div className="flex items-center gap-3 mb-12">
@@ -921,8 +921,16 @@ const Future = () => {
                                 <div className="text-center md:text-left">
                                     <p className="font-mono text-[10px] tracking-[3px] text-white/40 mb-4">PROGRAM</p>
                                     <div className="flex flex-col gap-2">
-                                        {['THE FLEET', 'TIMELINE', 'RESERVATION', 'ASCENSION'].map(l => (
-                                            <p key={l} className="text-[12px] text-white/55 tracking-[2px] hover:text-white transition-colors cursor-default">{l}</p>
+                                        {[
+                                            { label: 'THE FLEET', id: 'fleet' },
+                                            { label: 'TIMELINE', id: 'timeline' },
+                                            { label: 'RESERVATION', id: 'reservation' },
+                                            { label: 'ASCENSION', id: 'ascension' },
+                                        ].map(item => (
+                                            <a key={item.id} href={`#${item.id}`}
+                                                className="text-[12px] text-white/55 tracking-[2px] hover:text-white transition-colors">
+                                                {item.label}
+                                            </a>
                                         ))}
                                     </div>
                                 </div>
@@ -930,19 +938,24 @@ const Future = () => {
                                 <div className="text-center">
                                     <p className="font-mono text-[10px] tracking-[3px] text-white/40 mb-4">CONTACT</p>
                                     <div className="flex flex-col gap-2">
-                                        <p className="text-[12px] text-white/55 tracking-[2px]">SUPPORT</p>
-                                        <p className="text-[12px] text-white/55 tracking-[2px]">PRESS</p>
-                                        <p className="text-[12px] text-white/55 tracking-[2px]">CAREERS</p>
-                                        <p className="text-[12px] text-white/55 tracking-[2px]">PARTNERS</p>
+                                        <Link to="/contact" className="text-[12px] text-white/55 tracking-[2px] hover:text-white transition-colors">SUPPORT</Link>
+                                        <Link to="/contact" className="text-[12px] text-white/55 tracking-[2px] hover:text-white transition-colors">PRESS</Link>
+                                        <Link to="/careers" className="text-[12px] text-white/55 tracking-[2px] hover:text-white transition-colors">CAREERS</Link>
+                                        <Link to="/contact" className="text-[12px] text-white/55 tracking-[2px] hover:text-white transition-colors">PARTNERS</Link>
                                     </div>
                                 </div>
 
                                 <div className="col-span-2 md:col-span-1 text-center md:text-right">
                                     <p className="font-mono text-[10px] tracking-[3px] text-white/40 mb-4">NAVIGATE</p>
-                                    <Link to="/" className="inline-flex items-center gap-2 text-white/70 hover:text-white transition-colors group text-[12px] tracking-[2px]">
-                                        <span className="transition-transform duration-300 group-hover:-translate-x-1">←</span>
-                                        RETURN TO EARTH
-                                    </Link>
+                                    <div className="flex flex-col gap-2 items-center md:items-end">
+                                        <Link to="/ascension-project" className="text-[12px] text-white/55 tracking-[2px] hover:text-white transition-colors">
+                                            ASCENSION PROJECT
+                                        </Link>
+                                        <Link to="/" className="inline-flex items-center gap-2 text-white/70 hover:text-white transition-colors group text-[12px] tracking-[2px]">
+                                            <span className="transition-transform duration-300 group-hover:-translate-x-1">←</span>
+                                            RETURN TO EARTH
+                                        </Link>
+                                    </div>
                                 </div>
                             </div>
 
