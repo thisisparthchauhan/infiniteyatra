@@ -256,9 +256,9 @@ const AscensionProject = () => {
                             </FadeIn>
 
                             <FadeIn delay={0.7}>
-                                <h1 className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-white leading-[0.95] tracking-tight uppercase mb-6 md:mb-8"
+                                <h1 className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-white leading-[0.95] tracking-tight uppercase mb-6 md:mb-8 max-w-full"
                                     style={{
-                                        fontSize: 'clamp(40px, 11vw, 140px)',
+                                        fontSize: 'clamp(30px, 8.5vw, 140px)',
                                         overflowWrap: 'normal',
                                         wordBreak: 'keep-all'
                                     }}>
@@ -840,7 +840,7 @@ const AscensionProject = () => {
                     <FadeIn delay={0.5}>
                         <div className="border-y border-white/15 py-16 px-8 text-center">
                             <p className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-white tracking-tight uppercase max-w-4xl mx-auto leading-tight"
-                                style={{ fontSize: 'clamp(20px, 3vw, 36px)' }}>
+                                style={{ fontSize: 'clamp(16px, 2.6vw, 36px)' }}>
                                 "We do not expand because we can. We expand because we must — because every generation that fails to build the future forces the next one to inherit the consequences of that failure."
                             </p>
                             <p className="font-mono text-[12px] tracking-[2.5px] text-white/40 uppercase mt-8">— The Ascension Project</p>
@@ -859,19 +859,19 @@ const AscensionProject = () => {
                     <div className="max-w-5xl mx-auto py-12 md:py-20">
                         <FadeIn delay={0.15}>
                             <p className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-white tracking-tight uppercase leading-[0.95] mb-6"
-                                style={{ fontSize: 'clamp(40px, 8vw, 110px)' }}>
+                                style={{ fontSize: 'clamp(28px, 7vw, 110px)' }}>
                                 Not a company.
                             </p>
                         </FadeIn>
                         <FadeIn delay={0.25}>
                             <p className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-white tracking-tight uppercase leading-[0.95] mb-6"
-                                style={{ fontSize: 'clamp(40px, 8vw, 110px)' }}>
+                                style={{ fontSize: 'clamp(28px, 7vw, 110px)' }}>
                                 Not a brand.
                             </p>
                         </FadeIn>
                         <FadeIn delay={0.35}>
                             <p className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-white/40 tracking-tight uppercase leading-[0.95] mb-20"
-                                style={{ fontSize: 'clamp(40px, 8vw, 110px)' }}>
+                                style={{ fontSize: 'clamp(28px, 7vw, 110px)' }}>
                                 A question.
                             </p>
                         </FadeIn>
@@ -902,11 +902,11 @@ const AscensionProject = () => {
 
                         <FadeIn delay={0.95}>
                             <p className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-white tracking-tight uppercase leading-[1.05] mb-3"
-                                style={{ fontSize: 'clamp(32px, 5vw, 60px)' }}>
+                                style={{ fontSize: 'clamp(24px, 5vw, 60px)' }}>
                                 This is not the beginning.
                             </p>
                             <p className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-white tracking-tight uppercase leading-[1.05] mb-20"
-                                style={{ fontSize: 'clamp(32px, 5vw, 60px)' }}>
+                                style={{ fontSize: 'clamp(24px, 5vw, 60px)' }}>
                                 This is the decision.
                             </p>
                         </FadeIn>

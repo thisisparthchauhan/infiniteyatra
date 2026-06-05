@@ -546,7 +546,7 @@ const Future = () => {
                             <FadeUp delay={0.7}>
                                 <h1 className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-white leading-[0.95] tracking-tight mb-8 break-words"
                                     style={{
-                                        fontSize: 'clamp(44px, 11vw, 150px)',
+                                        fontSize: 'clamp(36px, 9vw, 150px)',
                                         overflowWrap: 'normal',
                                         wordBreak: 'keep-all'
                                     }}>
@@ -745,7 +745,7 @@ const Future = () => {
                             <div className="md:col-span-7 min-w-0">
                                 <FadeUp delay={0.1}>
                                     <h2 className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-white leading-[0.95] tracking-tight mb-8 break-words"
-                                        style={{ fontSize: 'clamp(36px, 5.5vw, 80px)' }}>
+                                        style={{ fontSize: 'clamp(28px, 5.5vw, 80px)' }}>
                                         Reserve<br />Your Seat.
                                     </h2>
                                 </FadeUp>
@@ -816,7 +816,7 @@ const Future = () => {
                         {/* Title row — full width, no overflow */}
                         <FadeUp delay={0.1}>
                             <h2 className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-white leading-[0.95] tracking-tight mb-4 break-words"
-                                style={{ fontSize: 'clamp(36px, 6vw, 84px)' }}>
+                                style={{ fontSize: 'clamp(28px, 6vw, 84px)' }}>
                                 THE ASCENSION<br />PROJECT
                             </h2>
                         </FadeUp>
