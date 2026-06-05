@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import SEO from '../components/common/SEO';
 import AdminSidebar from '../components/admin/AdminSidebar';
 import { useRole } from '../context/RoleContext';
+import { useAuth } from '../context/AuthContext';
 import { USER_ROLES } from '../config/roles';
 
 // Sub-Modules
@@ -48,6 +49,7 @@ const AdminCycleBookings = lazy(() => import('../components/admin/cruise/AdminCy
 
 const AdminDashboard = () => {
     const { hasPermission, getFirstAllowedTab, currentRole, setCurrentRole, currentWorkspace } = useRole();
+    const { currentUser } = useAuth();
     const [activeTab, setActiveTab] = useState(getFirstAllowedTab());
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [showStaffModal, setShowStaffModal] = useState(false);
@@ -213,11 +215,11 @@ const AdminDashboard = () => {
                                         className="flex items-center gap-3 p-1 pr-3 rounded-full hover:bg-white/5 transition-colors group"
                                     >
                                         <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 ring-2 ring-white/10 group-hover:ring-white/20 flex items-center justify-center text-sm font-bold text-white shadow-lg shadow-blue-500/20">
-                                            PC
+                                            {currentUser?.email?.charAt(0)?.toUpperCase() || 'A'}
                                         </div>
                                         <div className="hidden md:block text-left">
-                                            <p className="text-xs font-bold text-white group-hover:text-blue-400 transition-colors">Parth Chauhan</p>
-                                            <p className="text-[10px] text-slate-400">chauhanparth165@gmail.com</p>
+                                            <p className="text-xs font-bold text-white group-hover:text-blue-400 transition-colors">{currentUser?.displayName || currentUser?.email?.split('@')[0] || 'Admin'}</p>
+                                            <p className="text-[10px] text-slate-400">{currentUser?.email || ''}</p>
                                         </div>
                                         <ChevronDown size={14} className={`text-slate-500 transition-transform duration-200 ${isProfileOpen ? 'rotate-180' : ''}`} />
                                     </button>
@@ -243,8 +245,8 @@ const AdminDashboard = () => {
                                                     <div className="px-5 py-4 border-b border-white/5 bg-white/5">
                                                         <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Account</p>
                                                         <Link to="/profile" className="block group/profile">
-                                                            <p className="text-sm font-bold text-white group-hover/profile:text-blue-400 transition-colors">Parth Chauhan</p>
-                                                            <p className="text-xs text-slate-400">chauhanparth165@gmail.com</p>
+                                                            <p className="text-sm font-bold text-white group-hover/profile:text-blue-400 transition-colors">{currentUser?.displayName || currentUser?.email?.split('@')[0] || 'Admin'}</p>
+                                                            <p className="text-xs text-slate-400">{currentUser?.email || ''}</p>
                                                         </Link>
                                                     </div>
                                                 </motion.div>

@@ -69,6 +69,7 @@ import MigrateData from './pages/MigrateData';
 import TermsConditions from './pages/TermsConditions';
 
 import Future from './pages/Future';
+import AscensionProject from './pages/AscensionProject';
 import Passport from './pages/Passport';
 import TeamGuide from './pages/TeamGuide';
 import CityHotels from './pages/CityHotels';
@@ -84,7 +85,8 @@ const Layout = ({ children }) => {
   const isConnectPage = location.pathname === '/connect';
   const isAdminPage = location.pathname.startsWith('/admin');
   const isFuturePage = location.pathname === '/future';
-  const shouldHideLayout = isConnectPage || isAdminPage || isFuturePage;
+  const isAscensionPage = location.pathname === '/ascension-project';
+  const shouldHideLayout = isConnectPage || isAdminPage || isFuturePage || isAscensionPage;
 
   return (
     <>
@@ -196,6 +198,7 @@ function App() {
                         <Route path="/terms" element={<TermsConditions />} />
                         <Route path="/migrate-packages-fix" element={<MigrateData />} />
                         <Route path="/future" element={<Future />} />
+                        <Route path="/ascension-project" element={<AscensionProject />} />
                         <Route path="/team-guide" element={<TeamGuide />} />
                         <Route path="/passport" element={<ProtectedRoute><Passport /></ProtectedRoute>} />
 
