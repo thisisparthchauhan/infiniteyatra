@@ -41,12 +41,16 @@ const SectionLabel = ({ number, text }) => (
 ───────────────────────────────────────────── */
 const SectionHeading = ({ children, className = '', delay = 0.1 }) => (
     <FadeIn delay={delay}>
-        <h2 className={`font-['SpaceX',_'Helvetica_Neue',_'Inter',_sans-serif] font-bold text-white leading-[1.05] tracking-tight uppercase break-words ${className}`}
+        <h2 className={`font-['SpaceX',_'Helvetica_Neue',_'Inter',_sans-serif] font-bold text-white leading-[1.05] tracking-tight uppercase max-w-full ${className}`}
             style={{
-                fontSize: 'clamp(32px, 4.2vw, 56px)',
-                overflowWrap: 'break-word',
-                wordBreak: 'break-word',
-                hyphens: 'auto'
+                /* IMPORTANT: keep words whole. Never use hyphens:auto or wordBreak:break-word on
+                   display headings — produces ugly "MULTIPLAN-ETARY" mid-word splits on mobile.
+                   Mobile size is small enough that even long words ("MULTIPLANETARY",
+                   "CIVILIZATIONALLY") fit inside the container. */
+                fontSize: 'clamp(22px, 3.8vw, 56px)',
+                overflowWrap: 'normal',
+                wordBreak: 'normal',
+                hyphens: 'none'
             }}>
             {children}
         </h2>

@@ -457,6 +457,70 @@ This means: every heading using `font-['SpaceX',_'Helvetica_Neue',_sans-serif]` 
 
 ---
 
+## 13.6 ⚠️ Mobile Typography Rules — DO NOT BREAK
+
+> **These rules exist because we kept reintroducing the same mobile bugs.
+> Read this before touching any heading on `/future` or `/ascension-project`.**
+
+### Rule A — Never hyphenate display headings
+
+For any `h1` / `h2` that uses the **SpaceX font** (or any uppercase, tracking-tight display style), **NEVER** apply:
+
+- ❌ `hyphens: 'auto'`
+- ❌ `wordBreak: 'break-word'`
+- ❌ `overflowWrap: 'break-word'`
+- ❌ Tailwind's `break-words` class
+
+Why: SpaceX is a wide, all-caps display face. With those CSS rules the browser produces hideous mid-word splits like **`MULTIPLAN- / ETARY`** or **`ASCENSI- / ON`** on mobile.
+
+**Always use instead:**
+
+```js
+style={{
+    fontSize: 'clamp(<mobile-min>, <vw>, <desktop-max>)',
+    overflowWrap: 'normal',
+    wordBreak: 'normal',
+    hyphens: 'none'
+}}
+className="... max-w-full"
+```
+
+The job of "fitting on mobile" is done by the `clamp` minimum being **small enough that the longest word fits at 320–430 px viewports**, not by letting the browser shred the word.
+
+### Rule B — Pick a clamp `min` that fits the longest word
+
+For each heading, work out the **widest single word** it can ever contain, then pick a font size that fits that word at the smallest expected viewport (treat 320 px as the floor, 24 px each side for `px-6` padding = 272 px content width).
+
+Approximate width of one capital letter in the SpaceX font ≈ **0.7 × font-size**. So:
+
+| Longest word | Chars | Mobile min size that fits 272 px | Safe clamp |
+|--------------|-------|----------------------------------|------------|
+| `INFINITE` | 8 | `≤ 48 px` | `clamp(36px, 9vw, 150px)` |
+| `ASCENSION` | 9 | `≤ 43 px` | `clamp(30px, 8.5vw, 140px)` |
+| `MULTIPLANETARY` | 14 | `≤ 27 px` | `clamp(22px, 3.8vw, 56px)` |
+| `CIVILIZATIONALLY` | 16 | `≤ 24 px` | `clamp(22px, 3.8vw, 56px)` |
+| `BEGINNING.` | 10 | `≤ 38 px` | `clamp(28px, 7vw, 110px)` |
+
+**Section headings** (the `<SectionHeading>` component) are the most dangerous because their content is data-driven and can include very long compound words. The component is locked at `clamp(22px, 3.8vw, 56px)` — **do not raise the mobile min above 22 px without re-checking the widest word in every section**.
+
+### Rule C — Always include `max-w-full`
+
+Even with no word breaking, a single long word can still create horizontal overflow on devices narrower than the test target. Add `max-w-full` to every display heading as a safety guard, combined with `overflow-x-hidden` on the page wrapper (already in place).
+
+### Rule D — Layout containers also need `min-w-0`
+
+Grid / flex children default to `min-width: min-content`, which means a wide word will **push the whole column wider than its share**. Every `md:col-span-*` (or any grid/flex child holding a heading) **must include `min-w-0`** to allow shrinking.
+
+### Quick checklist before merging mobile changes
+
+- [ ] No `break-words`, `break-word`, or `hyphens: auto` on any SpaceX heading
+- [ ] Each `clamp(min, vw, max)` mobile-min was chosen for the longest word it can hold
+- [ ] All `md:col-span-N` divs have `min-w-0`
+- [ ] Page-level wrapper has `overflow-x-hidden`
+- [ ] Tested at 320 px, 375 px, 430 px in DevTools mobile mode
+
+---
+
 ## 14. Where to Look When You Need To…
 
 | Task | File(s) |
