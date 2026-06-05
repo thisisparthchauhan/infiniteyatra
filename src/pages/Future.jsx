@@ -440,9 +440,9 @@ const Future = () => {
             Rocket: RocketSelene,
         },
         {
-            num: '04', code: 'IY-M4', name: 'IY Mangal', class: 'Interplanetary',
+            num: '04', code: 'IY-M4', name: 'IY Mars', class: 'Interplanetary',
             altitude: '225M KM', duration: '6 MONTHS', crew: '100 PAX',
-            desc: 'Named after the red planet in Sanskrit, Mangal is our vision for multi-month Mars transit — humanity\'s next chapter.',
+            desc: 'IY Mars — named after the red planet (Mangal in Sanskrit) — our vision for multi-month interplanetary transit. Humanity\'s next chapter.',
             Rocket: RocketMangal,
         },
     ];
@@ -902,32 +902,44 @@ const Future = () => {
                     FOOTER
                 ══════════════════════════════════════════ */}
                 <footer className="border-t border-white/10 relative z-20">
-                    <div className="px-6 md:px-16 lg:px-24 py-14">
+                    <div className="px-6 md:px-16 lg:px-24 py-16 md:py-20">
                         <div className="max-w-7xl mx-auto">
-                            <div className="grid md:grid-cols-12 gap-8 items-start mb-12">
-                                <div className="md:col-span-5 min-w-0">
-                                    <div className="inline-flex flex-col items-center">
-                                        <p className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-white text-base tracking-[2.5px] mb-1">
-                                            INFINITE YATRA
-                                        </p>
-                                        <p className="font-mono text-[12px] tracking-[3px] text-white/40 text-center">
-                                            EXPLORE INFINITE
-                                        </p>
-                                    </div>
-                                </div>
 
-                                <div className="md:col-span-4 min-w-0">
-                                    <p className="font-mono text-[12px] tracking-[3px] text-white/30 mb-4">PROGRAM</p>
-                                    <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+                            {/* ── Top row: centered brand ── */}
+                            <div className="flex flex-col items-center text-center mb-12 md:mb-16">
+                                <p className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-white text-lg md:text-xl tracking-[3px] mb-2">
+                                    INFINITE YATRA
+                                </p>
+                                <p className="font-mono text-[11px] tracking-[3px] text-white/40">
+                                    EXPLORE INFINITE
+                                </p>
+                                <div className="w-12 h-[1px] bg-white/20 mt-6" />
+                            </div>
+
+                            {/* ── Link columns ── */}
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-8 md:gap-12 mb-12">
+                                <div className="text-center md:text-left">
+                                    <p className="font-mono text-[10px] tracking-[3px] text-white/40 mb-4">PROGRAM</p>
+                                    <div className="flex flex-col gap-2">
                                         {['THE FLEET', 'TIMELINE', 'RESERVATION', 'ASCENSION'].map(l => (
-                                            <p key={l} className="text-[13px] text-white/50 tracking-wider">{l}</p>
+                                            <p key={l} className="text-[12px] text-white/55 tracking-[2px] hover:text-white transition-colors cursor-default">{l}</p>
                                         ))}
                                     </div>
                                 </div>
 
-                                <div className="md:col-span-3 min-w-0">
-                                    <p className="font-mono text-[12px] tracking-[3px] text-white/30 mb-4">NAVIGATE</p>
-                                    <Link to="/" className="flex items-center gap-2 text-white/60 hover:text-white transition-colors group text-[13px] tracking-wider">
+                                <div className="text-center">
+                                    <p className="font-mono text-[10px] tracking-[3px] text-white/40 mb-4">CONTACT</p>
+                                    <div className="flex flex-col gap-2">
+                                        <p className="text-[12px] text-white/55 tracking-[2px]">SUPPORT</p>
+                                        <p className="text-[12px] text-white/55 tracking-[2px]">PRESS</p>
+                                        <p className="text-[12px] text-white/55 tracking-[2px]">CAREERS</p>
+                                        <p className="text-[12px] text-white/55 tracking-[2px]">PARTNERS</p>
+                                    </div>
+                                </div>
+
+                                <div className="col-span-2 md:col-span-1 text-center md:text-right">
+                                    <p className="font-mono text-[10px] tracking-[3px] text-white/40 mb-4">NAVIGATE</p>
+                                    <Link to="/" className="inline-flex items-center gap-2 text-white/70 hover:text-white transition-colors group text-[12px] tracking-[2px]">
                                         <span className="transition-transform duration-300 group-hover:-translate-x-1">←</span>
                                         RETURN TO EARTH
                                     </Link>
@@ -936,11 +948,12 @@ const Future = () => {
 
                             <div className="h-[1px] bg-white/10 mb-6" />
 
-                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
-                                <p className="font-mono text-[12px] tracking-[2px] text-white/30">
-                                    INFINITE YATRA SPACE PROGRAM · CLASSIFIED
+                            {/* ── Bottom row: copyright + tagline ── */}
+                            <div className="flex flex-col md:flex-row justify-between items-center gap-3 text-center">
+                                <p className="font-mono text-[10px] tracking-[2px] text-white/30">
+                                    © 2026 INFINITE YATRA SPACE PROGRAM · CLASSIFIED
                                 </p>
-                                <p className="font-mono text-[12px] tracking-[2px] text-white/30">
+                                <p className="font-mono text-[10px] italic tracking-[2px] text-white/30">
                                     TODAY ACROSS EARTH · TOMORROW BEYOND IT
                                 </p>
                             </div>

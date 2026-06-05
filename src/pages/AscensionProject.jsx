@@ -926,30 +926,50 @@ const AscensionProject = () => {
                 {/* ══════════════════════════════════════════
                     FOOTER
                 ══════════════════════════════════════════ */}
-                <footer className="border-t border-white/10 mt-8">
-                    <div className="px-6 md:px-16 lg:px-24 py-14">
+                <footer className="border-t border-white/10 mt-8 relative z-20">
+                    <div className="px-6 md:px-16 lg:px-24 py-16 md:py-20">
                         <div className="max-w-7xl mx-auto">
-                            <div className="grid md:grid-cols-12 gap-8 items-start mb-12">
-                                <div className="md:col-span-5 min-w-0">
-                                    <p className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-white text-base tracking-[2.5px] uppercase mb-2">The Ascension Project</p>
-                                    <p className="font-mono text-[12px] tracking-[3px] text-white/40 uppercase">Humanity's Next Frontier · Founded 2026</p>
-                                </div>
 
-                                <div className="md:col-span-4 min-w-0">
-                                    <p className="font-mono text-[12px] tracking-[3px] text-white/30 uppercase mb-4">Sections</p>
-                                    <div className="grid grid-cols-2 gap-x-6 gap-y-2">
-                                        {NAV_SECTIONS.slice(1, 9).map(s => (
+                            {/* ── Top row: centered signature ── */}
+                            <div className="flex flex-col items-center text-center mb-12 md:mb-16">
+                                <p className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-white text-lg md:text-xl tracking-[3px] uppercase mb-2">
+                                    The Ascension Project
+                                </p>
+                                <p className="font-mono text-[11px] tracking-[3px] text-white/40 uppercase">
+                                    Humanity's Next Frontier · Founded 2026
+                                </p>
+                                <div className="w-12 h-[1px] bg-white/20 mt-6" />
+                            </div>
+
+                            {/* ── Link columns ── */}
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-8 md:gap-12 mb-12">
+                                <div className="text-center md:text-left">
+                                    <p className="font-mono text-[10px] tracking-[3px] text-white/40 uppercase mb-4">Sections</p>
+                                    <div className="flex flex-col gap-2">
+                                        {NAV_SECTIONS.slice(1, 7).map(s => (
                                             <button key={s.id} onClick={() => scrollTo(s.id)}
-                                                className="text-left text-[13px] text-white/50 hover:text-white transition-colors tracking-wider uppercase">
+                                                className="text-center md:text-left text-[12px] text-white/55 hover:text-white transition-colors tracking-[2px] uppercase">
                                                 {s.label}
                                             </button>
                                         ))}
                                     </div>
                                 </div>
 
-                                <div className="md:col-span-3 min-w-0">
-                                    <p className="font-mono text-[12px] tracking-[3px] text-white/30 uppercase mb-4">Navigate</p>
-                                    <Link to="/future" className="flex items-center gap-2 text-white/60 hover:text-white transition-colors group text-[13px] tracking-wider uppercase">
+                                <div className="text-center">
+                                    <p className="font-mono text-[10px] tracking-[3px] text-white/40 uppercase mb-4">Continued</p>
+                                    <div className="flex flex-col gap-2">
+                                        {NAV_SECTIONS.slice(7, 13).map(s => (
+                                            <button key={s.id} onClick={() => scrollTo(s.id)}
+                                                className="text-center text-[12px] text-white/55 hover:text-white transition-colors tracking-[2px] uppercase">
+                                                {s.label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="col-span-2 md:col-span-1 text-center md:text-right">
+                                    <p className="font-mono text-[10px] tracking-[3px] text-white/40 uppercase mb-4">Navigate</p>
+                                    <Link to="/future" className="inline-flex items-center gap-2 text-white/70 hover:text-white transition-colors group text-[12px] tracking-[2px] uppercase">
                                         <ArrowLeft size={12} className="transition-transform duration-300 group-hover:-translate-x-1" />
                                         Back to Future
                                     </Link>
@@ -958,11 +978,12 @@ const AscensionProject = () => {
 
                             <div className="h-[1px] bg-white/10 mb-6" />
 
-                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
-                                <p className="font-mono text-[12px] tracking-[2px] text-white/30 uppercase">
-                                    A Division of Infinite Yatra · All Rights Reserved
+                            {/* ── Bottom row ── */}
+                            <div className="flex flex-col md:flex-row justify-between items-center gap-3 text-center">
+                                <p className="font-mono text-[10px] tracking-[2px] text-white/30 uppercase">
+                                    © 2026 · A Division of Infinite Yatra · All Rights Reserved
                                 </p>
-                                <p className="font-mono text-[12px] tracking-[2px] text-white/30 uppercase">
+                                <p className="font-mono text-[10px] italic tracking-[2px] text-white/30 uppercase">
                                     Classified · Internal Document
                                 </p>
                             </div>
