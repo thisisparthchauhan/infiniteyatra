@@ -187,11 +187,60 @@ const AscensionProject = () => {
     return (
         <>
             <Helmet>
+                <title>The Ascension Project — Humanity's Next Frontier</title>
+                <meta name="description" content="A long-term initiative focused on exploration, knowledge, AI, research, civilization development, and humanity's future beyond a single world. Founded by Arius Raynott." />
+                <link rel="canonical" href="https://infiniteyatra-iy.web.app/ascension-project" />
+
+                {/* Open Graph */}
+                <meta property="og:type" content="article" />
+                <meta property="og:site_name" content="Infinite Yatra" />
+                <meta property="og:url" content="https://infiniteyatra-iy.web.app/ascension-project" />
+                <meta property="og:title" content="The Ascension Project — Humanity's Next Frontier" />
+                <meta property="og:description" content="A multi-century initiative for exploration, knowledge, AI, and civilization development — beyond a single world." />
+                <meta property="og:image" content="https://infiniteyatra-iy.web.app/og/ascension.png" />
+                <meta property="og:image:width" content="1200" />
+                <meta property="og:image:height" content="630" />
+                <meta property="og:image:alt" content="The Ascension Project — founder document cover with the title set in editorial type." />
+                <meta property="article:author" content="Arius Raynott" />
+                <meta property="article:published_time" content="2026-01-01T00:00:00Z" />
+
+                {/* Twitter / X */}
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content="The Ascension Project" />
+                <meta name="twitter:description" content="Humanity's next frontier — a multi-century initiative founded by Arius Raynott." />
+                <meta name="twitter:image" content="https://infiniteyatra-iy.web.app/og/ascension.png" />
+
+                {/* Theme color */}
+                <meta name="theme-color" content="#000000" />
+
+                {/* JSON-LD: Article schema for richer search results */}
+                <script type="application/ld+json">{JSON.stringify({
+                    "@context": "https://schema.org",
+                    "@type": "Article",
+                    "headline": "The Ascension Project — Humanity's Next Frontier",
+                    "description": "A long-term initiative focused on exploration, knowledge, AI, research, civilization development, and humanity's future beyond a single world.",
+                    "image": "https://infiniteyatra-iy.web.app/og/ascension.png",
+                    "datePublished": "2026-01-01",
+                    "dateModified": "2026-01-01",
+                    "author": {
+                        "@type": "Person",
+                        "name": "Arius Raynott",
+                        "jobTitle": "Founder"
+                    },
+                    "publisher": {
+                        "@type": "Organization",
+                        "name": "Infinite Yatra",
+                        "url": "https://infiniteyatra-iy.web.app"
+                    },
+                    "mainEntityOfPage": {
+                        "@type": "WebPage",
+                        "@id": "https://infiniteyatra-iy.web.app/ascension-project"
+                    }
+                })}</script>
+
                 <link rel="preconnect" href="https://fonts.googleapis.com" />
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="true" />
                 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-                <title>The Ascension Project — Humanity's Next Frontier</title>
-                <meta name="description" content="A long-term initiative focused on exploration, knowledge, AI, research, civilization development, and humanity's future beyond a single world. Founded by Arius Raynott." />
             </Helmet>
 
             <div
