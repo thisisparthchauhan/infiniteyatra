@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { motion, useInView, AnimatePresence, useScroll, useSpring } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { ArrowLeft, ArrowRight, Menu, X, ChevronDown, Mail, Share2, Check, AlertCircle, Send } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Menu, X, ChevronDown, Mail, Share2, Check, AlertCircle, Send, Printer } from 'lucide-react';
 import { db } from '../firebase';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { trackEvent, trackPageView, createScrollDepthTracker } from '../utils/analytics';
@@ -63,8 +63,8 @@ const SectionHeading = ({ children, className = '', delay = 0.1 }) => (
 /* ─────────────────────────────────────────────
    SECTION CONTAINER
 ───────────────────────────────────────────── */
-const Section = ({ id, children, className = '' }) => (
-    <section id={id} className={`relative px-6 md:px-16 lg:px-24 py-20 md:py-40 ${className}`}>
+const Section = ({ id, children, className = '', ...rest }) => (
+    <section id={id} className={`relative px-6 md:px-16 lg:px-24 py-20 md:py-40 ${className}`} {...rest}>
         <div className="max-w-7xl mx-auto">
             {children}
         </div>
@@ -146,6 +146,11 @@ const AscensionProject = () => {
             setSubmitState('error');
             trackEvent('signup_error', { intent, message: String(err?.message || err) });
         }
+    };
+
+    const handlePrint = () => {
+        trackEvent('print_pdf', { page: 'ascension' });
+        if (typeof window !== 'undefined') window.print();
     };
 
     const handleShare = async () => {
@@ -379,7 +384,51 @@ const AscensionProject = () => {
                 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
             </Helmet>
 
+            {/* Print stylesheet — inverts theme to black-on-white, hides UI chrome, makes typography document-ready */}
+            <style>{`
+                @media print {
+                    @page { size: A4; margin: 18mm 16mm; }
+                    html, body { background: #fff !important; color: #111 !important; }
+                    [data-page="ascension"] { background: #fff !important; color: #111 !important; min-height: auto !important; }
+                    [data-page="ascension"] * { color: #111 !important; background: transparent !important; box-shadow: none !important; }
+
+                    /* Hide screen-only UI */
+                    [data-page="ascension"] nav,
+                    [data-page="ascension"] footer,
+                    [data-page="ascension"] [data-print="hide"] {
+                        display: none !important;
+                    }
+
+                    /* Borders become grey hairlines instead of white-on-black */
+                    [data-page="ascension"] [class*="border-white"] { border-color: #ccc !important; }
+                    [data-page="ascension"] [class*="bg-white"]:not(button) { background: transparent !important; }
+
+                    /* Sections — make sure each section breaks cleanly */
+                    [data-page="ascension"] section {
+                        page-break-inside: avoid;
+                        break-inside: avoid;
+                        padding: 0 0 18mm 0 !important;
+                        scroll-margin-top: 0 !important;
+                    }
+                    [data-page="ascension"] section h2 { page-break-after: avoid; break-after: avoid; }
+
+                    /* Typography for paper */
+                    [data-page="ascension"] h1 { font-size: 36pt !important; line-height: 1.05 !important; }
+                    [data-page="ascension"] h2 { font-size: 22pt !important; line-height: 1.1 !important; margin-bottom: 8mm !important; }
+                    [data-page="ascension"] h3 { font-size: 14pt !important; }
+                    [data-page="ascension"] p, [data-page="ascension"] li { font-size: 11pt !important; line-height: 1.55 !important; }
+                    [data-page="ascension"] .font-mono { font-size: 8pt !important; letter-spacing: 1px !important; }
+
+                    /* Hide decorative background visuals */
+                    [data-page="ascension"] canvas,
+                    [data-page="ascension"] [aria-hidden="true"][role="presentation"] {
+                        display: none !important;
+                    }
+                }
+            `}</style>
+
             <div
+                data-page="ascension"
                 className="bg-black text-white min-h-screen relative overflow-x-hidden antialiased"
                 style={{
                     fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif"
@@ -396,6 +445,7 @@ const AscensionProject = () => {
                 {/* ── Scroll progress bar — sits above the fixed navbar ── */}
                 <motion.div
                     aria-hidden="true"
+                    data-print="hide"
                     style={{ scaleX: progressScaleX, transformOrigin: '0% 50%' }}
                     className="fixed top-0 left-0 right-0 h-[2px] bg-white/85 z-[110] pointer-events-none"
                 />
@@ -1199,7 +1249,7 @@ const AscensionProject = () => {
                 {/* ══════════════════════════════════════════
                     SECTION 13 — GET INVOLVED
                 ══════════════════════════════════════════ */}
-                <Section id="get-involved">
+                <Section id="get-involved" data-print="hide">
                     <SectionLabel number="13" text="Get Involved" />
                     <SectionHeading className="mb-8 max-w-4xl">
                         Join the work.
@@ -1327,6 +1377,22 @@ const AscensionProject = () => {
                                             <p className="text-white/55 text-xs leading-relaxed font-light">
                                                 {shareCopied ? 'Send it to one person who needs to read it.' : 'Copy the link or share via your system.'}
                                             </p>
+                                        </div>
+                                        <ArrowRight size={14} aria-hidden="true" className="opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0 mt-2 flex-shrink-0" />
+                                    </button>
+
+                                    {/* Print / Save as PDF */}
+                                    <button
+                                        type="button"
+                                        onClick={handlePrint}
+                                        className="group w-full text-left flex items-start gap-4 p-6 border-b border-white/10 hover:bg-white/[0.03] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+                                    >
+                                        <div className="w-8 h-8 border border-white/20 flex items-center justify-center flex-shrink-0 group-hover:border-white/50 transition-colors">
+                                            <Printer size={14} aria-hidden="true" />
+                                        </div>
+                                        <div className="min-w-0 flex-1">
+                                            <p className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-sm text-white tracking-wider uppercase mb-1">Download as PDF</p>
+                                            <p className="text-white/55 text-xs leading-relaxed font-light">Save the founder document for offline reading or archiving.</p>
                                         </div>
                                         <ArrowRight size={14} aria-hidden="true" className="opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0 mt-2 flex-shrink-0" />
                                     </button>
