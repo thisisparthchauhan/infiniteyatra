@@ -14,8 +14,18 @@ const StarField = () => {
     useEffect(() => {
         const canvas = canvasRef.current;
         if (!canvas) return;
+
+        // Respect users who don't want motion — render a single static frame instead
+        const prefersReducedMotion = typeof window !== 'undefined'
+            && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
         const ctx = canvas.getContext('2d');
-        let animationFrameId;
+        let animationFrameId = null;
+        let isPaused = false;
+
+        // Adaptive star count — mobile gets ~38% of desktop count (lighter on battery + cleaner look)
+        const isMobile = window.innerWidth < 768;
+        const numStars = isMobile ? 120 : 320;
 
         const resize = () => {
             canvas.width = window.innerWidth;
@@ -24,7 +34,6 @@ const StarField = () => {
         window.addEventListener('resize', resize);
         resize();
 
-        const numStars = 320;
         const stars = Array.from({ length: numStars }).map(() => ({
             x: Math.random() * canvas.width,
             y: Math.random() * canvas.height,
@@ -37,19 +46,16 @@ const StarField = () => {
             isLarge: Math.random() > 0.95
         }));
 
-        const draw = () => {
+        const drawFrame = (animate) => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-
             stars.forEach(star => {
-                star.phase += star.speed;
-                // Sin wave alpha (0.2 to 1)
+                if (animate) star.phase += star.speed;
                 const alpha = Math.abs(Math.sin(star.phase)) * 0.8 + 0.2;
 
                 ctx.globalAlpha = alpha;
                 ctx.fillStyle = star.color;
 
                 if (star.isLarge) {
-                    // Draw a subtle cross/sparkle for large stars
                     ctx.beginPath();
                     ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
                     ctx.fill();
@@ -63,15 +69,40 @@ const StarField = () => {
                     ctx.fill();
                 }
             });
-
-            animationFrameId = requestAnimationFrame(draw);
         };
 
-        draw();
+        const loop = () => {
+            if (isPaused) return;
+            drawFrame(true);
+            animationFrameId = requestAnimationFrame(loop);
+        };
+
+        if (prefersReducedMotion) {
+            // Render once, no rAF loop — saves CPU completely
+            drawFrame(false);
+        } else {
+            loop();
+        }
+
+        // Pause when tab is hidden — frees CPU/battery in background
+        const onVisibility = () => {
+            if (document.hidden) {
+                isPaused = true;
+                if (animationFrameId) {
+                    cancelAnimationFrame(animationFrameId);
+                    animationFrameId = null;
+                }
+            } else if (!prefersReducedMotion && isPaused) {
+                isPaused = false;
+                loop();
+            }
+        };
+        document.addEventListener('visibilitychange', onVisibility);
 
         return () => {
             window.removeEventListener('resize', resize);
-            cancelAnimationFrame(animationFrameId);
+            document.removeEventListener('visibilitychange', onVisibility);
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
         };
     }, []);
 
