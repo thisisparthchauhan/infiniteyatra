@@ -240,12 +240,67 @@ const AscensionProject = () => {
         return () => window.removeEventListener('popstate', onPopState);
     }, []);
 
-    // Close menu on Escape key (a11y)
+    // ── Slide-out menu accessibility ──
+    // Refs for focus management
+    const menuTriggerRef = useRef(null);
+    const menuPanelRef = useRef(null);
+
+    // Close menu on Escape key + trap focus inside the menu while it's open
     useEffect(() => {
         if (!navOpen) return;
-        const onKey = (e) => { if (e.key === 'Escape') setNavOpen(false); };
+
+        const previouslyFocused = document.activeElement;
+
+        // Auto-focus the first interactive element inside the panel on next tick
+        const focusFirst = window.setTimeout(() => {
+            const panel = menuPanelRef.current;
+            if (!panel) return;
+            const focusable = panel.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+            focusable?.focus();
+        }, 50);
+
+        const onKey = (e) => {
+            if (e.key === 'Escape') {
+                setNavOpen(false);
+                return;
+            }
+            if (e.key !== 'Tab') return;
+
+            // Focus trap — keep Tab cycling within the open panel
+            const panel = menuPanelRef.current;
+            if (!panel) return;
+            const focusables = Array.from(panel.querySelectorAll(
+                'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+            )).filter((el) => el.offsetParent !== null);
+            if (focusables.length === 0) return;
+
+            const first = focusables[0];
+            const last = focusables[focusables.length - 1];
+
+            if (e.shiftKey && document.activeElement === first) {
+                e.preventDefault();
+                last.focus();
+            } else if (!e.shiftKey && document.activeElement === last) {
+                e.preventDefault();
+                first.focus();
+            }
+        };
         window.addEventListener('keydown', onKey);
-        return () => window.removeEventListener('keydown', onKey);
+
+        // Lock body scroll while menu is open — prevents background page
+        // scrolling under the modal on iOS
+        const previousOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+
+        return () => {
+            window.clearTimeout(focusFirst);
+            window.removeEventListener('keydown', onKey);
+            document.body.style.overflow = previousOverflow;
+            // Restore focus to whatever opened the menu (typically the trigger)
+            if (previouslyFocused && typeof previouslyFocused.focus === 'function') {
+                previouslyFocused.focus();
+            }
+        };
     }, [navOpen]);
 
     // ── Analytics: page_view + scroll depth ──
@@ -378,6 +433,7 @@ const AscensionProject = () => {
                         </div>
 
                         <button
+                            ref={menuTriggerRef}
                             onClick={() => setNavOpen(true)}
                             className="flex items-center gap-3 text-white/80 hover:text-white transition-colors group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 rounded px-1"
                             aria-label="Open navigation menu"
@@ -407,6 +463,7 @@ const AscensionProject = () => {
                                 animate={{ x: 0 }}
                                 exit={{ x: '100%' }}
                                 transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                                ref={menuPanelRef}
                                 id="ascension-nav-panel"
                                 role="dialog"
                                 aria-modal="true"
