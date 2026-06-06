@@ -903,7 +903,6 @@ const Future = () => {
 
                         {/* Scroll-driven timeline — rail fills as you scroll, rows reveal in sequence */}
                         <TimelineSection items={TIMELINE} />
-                        </div>
                     </div>
                 </section>
 
