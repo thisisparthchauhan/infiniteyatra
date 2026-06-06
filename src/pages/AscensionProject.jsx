@@ -5,6 +5,7 @@ import { Helmet } from 'react-helmet-async';
 import { ArrowLeft, ArrowRight, Menu, X, ChevronDown, Mail, Share2, Check, AlertCircle, Send } from 'lucide-react';
 import { db } from '../firebase';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { trackEvent, trackPageView, createScrollDepthTracker } from '../utils/analytics';
 
 /* ─────────────────────────────────────────────
    FADE-IN ANIMATION (subtle, no slide)
@@ -125,6 +126,7 @@ const AscensionProject = () => {
         e.preventDefault();
         if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
             setSubmitState('error');
+            trackEvent('signup_validation_error', { intent });
             return;
         }
         setSubmitState('sending');
@@ -138,9 +140,11 @@ const AscensionProject = () => {
             });
             setSubmitState('success');
             setEmail('');
+            trackEvent('signup_success', { intent });
         } catch (err) {
             console.error('Ascension signup failed:', err);
             setSubmitState('error');
+            trackEvent('signup_error', { intent, message: String(err?.message || err) });
         }
     };
 
@@ -153,10 +157,12 @@ const AscensionProject = () => {
                     text: 'A long-term initiative for exploration, knowledge, AI, and civilization development.',
                     url,
                 });
+                trackEvent('share_native', { page: 'ascension' });
             } else {
                 await navigator.clipboard.writeText(url);
                 setShareCopied(true);
                 setTimeout(() => setShareCopied(false), 2500);
+                trackEvent('share_copy_link', { page: 'ascension' });
             }
         } catch (err) {
             /* user cancelled — silent */
@@ -191,6 +197,23 @@ const AscensionProject = () => {
         window.addEventListener('keydown', onKey);
         return () => window.removeEventListener('keydown', onKey);
     }, [navOpen]);
+
+    // ── Analytics: page_view + scroll depth ──
+    useEffect(() => {
+        trackPageView('/ascension-project', 'The Ascension Project');
+        const trackDepth = createScrollDepthTracker('ascension-project');
+        const onScroll = () => {
+            const max = document.documentElement.scrollHeight - window.innerHeight;
+            if (max > 0) trackDepth(Math.round((window.scrollY / max) * 100));
+        };
+        window.addEventListener('scroll', onScroll, { passive: true });
+        return () => window.removeEventListener('scroll', onScroll);
+    }, []);
+
+    // ── Analytics: when active section changes (read milestones) ──
+    useEffect(() => {
+        trackEvent('section_view', { page: 'ascension', section: activeSection });
+    }, [activeSection]);
 
     return (
         <>

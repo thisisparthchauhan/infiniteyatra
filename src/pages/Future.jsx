@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { ArrowDown, ChevronDown, ChevronRight } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import SpaceWaitlistModal from '../components/SpaceWaitlistModal';
+import { trackEvent, trackPageView, createScrollDepthTracker } from '../utils/analytics';
 
 /* =========================================
    1. Canvas Starfield Background
@@ -447,9 +448,27 @@ const Future = () => {
         if (params.get('ref') === 'mission-share') {
             const t1 = setTimeout(() => setShowShareBanner(true), 2000);
             const t2 = setTimeout(() => setShowShareBanner(false), 7000);
+            trackEvent('referral_arrival', { source: 'mission-share' });
             return () => { clearTimeout(t1); clearTimeout(t2); };
         }
     }, []);
+
+    // ── Analytics: page_view + scroll depth ──
+    useEffect(() => {
+        trackPageView('/future', 'Infinite Yatra Space Program');
+        const trackDepth = createScrollDepthTracker('future');
+        const onScroll = () => {
+            const max = document.documentElement.scrollHeight - window.innerHeight;
+            if (max > 0) trackDepth(Math.round((window.scrollY / max) * 100));
+        };
+        window.addEventListener('scroll', onScroll, { passive: true });
+        return () => window.removeEventListener('scroll', onScroll);
+    }, []);
+
+    const openWaitlist = (source) => {
+        trackEvent('waitlist_open', { source });
+        setIsWaitlistOpen(true);
+    };
 
     const FLEET = [
         {
@@ -840,7 +859,7 @@ const Future = () => {
 
                                 <FadeUp delay={0.3}>
                                     <button
-                                        onClick={() => setIsWaitlistOpen(true)}
+                                        onClick={() => openWaitlist('reservation_section')}
                                         className="group inline-flex items-center justify-between gap-8 px-8 py-5 border border-white/30 hover:bg-white hover:text-black hover:border-white transition-all duration-500 w-full sm:w-auto"
                                     >
                                         <span className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] text-sm tracking-[3px] font-medium">
@@ -961,6 +980,7 @@ const Future = () => {
                         <FadeUp delay={0.5}>
                             <Link
                                 to="/ascension-project"
+                                onClick={() => trackEvent('ascension_link_click', { source: 'future_footer_card' })}
                                 className="group inline-flex items-center justify-between gap-8 px-8 py-5 border border-white/30 hover:bg-white hover:text-black hover:border-white transition-all duration-500 w-full md:w-auto"
                             >
                                 <span className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] text-sm tracking-[3px] font-medium">
