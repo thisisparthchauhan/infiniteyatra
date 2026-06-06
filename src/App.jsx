@@ -70,6 +70,7 @@ import TermsConditions from './pages/TermsConditions';
 
 import Future from './pages/Future';
 import AscensionProject from './pages/AscensionProject';
+import NotFound from './pages/NotFound';
 import Passport from './pages/Passport';
 import TeamGuide from './pages/TeamGuide';
 import CityHotels from './pages/CityHotels';
@@ -229,6 +230,9 @@ function App() {
                         {/* IY Private Aviation */}
                         <Route path="/private-aviation" element={<PrivateJets />} />
                         <Route path="/private-aviation/:jetId" element={<PrivateJetDetail />} />
+
+                        {/* 404 — catch-all, must be last */}
+                        <Route path="*" element={<NotFound />} />
                       </Routes>
                     </Suspense>
                     </Layout>
