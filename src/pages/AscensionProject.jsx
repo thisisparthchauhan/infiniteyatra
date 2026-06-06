@@ -336,6 +336,79 @@ const AscensionProject = () => {
     const menuTriggerRef = useRef(null);
     const menuPanelRef = useRef(null);
 
+    // ── Keyboard shortcuts ──
+    const [shortcutsOpen, setShortcutsOpen] = useState(false);
+
+    useEffect(() => {
+        const isTyping = (target) => {
+            if (!target) return false;
+            const tag = target.tagName;
+            return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || target.isContentEditable;
+        };
+
+        const goToNeighbor = (delta) => {
+            const currentIdx = NAV_SECTIONS.findIndex((s) => s.id === activeSection);
+            const idx = currentIdx < 0 ? 0 : currentIdx;
+            const nextIdx = Math.max(0, Math.min(NAV_SECTIONS.length - 1, idx + delta));
+            if (nextIdx === idx) return;
+            const nextId = NAV_SECTIONS[nextIdx].id;
+            const el = document.getElementById(nextId);
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                const newHash = nextId === 'hero' ? '' : `#${nextId}`;
+                if (window.location.hash !== newHash) {
+                    window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}${newHash}`);
+                }
+                trackEvent('section_navigate', { source: 'keyboard', section: nextId, key: delta > 0 ? 'next' : 'prev' });
+            }
+        };
+
+        const onKeydown = (e) => {
+            // Don't intercept while user is typing in a form field
+            if (isTyping(e.target)) return;
+            // Modifier keys reserved for browser/system shortcuts
+            if (e.metaKey || e.ctrlKey || e.altKey) return;
+
+            switch (e.key) {
+                case 'j':
+                case 'J':
+                case 'ArrowDown':
+                    if (navOpen) return;
+                    e.preventDefault();
+                    goToNeighbor(1);
+                    break;
+                case 'k':
+                case 'K':
+                case 'ArrowUp':
+                    if (navOpen) return;
+                    e.preventDefault();
+                    goToNeighbor(-1);
+                    break;
+                case 'm':
+                case 'M':
+                    e.preventDefault();
+                    setNavOpen((v) => !v);
+                    trackEvent('shortcut_menu_toggle');
+                    break;
+                case '?':
+                    e.preventDefault();
+                    setShortcutsOpen((v) => !v);
+                    trackEvent('shortcut_help_toggle');
+                    break;
+                case 'Escape':
+                    if (shortcutsOpen) {
+                        e.preventDefault();
+                        setShortcutsOpen(false);
+                    }
+                    break;
+                default:
+                    break;
+            }
+        };
+        window.addEventListener('keydown', onKeydown);
+        return () => window.removeEventListener('keydown', onKeydown);
+    }, [activeSection, navOpen, shortcutsOpen]);
+
     // Close menu on Escape key + trap focus inside the menu while it's open
     useEffect(() => {
         if (!navOpen) return;
@@ -661,6 +734,89 @@ const AscensionProject = () => {
                                         </motion.button>
                                     ))}
                                 </div>
+                            </motion.div>
+                        </>
+                    )}
+                </AnimatePresence>
+
+                {/* ── Keyboard shortcuts: floating "?" trigger (desktop only) ── */}
+                <button
+                    type="button"
+                    onClick={() => setShortcutsOpen((v) => !v)}
+                    data-print="hide"
+                    aria-label="Show keyboard shortcuts"
+                    aria-expanded={shortcutsOpen}
+                    aria-controls="ascension-shortcuts-panel"
+                    className="hidden md:flex fixed bottom-6 right-6 z-[105] w-9 h-9 items-center justify-center border border-white/20 bg-black/70 backdrop-blur-md text-white/70 hover:text-white hover:border-white/50 transition-colors font-mono text-[13px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+                >
+                    ?
+                </button>
+
+                {/* ── Keyboard shortcuts overlay ── */}
+                <AnimatePresence>
+                    {shortcutsOpen && (
+                        <>
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.25 }}
+                                onClick={() => setShortcutsOpen(false)}
+                                data-print="hide"
+                                className="fixed inset-0 bg-black/85 backdrop-blur-md z-[202]"
+                            />
+                            <motion.div
+                                id="ascension-shortcuts-panel"
+                                role="dialog"
+                                aria-modal="true"
+                                aria-label="Keyboard shortcuts"
+                                initial={{ opacity: 0, y: 16, scale: 0.98 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                exit={{ opacity: 0, y: 16, scale: 0.98 }}
+                                transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                                data-print="hide"
+                                className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[203] w-[calc(100vw-32px)] max-w-md bg-black border border-white/15 p-8"
+                            >
+                                <div className="flex items-center justify-between mb-8">
+                                    <div>
+                                        <p className="font-mono text-[11px] tracking-[3px] text-white/55 uppercase mb-1">Keyboard</p>
+                                        <p className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-xl text-white tracking-tight uppercase">Shortcuts</p>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShortcutsOpen(false)}
+                                        aria-label="Close shortcuts"
+                                        className="text-white/55 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 rounded"
+                                    >
+                                        <X size={20} aria-hidden="true" />
+                                    </button>
+                                </div>
+
+                                <ul className="space-y-3">
+                                    {[
+                                        { keys: ['J', '↓'], label: 'Next section' },
+                                        { keys: ['K', '↑'], label: 'Previous section' },
+                                        { keys: ['M'], label: 'Toggle menu' },
+                                        { keys: ['Esc'], label: 'Close menu or this dialog' },
+                                        { keys: ['?'], label: 'Show / hide this help' },
+                                    ].map((row) => (
+                                        <li key={row.label} className="flex items-center justify-between py-2 border-b border-white/10 last:border-0">
+                                            <span className="text-white/75 text-sm font-light">{row.label}</span>
+                                            <span className="flex items-center gap-1.5">
+                                                {row.keys.map((k, i) => (
+                                                    <React.Fragment key={k}>
+                                                        {i > 0 && <span className="font-mono text-[10px] text-white/40 px-1">or</span>}
+                                                        <kbd className="font-mono text-[12px] text-white px-2 py-0.5 border border-white/25 bg-white/[0.04] min-w-[28px] text-center">{k}</kbd>
+                                                    </React.Fragment>
+                                                ))}
+                                            </span>
+                                        </li>
+                                    ))}
+                                </ul>
+
+                                <p className="font-mono text-[10px] tracking-[2px] text-white/45 uppercase mt-6">
+                                    Shortcuts pause while typing in form fields.
+                                </p>
                             </motion.div>
                         </>
                     )}
