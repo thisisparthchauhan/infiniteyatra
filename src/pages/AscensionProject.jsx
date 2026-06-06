@@ -171,8 +171,33 @@ const AscensionProject = () => {
 
     const scrollTo = useCallback((id) => {
         const el = document.getElementById(id);
-        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            // Update URL immediately so the new hash is shareable, but use
+            // replaceState so we don't pollute browser history with one entry
+            // per section click.
+            const newHash = id === 'hero' ? '' : `#${id}`;
+            if (typeof window !== 'undefined' && window.location.hash !== newHash) {
+                window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}${newHash}`);
+            }
+            trackEvent('section_navigate', { source: 'menu', section: id });
+        }
         setNavOpen(false);
+    }, []);
+
+    // On initial mount, if the URL has a #section hash, jump there once the DOM is ready
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const initialHash = window.location.hash.replace('#', '');
+        if (!initialHash) return;
+        // Wait one tick so all sections are mounted with their scroll-margin-top set
+        const id = window.setTimeout(() => {
+            const el = document.getElementById(initialHash);
+            if (el) {
+                el.scrollIntoView({ behavior: 'instant' in window ? 'instant' : 'auto', block: 'start' });
+            }
+        }, 50);
+        return () => window.clearTimeout(id);
     }, []);
 
     useEffect(() => {
@@ -184,10 +209,35 @@ const AscensionProject = () => {
                 return { id: s.id, top: Math.abs(el.getBoundingClientRect().top - 80) };
             });
             const closest = offsets.reduce((a, b) => a.top < b.top ? a : b);
-            setActiveSection(closest.id);
+            setActiveSection(prev => {
+                if (prev === closest.id) return prev;
+                // Sync URL hash to current section as user scrolls — replaceState
+                // so the back button still leaves the page, not just the section.
+                const newHash = closest.id === 'hero' ? '' : `#${closest.id}`;
+                if (typeof window !== 'undefined' && window.location.hash !== newHash) {
+                    window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}${newHash}`);
+                }
+                return closest.id;
+            });
         };
         window.addEventListener('scroll', handler, { passive: true });
         return () => window.removeEventListener('scroll', handler);
+    }, []);
+
+    // Respond to browser back/forward (popstate) — if user navigates to a
+    // historical hash, scroll there.
+    useEffect(() => {
+        const onPopState = () => {
+            const hash = window.location.hash.replace('#', '');
+            if (!hash) {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                return;
+            }
+            const el = document.getElementById(hash);
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        };
+        window.addEventListener('popstate', onPopState);
+        return () => window.removeEventListener('popstate', onPopState);
     }, []);
 
     // Close menu on Escape key (a11y)
