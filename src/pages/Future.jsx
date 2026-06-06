@@ -658,7 +658,67 @@ const Future = () => {
                 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
             </Helmet>
 
+            {/* Print stylesheet — converts the page into a clean Fleet Brief on paper */}
+            <style>{`
+                @media print {
+                    @page { size: A4; margin: 18mm 14mm; }
+                    html, body { background: #fff !important; color: #111 !important; cursor: default !important; }
+                    [data-page="future"] { background: #fff !important; color: #111 !important; min-height: auto !important; cursor: default !important; }
+                    [data-page="future"] * { color: #111 !important; background: transparent !important; box-shadow: none !important; cursor: default !important; }
+
+                    /* Hide screen-only chrome */
+                    [data-page="future"] nav,
+                    [data-page="future"] footer,
+                    [data-page="future"] canvas,
+                    [data-page="future"] [data-print="hide"] {
+                        display: none !important;
+                    }
+
+                    /* Hide decorative SVG elements but KEEP vehicle schematics (they're content) */
+                    [data-page="future"] [aria-hidden="true"][role="presentation"]:not(svg) {
+                        display: none !important;
+                    }
+
+                    /* Vehicle schematic SVGs — invert strokes from white to black so they print */
+                    [data-page="future"] svg[role="presentation"] line,
+                    [data-page="future"] svg[role="presentation"] path,
+                    [data-page="future"] svg[role="presentation"] circle,
+                    [data-page="future"] svg[role="presentation"] rect,
+                    [data-page="future"] svg[role="presentation"] ellipse {
+                        stroke: #111 !important;
+                    }
+                    [data-page="future"] svg[role="presentation"] text { fill: #555 !important; }
+
+                    /* Borders -> grey hairlines on paper */
+                    [data-page="future"] [class*="border-white"] { border-color: #ccc !important; }
+                    [data-page="future"] [class*="bg-white"]:not(button) { background: transparent !important; }
+
+                    /* Sections — clean page breaks */
+                    [data-page="future"] section {
+                        page-break-inside: avoid;
+                        break-inside: avoid;
+                        padding: 0 0 14mm 0 !important;
+                        min-height: auto !important;
+                        scroll-margin-top: 0 !important;
+                    }
+                    [data-page="future"] section h1,
+                    [data-page="future"] section h2,
+                    [data-page="future"] section h3 { page-break-after: avoid; break-after: avoid; }
+
+                    /* Paper typography */
+                    [data-page="future"] h1 { font-size: 32pt !important; line-height: 1.05 !important; }
+                    [data-page="future"] h2 { font-size: 20pt !important; line-height: 1.1 !important; }
+                    [data-page="future"] h3 { font-size: 14pt !important; }
+                    [data-page="future"] p, [data-page="future"] li { font-size: 11pt !important; line-height: 1.55 !important; }
+                    [data-page="future"] .font-mono { font-size: 8pt !important; letter-spacing: 1px !important; }
+
+                    /* Status dot pulses don't print well */
+                    [data-page="future"] .animate-pulse { animation: none !important; }
+                }
+            `}</style>
+
             <div
+                data-page="future"
                 className="bg-black text-white min-h-screen relative overflow-x-hidden antialiased"
                 style={{
                     fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
@@ -786,6 +846,8 @@ const Future = () => {
                     </div>
 
                     <motion.div
+                        aria-hidden="true"
+                        data-print="hide"
                         animate={{ y: [0, 8, 0] }}
                         transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
                         className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-40"
@@ -941,6 +1003,7 @@ const Future = () => {
                                 <FadeUp delay={0.3}>
                                     <button
                                         onClick={() => openWaitlist('reservation_section')}
+                                        data-print="hide"
                                         className="group inline-flex items-center justify-between gap-8 px-8 py-5 border border-white/30 hover:bg-white hover:text-black hover:border-white transition-all duration-500 w-full sm:w-auto"
                                     >
                                         <span className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] text-sm tracking-[3px] font-medium">
@@ -1131,9 +1194,18 @@ const Future = () => {
                                 <div className="col-span-2 md:col-span-1 text-center md:text-right">
                                     <p className="font-mono text-[10px] tracking-[3px] text-white/60 mb-4">NAVIGATE</p>
                                     <div className="flex flex-col gap-2 items-center md:items-end">
-                                        <Link to="/ascension-project" className="text-[12px] text-white/55 tracking-[2px] hover:text-white transition-colors">
+                                        <Link to="/ascension-project"
+                                            onClick={() => trackEvent('ascension_link_click', { source: 'future_footer_nav' })}
+                                            className="text-[12px] text-white/55 tracking-[2px] hover:text-white transition-colors">
                                             ASCENSION PROJECT
                                         </Link>
+                                        <button
+                                            type="button"
+                                            onClick={() => { trackEvent('print_pdf', { page: 'future' }); if (typeof window !== 'undefined') window.print(); }}
+                                            className="text-[12px] text-white/55 tracking-[2px] hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 rounded"
+                                        >
+                                            DOWNLOAD BRIEF
+                                        </button>
                                         <Link to="/" className="inline-flex items-center gap-2 text-white/70 hover:text-white transition-colors group text-[12px] tracking-[2px]">
                                             <span className="transition-transform duration-300 group-hover:-translate-x-1">←</span>
                                             RETURN TO EARTH
