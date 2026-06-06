@@ -972,7 +972,7 @@ const Future = () => {
                             {/* ── Bottom row: copyright + tagline ── */}
                             <div className="flex flex-col md:flex-row justify-between items-center gap-3 text-center">
                                 <p className="font-mono text-[10px] tracking-[2px] text-white/55">
-                                    © 2026 INFINITE YATRA SPACE PROGRAM · CLASSIFIED
+                                    © {new Date().getFullYear()} INFINITE YATRA SPACE PROGRAM · CLASSIFIED
                                 </p>
                                 <p className="font-mono text-[10px] italic tracking-[2px] text-white/55">
                                     TODAY ACROSS EARTH · TOMORROW BEYOND IT
