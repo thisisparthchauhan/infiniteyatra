@@ -121,14 +121,51 @@ const AscensionProject = () => {
     const [intent, setIntent] = useState('subscribe'); // subscribe | contribute | apply
     const [submitState, setSubmitState] = useState('idle'); // idle | sending | success | error
     const [shareCopied, setShareCopied] = useState(false);
+    const [honeypot, setHoneypot] = useState(''); // bots will fill this; humans never see it
+    const formMountedAt = useRef(0);             // bots submit instantly; humans take seconds
+    useEffect(() => { formMountedAt.current = Date.now(); }, []);
+
+    const RATE_LIMIT_KEY = 'ascension_last_signup_at';
+    const RATE_LIMIT_MS = 5 * 60 * 1000; // 5 min between submits from same browser
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // (1) HONEYPOT — invisible to humans, irresistible to bots.
+        if (honeypot.trim() !== '') {
+            // Pretend success so the bot moves on without retrying or escalating.
+            setSubmitState('success');
+            setEmail('');
+            trackEvent('signup_bot_honeypot');
+            return;
+        }
+
+        // (2) TIME-TO-SUBMIT — humans take at least ~2s to fill a form. Bots fire in <500ms.
+        const elapsed = Date.now() - formMountedAt.current;
+        if (elapsed < 2000) {
+            setSubmitState('success');
+            setEmail('');
+            trackEvent('signup_bot_too_fast', { ms: elapsed });
+            return;
+        }
+
+        // (3) BROWSER-LEVEL RATE LIMIT — one submit per 5 minutes from this browser.
+        try {
+            const last = Number(window.localStorage.getItem(RATE_LIMIT_KEY) || 0);
+            if (Date.now() - last < RATE_LIMIT_MS) {
+                setSubmitState('error');
+                trackEvent('signup_rate_limited');
+                return;
+            }
+        } catch { /* localStorage may be disabled — fall through */ }
+
+        // Email format check
         if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
             setSubmitState('error');
             trackEvent('signup_validation_error', { intent });
             return;
         }
+
         setSubmitState('sending');
         try {
             await addDoc(collection(db, 'ascension_signups'), {
@@ -136,8 +173,10 @@ const AscensionProject = () => {
                 intent,
                 source: 'ascension-project',
                 userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
+                msToSubmit: elapsed,
                 createdAt: serverTimestamp(),
             });
+            try { window.localStorage.setItem(RATE_LIMIT_KEY, String(Date.now())); } catch { /* silent */ }
             setSubmitState('success');
             setEmail('');
             trackEvent('signup_success', { intent });
@@ -1267,6 +1306,20 @@ const AscensionProject = () => {
                         <div className="lg:col-span-7 min-w-0">
                             <FadeIn delay={0.2}>
                                 <form onSubmit={handleSubmit} noValidate>
+                                    {/* Honeypot — visually & semantically hidden, but present in the DOM.
+                                        Bots fill every input they find; humans never see this. */}
+                                    <div aria-hidden="true" style={{ position: 'absolute', left: '-10000px', top: 'auto', width: 1, height: 1, overflow: 'hidden' }}>
+                                        <label htmlFor="website">Leave this field empty</label>
+                                        <input
+                                            id="website"
+                                            type="text"
+                                            name="website"
+                                            tabIndex={-1}
+                                            autoComplete="off"
+                                            value={honeypot}
+                                            onChange={(e) => setHoneypot(e.target.value)}
+                                        />
+                                    </div>
                                     {/* Intent selector */}
                                     <p className="font-mono text-[11px] tracking-[3px] text-white/60 uppercase mb-4">I want to</p>
                                     <div className="grid grid-cols-3 gap-px bg-white/10 mb-8" role="radiogroup" aria-label="Type of involvement">
@@ -1331,12 +1384,24 @@ const AscensionProject = () => {
                                                 Thank you. You will receive the next founder dispatch.
                                             </p>
                                         )}
-                                        {submitState === 'error' && (
-                                            <p className="font-mono text-[12px] tracking-[2px] text-red-300/90 uppercase flex items-center gap-2">
-                                                <AlertCircle size={12} aria-hidden="true" />
-                                                {email ? 'Please enter a valid email address.' : 'Something went wrong. Please try again.'}
-                                            </p>
-                                        )}
+                                        {submitState === 'error' && (() => {
+                                            // Detect cause of last error from localStorage rate-limit window
+                                            let rateLimited = false;
+                                            try {
+                                                const last = Number(window.localStorage.getItem(RATE_LIMIT_KEY) || 0);
+                                                rateLimited = last > 0 && Date.now() - last < RATE_LIMIT_MS;
+                                            } catch { /* silent */ }
+                                            return (
+                                                <p className="font-mono text-[12px] tracking-[2px] text-red-300/90 uppercase flex items-center gap-2">
+                                                    <AlertCircle size={12} aria-hidden="true" />
+                                                    {rateLimited
+                                                        ? 'You\'ve already submitted recently. Please try again in a few minutes.'
+                                                        : email
+                                                            ? 'Please enter a valid email address.'
+                                                            : 'Something went wrong. Please try again.'}
+                                                </p>
+                                            );
+                                        })()}
                                     </div>
                                 </form>
                             </FadeIn>
