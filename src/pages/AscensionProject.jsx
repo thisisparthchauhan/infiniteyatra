@@ -125,6 +125,14 @@ const AscensionProject = () => {
         return () => window.removeEventListener('scroll', handler);
     }, []);
 
+    // Close menu on Escape key (a11y)
+    useEffect(() => {
+        if (!navOpen) return;
+        const onKey = (e) => { if (e.key === 'Escape') setNavOpen(false); };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, [navOpen]);
+
     return (
         <>
             <Helmet>
@@ -141,6 +149,14 @@ const AscensionProject = () => {
                     fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif"
                 }}
             >
+                {/* Skip to content — keyboard / screen reader users */}
+                <a
+                    href="#hero"
+                    className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[300] focus:bg-white focus:text-black focus:px-4 focus:py-2 focus:text-[12px] focus:tracking-[2px] focus:uppercase focus:font-medium"
+                >
+                    Skip to content
+                </a>
+
                 {/* ── Subtle Background Texture ── */}
                 <div className="fixed inset-0 pointer-events-none z-0">
                     <div className="absolute inset-0"
@@ -159,8 +175,10 @@ const AscensionProject = () => {
                 ══════════════════════════════════════════ */}
                 <nav className={`fixed top-0 left-0 w-full z-[100] transition-all duration-500 ${scrolled ? 'bg-black/90 backdrop-blur-md border-b border-white/[0.06]' : 'bg-transparent'}`}>
                     <div className="px-4 md:px-12 h-[60px] md:h-[68px] flex items-center justify-between">
-                        <Link to="/future" className="flex items-center gap-2 text-white/60 hover:text-white transition-colors duration-300 group">
-                            <ArrowLeft size={14} className="transition-transform duration-300 group-hover:-translate-x-1" />
+                        <Link to="/future"
+                            className="flex items-center gap-2 text-white/60 hover:text-white transition-colors duration-300 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 rounded px-1"
+                            aria-label="Back to Future page">
+                            <ArrowLeft size={14} aria-hidden="true" className="transition-transform duration-300 group-hover:-translate-x-1" />
                             <span className="font-medium text-[13px] tracking-[2px] uppercase">Future</span>
                         </Link>
 
@@ -173,11 +191,13 @@ const AscensionProject = () => {
 
                         <button
                             onClick={() => setNavOpen(true)}
-                            className="flex items-center gap-3 text-white/80 hover:text-white transition-colors group"
-                            aria-label="Open menu"
+                            className="flex items-center gap-3 text-white/80 hover:text-white transition-colors group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 rounded px-1"
+                            aria-label="Open navigation menu"
+                            aria-expanded={navOpen}
+                            aria-controls="ascension-nav-panel"
                         >
                             <span className="hidden md:inline font-medium text-[13px] tracking-[2px] uppercase">Menu</span>
-                            <Menu size={18} />
+                            <Menu size={18} aria-hidden="true" />
                         </button>
                     </div>
                 </nav>
@@ -199,12 +219,18 @@ const AscensionProject = () => {
                                 animate={{ x: 0 }}
                                 exit={{ x: '100%' }}
                                 transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                                id="ascension-nav-panel"
+                                role="dialog"
+                                aria-modal="true"
+                                aria-label="Navigation menu"
                                 className="fixed top-0 right-0 h-screen w-full md:w-[480px] bg-black border-l border-white/10 z-[201] p-10 overflow-y-auto"
                             >
                                 <div className="flex justify-between items-center mb-16">
                                     <p className="font-mono text-[13px] tracking-[3px] text-white/40 uppercase">Index</p>
-                                    <button onClick={() => setNavOpen(false)} className="text-white/60 hover:text-white transition-colors">
-                                        <X size={22} />
+                                    <button onClick={() => setNavOpen(false)}
+                                        className="text-white/60 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 rounded"
+                                        aria-label="Close menu">
+                                        <X size={22} aria-hidden="true" />
                                     </button>
                                 </div>
 
@@ -222,7 +248,7 @@ const AscensionProject = () => {
                                                 <span className="font-mono text-[13px] tracking-[2px] text-white/30">{s.num}</span>
                                                 <span className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-xl tracking-tight uppercase">{s.label}</span>
                                             </div>
-                                            <ArrowRight size={14} className="opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
+                                            <ArrowRight size={14} aria-hidden="true" className="opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
                                         </motion.button>
                                     ))}
                                 </div>
@@ -304,7 +330,7 @@ const AscensionProject = () => {
                         className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-40"
                     >
                         <span className="font-mono text-[13px] tracking-[3px] text-white/60 uppercase">Scroll</span>
-                        <ChevronDown size={12} className="text-white/60" />
+                        <ChevronDown size={12} className="text-white/60" aria-hidden="true" />
                     </motion.div>
                 </section>
 
@@ -970,7 +996,7 @@ const AscensionProject = () => {
                                 <div className="col-span-2 md:col-span-1 text-center md:text-right">
                                     <p className="font-mono text-[10px] tracking-[3px] text-white/40 uppercase mb-4">Navigate</p>
                                     <Link to="/future" className="inline-flex items-center gap-2 text-white/70 hover:text-white transition-colors group text-[12px] tracking-[2px] uppercase">
-                                        <ArrowLeft size={12} className="transition-transform duration-300 group-hover:-translate-x-1" />
+                                        <ArrowLeft size={12} aria-hidden="true" className="transition-transform duration-300 group-hover:-translate-x-1" />
                                         Back to Future
                                     </Link>
                                 </div>

@@ -75,7 +75,7 @@ const StarField = () => {
         };
     }, []);
 
-    return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-0" />;
+    return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-0" aria-hidden="true" role="presentation" />;
 };
 
 /* =========================================
@@ -181,7 +181,7 @@ const SchematicWrapper = ({ children, className = "" }) => (
 // VEHICLE 01: IY AURORA — Orbital shuttle, side-profile schematic
 const RocketAurora = () => (
     <SchematicWrapper className="h-56 md:h-72">
-        <svg viewBox="0 0 320 240" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full max-w-md">
+        <svg viewBox="0 0 320 240" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full max-w-md" aria-hidden="true" role="presentation">
             {/* Reticle / target lines */}
             <line x1="0" y1="120" x2="40" y2="120" stroke="#ffffff" strokeOpacity="0.15" strokeWidth="0.5" />
             <line x1="280" y1="120" x2="320" y2="120" stroke="#ffffff" strokeOpacity="0.15" strokeWidth="0.5" />
@@ -227,7 +227,7 @@ const RocketAurora = () => (
 // VEHICLE 02: IY HORIZON — Deep-space ion cruiser
 const RocketHorizon = () => (
     <SchematicWrapper className="h-56 md:h-72">
-        <svg viewBox="0 0 320 240" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full max-w-md">
+        <svg viewBox="0 0 320 240" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full max-w-md" aria-hidden="true" role="presentation">
             {/* Reticle */}
             <line x1="0" y1="120" x2="30" y2="120" stroke="#ffffff" strokeOpacity="0.15" strokeWidth="0.5" />
             <line x1="290" y1="120" x2="320" y2="120" stroke="#ffffff" strokeOpacity="0.15" strokeWidth="0.5" />
@@ -284,7 +284,7 @@ const RocketHorizon = () => (
 // VEHICLE 03: IY SELENE — Lunar lander
 const RocketSelene = () => (
     <SchematicWrapper className="h-56 md:h-72">
-        <svg viewBox="0 0 320 240" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full max-w-md">
+        <svg viewBox="0 0 320 240" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full max-w-md" aria-hidden="true" role="presentation">
             {/* Reticle */}
             <line x1="0" y1="120" x2="40" y2="120" stroke="#ffffff" strokeOpacity="0.15" strokeWidth="0.5" />
             <line x1="280" y1="120" x2="320" y2="120" stroke="#ffffff" strokeOpacity="0.15" strokeWidth="0.5" />
@@ -342,7 +342,7 @@ const RocketSelene = () => (
 // VEHICLE 04: IY MANGAL — Interplanetary Starship
 const RocketMangal = () => (
     <SchematicWrapper className="h-56 md:h-72">
-        <svg viewBox="0 0 320 280" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full max-w-md">
+        <svg viewBox="0 0 320 280" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full max-w-md" aria-hidden="true" role="presentation">
             {/* Reticle */}
             <line x1="0" y1="140" x2="40" y2="140" stroke="#ffffff" strokeOpacity="0.15" strokeWidth="0.5" />
             <line x1="280" y1="140" x2="320" y2="140" stroke="#ffffff" strokeOpacity="0.15" strokeWidth="0.5" />
@@ -471,6 +471,14 @@ const Future = () => {
                 }}
             >
                 <CustomCursor />
+
+                {/* Skip to content — keyboard / screen reader users */}
+                <a
+                    href="#hero"
+                    className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[300] focus:bg-white focus:text-black focus:px-4 focus:py-2 focus:text-[12px] focus:tracking-[2px] focus:uppercase focus:font-medium"
+                >
+                    Skip to content
+                </a>
 
                 {/* ── Subtle Background ── */}
                 <div className="fixed inset-0 pointer-events-none z-0">
