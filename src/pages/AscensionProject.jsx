@@ -1007,7 +1007,7 @@ const AscensionProject = () => {
                             {/* ── Bottom row ── */}
                             <div className="flex flex-col md:flex-row justify-between items-center gap-3 text-center">
                                 <p className="font-mono text-[10px] tracking-[2px] text-white/55 uppercase">
-                                    © 2026 · A Division of Infinite Yatra · All Rights Reserved
+                                    © {new Date().getFullYear()} · A Division of Infinite Yatra · All Rights Reserved
                                 </p>
                                 <p className="font-mono text-[10px] italic tracking-[2px] text-white/55 uppercase">
                                     Classified · Internal Document
