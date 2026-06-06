@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { motion, useInView } from 'framer-motion';
+import { motion, useInView, useScroll, useTransform, useSpring } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowDown, ChevronDown, ChevronRight } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
@@ -437,7 +437,109 @@ const RocketMangal = () => (
 
 
 /* =========================================
-   MAIN PAGE COMPONENT 
+   Timeline — scroll-driven station list
+   The vertical rail fills as the user scrolls
+   past the section; each row reveals in sequence
+   with the station dot pinning to the rail.
+========================================= */
+const TimelineSection = ({ items }) => {
+    const ref = useRef(null);
+    const { scrollYProgress } = useScroll({
+        target: ref,
+        offset: ['start 80%', 'end 60%'],
+    });
+    const railScaleY = useSpring(scrollYProgress, { stiffness: 90, damping: 25, restDelta: 0.001 });
+    return (
+        <div ref={ref} className="relative space-y-px bg-white/10">
+            {/* Rail — only visible on md+ where the 2-col label sits to the left of the title */}
+            <div
+                aria-hidden="true"
+                className="hidden md:block absolute top-0 bottom-0 left-[16.66%] -ml-px w-[1px] bg-white/10"
+            />
+            <motion.div
+                aria-hidden="true"
+                style={{ scaleY: railScaleY, transformOrigin: '0% 0%' }}
+                className="hidden md:block absolute top-0 bottom-0 left-[16.66%] -ml-px w-[1px] bg-white/70"
+            />
+
+            {items.map((item, i) => (
+                <TimelineRow key={i} item={item} index={i} total={items.length} />
+            ))}
+        </div>
+    );
+};
+
+const TimelineRow = ({ item, index, total }) => {
+    const ref = useRef(null);
+    const isInView = useInView(ref, { once: true, margin: '-15% 0% -15% 0%' });
+    return (
+        <motion.div
+            ref={ref}
+            initial={{ opacity: 0, y: 40 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.9, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
+            className="relative bg-black px-2 md:px-6 py-10 md:py-14 grid grid-cols-12 gap-6 group"
+        >
+            {/* Station dot — sits on the rail (centered on the 16.66% boundary) */}
+            <motion.div
+                aria-hidden="true"
+                initial={{ scale: 0, opacity: 0 }}
+                animate={isInView ? { scale: 1, opacity: 1 } : {}}
+                transition={{ duration: 0.6, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                className="hidden md:block absolute top-[58px] left-[16.66%] -ml-[6px] w-[11px] h-[11px] rounded-full bg-black border-2 border-white"
+            />
+
+            {/* Phase / year */}
+            <div className="col-span-12 md:col-span-2 md:pl-6">
+                <motion.p
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={isInView ? { opacity: 1, x: 0 } : {}}
+                    transition={{ duration: 0.7, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+                    className="font-mono text-[12px] tracking-[2px] text-white/60 mb-1"
+                >{item.phase}</motion.p>
+                <motion.p
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={isInView ? { opacity: 1, x: 0 } : {}}
+                    transition={{ duration: 0.7, delay: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                    className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] text-2xl text-white tracking-tight"
+                >{item.year}</motion.p>
+            </div>
+
+            {/* Title */}
+            <div className="col-span-12 md:col-span-4 md:pl-2">
+                <motion.h3
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={isInView ? { opacity: 1, y: 0 } : {}}
+                    transition={{ duration: 0.7, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                    className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-2xl md:text-3xl text-white tracking-tight"
+                >{item.title}</motion.h3>
+            </div>
+
+            {/* Desc */}
+            <div className="col-span-12 md:col-span-6">
+                <motion.p
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={isInView ? { opacity: 1, y: 0 } : {}}
+                    transition={{ duration: 0.8, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                    className="text-white/60 text-base leading-relaxed font-light"
+                    style={{ fontFamily: "'Inter', 'Helvetica Neue', sans-serif" }}
+                >{item.desc}</motion.p>
+            </div>
+
+            {/* Phase counter top-right */}
+            <motion.p
+                aria-hidden="true"
+                initial={{ opacity: 0 }}
+                animate={isInView ? { opacity: 1 } : {}}
+                transition={{ duration: 0.6, delay: 0.45 }}
+                className="absolute top-6 right-2 md:right-6 font-mono text-[11px] tracking-[3px] text-white/30"
+            >{String(index + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}</motion.p>
+        </motion.div>
+    );
+};
+
+/* =========================================
+   MAIN PAGE COMPONENT
 ========================================= */
 const Future = () => {
     const [isWaitlistOpen, setIsWaitlistOpen] = useState(false);
@@ -799,28 +901,8 @@ const Future = () => {
                             </h2>
                         </FadeUp>
 
-                        <div className="space-y-px bg-white/10">
-                            {TIMELINE.map((item, i) => (
-                                <FadeUp key={i} delay={0.08 * i}>
-                                    <div className="bg-black px-2 md:px-6 py-10 grid grid-cols-12 gap-6">
-                                        <div className="col-span-12 md:col-span-2">
-                                            <p className="font-mono text-[12px] tracking-[2px] text-white/60 mb-1">{item.phase}</p>
-                                            <p className="font-mono text-[13px] text-white/50 tracking-[2px]">{item.year}</p>
-                                        </div>
-                                        <div className="col-span-12 md:col-span-4">
-                                            <h3 className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-2xl md:text-3xl text-white tracking-tight">
-                                                {item.title}
-                                            </h3>
-                                        </div>
-                                        <div className="col-span-12 md:col-span-6">
-                                            <p className="text-white/60 text-base leading-relaxed font-light"
-                                                style={{ fontFamily: "'Inter', 'Helvetica Neue', sans-serif" }}>
-                                                {item.desc}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </FadeUp>
-                            ))}
+                        {/* Scroll-driven timeline — rail fills as you scroll, rows reveal in sequence */}
+                        <TimelineSection items={TIMELINE} />
                         </div>
                     </div>
                 </section>
