@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { motion, useInView, AnimatePresence } from 'framer-motion';
+import { motion, useInView, AnimatePresence, useScroll, useSpring } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { ArrowLeft, ArrowRight, Menu, X, ChevronDown, Mail, Share2, Check, AlertCircle, Send } from 'lucide-react';
@@ -106,6 +106,14 @@ const AscensionProject = () => {
     const [navOpen, setNavOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [activeSection, setActiveSection] = useState('hero');
+
+    // ── Scroll progress (smooth-spring linked to scrollYProgress)
+    const { scrollYProgress } = useScroll();
+    const progressScaleX = useSpring(scrollYProgress, {
+        stiffness: 140,
+        damping: 28,
+        restDelta: 0.001,
+    });
 
     // ── Get-Involved form state
     const [email, setEmail] = useState('');
@@ -256,6 +264,13 @@ const AscensionProject = () => {
                 >
                     Skip to content
                 </a>
+
+                {/* ── Scroll progress bar — sits above the fixed navbar ── */}
+                <motion.div
+                    aria-hidden="true"
+                    style={{ scaleX: progressScaleX, transformOrigin: '0% 50%' }}
+                    className="fixed top-0 left-0 right-0 h-[2px] bg-white/85 z-[110] pointer-events-none"
+                />
 
                 {/* ── Subtle Background Texture ── */}
                 <div className="fixed inset-0 pointer-events-none z-0">
