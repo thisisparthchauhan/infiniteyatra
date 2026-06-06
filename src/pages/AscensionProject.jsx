@@ -29,7 +29,7 @@ const FadeIn = ({ children, delay = 0, y = 24, className = '' }) => {
 const SectionLabel = ({ number, text }) => (
     <FadeIn>
         <div className="flex items-center gap-3 mb-8">
-            <span className="font-mono text-[13px] text-white/40 tracking-[2px]">{number}</span>
+            <span className="font-mono text-[13px] text-white/60 tracking-[2px]">{number}</span>
             <div className="w-8 h-[1px] bg-white/20" />
             <span className="font-mono text-[13px] text-white/60 tracking-[3px] uppercase">{text}</span>
         </div>
@@ -226,7 +226,7 @@ const AscensionProject = () => {
                                 className="fixed top-0 right-0 h-screen w-full md:w-[480px] bg-black border-l border-white/10 z-[201] p-10 overflow-y-auto"
                             >
                                 <div className="flex justify-between items-center mb-16">
-                                    <p className="font-mono text-[13px] tracking-[3px] text-white/40 uppercase">Index</p>
+                                    <p className="font-mono text-[13px] tracking-[3px] text-white/60 uppercase">Index</p>
                                     <button onClick={() => setNavOpen(false)}
                                         className="text-white/60 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 rounded"
                                         aria-label="Close menu">
@@ -245,7 +245,7 @@ const AscensionProject = () => {
                                             className={`group w-full flex items-center justify-between py-4 border-b border-white/10 transition-all ${activeSection === s.id ? 'text-white' : 'text-white/50 hover:text-white'}`}
                                         >
                                             <div className="flex items-center gap-6">
-                                                <span className="font-mono text-[13px] tracking-[2px] text-white/30">{s.num}</span>
+                                                <span className="font-mono text-[13px] tracking-[2px] text-white/55">{s.num}</span>
                                                 <span className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-xl tracking-tight uppercase">{s.label}</span>
                                             </div>
                                             <ArrowRight size={14} aria-hidden="true" className="opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
@@ -270,7 +270,7 @@ const AscensionProject = () => {
                     {/* Centered countdown-style top text */}
                     <div className="absolute top-[100px] left-0 w-full text-center">
                         <FadeIn delay={0.3}>
-                            <p className="font-mono text-[12px] tracking-[3px] text-white/40 uppercase">
+                            <p className="font-mono text-[12px] tracking-[3px] text-white/60 uppercase">
                                 Founder Document · Initiated 2026
                             </p>
                         </FadeIn>
@@ -303,15 +303,15 @@ const AscensionProject = () => {
                                     </p>
                                     <div className="flex flex-col gap-6">
                                         <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                                            <span className="font-mono text-[13px] tracking-[2px] text-white/40 uppercase">Founder</span>
+                                            <span className="font-mono text-[13px] tracking-[2px] text-white/60 uppercase">Founder</span>
                                             <span className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-sm tracking-wider uppercase">Arius Raynott</span>
                                         </div>
                                         <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                                            <span className="font-mono text-[13px] tracking-[2px] text-white/40 uppercase">Horizon</span>
+                                            <span className="font-mono text-[13px] tracking-[2px] text-white/60 uppercase">Horizon</span>
                                             <span className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-sm tracking-wider uppercase">Multi-Century</span>
                                         </div>
                                         <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                                            <span className="font-mono text-[13px] tracking-[2px] text-white/40 uppercase">Status</span>
+                                            <span className="font-mono text-[13px] tracking-[2px] text-white/60 uppercase">Status</span>
                                             <span className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-sm tracking-wider uppercase flex items-center gap-2">
                                                 <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
                                                 Active
@@ -365,7 +365,7 @@ const AscensionProject = () => {
                                         { label: 'Founding Question', value: 'What must be true for humanity to thrive 500 years from now?' },
                                     ].map((item, i) => (
                                         <div key={i}>
-                                            <p className="font-mono text-[12px] tracking-[3px] text-white/40 uppercase mb-2">{item.label}</p>
+                                            <p className="font-mono text-[12px] tracking-[3px] text-white/60 uppercase mb-2">{item.label}</p>
                                             <p className="text-white/80 text-sm leading-relaxed font-light">{item.value}</p>
                                         </div>
                                     ))}
@@ -406,7 +406,7 @@ const AscensionProject = () => {
                         ].map((p, i) => (
                             <FadeIn key={i} delay={0.1 * i}>
                                 <div className="bg-black p-10 h-full">
-                                    <p className="font-mono text-[12px] tracking-[3px] text-white/30 uppercase mb-8">{p.num}</p>
+                                    <p className="font-mono text-[12px] tracking-[3px] text-white/55 uppercase mb-8">{p.num}</p>
                                     <h3 className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-2xl text-white tracking-tight uppercase mb-4">{p.title}</h3>
                                     <p className="text-white/60 text-sm leading-relaxed font-light">{p.desc}</p>
                                 </div>
@@ -447,7 +447,7 @@ const AscensionProject = () => {
                             <FadeIn key={i} delay={0.05 * i}>
                                 <div className="grid grid-cols-12 gap-6 py-8 border-b border-white/10 group hover:bg-white/[0.02] transition-colors duration-300 px-2">
                                     <div className="col-span-1">
-                                        <p className="font-mono text-[12px] tracking-[2px] text-white/30">0{i + 1}</p>
+                                        <p className="font-mono text-[12px] tracking-[2px] text-white/55">0{i + 1}</p>
                                     </div>
                                     <div className="col-span-11 md:col-span-4">
                                         <h3 className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-xl md:text-2xl text-white tracking-tight uppercase">{p.title}</h3>
@@ -487,7 +487,7 @@ const AscensionProject = () => {
                         ].map((belief, i) => (
                             <FadeIn key={i} delay={0.04 * i}>
                                 <div className="flex gap-6 group">
-                                    <span className="font-mono text-[13px] text-white/30 tracking-[2px] pt-1 flex-shrink-0 w-8">{String(i + 1).padStart(2, '0')}</span>
+                                    <span className="font-mono text-[13px] text-white/55 tracking-[2px] pt-1 flex-shrink-0 w-8">{String(i + 1).padStart(2, '0')}</span>
                                     <p className="text-white/80 text-base md:text-lg leading-relaxed font-light group-hover:text-white transition-colors duration-300">{belief}</p>
                                 </div>
                             </FadeIn>
@@ -534,7 +534,7 @@ const AscensionProject = () => {
                         ].map((item, i) => (
                             <FadeIn key={i} delay={0.1 * i}>
                                 <div className="bg-black p-10 h-full">
-                                    <p className="font-mono text-[12px] tracking-[3px] text-white/30 uppercase mb-6">0{i + 1}</p>
+                                    <p className="font-mono text-[12px] tracking-[3px] text-white/55 uppercase mb-6">0{i + 1}</p>
                                     <h3 className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-xl text-white tracking-tight uppercase mb-4">{item.title}</h3>
                                     <p className="text-white/60 text-sm leading-relaxed font-light">{item.desc}</p>
                                 </div>
@@ -569,7 +569,7 @@ const AscensionProject = () => {
                         ].map((item, i) => (
                             <FadeIn key={i} delay={0.08 * i}>
                                 <div className="bg-black p-8 h-full">
-                                    <p className="font-mono text-[12px] tracking-[3px] text-white/30 uppercase mb-6">0{i + 1}</p>
+                                    <p className="font-mono text-[12px] tracking-[3px] text-white/55 uppercase mb-6">0{i + 1}</p>
                                     <h3 className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-lg text-white tracking-tight uppercase mb-3">{item.role}</h3>
                                     <p className="text-white/55 text-sm leading-relaxed font-light">{item.desc}</p>
                                 </div>
@@ -608,7 +608,7 @@ const AscensionProject = () => {
                                         'Accept that the project is larger than the founder, and act accordingly',
                                     ].map((item, i) => (
                                         <div key={i} className="flex gap-4 py-3 border-b border-white/[0.06]">
-                                            <span className="font-mono text-[13px] text-white/30 tracking-[2px] pt-1 flex-shrink-0 w-6">{String(i + 1).padStart(2, '0')}</span>
+                                            <span className="font-mono text-[13px] text-white/55 tracking-[2px] pt-1 flex-shrink-0 w-6">{String(i + 1).padStart(2, '0')}</span>
                                             <p className="text-white/75 text-sm leading-relaxed font-light">{item}</p>
                                         </div>
                                     ))}
@@ -619,7 +619,7 @@ const AscensionProject = () => {
                         <div className="md:col-span-5 min-w-0">
                             <FadeIn delay={0.4}>
                                 <div className="border border-white/15 p-8">
-                                    <p className="font-mono text-[12px] tracking-[3px] text-white/40 uppercase mb-6">Development Roadmap</p>
+                                    <p className="font-mono text-[12px] tracking-[3px] text-white/60 uppercase mb-6">Development Roadmap</p>
                                     <div className="space-y-7">
                                         {[
                                             { phase: '2026–2028', title: 'Foundation', desc: 'Establish core team, define research agenda, launch initial public presence.' },
@@ -628,7 +628,7 @@ const AscensionProject = () => {
                                             { phase: '2035+', title: 'Legacy', desc: 'The project operates independently of its founder.' },
                                         ].map((item, i) => (
                                             <div key={i} className="pb-7 border-b border-white/10 last:border-0 last:pb-0">
-                                                <p className="font-mono text-[12px] tracking-[2px] text-white/40 uppercase mb-2">{item.phase}</p>
+                                                <p className="font-mono text-[12px] tracking-[2px] text-white/60 uppercase mb-2">{item.phase}</p>
                                                 <p className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-base text-white tracking-wider uppercase mb-2">{item.title}</p>
                                                 <p className="text-white/55 text-xs leading-relaxed font-light">{item.desc}</p>
                                             </div>
@@ -651,7 +651,7 @@ const AscensionProject = () => {
                         Building the knowledge base.
                     </SectionHeading>
                     <FadeIn delay={0.2}>
-                        <p className="font-mono text-[13px] tracking-[3px] text-white/40 uppercase mb-16">2026 — 2035</p>
+                        <p className="font-mono text-[13px] tracking-[3px] text-white/60 uppercase mb-16">2026 — 2035</p>
                     </FadeIn>
 
                     <div className="space-y-px bg-white/10">
@@ -664,7 +664,7 @@ const AscensionProject = () => {
                             <FadeIn key={i} delay={0.08 * i}>
                                 <div className="bg-black px-2 md:px-6 py-12 grid grid-cols-12 gap-6">
                                     <div className="col-span-12 md:col-span-3">
-                                        <p className="font-mono text-[12px] tracking-[2px] text-white/40 uppercase mb-2">{item.phase}</p>
+                                        <p className="font-mono text-[12px] tracking-[2px] text-white/60 uppercase mb-2">{item.phase}</p>
                                         <p className="font-mono text-[13px] text-white/50 tracking-[2px]">{item.year}</p>
                                     </div>
                                     <div className="col-span-12 md:col-span-3">
@@ -674,7 +674,7 @@ const AscensionProject = () => {
                                         <ul className="space-y-3">
                                             {item.items.map((point, j) => (
                                                 <li key={j} className="flex gap-3 text-white/65 text-sm leading-relaxed font-light">
-                                                    <span className="text-white/30 flex-shrink-0">—</span>
+                                                    <span className="text-white/55 flex-shrink-0">—</span>
                                                     {point}
                                                 </li>
                                             ))}
@@ -736,7 +736,7 @@ const AscensionProject = () => {
                             <FadeIn key={i} delay={0.1 * i}>
                                 <div className="grid grid-cols-12 gap-8 pb-20 border-b border-white/10 last:border-0">
                                     <div className="col-span-12 md:col-span-3">
-                                        <p className="font-mono text-[12px] tracking-[3px] text-white/40 uppercase mb-2">{era.era}</p>
+                                        <p className="font-mono text-[12px] tracking-[3px] text-white/60 uppercase mb-2">{era.era}</p>
                                         <p className="font-mono text-[13px] text-white/50 tracking-[2px]">{era.years}</p>
                                     </div>
                                     <div className="col-span-12 md:col-span-9">
@@ -746,7 +746,7 @@ const AscensionProject = () => {
                                         <div className="grid sm:grid-cols-2 gap-x-8 gap-y-3">
                                             {era.points.map((p, j) => (
                                                 <div key={j} className="flex gap-3 py-2">
-                                                    <span className="text-white/30 text-sm flex-shrink-0">—</span>
+                                                    <span className="text-white/55 text-sm flex-shrink-0">—</span>
                                                     <p className="text-white/65 text-sm leading-relaxed font-light">{p}</p>
                                                 </div>
                                             ))}
@@ -773,7 +773,7 @@ const AscensionProject = () => {
                         <FadeIn delay={0.1}>
                             <div className="md:border-r border-white/10 p-10">
                                 <div className="flex items-center gap-4 mb-10">
-                                    <p className="font-mono text-[12px] tracking-[3px] text-white/40 uppercase">A</p>
+                                    <p className="font-mono text-[12px] tracking-[3px] text-white/60 uppercase">A</p>
                                     <div className="w-8 h-[1px] bg-white/20" />
                                     <p className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-base text-white tracking-wider uppercase">Success</p>
                                 </div>
@@ -788,7 +788,7 @@ const AscensionProject = () => {
                                         'The founder is eventually irrelevant — the mission has transcended its origin',
                                     ].map((item, i) => (
                                         <li key={i} className="flex gap-4">
-                                            <span className="font-mono text-[12px] text-white/30 tracking-[2px] pt-1 w-6 flex-shrink-0">{String(i + 1).padStart(2, '0')}</span>
+                                            <span className="font-mono text-[12px] text-white/55 tracking-[2px] pt-1 w-6 flex-shrink-0">{String(i + 1).padStart(2, '0')}</span>
                                             <p className="text-white/70 text-sm leading-relaxed font-light">{item}</p>
                                         </li>
                                     ))}
@@ -799,7 +799,7 @@ const AscensionProject = () => {
                         <FadeIn delay={0.2}>
                             <div className="p-10 border-t md:border-t-0 border-white/10">
                                 <div className="flex items-center gap-4 mb-10">
-                                    <p className="font-mono text-[12px] tracking-[3px] text-white/40 uppercase">B</p>
+                                    <p className="font-mono text-[12px] tracking-[3px] text-white/60 uppercase">B</p>
                                     <div className="w-8 h-[1px] bg-white/20" />
                                     <p className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-base text-white tracking-wider uppercase">Failure</p>
                                 </div>
@@ -814,7 +814,7 @@ const AscensionProject = () => {
                                         'Humanity remains single-world having had the resources to expand',
                                     ].map((item, i) => (
                                         <li key={i} className="flex gap-4">
-                                            <span className="font-mono text-[12px] text-white/30 tracking-[2px] pt-1 w-6 flex-shrink-0">{String(i + 1).padStart(2, '0')}</span>
+                                            <span className="font-mono text-[12px] text-white/55 tracking-[2px] pt-1 w-6 flex-shrink-0">{String(i + 1).padStart(2, '0')}</span>
                                             <p className="text-white/70 text-sm leading-relaxed font-light">{item}</p>
                                         </li>
                                     ))}
@@ -873,7 +873,7 @@ const AscensionProject = () => {
                                 style={{ fontSize: 'clamp(16px, 2.6vw, 36px)' }}>
                                 "We do not expand because we can. We expand because we must — because every generation that fails to build the future forces the next one to inherit the consequences of that failure."
                             </p>
-                            <p className="font-mono text-[12px] tracking-[2.5px] text-white/40 uppercase mt-8">— The Ascension Project</p>
+                            <p className="font-mono text-[12px] tracking-[2.5px] text-white/60 uppercase mt-8">— The Ascension Project</p>
                         </div>
                     </FadeIn>
                 </Section>
@@ -900,7 +900,7 @@ const AscensionProject = () => {
                             </p>
                         </FadeIn>
                         <FadeIn delay={0.35}>
-                            <p className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-white/40 tracking-tight uppercase leading-[0.95] mb-20"
+                            <p className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-white/60 tracking-tight uppercase leading-[0.95] mb-20"
                                 style={{ fontSize: 'clamp(28px, 7vw, 110px)' }}>
                                 A question.
                             </p>
@@ -942,9 +942,9 @@ const AscensionProject = () => {
                         </FadeIn>
 
                         <FadeIn delay={1.1}>
-                            <p className="font-mono text-[12px] tracking-[2.5px] text-white/40 uppercase mb-2">Signed</p>
+                            <p className="font-mono text-[12px] tracking-[2.5px] text-white/60 uppercase mb-2">Signed</p>
                             <p className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-2xl text-white tracking-[3px] uppercase mb-1">Arius Raynott</p>
-                            <p className="font-mono text-[12px] tracking-[3px] text-white/40 uppercase">Founder · 2026</p>
+                            <p className="font-mono text-[12px] tracking-[3px] text-white/60 uppercase">Founder · 2026</p>
                         </FadeIn>
                     </div>
                 </Section>
@@ -961,7 +961,7 @@ const AscensionProject = () => {
                                 <p className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-white text-lg md:text-xl tracking-[3px] uppercase mb-2">
                                     The Ascension Project
                                 </p>
-                                <p className="font-mono text-[11px] tracking-[3px] text-white/40 uppercase">
+                                <p className="font-mono text-[11px] tracking-[3px] text-white/60 uppercase">
                                     Humanity's Next Frontier · Founded 2026
                                 </p>
                                 <div className="w-12 h-[1px] bg-white/20 mt-6" />
@@ -970,7 +970,7 @@ const AscensionProject = () => {
                             {/* ── Link columns ── */}
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-8 md:gap-12 mb-12">
                                 <div className="text-center md:text-left">
-                                    <p className="font-mono text-[10px] tracking-[3px] text-white/40 uppercase mb-4">Sections</p>
+                                    <p className="font-mono text-[10px] tracking-[3px] text-white/60 uppercase mb-4">Sections</p>
                                     <div className="flex flex-col gap-2">
                                         {NAV_SECTIONS.slice(1, 7).map(s => (
                                             <button key={s.id} onClick={() => scrollTo(s.id)}
@@ -982,7 +982,7 @@ const AscensionProject = () => {
                                 </div>
 
                                 <div className="text-center">
-                                    <p className="font-mono text-[10px] tracking-[3px] text-white/40 uppercase mb-4">Continued</p>
+                                    <p className="font-mono text-[10px] tracking-[3px] text-white/60 uppercase mb-4">Continued</p>
                                     <div className="flex flex-col gap-2">
                                         {NAV_SECTIONS.slice(7, 13).map(s => (
                                             <button key={s.id} onClick={() => scrollTo(s.id)}
@@ -994,7 +994,7 @@ const AscensionProject = () => {
                                 </div>
 
                                 <div className="col-span-2 md:col-span-1 text-center md:text-right">
-                                    <p className="font-mono text-[10px] tracking-[3px] text-white/40 uppercase mb-4">Navigate</p>
+                                    <p className="font-mono text-[10px] tracking-[3px] text-white/60 uppercase mb-4">Navigate</p>
                                     <Link to="/future" className="inline-flex items-center gap-2 text-white/70 hover:text-white transition-colors group text-[12px] tracking-[2px] uppercase">
                                         <ArrowLeft size={12} aria-hidden="true" className="transition-transform duration-300 group-hover:-translate-x-1" />
                                         Back to Future
@@ -1006,10 +1006,10 @@ const AscensionProject = () => {
 
                             {/* ── Bottom row ── */}
                             <div className="flex flex-col md:flex-row justify-between items-center gap-3 text-center">
-                                <p className="font-mono text-[10px] tracking-[2px] text-white/30 uppercase">
+                                <p className="font-mono text-[10px] tracking-[2px] text-white/55 uppercase">
                                     © 2026 · A Division of Infinite Yatra · All Rights Reserved
                                 </p>
-                                <p className="font-mono text-[10px] italic tracking-[2px] text-white/30 uppercase">
+                                <p className="font-mono text-[10px] italic tracking-[2px] text-white/55 uppercase">
                                     Classified · Internal Document
                                 </p>
                             </div>

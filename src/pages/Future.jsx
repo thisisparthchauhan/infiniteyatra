@@ -515,7 +515,7 @@ const Future = () => {
                                 <span className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-[13px] tracking-[2.5px] text-white">
                                     INFINITE YATRA
                                 </span>
-                                <span className="font-mono text-[10px] tracking-[3px] text-white/40 mt-0.5 text-center">
+                                <span className="font-mono text-[10px] tracking-[3px] text-white/60 mt-0.5 text-center">
                                     EXPLORE INFINITE
                                 </span>
                             </Link>
@@ -537,7 +537,7 @@ const Future = () => {
                     {/* Centered top text */}
                     <div className="absolute top-[100px] left-0 w-full text-center">
                         <FadeUp delay={0.3}>
-                            <p className="font-mono text-[12px] tracking-[3px] text-white/40">
+                            <p className="font-mono text-[12px] tracking-[3px] text-white/60">
                                 MISSION BRIEF · CLASSIFIED · INITIATED 2026
                             </p>
                         </FadeUp>
@@ -570,15 +570,15 @@ const Future = () => {
                                     </p>
                                     <div className="flex flex-col gap-6">
                                         <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                                            <span className="font-mono text-[12px] tracking-[2px] text-white/40">PROGRAM</span>
+                                            <span className="font-mono text-[12px] tracking-[2px] text-white/60">PROGRAM</span>
                                             <span className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] text-sm tracking-wider text-white">SPACE</span>
                                         </div>
                                         <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                                            <span className="font-mono text-[12px] tracking-[2px] text-white/40">FLEET</span>
+                                            <span className="font-mono text-[12px] tracking-[2px] text-white/60">FLEET</span>
                                             <span className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] text-sm tracking-wider text-white">4 VEHICLES</span>
                                         </div>
                                         <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                                            <span className="font-mono text-[12px] tracking-[2px] text-white/40">STATUS</span>
+                                            <span className="font-mono text-[12px] tracking-[2px] text-white/60">STATUS</span>
                                             <span className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] text-sm tracking-wider text-white flex items-center gap-2">
                                                 <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
                                                 DEVELOPMENT
@@ -611,7 +611,7 @@ const Future = () => {
                     <div className="max-w-7xl mx-auto">
                         <FadeUp>
                             <div className="flex items-center gap-3 mb-12">
-                                <span className="font-mono text-[13px] text-white/40 tracking-[2px]">01</span>
+                                <span className="font-mono text-[13px] text-white/60 tracking-[2px]">01</span>
                                 <div className="w-8 h-[1px] bg-white/20" />
                                 <span className="font-mono text-[13px] text-white/60 tracking-[3px]">THE FLEET</span>
                             </div>
@@ -642,8 +642,8 @@ const Future = () => {
                                 <FadeUp key={v.code} delay={0.1 * i}>
                                     <div className="bg-black p-8 md:p-10 h-full group hover:bg-white/[0.02] transition-colors duration-500">
                                         <div className="flex items-start justify-between mb-2">
-                                            <p className="font-mono text-[12px] tracking-[3px] text-white/30">{v.num} / {v.code}</p>
-                                            <p className="font-mono text-[12px] tracking-[3px] text-white/40">{v.class}</p>
+                                            <p className="font-mono text-[12px] tracking-[3px] text-white/55">{v.num} / {v.code}</p>
+                                            <p className="font-mono text-[12px] tracking-[3px] text-white/60">{v.class}</p>
                                         </div>
 
                                         <h3 className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-3xl text-white tracking-tight mb-2">
@@ -658,15 +658,15 @@ const Future = () => {
                                         {/* Specs row */}
                                         <div className="grid grid-cols-3 gap-3 border-y border-white/10 py-4 mb-5">
                                             <div>
-                                                <p className="font-mono text-[13px] tracking-[2px] text-white/40 mb-1">ALTITUDE</p>
+                                                <p className="font-mono text-[13px] tracking-[2px] text-white/60 mb-1">ALTITUDE</p>
                                                 <p className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] text-xs tracking-wider text-white">{v.altitude}</p>
                                             </div>
                                             <div>
-                                                <p className="font-mono text-[13px] tracking-[2px] text-white/40 mb-1">DURATION</p>
+                                                <p className="font-mono text-[13px] tracking-[2px] text-white/60 mb-1">DURATION</p>
                                                 <p className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] text-xs tracking-wider text-white">{v.duration}</p>
                                             </div>
                                             <div>
-                                                <p className="font-mono text-[13px] tracking-[2px] text-white/40 mb-1">CREW</p>
+                                                <p className="font-mono text-[13px] tracking-[2px] text-white/60 mb-1">CREW</p>
                                                 <p className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] text-xs tracking-wider text-white">{v.crew}</p>
                                             </div>
                                         </div>
@@ -693,7 +693,7 @@ const Future = () => {
                     <div className="max-w-7xl mx-auto">
                         <FadeUp>
                             <div className="flex items-center gap-3 mb-12">
-                                <span className="font-mono text-[13px] text-white/40 tracking-[2px]">02</span>
+                                <span className="font-mono text-[13px] text-white/60 tracking-[2px]">02</span>
                                 <div className="w-8 h-[1px] bg-white/20" />
                                 <span className="font-mono text-[13px] text-white/60 tracking-[3px]">PROGRAM TIMELINE</span>
                             </div>
@@ -711,7 +711,7 @@ const Future = () => {
                                 <FadeUp key={i} delay={0.08 * i}>
                                     <div className="bg-black px-2 md:px-6 py-10 grid grid-cols-12 gap-6">
                                         <div className="col-span-12 md:col-span-2">
-                                            <p className="font-mono text-[12px] tracking-[2px] text-white/40 mb-1">{item.phase}</p>
+                                            <p className="font-mono text-[12px] tracking-[2px] text-white/60 mb-1">{item.phase}</p>
                                             <p className="font-mono text-[13px] text-white/50 tracking-[2px]">{item.year}</p>
                                         </div>
                                         <div className="col-span-12 md:col-span-4">
@@ -743,7 +743,7 @@ const Future = () => {
                     <div className="max-w-7xl mx-auto">
                         <FadeUp>
                             <div className="flex items-center gap-3 mb-12">
-                                <span className="font-mono text-[13px] text-white/40 tracking-[2px]">03</span>
+                                <span className="font-mono text-[13px] text-white/60 tracking-[2px]">03</span>
                                 <div className="w-8 h-[1px] bg-white/20" />
                                 <span className="font-mono text-[13px] text-white/60 tracking-[3px]">RESERVATION</span>
                             </div>
@@ -782,7 +782,7 @@ const Future = () => {
                             <div className="md:col-span-5 min-w-0">
                                 <FadeUp delay={0.4}>
                                     <div className="border border-white/15 p-8">
-                                        <p className="font-mono text-[12px] tracking-[3px] text-white/40 mb-6">FLIGHT MANIFEST</p>
+                                        <p className="font-mono text-[12px] tracking-[3px] text-white/60 mb-6">FLIGHT MANIFEST</p>
                                         <div className="space-y-4">
                                             {[
                                                 { k: 'PROGRAM', v: 'INFINITE YATRA' },
@@ -792,7 +792,7 @@ const Future = () => {
                                                 { k: 'STATUS', v: 'WAITLIST OPEN' },
                                             ].map((row, i) => (
                                                 <div key={i} className="flex items-center justify-between border-b border-white/10 pb-3 last:border-0">
-                                                    <span className="font-mono text-[12px] tracking-[2px] text-white/40">{row.k}</span>
+                                                    <span className="font-mono text-[12px] tracking-[2px] text-white/60">{row.k}</span>
                                                     <span className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] text-xs tracking-wider text-white">{row.v}</span>
                                                 </div>
                                             ))}
@@ -815,7 +815,7 @@ const Future = () => {
                     <div className="max-w-7xl mx-auto">
                         <FadeUp>
                             <div className="flex items-center gap-3 mb-12">
-                                <span className="font-mono text-[13px] text-white/40 tracking-[2px]">04</span>
+                                <span className="font-mono text-[13px] text-white/60 tracking-[2px]">04</span>
                                 <div className="w-8 h-[1px] bg-white/20" />
                                 <span className="font-mono text-[13px] text-white/60 tracking-[3px]">BEYOND THE JOURNEY</span>
                             </div>
@@ -849,15 +849,15 @@ const Future = () => {
                                 <FadeUp delay={0.3}>
                                     <div className="space-y-3 mb-8">
                                         <div className="flex items-center justify-between border-b border-white/10 pb-2">
-                                            <span className="font-mono text-[12px] tracking-[2px] text-white/40">FOUNDER</span>
+                                            <span className="font-mono text-[12px] tracking-[2px] text-white/60">FOUNDER</span>
                                             <span className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] text-xs tracking-wider text-white">ARIUS RAYNOTT</span>
                                         </div>
                                         <div className="flex items-center justify-between border-b border-white/10 pb-2">
-                                            <span className="font-mono text-[12px] tracking-[2px] text-white/40">HORIZON</span>
+                                            <span className="font-mono text-[12px] tracking-[2px] text-white/60">HORIZON</span>
                                             <span className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] text-xs tracking-wider text-white">MULTI-CENTURY</span>
                                         </div>
                                         <div className="flex items-center justify-between border-b border-white/10 pb-2">
-                                            <span className="font-mono text-[12px] tracking-[2px] text-white/40">STATUS</span>
+                                            <span className="font-mono text-[12px] tracking-[2px] text-white/60">STATUS</span>
                                             <span className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] text-xs tracking-wider text-white flex items-center gap-2">
                                                 <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
                                                 ACTIVE
@@ -877,7 +877,7 @@ const Future = () => {
                                     { num: '04', label: 'CIVILIZATION' },
                                 ].map((pillar) => (
                                     <div key={pillar.num} className="bg-black p-6">
-                                        <p className="font-mono text-[12px] tracking-[2px] text-white/40 mb-2">{pillar.num}</p>
+                                        <p className="font-mono text-[12px] tracking-[2px] text-white/60 mb-2">{pillar.num}</p>
                                         <p className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] text-sm tracking-wider text-white">{pillar.label}</p>
                                     </div>
                                 ))}
@@ -899,7 +899,7 @@ const Future = () => {
                         </FadeUp>
 
                         <FadeUp delay={0.6}>
-                            <p className="font-mono text-[13px] italic text-white/40 tracking-[2px] mt-16 max-w-2xl">
+                            <p className="font-mono text-[13px] italic text-white/60 tracking-[2px] mt-16 max-w-2xl">
                                 "THIS IS NOT THE BEGINNING. THIS IS THE DECISION." — ARIUS RAYNOTT
                             </p>
                         </FadeUp>
@@ -918,7 +918,7 @@ const Future = () => {
                                 <p className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-white text-lg md:text-xl tracking-[3px] mb-2">
                                     INFINITE YATRA
                                 </p>
-                                <p className="font-mono text-[11px] tracking-[3px] text-white/40">
+                                <p className="font-mono text-[11px] tracking-[3px] text-white/60">
                                     EXPLORE INFINITE
                                 </p>
                                 <div className="w-12 h-[1px] bg-white/20 mt-6" />
@@ -927,7 +927,7 @@ const Future = () => {
                             {/* ── Link columns ── */}
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-8 md:gap-12 mb-12">
                                 <div className="text-center md:text-left">
-                                    <p className="font-mono text-[10px] tracking-[3px] text-white/40 mb-4">PROGRAM</p>
+                                    <p className="font-mono text-[10px] tracking-[3px] text-white/60 mb-4">PROGRAM</p>
                                     <div className="flex flex-col gap-2">
                                         {[
                                             { label: 'THE FLEET', id: 'fleet' },
@@ -944,7 +944,7 @@ const Future = () => {
                                 </div>
 
                                 <div className="text-center">
-                                    <p className="font-mono text-[10px] tracking-[3px] text-white/40 mb-4">CONTACT</p>
+                                    <p className="font-mono text-[10px] tracking-[3px] text-white/60 mb-4">CONTACT</p>
                                     <div className="flex flex-col gap-2">
                                         <Link to="/contact" className="text-[12px] text-white/55 tracking-[2px] hover:text-white transition-colors">SUPPORT</Link>
                                         <Link to="/contact" className="text-[12px] text-white/55 tracking-[2px] hover:text-white transition-colors">PRESS</Link>
@@ -954,7 +954,7 @@ const Future = () => {
                                 </div>
 
                                 <div className="col-span-2 md:col-span-1 text-center md:text-right">
-                                    <p className="font-mono text-[10px] tracking-[3px] text-white/40 mb-4">NAVIGATE</p>
+                                    <p className="font-mono text-[10px] tracking-[3px] text-white/60 mb-4">NAVIGATE</p>
                                     <div className="flex flex-col gap-2 items-center md:items-end">
                                         <Link to="/ascension-project" className="text-[12px] text-white/55 tracking-[2px] hover:text-white transition-colors">
                                             ASCENSION PROJECT
@@ -971,10 +971,10 @@ const Future = () => {
 
                             {/* ── Bottom row: copyright + tagline ── */}
                             <div className="flex flex-col md:flex-row justify-between items-center gap-3 text-center">
-                                <p className="font-mono text-[10px] tracking-[2px] text-white/30">
+                                <p className="font-mono text-[10px] tracking-[2px] text-white/55">
                                     © 2026 INFINITE YATRA SPACE PROGRAM · CLASSIFIED
                                 </p>
-                                <p className="font-mono text-[10px] italic tracking-[2px] text-white/30">
+                                <p className="font-mono text-[10px] italic tracking-[2px] text-white/55">
                                     TODAY ACROSS EARTH · TOMORROW BEYOND IT
                                 </p>
                             </div>
