@@ -330,15 +330,15 @@ const AscensionProject = () => {
             <Helmet>
                 <title>The Ascension Project — Humanity's Next Frontier</title>
                 <meta name="description" content="A long-term initiative focused on exploration, knowledge, AI, research, civilization development, and humanity's future beyond a single world. Founded by Arius Raynott." />
-                <link rel="canonical" href="https://infiniteyatra-iy.web.app/ascension-project" />
+                <link rel="canonical" href="https://www.infiniteyatra.com/ascension-project" />
 
                 {/* Open Graph */}
                 <meta property="og:type" content="article" />
                 <meta property="og:site_name" content="Infinite Yatra" />
-                <meta property="og:url" content="https://infiniteyatra-iy.web.app/ascension-project" />
+                <meta property="og:url" content="https://www.infiniteyatra.com/ascension-project" />
                 <meta property="og:title" content="The Ascension Project — Humanity's Next Frontier" />
                 <meta property="og:description" content="A multi-century initiative for exploration, knowledge, AI, and civilization development — beyond a single world." />
-                <meta property="og:image" content="https://infiniteyatra-iy.web.app/og/ascension.png" />
+                <meta property="og:image" content="https://www.infiniteyatra.com/og/ascension.png" />
                 <meta property="og:image:width" content="1200" />
                 <meta property="og:image:height" content="630" />
                 <meta property="og:image:alt" content="The Ascension Project — founder document cover with the title set in editorial type." />
@@ -349,7 +349,7 @@ const AscensionProject = () => {
                 <meta name="twitter:card" content="summary_large_image" />
                 <meta name="twitter:title" content="The Ascension Project" />
                 <meta name="twitter:description" content="Humanity's next frontier — a multi-century initiative founded by Arius Raynott." />
-                <meta name="twitter:image" content="https://infiniteyatra-iy.web.app/og/ascension.png" />
+                <meta name="twitter:image" content="https://www.infiniteyatra.com/og/ascension.png" />
 
                 {/* Theme color */}
                 <meta name="theme-color" content="#000000" />
@@ -360,7 +360,7 @@ const AscensionProject = () => {
                     "@type": "Article",
                     "headline": "The Ascension Project — Humanity's Next Frontier",
                     "description": "A long-term initiative focused on exploration, knowledge, AI, research, civilization development, and humanity's future beyond a single world.",
-                    "image": "https://infiniteyatra-iy.web.app/og/ascension.png",
+                    "image": "https://www.infiniteyatra.com/og/ascension.png",
                     "datePublished": "2026-01-01",
                     "dateModified": "2026-01-01",
                     "author": {
@@ -371,11 +371,11 @@ const AscensionProject = () => {
                     "publisher": {
                         "@type": "Organization",
                         "name": "Infinite Yatra",
-                        "url": "https://infiniteyatra-iy.web.app"
+                        "url": "https://www.infiniteyatra.com"
                     },
                     "mainEntityOfPage": {
                         "@type": "WebPage",
-                        "@id": "https://infiniteyatra-iy.web.app/ascension-project"
+                        "@id": "https://www.infiniteyatra.com/ascension-project"
                     }
                 })}</script>
 

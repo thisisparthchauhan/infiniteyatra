@@ -510,15 +510,15 @@ const Future = () => {
             <Helmet>
                 <title>Infinite Yatra Space Program — Today Across Earth. Tomorrow Beyond It.</title>
                 <meta name="description" content="Infinite Yatra's space program — four vehicles (Aurora, Horizon, Selene, Mars) and a five-phase timeline taking humanity from orbital tourism to interplanetary transit." />
-                <link rel="canonical" href="https://infiniteyatra-iy.web.app/future" />
+                <link rel="canonical" href="https://www.infiniteyatra.com/future" />
 
                 {/* Open Graph */}
                 <meta property="og:type" content="website" />
                 <meta property="og:site_name" content="Infinite Yatra" />
-                <meta property="og:url" content="https://infiniteyatra-iy.web.app/future" />
+                <meta property="og:url" content="https://www.infiniteyatra.com/future" />
                 <meta property="og:title" content="Infinite Yatra Space Program" />
                 <meta property="og:description" content="Today across Earth. Tomorrow beyond it. Four vehicles. One trajectory." />
-                <meta property="og:image" content="https://infiniteyatra-iy.web.app/og/future.png" />
+                <meta property="og:image" content="https://www.infiniteyatra.com/og/future.png" />
                 <meta property="og:image:width" content="1200" />
                 <meta property="og:image:height" content="630" />
                 <meta property="og:image:alt" content="Infinite Yatra Space Program — black hero card with the brand wordmark and program status panel." />
@@ -527,7 +527,7 @@ const Future = () => {
                 <meta name="twitter:card" content="summary_large_image" />
                 <meta name="twitter:title" content="Infinite Yatra Space Program" />
                 <meta name="twitter:description" content="Today across Earth. Tomorrow beyond it." />
-                <meta name="twitter:image" content="https://infiniteyatra-iy.web.app/og/future.png" />
+                <meta name="twitter:image" content="https://www.infiniteyatra.com/og/future.png" />
 
                 {/* Theme color (mobile browser chrome) */}
                 <meta name="theme-color" content="#000000" />
@@ -537,12 +537,12 @@ const Future = () => {
                     "@context": "https://schema.org",
                     "@type": "WebPage",
                     "name": "Infinite Yatra Space Program",
-                    "url": "https://infiniteyatra-iy.web.app/future",
+                    "url": "https://www.infiniteyatra.com/future",
                     "description": "Infinite Yatra's space program — four vehicles and a five-phase timeline from orbital tourism to interplanetary transit.",
                     "isPartOf": {
                         "@type": "WebSite",
                         "name": "Infinite Yatra",
-                        "url": "https://infiniteyatra-iy.web.app"
+                        "url": "https://www.infiniteyatra.com"
                     },
                     "about": {
                         "@type": "Organization",
