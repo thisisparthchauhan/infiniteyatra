@@ -123,11 +123,53 @@ const AscensionProject = () => {
     const [submitState, setSubmitState] = useState('idle'); // idle | sending | success | error
     const [shareCopied, setShareCopied] = useState(false);
     const [honeypot, setHoneypot] = useState(''); // bots will fill this; humans never see it
+    const [draftRestored, setDraftRestored] = useState(false);
     const formMountedAt = useRef(0);             // bots submit instantly; humans take seconds
     useEffect(() => { formMountedAt.current = Date.now(); }, []);
 
     const RATE_LIMIT_KEY = 'ascension_last_signup_at';
     const RATE_LIMIT_MS = 5 * 60 * 1000; // 5 min between submits from same browser
+    const DRAFT_KEY = 'ascension_signup_draft';
+    const DRAFT_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days — older drafts are forgotten
+
+    // Restore a saved draft on mount (if it isn't stale)
+    useEffect(() => {
+        try {
+            const raw = window.localStorage.getItem(DRAFT_KEY);
+            if (!raw) return;
+            const draft = JSON.parse(raw);
+            if (!draft || typeof draft !== 'object') return;
+            if (Date.now() - (draft.ts || 0) > DRAFT_TTL_MS) {
+                window.localStorage.removeItem(DRAFT_KEY);
+                return;
+            }
+            if (typeof draft.email === 'string' && draft.email) setEmail(draft.email);
+            if (['subscribe', 'contribute', 'apply'].includes(draft.intent)) setIntent(draft.intent);
+            if (draft.email || draft.intent !== 'subscribe') {
+                setDraftRestored(true);
+                trackEvent('signup_draft_restored');
+            }
+        } catch { /* localStorage disabled / parse fail — silent */ }
+    }, []);
+
+    // Persist draft whenever email or intent changes (debounced via setTimeout)
+    useEffect(() => {
+        const id = window.setTimeout(() => {
+            try {
+                if (!email && intent === 'subscribe') {
+                    // Nothing meaningful entered — clear any stored draft
+                    window.localStorage.removeItem(DRAFT_KEY);
+                } else {
+                    window.localStorage.setItem(DRAFT_KEY, JSON.stringify({
+                        email,
+                        intent,
+                        ts: Date.now(),
+                    }));
+                }
+            } catch { /* silent */ }
+        }, 400);
+        return () => window.clearTimeout(id);
+    }, [email, intent]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -177,9 +219,13 @@ const AscensionProject = () => {
                 msToSubmit: elapsed,
                 createdAt: serverTimestamp(),
             });
-            try { window.localStorage.setItem(RATE_LIMIT_KEY, String(Date.now())); } catch { /* silent */ }
+            try {
+                window.localStorage.setItem(RATE_LIMIT_KEY, String(Date.now()));
+                window.localStorage.removeItem(DRAFT_KEY);
+            } catch { /* silent */ }
             setSubmitState('success');
             setEmail('');
+            setDraftRestored(false);
             trackEvent('signup_success', { intent });
         } catch (err) {
             console.error('Ascension signup failed:', err);
@@ -1350,6 +1396,30 @@ const AscensionProject = () => {
                                             onChange={(e) => setHoneypot(e.target.value)}
                                         />
                                     </div>
+
+                                    {/* Draft-restored notice */}
+                                    {draftRestored && submitState !== 'success' && (
+                                        <div className="mb-6 flex items-center justify-between gap-3 border border-white/15 px-4 py-3" role="status" aria-live="polite">
+                                            <div className="flex items-center gap-3 min-w-0">
+                                                <Check size={12} aria-hidden="true" className="flex-shrink-0 text-white/70" />
+                                                <p className="font-mono text-[11px] tracking-[2px] text-white/65 uppercase truncate">Draft restored from your last visit</p>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setEmail('');
+                                                    setIntent('subscribe');
+                                                    setDraftRestored(false);
+                                                    try { window.localStorage.removeItem(DRAFT_KEY); } catch { /* silent */ }
+                                                    trackEvent('signup_draft_dismissed');
+                                                }}
+                                                className="font-mono text-[11px] tracking-[2px] text-white/55 hover:text-white uppercase transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 rounded px-1"
+                                            >
+                                                Clear
+                                            </button>
+                                        </div>
+                                    )}
+
                                     {/* Intent selector */}
                                     <p className="font-mono text-[11px] tracking-[3px] text-white/60 uppercase mb-4">I want to</p>
                                     <div className="grid grid-cols-3 gap-px bg-white/10 mb-8" role="radiogroup" aria-label="Type of involvement">
