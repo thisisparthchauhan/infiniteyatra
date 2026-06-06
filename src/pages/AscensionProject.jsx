@@ -2,7 +2,9 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { ArrowLeft, ArrowRight, Menu, X, ChevronDown } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Menu, X, ChevronDown, Mail, Share2, Check, AlertCircle, Send } from 'lucide-react';
+import { db } from '../firebase';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 
 /* ─────────────────────────────────────────────
    FADE-IN ANIMATION (subtle, no slide)
@@ -94,6 +96,7 @@ const NAV_SECTIONS = [
     { id: 'success', label: 'Criteria', num: '10' },
     { id: 'future', label: 'Future', num: '11' },
     { id: 'manifesto', label: 'Manifesto', num: '12' },
+    { id: 'get-involved', label: 'Get Involved', num: '13' },
 ];
 
 /* ─────────────────────────────────────────────
@@ -103,6 +106,54 @@ const AscensionProject = () => {
     const [navOpen, setNavOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [activeSection, setActiveSection] = useState('hero');
+
+    // ── Get-Involved form state
+    const [email, setEmail] = useState('');
+    const [intent, setIntent] = useState('subscribe'); // subscribe | contribute | apply
+    const [submitState, setSubmitState] = useState('idle'); // idle | sending | success | error
+    const [shareCopied, setShareCopied] = useState(false);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            setSubmitState('error');
+            return;
+        }
+        setSubmitState('sending');
+        try {
+            await addDoc(collection(db, 'ascension_signups'), {
+                email: email.trim().toLowerCase(),
+                intent,
+                source: 'ascension-project',
+                userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
+                createdAt: serverTimestamp(),
+            });
+            setSubmitState('success');
+            setEmail('');
+        } catch (err) {
+            console.error('Ascension signup failed:', err);
+            setSubmitState('error');
+        }
+    };
+
+    const handleShare = async () => {
+        const url = typeof window !== 'undefined' ? window.location.href : '';
+        try {
+            if (navigator.share) {
+                await navigator.share({
+                    title: 'The Ascension Project — Humanity\'s Next Frontier',
+                    text: 'A long-term initiative for exploration, knowledge, AI, and civilization development.',
+                    url,
+                });
+            } else {
+                await navigator.clipboard.writeText(url);
+                setShareCopied(true);
+                setTimeout(() => setShareCopied(false), 2500);
+            }
+        } catch (err) {
+            /* user cancelled — silent */
+        }
+    };
 
     const scrollTo = useCallback((id) => {
         const el = document.getElementById(id);
@@ -946,6 +997,164 @@ const AscensionProject = () => {
                             <p className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-2xl text-white tracking-[3px] uppercase mb-1">Arius Raynott</p>
                             <p className="font-mono text-[12px] tracking-[3px] text-white/60 uppercase">Founder · 2026</p>
                         </FadeIn>
+                    </div>
+                </Section>
+
+                <Rule />
+
+                {/* ══════════════════════════════════════════
+                    SECTION 13 — GET INVOLVED
+                ══════════════════════════════════════════ */}
+                <Section id="get-involved">
+                    <SectionLabel number="13" text="Get Involved" />
+                    <SectionHeading className="mb-8 max-w-4xl">
+                        Join the work.
+                    </SectionHeading>
+
+                    <FadeIn delay={0.15}>
+                        <p className="text-white/65 text-base md:text-lg leading-relaxed font-light max-w-3xl mb-16">
+                            The Ascension Project is not built alone. If any of this resonated — as a researcher, an engineer, a thinker, or simply as someone who wants to follow the work — leave your address. Updates are infrequent and substantive.
+                        </p>
+                    </FadeIn>
+
+                    <div className="grid lg:grid-cols-12 gap-12 lg:gap-16">
+
+                        {/* LEFT — Signup form */}
+                        <div className="lg:col-span-7 min-w-0">
+                            <FadeIn delay={0.2}>
+                                <form onSubmit={handleSubmit} noValidate>
+                                    {/* Intent selector */}
+                                    <p className="font-mono text-[11px] tracking-[3px] text-white/60 uppercase mb-4">I want to</p>
+                                    <div className="grid grid-cols-3 gap-px bg-white/10 mb-8" role="radiogroup" aria-label="Type of involvement">
+                                        {[
+                                            { id: 'subscribe', label: 'Subscribe' },
+                                            { id: 'contribute', label: 'Contribute' },
+                                            { id: 'apply', label: 'Apply' },
+                                        ].map(opt => (
+                                            <button
+                                                key={opt.id}
+                                                type="button"
+                                                role="radio"
+                                                aria-checked={intent === opt.id}
+                                                onClick={() => setIntent(opt.id)}
+                                                className={`bg-black p-4 font-['SpaceX',_'Helvetica_Neue',_sans-serif] text-xs md:text-sm tracking-[2px] uppercase transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 ${intent === opt.id ? 'text-white bg-white/[0.06]' : 'text-white/55 hover:text-white'}`}
+                                            >
+                                                {opt.label}
+                                            </button>
+                                        ))}
+                                    </div>
+
+                                    {/* Email input */}
+                                    <label htmlFor="ascension-email" className="block font-mono text-[11px] tracking-[3px] text-white/60 uppercase mb-3">
+                                        Email Address
+                                    </label>
+                                    <div className="flex flex-col sm:flex-row gap-3">
+                                        <div className="relative flex-1 min-w-0">
+                                            <Mail size={16} aria-hidden="true" className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none" />
+                                            <input
+                                                id="ascension-email"
+                                                type="email"
+                                                inputMode="email"
+                                                autoComplete="email"
+                                                required
+                                                value={email}
+                                                onChange={(e) => { setEmail(e.target.value); if (submitState === 'error') setSubmitState('idle'); }}
+                                                placeholder="you@domain.com"
+                                                disabled={submitState === 'sending' || submitState === 'success'}
+                                                className="w-full bg-transparent border border-white/20 focus:border-white/60 hover:border-white/40 pl-11 pr-4 py-4 text-white placeholder:text-white/35 text-base font-light transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30 disabled:opacity-50"
+                                                aria-describedby="ascension-submit-status"
+                                            />
+                                        </div>
+                                        <button
+                                            type="submit"
+                                            disabled={submitState === 'sending' || submitState === 'success'}
+                                            className="group inline-flex items-center justify-center gap-3 px-8 py-4 border border-white/30 hover:bg-white hover:text-black hover:border-white disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-white transition-all duration-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+                                        >
+                                            <span className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] text-sm tracking-[3px] font-medium uppercase whitespace-nowrap">
+                                                {submitState === 'sending' ? 'Sending…' : submitState === 'success' ? 'Received' : 'Submit'}
+                                            </span>
+                                            {submitState === 'success'
+                                                ? <Check size={14} aria-hidden="true" />
+                                                : <Send size={14} aria-hidden="true" className="transition-transform duration-500 group-hover:translate-x-1" />}
+                                        </button>
+                                    </div>
+
+                                    {/* Status line */}
+                                    <div id="ascension-submit-status" aria-live="polite" className="mt-4 min-h-[20px]">
+                                        {submitState === 'success' && (
+                                            <p className="font-mono text-[12px] tracking-[2px] text-white/70 uppercase flex items-center gap-2">
+                                                <Check size={12} aria-hidden="true" />
+                                                Thank you. You will receive the next founder dispatch.
+                                            </p>
+                                        )}
+                                        {submitState === 'error' && (
+                                            <p className="font-mono text-[12px] tracking-[2px] text-red-300/90 uppercase flex items-center gap-2">
+                                                <AlertCircle size={12} aria-hidden="true" />
+                                                {email ? 'Please enter a valid email address.' : 'Something went wrong. Please try again.'}
+                                            </p>
+                                        )}
+                                    </div>
+                                </form>
+                            </FadeIn>
+                        </div>
+
+                        {/* RIGHT — Direct paths */}
+                        <div className="lg:col-span-5 min-w-0">
+                            <FadeIn delay={0.3}>
+                                <p className="font-mono text-[11px] tracking-[3px] text-white/60 uppercase mb-6">Direct paths</p>
+
+                                <div className="border border-white/15">
+                                    {/* Contact founder */}
+                                    <Link to="/contact"
+                                        className="group flex items-start gap-4 p-6 border-b border-white/10 hover:bg-white/[0.03] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40">
+                                        <div className="w-8 h-8 border border-white/20 flex items-center justify-center flex-shrink-0 group-hover:border-white/50 transition-colors">
+                                            <Mail size={14} aria-hidden="true" />
+                                        </div>
+                                        <div className="min-w-0 flex-1">
+                                            <p className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-sm text-white tracking-wider uppercase mb-1">Contact the founder</p>
+                                            <p className="text-white/55 text-xs leading-relaxed font-light">For research proposals, partnerships, or serious inquiries.</p>
+                                        </div>
+                                        <ArrowRight size={14} aria-hidden="true" className="opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0 mt-2 flex-shrink-0" />
+                                    </Link>
+
+                                    {/* Share */}
+                                    <button
+                                        type="button"
+                                        onClick={handleShare}
+                                        className="group w-full text-left flex items-start gap-4 p-6 border-b border-white/10 hover:bg-white/[0.03] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+                                    >
+                                        <div className="w-8 h-8 border border-white/20 flex items-center justify-center flex-shrink-0 group-hover:border-white/50 transition-colors">
+                                            {shareCopied ? <Check size={14} aria-hidden="true" /> : <Share2 size={14} aria-hidden="true" />}
+                                        </div>
+                                        <div className="min-w-0 flex-1">
+                                            <p className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-sm text-white tracking-wider uppercase mb-1">
+                                                {shareCopied ? 'Link copied' : 'Share the document'}
+                                            </p>
+                                            <p className="text-white/55 text-xs leading-relaxed font-light">
+                                                {shareCopied ? 'Send it to one person who needs to read it.' : 'Copy the link or share via your system.'}
+                                            </p>
+                                        </div>
+                                        <ArrowRight size={14} aria-hidden="true" className="opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0 mt-2 flex-shrink-0" />
+                                    </button>
+
+                                    {/* Return to Future */}
+                                    <Link to="/future"
+                                        className="group flex items-start gap-4 p-6 hover:bg-white/[0.03] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40">
+                                        <div className="w-8 h-8 border border-white/20 flex items-center justify-center flex-shrink-0 group-hover:border-white/50 transition-colors">
+                                            <ArrowLeft size={14} aria-hidden="true" />
+                                        </div>
+                                        <div className="min-w-0 flex-1">
+                                            <p className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-sm text-white tracking-wider uppercase mb-1">Back to Future</p>
+                                            <p className="text-white/55 text-xs leading-relaxed font-light">Return to the Infinite Yatra Space Program.</p>
+                                        </div>
+                                    </Link>
+                                </div>
+
+                                <p className="font-mono text-[11px] tracking-[2px] text-white/45 mt-6 leading-relaxed">
+                                    We do not sell, share, or display your email anywhere. The signup list is a private founder mailing list.
+                                </p>
+                            </FadeIn>
+                        </div>
                     </div>
                 </Section>
 
