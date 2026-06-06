@@ -107,6 +107,7 @@ const AscensionProject = () => {
     const [navOpen, setNavOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [activeSection, setActiveSection] = useState('hero');
+    const [readTimes, setReadTimes] = useState({}); // { sectionId: minutes }
 
     // ── Scroll progress (smooth-spring linked to scrollYProgress)
     const { scrollYProgress } = useScroll();
@@ -347,6 +348,27 @@ const AscensionProject = () => {
         };
     }, [navOpen]);
 
+    // ── Compute per-section read time once after mount, at 225 wpm ──
+    useEffect(() => {
+        const WPM = 225;
+        const estimates = {};
+        let total = 0;
+        NAV_SECTIONS.forEach((s) => {
+            // Skip hero (it's the intro, not "reading" content) and get-involved
+            // (CTA, not reading content)
+            if (s.id === 'hero' || s.id === 'get-involved') return;
+            const el = document.getElementById(s.id);
+            if (!el) return;
+            const text = (el.textContent || '').trim();
+            const words = text ? text.split(/\s+/).length : 0;
+            const minutes = Math.max(1, Math.round(words / WPM));
+            estimates[s.id] = minutes;
+            total += minutes;
+        });
+        estimates._total = total;
+        setReadTimes(estimates);
+    }, []);
+
     // ── Analytics: page_view + scroll depth ──
     useEffect(() => {
         trackPageView('/ascension-project', 'The Ascension Project');
@@ -578,11 +600,18 @@ const AscensionProject = () => {
                                             onClick={() => scrollTo(s.id)}
                                             className={`group w-full flex items-center justify-between py-4 border-b border-white/10 transition-all ${activeSection === s.id ? 'text-white' : 'text-white/50 hover:text-white'}`}
                                         >
-                                            <div className="flex items-center gap-6">
+                                            <div className="flex items-center gap-6 min-w-0">
                                                 <span className="font-mono text-[13px] tracking-[2px] text-white/55">{s.num}</span>
-                                                <span className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-xl tracking-tight uppercase">{s.label}</span>
+                                                <span className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-xl tracking-tight uppercase truncate">{s.label}</span>
                                             </div>
-                                            <ArrowRight size={14} aria-hidden="true" className="opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
+                                            <div className="flex items-center gap-4 flex-shrink-0">
+                                                {readTimes[s.id] && (
+                                                    <span className="font-mono text-[11px] tracking-[2px] text-white/40 hidden sm:inline">
+                                                        {readTimes[s.id]} min
+                                                    </span>
+                                                )}
+                                                <ArrowRight size={14} aria-hidden="true" className="opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
+                                            </div>
                                         </motion.button>
                                     ))}
                                 </div>
@@ -606,6 +635,7 @@ const AscensionProject = () => {
                         <FadeIn delay={0.3}>
                             <p className="font-mono text-[12px] tracking-[3px] text-white/60 uppercase">
                                 Founder Document · Initiated 2026
+                                {readTimes._total ? ` · ~${readTimes._total} min read` : ''}
                             </p>
                         </FadeIn>
                     </div>
