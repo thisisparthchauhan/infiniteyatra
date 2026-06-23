@@ -635,7 +635,7 @@ const BookingPage = () => {
                 totalPrice: finalTotal,
                 tourAmount: tourTotal,
                 hotelAmount: hotelTotal - bundleDiscount,
-                pickupLocation: selectedLocation || null,
+                pickupLocation: hasLocations ? (pkg.pickupLocations[selectedLocIdx]?.location || null) : null,
                 status: 'pending',
                 bookingStatus: 'pending',
                 paymentStatus: 'pending',

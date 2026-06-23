@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://www.infiniteyatra.com/</loc>
     <changefreq>daily</changefreq>
@@ -139,5 +140,25 @@
     <loc>https://www.infiniteyatra.com/hotels/mock-1</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
+  </url>
+
+  <!-- Space program + Ascension Project -->
+  <url>
+    <loc>https://www.infiniteyatra.com/future</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <image:image xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+      <image:loc>https://www.infiniteyatra.com/og/future.png</image:loc>
+      <image:title>Infinite Yatra Space Program</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://www.infiniteyatra.com/ascension-project</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+      <image:loc>https://www.infiniteyatra.com/og/ascension.png</image:loc>
+      <image:title>The Ascension Project — Humanity's Next Frontier</image:title>
+    </image:image>
   </url>
 </urlset>

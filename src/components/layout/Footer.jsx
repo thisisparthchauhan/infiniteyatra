@@ -168,20 +168,20 @@ const Footer = memo(() => {
                 {/* Gradient top border */}
                 <div className="h-px w-full bg-gradient-to-r from-[#7C3AED] to-[#2563EB]" />
 
-                <div className="container mx-auto px-6 py-16">
+                <div className="w-full max-w-[100rem] mx-auto px-4 lg:px-6 xl:px-8 py-16">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-10">
 
                         {/* ── Column 1: Brand ── */}
-                        <div className="space-y-6 flex flex-col items-center lg:items-start xl:items-center">
-                            <div className="w-auto flex flex-col items-center">
-                                <h3
-                                    className="text-2xl font-black tracking-[0.2em] text-white text-center"
+                        <div className="space-y-6 flex flex-col items-center lg:items-start">
+                            <div className="w-auto flex flex-col items-center leading-none">
+                                <span
+                                    className="text-2xl font-black tracking-[0.2em] text-white drop-shadow-sm whitespace-nowrap text-center"
                                     style={{ fontFamily: "'Raleway', sans-serif" }}
                                 >
                                     INFINITE YATRA
-                                </h3>
+                                </span>
                                 <span
-                                    className="text-[10px] tracking-[0.3em] font-extrabold text-white/80 block w-full text-center mt-1"
+                                    className="text-[10px] tracking-[0.3em] font-extrabold text-white/90 block w-full text-center"
                                     style={{ fontFamily: "'Raleway', sans-serif" }}
                                 >
                                     EXPLORE INFINITE
