@@ -1,18 +1,36 @@
 User-agent: *
 Allow: /
 
-# Don't crawl admin or private user areas
+# Auth pages
+Disallow: /login
+Disallow: /signup
+
+# Admin & internal
 Disallow: /admin
 Disallow: /admin/
+Disallow: /team-guide
+Disallow: /migrate-packages-fix
+
+# Private user areas
+Disallow: /dashboard
 Disallow: /my-bookings
-Disallow: /wishlist
+Disallow: /my-hotel-bookings
+Disallow: /my-trips
 Disallow: /profile
+Disallow: /profile/
+Disallow: /passport
+Disallow: /wishlist
+
+# Dynamic user content
 Disallow: /trip/
 Disallow: /plan/
 
-# Don't crawl staff / internal pages
-Disallow: /team-guide
-Disallow: /connect
+# Booking confirmation pages
+Disallow: /booking-success
+Disallow: /hotels/booking-confirmation
+Disallow: /hotels/success
 
-# Sitemap location
+# Vendor portal
+Disallow: /vendor/
+
 Sitemap: https://www.infiniteyatra.com/sitemap.xml
