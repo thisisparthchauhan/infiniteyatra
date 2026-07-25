@@ -25,6 +25,11 @@ dist-ssr
 # Firebase cache
 .firebase
 .env
+.env.local
+.env.production
+.env.*.local
+!.env.example
+!.env.production.example
 
 # Local Netlify folder
 .netlify
