@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import msmeLogo from '../../assets/msme-logo.png';
 import { db } from '../../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { api, USE_API } from '../../lib/api';
 import { useToast } from '../../context/ToastContext';
 
 /* ─── Brand SVG Icons ─── */
@@ -112,14 +113,26 @@ const Footer = memo(() => {
         setStatus('loading');
 
         try {
-            // Note: no client-side duplicate check — listing newsletter_subscribers
-            // is admin-only (rules), and opening it publicly would leak subscriber
-            // emails. Duplicates are de-duped admin-side instead.
-            await addDoc(collection(db, 'newsletter_subscribers'), {
-                email,
-                subscribedAt: serverTimestamp(),
-                source: 'footer'
-            });
+            if (USE_API) {
+                // New MongoDB API — unique index dedupes; a duplicate returns 200.
+                const res = await api.post('/api/newsletter', { email, source: 'footer' });
+                if (res.duplicate) {
+                    setStatus('duplicate');
+                    addToast("You're already subscribed! 🙌", 'info');
+                    setEmail('');
+                    setTimeout(() => setStatus('idle'), 3000);
+                    return;
+                }
+            } else {
+                // Legacy Firebase path. No client-side duplicate check — listing
+                // newsletter_subscribers is admin-only (rules), and opening it
+                // publicly would leak emails. Duplicates are de-duped admin-side.
+                await addDoc(collection(db, 'newsletter_subscribers'), {
+                    email,
+                    subscribedAt: serverTimestamp(),
+                    source: 'footer'
+                });
+            }
 
             // Notify via Formspree (non-blocking — subscriber is already saved).
             try {

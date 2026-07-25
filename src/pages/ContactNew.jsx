@@ -6,6 +6,7 @@ import { sendContactEmail } from '../services/email';
 import { useToast } from '../context/ToastContext';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { api, USE_API } from '../lib/api';
 
 const ContactNew = () => {
     const [formData, setFormData] = useState({
@@ -64,15 +65,7 @@ const ContactNew = () => {
         };
 
         try {
-            // 1. Save to Firestore (original collection)
-            await addDoc(collection(db, 'enquiries'), {
-                ...submissionData,
-                timestamp: serverTimestamp(),
-                status: 'new'
-            });
-
-            // 1b. Save to unified leads collection
-            await addDoc(collection(db, 'leads'), {
+            const leadPayload = {
                 name: fullName,
                 firstName: formData.firstName,
                 lastName: formData.lastName,
@@ -82,8 +75,24 @@ const ContactNew = () => {
                 source_type: 'contact_form',
                 sourcePage: '/contact',
                 status: 'new',
-                createdAt: serverTimestamp()
-            });
+            };
+
+            if (USE_API) {
+                // New MongoDB API.
+                await api.post('/api/enquiries', { ...submissionData });
+                await api.post('/api/leads', leadPayload);
+            } else {
+                // Legacy Firebase path.
+                await addDoc(collection(db, 'enquiries'), {
+                    ...submissionData,
+                    timestamp: serverTimestamp(),
+                    status: 'new'
+                });
+                await addDoc(collection(db, 'leads'), {
+                    ...leadPayload,
+                    createdAt: serverTimestamp()
+                });
+            }
 
             // 2. Send Email
             // email.js expects { name, email, subject, message }

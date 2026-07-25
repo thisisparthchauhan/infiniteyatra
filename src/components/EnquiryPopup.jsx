@@ -4,6 +4,7 @@ import { useLocation } from 'react-router-dom';
 import { X, Send, Loader2 } from 'lucide-react';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { api, USE_API } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
@@ -87,16 +88,7 @@ const EnquiryPopup = () => {
         setIsLoading(true);
 
         try {
-            // Save to original enquiries collection (backward compatible)
-            await addDoc(collection(db, 'enquiries'), {
-                ...formData,
-                fullMobile: `+${formData.mobile}`,
-                createdAt: serverTimestamp(),
-                source: window.location.pathname
-            });
-
-            // Also save to unified leads collection for Lead Management System
-            await addDoc(collection(db, 'leads'), {
+            const leadPayload = {
                 name: `${formData.firstName} ${formData.lastName}`.trim(),
                 firstName: formData.firstName,
                 lastName: formData.lastName,
@@ -105,8 +97,32 @@ const EnquiryPopup = () => {
                 source_type: 'enquiry_popup',
                 sourcePage: window.location.pathname,
                 status: 'new',
-                createdAt: serverTimestamp()
-            });
+            };
+
+            if (USE_API) {
+                // New MongoDB API.
+                await api.post('/api/enquiries', {
+                    firstName: formData.firstName,
+                    lastName: formData.lastName,
+                    mobile: formData.mobile,
+                    email: formData.email,
+                    fullMobile: `+${formData.mobile}`,
+                    source: window.location.pathname,
+                });
+                await api.post('/api/leads', leadPayload);
+            } else {
+                // Legacy Firebase path.
+                await addDoc(collection(db, 'enquiries'), {
+                    ...formData,
+                    fullMobile: `+${formData.mobile}`,
+                    createdAt: serverTimestamp(),
+                    source: window.location.pathname
+                });
+                await addDoc(collection(db, 'leads'), {
+                    ...leadPayload,
+                    createdAt: serverTimestamp()
+                });
+            }
 
             // Notify via Formspree (non-blocking — lead is already saved).
             try {
