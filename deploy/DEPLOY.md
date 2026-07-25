@@ -11,6 +11,23 @@ noted “(local machine)”.
 
 ---
 
+## Fast path (one script)
+
+Once the code is on the VPS and `server/.env` is filled in, the whole base
+deploy is a single command:
+
+```bash
+cd /var/www/infiniteyatra
+cp server/.env.example server/.env        # then edit: MONGODB_URI + JWT_SECRET
+bash deploy/setup.sh                       # installs Node/PM2/Nginx, builds, wires Nginx
+```
+
+It prints the `certbot` (TLS) and DNS steps at the end — those still need your
+input. The sections below explain each step the script performs, for when you
+want to do it by hand or debug.
+
+---
+
 ## 1. Install runtime (once)
 
 ```bash
