@@ -73,6 +73,20 @@ service cloud.firestore {
                     && (!('email' in request.resource.data) || isValidEmail(request.resource.data.email));
       allow read, update, delete: if request.auth != null && request.auth.token.email == 'chauhanparth165@gmail.com';
     }
+    match /leads/{leadId} {
+      // Unified lead-capture collection written by every public inquiry form
+      // (enquiry popup, contact, hotel inquiry, private jets, partner onboarding,
+      // WhatsApp click). Anyone can create a bounded, well-formed lead; clients
+      // never list the collection — admin reads it via the dashboard.
+      allow create: if request.resource.data.size() <= 25
+                    && isShortString(request.resource.data.get('name', ''), 200)
+                    && isShortString(request.resource.data.get('phone', ''), 40)
+                    && isShortString(request.resource.data.get('message', ''), 5000)
+                    && (!('email' in request.resource.data)
+                        || request.resource.data.email == ''
+                        || isValidEmail(request.resource.data.email));
+      allow read, update, delete: if isAdmin();
+    }
     match /newsletter_subscribers/{subscriberId} {
       // Anyone can subscribe; require a real email.
       allow create: if request.resource.data.size() <= 6

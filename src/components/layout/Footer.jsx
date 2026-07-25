@@ -4,7 +4,7 @@ import { Phone, Mail, Lock, Globe, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import msmeLogo from '../../assets/msme-logo.png';
 import { db } from '../../firebase';
-import { collection, addDoc, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '../../context/ToastContext';
 
 /* ─── Brand SVG Icons ─── */
@@ -112,16 +112,9 @@ const Footer = memo(() => {
         setStatus('loading');
 
         try {
-            // Check for duplicates
-            const q = query(collection(db, 'newsletter_subscribers'), where('email', '==', email));
-            const snap = await getDocs(q);
-            if (!snap.empty) {
-                setStatus('duplicate');
-                addToast("You're already subscribed! 🙌", 'info');
-                setTimeout(() => setStatus('idle'), 3000);
-                return;
-            }
-
+            // Note: no client-side duplicate check — listing newsletter_subscribers
+            // is admin-only (rules), and opening it publicly would leak subscriber
+            // emails. Duplicates are de-duped admin-side instead.
             await addDoc(collection(db, 'newsletter_subscribers'), {
                 email,
                 subscribedAt: serverTimestamp(),
