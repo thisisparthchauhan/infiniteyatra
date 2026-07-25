@@ -8,6 +8,9 @@ import { useAuth } from '../context/AuthContext';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
 
+/* Formspree enquiry endpoint */
+const FORMSPREE_ENDPOINT = 'https://formspree.io/f/xykrbbkg';
+
 const EnquiryPopup = () => {
     const { currentUser } = useAuth();
     const location = useLocation();
@@ -104,6 +107,25 @@ const EnquiryPopup = () => {
                 status: 'new',
                 createdAt: serverTimestamp()
             });
+
+            // Notify via Formspree (non-blocking — lead is already saved).
+            try {
+                await fetch(FORMSPREE_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                    body: JSON.stringify({
+                        name: `${formData.firstName} ${formData.lastName}`.trim(),
+                        firstName: formData.firstName,
+                        lastName: formData.lastName,
+                        phone: `+${formData.mobile}`,
+                        email: formData.email,
+                        source: window.location.pathname,
+                        _subject: 'New enquiry — Infinite Yatra',
+                    }),
+                });
+            } catch (formspreeError) {
+                console.error('Formspree notification failed:', formspreeError);
+            }
 
             setIsSubmitted(true);
             setTimeout(() => {

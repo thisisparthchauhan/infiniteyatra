@@ -34,6 +34,9 @@ const YouTubeIcon = ({ size = 20, className }) => (
 
 
 
+/* ─── Formspree newsletter endpoint ─── */
+const FORMSPREE_ENDPOINT = 'https://formspree.io/f/mdaqppkj';
+
 /* ─── Sub-components ─── */
 
 const FooterLink = ({ to, children, external, href }) => {
@@ -124,6 +127,22 @@ const Footer = memo(() => {
                 subscribedAt: serverTimestamp(),
                 source: 'footer'
             });
+
+            // Notify via Formspree (non-blocking — subscriber is already saved).
+            try {
+                await fetch(FORMSPREE_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                    body: JSON.stringify({
+                        email,
+                        source: 'footer',
+                        _subject: 'New newsletter subscriber — Infinite Yatra',
+                    }),
+                });
+            } catch (formspreeError) {
+                console.error('Formspree notification failed:', formspreeError);
+            }
+
             setStatus('success');
             addToast('🎉 You\'re in! Watch your inbox for adventures.', 'success');
             setEmail('');
