@@ -137,7 +137,7 @@ const Destinations = ({ packages: propPackages, title = "Explore Infinite", subt
                         <div>
                             <h2 className={`text-4xl md:text-5xl font-bold mb-4 tracking-tight ${textPrimary}`}>{title}</h2>
                             <p className={`text-xl max-w-xl font-light ${textSecondary}`}>
-                                {subtitle || "Curated journeys designed for explorers who want more than just a trip."}
+                                {subtitle || "Kedarnath Yatra, Char Dham, Himalayan treks and spiritual travel — curated for every traveller."}
                             </p>
                         </div>
                         {showViewAll && (

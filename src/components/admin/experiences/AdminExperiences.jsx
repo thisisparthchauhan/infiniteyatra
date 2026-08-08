@@ -3,7 +3,7 @@ import { collection, query, orderBy, getDocs, doc, updateDoc, deleteDoc } from '
 import { db } from '../../../firebase';
 import { Check, X, Eye, Edit2, MapPin, Calendar, Clock, ArrowRight, Shield } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import CreateStoryModal from '../../CreateStoryModal';
+import CreateStoryModal from '../../stories/CreateStoryModal';
 import StoryCategoryManager from './StoryCategoryManager';
 
 const AdminExperiences = () => {

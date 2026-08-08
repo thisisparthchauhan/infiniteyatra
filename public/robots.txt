@@ -33,4 +33,5 @@ Disallow: /hotels/success
 # Vendor portal
 Disallow: /vendor/
 
+
 Sitemap: https://www.infiniteyatra.com/sitemap.xml
