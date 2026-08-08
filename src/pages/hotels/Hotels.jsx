@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import HotelCard from '../../components/hotels/HotelCard';
+import HotelCard from '../components/Hotels/HotelCard';
 import {
     Search, MapPin, Building2, Home as HomeIcon, Tent, Trees, Castle, Bed,
     ArrowRight, Star, CalendarDays, Users, Minus, Plus, ChevronLeft, ChevronRight,
@@ -8,10 +8,10 @@ import {
     X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
-import { db } from '../../firebase';
-import { hotels as staticHotels } from '../../data/hotels';
-import SEO from '../../components/SEO';
+import { collection, getDocs, query, where } from 'firebase/firestore';
+import { db } from '../firebase';
+import { hotels as staticHotels } from '../data/hotels';
+import SEO from '../components/common/SEO';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -230,7 +230,6 @@ const Hotels = () => {
 
     // Data
     const [hotels, setHotels] = useState([]);
-    const [firestoreCities, setFirestoreCities] = useState([]); // admin-managed cities
     const [loading, setLoading] = useState(true);
 
     // Search state
@@ -252,23 +251,10 @@ const Hotels = () => {
     const searchInputRef = useRef(null);
 
     // -----------------------------------------------------------------------
-    // Fetch hotels + cities
+    // Fetch hotels
     // -----------------------------------------------------------------------
     useEffect(() => {
-        const fetchData = async () => {
-            // Fetch admin-managed cities
-            try {
-                const citySnap = await getDocs(collection(db, 'hotel_cities'));
-                const cityData = citySnap.docs
-                    .map(d => ({ id: d.id, ...d.data() }))
-                    .filter(c => c.isActive !== false)
-                    .sort((a, b) => (a.displayOrder ?? 99) - (b.displayOrder ?? 99));
-                if (cityData.length > 0) setFirestoreCities(cityData);
-            } catch (err) {
-                console.warn('hotel_cities fetch failed:', err);
-            }
-
-            // Fetch hotels
+        const fetchHotels = async () => {
             try {
                 let fetchedHotels = [];
                 try {
@@ -290,7 +276,7 @@ const Hotels = () => {
                 setLoading(false);
             }
         };
-        fetchData();
+        fetchHotels();
     }, []);
 
     // Load recently viewed
@@ -303,34 +289,8 @@ const Hotels = () => {
     // Derived data
     // -----------------------------------------------------------------------
 
-    // Cities: prefer admin-managed cities (with proper photos), augment with hotel count/price
+    // Cities
     const cities = useMemo(() => {
-        // Build hotel stats per city
-        const hotelStats = {};
-        hotels.forEach(hotel => {
-            const city = (hotel.city || hotel.location || '').trim();
-            if (!city) return;
-            if (!hotelStats[city]) hotelStats[city] = { count: 0, minPrice: Infinity, image: null };
-            hotelStats[city].count++;
-            const price = hotel.price || hotel.rooms?.[0]?.price || 0;
-            if (price > 0 && price < hotelStats[city].minPrice) hotelStats[city].minPrice = price;
-            if (!hotelStats[city].image) hotelStats[city].image = hotel.image || hotel.imageUrl || hotel.images?.[0] || null;
-        });
-
-        if (firestoreCities.length > 0) {
-            // Use admin-managed cities as the source of truth
-            return firestoreCities.map(c => ({
-                name: c.name,
-                state: c.state,
-                image: c.image || hotelStats[c.name]?.image || null,
-                description: c.description || '',
-                count: hotelStats[c.name]?.count || 0,
-                minPrice: hotelStats[c.name]?.minPrice ?? Infinity,
-                id: c.id,
-            }));
-        }
-
-        // Fallback: derive from hotels
         const cityMap = {};
         hotels.forEach(hotel => {
             const city = (hotel.city || '').trim();
@@ -342,7 +302,7 @@ const Hotels = () => {
             if (!cityMap[city].image) cityMap[city].image = hotel.image || hotel.imageUrl || hotel.images?.[0] || null;
         });
         return Object.values(cityMap).sort((a, b) => b.count - a.count);
-    }, [hotels, firestoreCities]);
+    }, [hotels]);
 
     // Destination suggestions
     const suggestions = useMemo(() => {
@@ -593,49 +553,51 @@ const Hotels = () => {
                         className="flex items-end justify-between mb-10"
                     >
                         <div>
-                            <p className="text-amber-400 text-xs font-semibold tracking-widest uppercase mb-2">Bloom Hotels · 23 Cities</p>
-                            <h2 className="text-2xl md:text-3xl font-bold text-white">Browse by City</h2>
-                            <p className="text-zinc-500 text-sm mt-1">Premium partner hotels across India</p>
+                            <p className="text-amber-400 text-xs font-semibold tracking-widest uppercase mb-2">Explore India</p>
+                            <h2 className="text-2xl md:text-3xl font-bold text-white">Trending Destinations</h2>
                         </div>
+                        <Link
+                            to="/hotels/all"
+                            className="text-amber-400 hover:text-amber-300 font-medium text-sm flex items-center gap-1 transition-colors"
+                        >
+                            View All <ArrowRight size={14} />
+                        </Link>
                     </motion.div>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                        {cities.map((city, i) => (
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+                        {cities.slice(0, 6).map((city, i) => (
                             <motion.div
                                 key={city.name}
                                 initial={{ opacity: 0, y: 20 }}
                                 whileInView={{ opacity: 1, y: 0 }}
-                                transition={{ delay: Math.min(i * 0.04, 0.4) }}
+                                transition={{ delay: i * 0.06 }}
                                 viewport={{ once: true }}
                             >
                                 <Link
                                     to={`/hotels/city/${citySlug(city.name)}`}
-                                    className="group block relative overflow-hidden rounded-2xl border border-zinc-800 hover:border-amber-500/40 transition-all hover:shadow-lg hover:shadow-amber-500/10"
+                                    className="group block relative overflow-hidden rounded-2xl border border-zinc-800 hover:border-amber-500/30 transition-all"
                                 >
                                     <div className="aspect-[3/4] bg-zinc-800 relative">
                                         {city.image ? (
                                             <img
                                                 src={city.image}
                                                 alt={city.name}
-                                                className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-700"
+                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                                                 loading="lazy"
                                             />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-zinc-800 to-zinc-900">
-                                                <MapPin size={36} className="text-zinc-600" />
+                                                <MapPin size={40} className="text-zinc-600" />
                                             </div>
                                         )}
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
                                     </div>
-                                    <div className="absolute bottom-0 left-0 right-0 p-3">
-                                        <h3 className="text-sm font-bold text-white leading-tight">{city.name}</h3>
-                                        {city.state && <p className="text-[10px] text-zinc-400 mt-0.5">{city.state}</p>}
-                                        <div className="flex items-center justify-between mt-1">
-                                            <p className="text-[10px] text-zinc-500">
-                                                {city.count > 0 ? `${city.count} ${city.count === 1 ? 'hotel' : 'hotels'}` : 'Coming soon'}
-                                            </p>
+                                    <div className="absolute bottom-0 left-0 right-0 p-4">
+                                        <h3 className="text-lg font-bold text-white mb-1">{city.name}</h3>
+                                        <div className="flex items-center justify-between">
+                                            <p className="text-xs text-zinc-400">{city.count} {city.count === 1 ? 'stay' : 'stays'}</p>
                                             {city.minPrice < Infinity && (
-                                                <p className="text-[10px] font-semibold text-amber-400">₹{city.minPrice.toLocaleString('en-IN')}+</p>
+                                                <p className="text-xs font-semibold text-amber-400">from ₹{city.minPrice.toLocaleString('en-IN')}</p>
                                             )}
                                         </div>
                                     </div>

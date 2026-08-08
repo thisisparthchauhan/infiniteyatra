@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ChevronDown, ArrowRight, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import LazyImage from '../common/LazyImage';
 
 const STATS = [
   { icon: '🌍', value: 195, suffix: '+', label: 'Countries Covered' },
@@ -76,10 +77,11 @@ const HeroSection = ({ onExploreClick }) => {
       <div className="absolute left-0 top-0 bottom-0 w-1 z-20" style={{ background: '#7C3AED' }} />
 
       {/* Background Image */}
-      <img
+      <LazyImage
         src="https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&q=80&w=1920"
         alt="Cinematic mountain hero"
-        className="absolute inset-0 w-full h-full object-cover"
+        containerClassName="absolute inset-0 w-full h-full"
+        className="w-full h-full object-cover"
         style={{ filter: 'brightness(0.6) saturate(1.2)' }}
       />
 

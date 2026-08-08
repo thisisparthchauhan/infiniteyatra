@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { blogs } from '../../data/blogs';
-import BlogCard from '../../components/blog/BlogCard';
-import SEO from '../../components/SEO';
+import { blogs } from '../data/blogs';
+import BlogCard from '../components/BlogCard';
+import SEO from '../components/common/SEO';
 
 const BlogPage = () => {
     const [selectedCategory, setSelectedCategory] = useState('All');

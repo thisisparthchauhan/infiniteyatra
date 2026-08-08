@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { db, auth } from '../../firebase';
+import { db, auth } from '../firebase';
 import { collection, query, where, getDocs, orderBy, doc, updateDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import { Link } from 'react-router-dom';
 import { MapPin, Calendar, ArrowRight, Trash2 } from 'lucide-react';
-import SEO from '../../components/SEO';
+import SEO from '../components/common/SEO';
 
 const MyTrips = () => {
     const [trips, setTrips] = useState([]);

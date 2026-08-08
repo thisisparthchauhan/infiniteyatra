@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { MapPin, Star, ArrowRight, Heart } from 'lucide-react';
 import { usePackages } from '../context/PackageContext';
 import { useWishlist } from '../context/WishlistContext';
+import LazyImage from './common/LazyImage';
 
 const DestinationCard = ({ dest, cardClass, isLight, textPrimary, isInWishlist, toggleWishlist }) => {
     const navigate = useNavigate();
@@ -55,10 +56,10 @@ const DestinationCard = ({ dest, cardClass, isLight, textPrimary, isInWishlist, 
                 }}
             >
                 <div className="relative aspect-[4/5] overflow-hidden rounded-2xl mb-4" style={{ transform: 'translateZ(20px)', transformStyle: 'preserve-3d' }}>
-                    <img
+                    <LazyImage
                         src={dest.image}
                         alt={dest.title}
-                        loading="lazy"
+                        containerClassName="w-full h-full"
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                     />
                     <div className="absolute top-4 right-4 flex gap-2 z-10">

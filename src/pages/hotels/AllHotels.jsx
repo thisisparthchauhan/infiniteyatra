@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { collection, getDocs, query, where } from 'firebase/firestore';
-import { db } from '../../firebase';
+import { db } from '../firebase';
 import {
   Search, Star, MapPin, ChevronRight, SlidersHorizontal, Wifi, Coffee, Car,
   Waves, Dumbbell, X, MessageCircle, ArrowUpDown, Grid3X3, List, ChevronDown,
@@ -9,8 +9,8 @@ import {
   LayoutGrid, Check
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import SEO from '../../components/SEO';
-import HotelCard from '../../components/hotels/HotelCard';
+import SEO from '../components/common/SEO';
+import HotelCard from '../components/Hotels/HotelCard';
 
 // --- Constants ---
 

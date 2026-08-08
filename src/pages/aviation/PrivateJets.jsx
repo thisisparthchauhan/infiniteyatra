@@ -7,11 +7,11 @@ import {
   Gauge, Navigation, CheckCircle, Heart, Globe, Headphones,
   DollarSign, Send, Mountain, HeartPulse, PlaneTakeoff,
 } from 'lucide-react';
-import SEO from '../../components/SEO';
-import ExploreOtherTransport from '../../components/ExploreOtherTransport';
-import { db } from '../../firebase';
+import SEO from '../components/common/SEO';
+import ExploreOtherTransport from '../components/ExploreOtherTransport';
+import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { privateJetFleet, jetServices, popularRoutes, jetTestimonials } from '../../data/privateJets';
+import { privateJetFleet, jetServices, popularRoutes, jetTestimonials } from '../data/privateJets';
 
 const WHATSAPP_NUMBER = '919265799325';
 

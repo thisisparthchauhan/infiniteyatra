@@ -1,4 +1,18 @@
 User-agent: *
 Allow: /
 
+# Don't crawl admin or private user areas
+Disallow: /admin
+Disallow: /admin/
+Disallow: /my-bookings
+Disallow: /wishlist
+Disallow: /profile
+Disallow: /trip/
+Disallow: /plan/
+
+# Don't crawl staff / internal pages
+Disallow: /team-guide
+Disallow: /connect
+
+# Sitemap location
 Sitemap: https://www.infiniteyatra.com/sitemap.xml

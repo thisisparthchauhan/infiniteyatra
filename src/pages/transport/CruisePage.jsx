@@ -5,9 +5,9 @@ import {
     GlassWater, Ship, Clock, Waves, Phone, MessageCircle, Mic2,
     Award, Calendar, ArrowRight
 } from 'lucide-react';
-import SEO from '../../components/SEO';
-import ExploreOtherTransport from '../../components/ExploreOtherTransport';
-import { addCruiseBooking } from '../../services/cruiseService';
+import SEO from '../components/common/SEO';
+import ExploreOtherTransport from '../components/ExploreOtherTransport';
+import { addCruiseBooking } from '../services/cruiseService';
 import './CruisePage.css';
 
 const WHATSAPP_NUMBER = '919265799325';

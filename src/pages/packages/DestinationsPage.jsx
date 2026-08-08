@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useMemo, lazy, Suspense } from 'react';
-import SEO from '../../components/SEO';
-import { usePackages } from '../../context/PackageContext';
+import SEO from '../components/common/SEO';
+import { usePackages } from '../context/PackageContext';
 
-import HeroSection from '../../components/destinations/HeroSection';
-import SeasonFilterStrip from '../../components/destinations/SeasonFilterStrip';
-import EditorsPick from '../../components/destinations/EditorsPick';
-import CategorizedDestinations from '../../components/destinations/CategorizedDestinations';
-import InspirationStrip from '../../components/destinations/InspirationStrip';
+import HeroSection from '../components/destinations/HeroSection';
+import SeasonFilterStrip from '../components/destinations/SeasonFilterStrip';
+import EditorsPick from '../components/destinations/EditorsPick';
+import CategorizedDestinations from '../components/destinations/CategorizedDestinations';
+import InspirationStrip from '../components/destinations/InspirationStrip';
 
 // Lazy-load the heavy map component
-const WorldMapView = lazy(() => import('../../components/destinations/WorldMapView'));
+const WorldMapView = lazy(() => import('../components/destinations/WorldMapView'));
 
 const gridRef = React.createRef();
 

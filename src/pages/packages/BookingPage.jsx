@@ -18,7 +18,7 @@ import { COUNTRIES } from '../../data/countries';
 const steps = [
     { id: 1, label: 'Trip Details', icon: Calendar },
     { id: 2, label: 'Travelers', icon: Users },
-    { id: 3, label: 'Review & Pay', icon: CheckCircle },
+    { id: 3, label: 'Review & Confirm', icon: CheckCircle },
 ];
 
 // Document types by nationality
@@ -376,7 +376,12 @@ const BookingPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const { currentUser } = useAuth();
+    const locationState = window.history.state?.usr || {}; // from navigate(..., {state:{...}})
+    const preselectedLocationName = locationState.selectedLocation || null;
+    const preselectedDate = locationState.selectedDate || null; // date string 'YYYY-MM-DD'
     const [pkg, setPkg] = useState(null);
+    // Location selector state — initialized after pkg loads
+    const [selectedLocIdx, setSelectedLocIdx] = useState(0);
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
@@ -388,7 +393,7 @@ const BookingPage = () => {
     const [selectedHotel, setSelectedHotel] = useState(null);
 
     const [bookingData, setBookingData] = useState({
-        date: '',
+        date: preselectedDate || '',
         travelers: 2,
         name: '',
         email: '',
@@ -426,6 +431,12 @@ const BookingPage = () => {
                 }
                 if (!packageData) { navigate('/'); return; }
                 setPkg(packageData);
+                // Set initial location index based on preselected name
+                if (packageData.pickupLocations && packageData.pickupLocations.length > 0 && preselectedLocationName) {
+                    const idx = packageData.pickupLocations.findIndex(l => l.location === preselectedLocationName);
+                    if (idx >= 0) setSelectedLocIdx(idx);
+                }
+                // Start at 1 traveler — no hard lock on minimum
                 setLoading(false);
 
                 if (packageData.location) {
@@ -454,6 +465,36 @@ const BookingPage = () => {
         };
         fetchPackageAndHotels();
     }, [id, navigate, currentUser]);
+
+    // Check if a date is valid under the package's departure rules (for non-group bookings)
+    const isDateValidForDepartureType = (dateStr) => {
+        if (!dateStr || !pkg) return true;
+        const date = new Date(dateStr);
+        if (pkg.seasonStartDate && date < new Date(pkg.seasonStartDate)) return false;
+        if (pkg.seasonEndDate && date > new Date(pkg.seasonEndDate)) return false;
+        if (pkg.departureType === 'daily') return true;
+        if (pkg.departureType === 'weekly') {
+            const isWeeklyDay = pkg.weeklyDay !== null && pkg.weeklyDay !== undefined && date.getDay() === Number(pkg.weeklyDay);
+            const isSpecialBatch = pkg.batchDates && pkg.batchDates.some(b => b.date === dateStr);
+            return isWeeklyDay || isSpecialBatch;
+        }
+        if (!pkg.batchDates || pkg.batchDates.length === 0) return true;
+        return pkg.batchDates.some(b => b.date === dateStr);
+    };
+
+    // Handle traveler count change — if dropping below minimum, validate current date
+    const handleTravelerCountChange = (delta) => {
+        setBookingData(prev => {
+            const newCount = Math.max(1, Number(prev.travelers) + delta);
+            const belowMin = pkg?.minimumPersons > 1 && newCount < pkg.minimumPersons;
+            // If dropping below minimum, check if current date is still valid
+            let newDate = prev.date;
+            if (belowMin && prev.date && !isDateValidForDepartureType(prev.date)) {
+                newDate = ''; // clear the invalid date
+            }
+            return { ...prev, travelers: newCount, date: newDate };
+        });
+    };
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -530,8 +571,10 @@ const BookingPage = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    // Price Calculations
-    const tourTotal = pkg ? pkg.price * Number(bookingData.travelers) : 0;
+    // Price Calculations — use selected location price if package has pickup locations
+    const hasLocations = pkg?.pickupLocations && pkg.pickupLocations.length > 0;
+    const effectivePrice = pkg ? (hasLocations ? (pkg.pickupLocations[selectedLocIdx]?.price || pkg.price) : pkg.price) : 0;
+    const tourTotal = pkg ? effectivePrice * Number(bookingData.travelers) : 0;
     let hotelTotal = 0, bundleDiscount = 0;
     if (selectedHotel) {
         hotelTotal = selectedHotel.originalPrice;
@@ -592,6 +635,7 @@ const BookingPage = () => {
                 totalPrice: finalTotal,
                 tourAmount: tourTotal,
                 hotelAmount: hotelTotal - bundleDiscount,
+                pickupLocation: hasLocations ? (pkg.pickupLocations[selectedLocIdx]?.location || null) : null,
                 status: 'pending',
                 bookingStatus: 'pending',
                 paymentStatus: 'pending',
@@ -600,82 +644,54 @@ const BookingPage = () => {
                 bundledHotelName: selectedHotel?.name || null
             });
 
-            await payWithRazorpay(
-                {
-                    id: newBookingRef.id,
-                    amount: finalTotal,
-                    currency: 'INR',
-                    user: { name: bookingData.name, email: bookingData.email, phone: bookingData.phone },
-                    description: `Trip Booking - ${pkg.title}`
-                },
-                async (paymentResult) => {
-                    try {
-                        await updateDoc(newBookingRef, {
-                            razorpayOrderId: paymentResult.orderId || '',
-                            razorpayPaymentId: paymentResult.paymentId || '',
-                            status: 'confirmed',
-                            bookingStatus: 'confirmed',
-                            paymentStatus: 'paid',
-                        });
-
-                        // Upload document files
-                        const uploadedDocs = await uploadDocFiles(newBookingRef.id);
-                        if (uploadedDocs.length > 0) {
-                            await addDoc(collection(db, 'bookings', newBookingRef.id, 'documents'), {
-                                docs: uploadedDocs,
-                                createdAt: serverTimestamp()
-                            });
-                        }
-
-                        if (selectedHotel) {
-                            await addDoc(collection(db, 'hotel_bookings'), {
-                                hotelId: selectedHotel.id, hotelName: selectedHotel.name,
-                                roomId: selectedHotel.roomId, roomName: selectedHotel.roomName,
-                                userId: currentUser.uid, customerName: bookingData.name,
-                                customerEmail: bookingData.email, customerPhone: bookingData.phone,
-                                checkIn: bookingData.date, checkOut: bookingData.date,
-                                pricePerNight: selectedHotel.originalPrice,
-                                totalAmount: hotelTotal - bundleDiscount,
-                                paymentStatus: 'Paid (Bundle)', bookingStatus: 'Confirmed',
-                                bundledWithTour: newBookingRef.id, createdAt: serverTimestamp()
-                            });
-                            await addDoc(collection(db, 'hotel_finance'), {
-                                bookingId: 'BUNDLE_' + newBookingRef.id, hotelId: selectedHotel.id,
-                                grossAmount: hotelTotal - bundleDiscount,
-                                iyCommission: (hotelTotal - bundleDiscount) * 0.15,
-                                hotelPayout: (hotelTotal - bundleDiscount) * 0.85,
-                                createdAt: serverTimestamp(), note: 'Bundle Booking'
-                            });
-                        }
-
-                        // Award IY Passport credits
-                        if (currentUser?.uid) {
-                            try {
-                                await addCredits(currentUser.uid, 'booking', `Booked ${pkg.title} trip`, 100, newBookingRef.id);
-                            } catch (e) { console.log('Passport credit skip:', e); }
-                        }
-
-                        navigate('/booking-success', {
-                            state: {
-                                bookingId: newBookingRef.id, packageTitle: pkg.title,
-                                totalAmount: finalTotal, amountPaid: finalTotal, date: bookingData.date
-                            }
-                        });
-                    } catch (err) {
-                        console.error('Save booking error:', err);
-                        setError('Payment successful but saving booking failed. Contact support.');
-                        setSubmitting(false);
-                    }
-                },
-                (errorMsg) => {
-                    setError(errorMsg || 'Payment failed or was cancelled.');
-                    setSubmitting(false);
+            // Upload document files (best-effort)
+            try {
+                const uploadedDocs = await uploadDocFiles(newBookingRef.id);
+                if (uploadedDocs.length > 0) {
+                    await addDoc(collection(db, 'bookings', newBookingRef.id, 'documents'), {
+                        docs: uploadedDocs,
+                        createdAt: serverTimestamp()
+                    });
                 }
-            );
+            } catch (docErr) {
+                console.warn('Document upload skipped:', docErr);
+            }
+
+            // Bundled hotel request (pending — confirmed by team)
+            if (selectedHotel) {
+                try {
+                    await addDoc(collection(db, 'hotel_bookings'), {
+                        hotelId: selectedHotel.id, hotelName: selectedHotel.name,
+                        roomId: selectedHotel.roomId, roomName: selectedHotel.roomName,
+                        userId: currentUser.uid, customerName: bookingData.name,
+                        customerEmail: bookingData.email, customerPhone: bookingData.phone,
+                        checkIn: bookingData.date, checkOut: bookingData.date,
+                        pricePerNight: selectedHotel.originalPrice,
+                        totalAmount: hotelTotal - bundleDiscount,
+                        paymentStatus: 'Pending', bookingStatus: 'Pending',
+                        bundledWithTour: newBookingRef.id, createdAt: serverTimestamp()
+                    });
+                } catch (hErr) { console.warn('Hotel bundle skipped:', hErr); }
+            }
+
+            // Award IY Passport credits (best-effort)
+            if (currentUser?.uid) {
+                try {
+                    await addCredits(currentUser.uid, 'booking', `Booked ${pkg.title} trip`, 100, newBookingRef.id);
+                } catch (e) { console.log('Passport credit skip:', e); }
+            }
+
+            navigate('/booking-success', {
+                state: {
+                    bookingId: newBookingRef.id, packageTitle: pkg.title,
+                    totalAmount: finalTotal, amountPaid: 0, date: bookingData.date,
+                    isRequest: true
+                }
+            });
 
         } catch (error) {
             console.error(error);
-            setError(error.message);
+            setError(error.message || 'Could not submit your booking. Please try again.');
             setSubmitting(false);
         }
     };
@@ -787,25 +803,100 @@ const BookingPage = () => {
                                 Trip Details & Contact
                             </h2>
 
+                            {/* Pickup Location Selector */}
+                            {hasLocations && (
+                                <div className="mb-4">
+                                    <label className="block text-xs text-slate-400 mb-2 font-semibold uppercase tracking-wider">📍 Select Pickup Location</label>
+                                    <div className="flex flex-wrap gap-2">
+                                        {pkg.pickupLocations.map((loc, idx) => (
+                                            <button
+                                                key={idx} type="button"
+                                                onClick={() => setSelectedLocIdx(idx)}
+                                                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-all ${selectedLocIdx === idx ? 'bg-blue-600/20 border-blue-500 text-blue-300' : 'bg-white/5 border-white/10 text-slate-400 hover:border-white/30 hover:text-white'}`}
+                                            >
+                                                <MapPin size={13} />
+                                                {loc.location}
+                                                <span className={`font-bold ${selectedLocIdx === idx ? 'text-blue-400' : 'text-slate-500'}`}>
+                                                    ₹{Number(loc.price).toLocaleString('en-IN')}
+                                                </span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Departure + Season info badges */}
+                            {(pkg?.departureType || pkg?.seasonStartDate || pkg?.seasonEndDate) && (
+                                <div className="flex flex-wrap gap-2 mb-4">
+                                    {pkg?.departureType && (
+                                        <span className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs text-slate-300">
+                                            {pkg.departureType === 'daily' && '📅 Daily Departures'}
+                                            {pkg.departureType === 'weekly' && `📆 Every ${['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][pkg.weeklyDay ?? 5]}`}
+                                            {pkg.departureType === 'minimum-clients' && `👥 Min. ${pkg.minimumClients || ''} clients`}
+                                        </span>
+                                    )}
+                                    {(pkg?.seasonStartDate || pkg?.seasonEndDate) && (
+                                        <span className="px-3 py-1.5 rounded-lg bg-green-500/10 border border-green-500/20 text-xs text-green-300">
+                                            🗓 Season: {pkg.seasonStartDate ? new Date(pkg.seasonStartDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : ''}
+                                            {pkg.seasonStartDate && pkg.seasonEndDate ? ' – ' : ''}
+                                            {pkg.seasonEndDate ? new Date(pkg.seasonEndDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}
+                                        </span>
+                                    )}
+                                </div>
+                            )}
+
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <label className="block text-sm text-slate-400 mb-2 font-medium">Travel Date *</label>
                                     <DatePicker
                                         selected={bookingData.date ? new Date(bookingData.date) : null}
                                         onChange={handleDateChange}
-                                        minDate={new Date()}
+                                        minDate={pkg?.seasonStartDate ? new Date(pkg.seasonStartDate) : new Date()}
+                                        maxDate={pkg?.seasonEndDate ? new Date(pkg.seasonEndDate) : undefined}
                                         placeholderText="Select a date"
+                                        onChangeRaw={(e) => e.preventDefault()}
+                                        filterDate={(date) => {
+                                            // Group meets minimum persons → any date is open
+                                            if (pkg?.minimumPersons > 1 && Number(bookingData.travelers) >= pkg.minimumPersons) return true;
+                                            if (pkg?.departureType === 'daily') return true;
+                                            if (pkg?.departureType === 'weekly') {
+                                                const isWeeklyDay = pkg.weeklyDay !== null && pkg.weeklyDay !== undefined && date.getDay() === Number(pkg.weeklyDay);
+                                                const isSpecialBatch = pkg.batchDates && pkg.batchDates.some(b => b.date === date.toLocaleDateString('en-CA'));
+                                                return isWeeklyDay || isSpecialBatch;
+                                            }
+                                            if (!pkg?.batchDates || pkg.batchDates.length === 0) return true;
+                                            return pkg.batchDates.some(b => b.date === date.toLocaleDateString('en-CA'));
+                                        }}
+                                        calendarClassName="booking-datepicker-calendar"
                                         className={`w-full bg-white/5 border rounded-xl p-3.5 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 ${validationErrors.date ? 'border-red-500/50' : 'border-white/10'}`}
                                     />
                                     {validationErrors.date && <p className="text-red-400 text-xs mt-1">{validationErrors.date}</p>}
                                 </div>
                                 <div>
-                                    <label className="block text-sm text-slate-400 mb-2 font-medium">Number of Travelers *</label>
+                                    <label className="block text-sm text-slate-400 mb-2 font-medium">
+                                        Number of Travelers *
+                                        {pkg?.minimumPersons > 1 && (
+                                            <span className="ml-2 text-xs text-amber-400 font-normal">🚀 {pkg.minimumPersons}+ = any date</span>
+                                        )}
+                                    </label>
                                     <div className="flex items-center gap-3">
-                                        <button type="button" onClick={() => setBookingData(prev => ({ ...prev, travelers: Math.max(1, Number(prev.travelers) - 1) }))} className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-white/10 transition-colors text-xl font-bold">−</button>
+                                        <button type="button" onClick={() => handleTravelerCountChange(-1)} className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-white/10 transition-colors text-xl font-bold">−</button>
                                         <div className="flex-1 bg-white/5 border border-white/10 rounded-xl p-3.5 text-center text-white text-xl font-bold">{bookingData.travelers}</div>
-                                        <button type="button" onClick={() => setBookingData(prev => ({ ...prev, travelers: Number(prev.travelers) + 1 }))} className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-white/10 transition-colors text-xl font-bold">+</button>
+                                        <button type="button" onClick={() => handleTravelerCountChange(+1)} className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-white/10 transition-colors text-xl font-bold">+</button>
                                     </div>
+                                    {pkg?.minimumPersons > 1 && Number(bookingData.travelers) < pkg.minimumPersons && (
+                                        <p className="text-yellow-400 text-xs mt-1">
+                                            {pkg.departureType === 'weekly'
+                                                ? `📆 Booking as small group — only ${['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][pkg.weeklyDay ?? 5]} departures available. Add ${pkg.minimumPersons - Number(bookingData.travelers)} more to pick any date.`
+                                                : pkg.departureType === 'daily'
+                                                    ? `📅 Daily departures available. Add ${pkg.minimumPersons - Number(bookingData.travelers)} more for private group on any date.`
+                                                    : `⚠️ Add ${pkg.minimumPersons - Number(bookingData.travelers)} more travelers to unlock any date.`
+                                            }
+                                        </p>
+                                    )}
+                                    {pkg?.minimumPersons > 1 && Number(bookingData.travelers) >= pkg.minimumPersons && (
+                                        <p className="text-green-400 text-xs mt-1">✅ Private group! You can pick <strong>any available date</strong></p>
+                                    )}
                                 </div>
                             </div>
 
@@ -984,7 +1075,7 @@ const BookingPage = () => {
                             <div className="bg-gradient-to-br from-blue-500/5 to-purple-500/5 border border-white/10 rounded-2xl p-5 space-y-3">
                                 <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider">Price Breakdown</h3>
                                 <div className="space-y-2">
-                                    <div className="flex justify-between text-sm"><span className="text-slate-400">Tour Package ({bookingData.travelers} × ₹{pkg.price?.toLocaleString()})</span><span className="font-medium">₹{tourTotal.toLocaleString()}</span></div>
+                                    <div className="flex justify-between text-sm"><span className="text-slate-400">Tour Package ({bookingData.travelers} × ₹{effectivePrice?.toLocaleString()})</span><span className="font-medium">₹{tourTotal.toLocaleString()}</span></div>
                                     {selectedHotel && (
                                         <>
                                             <div className="flex justify-between text-sm"><span className="text-slate-400">Hotel: {selectedHotel.name}</span><span className="font-medium">₹{hotelTotal.toLocaleString()}</span></div>
@@ -1002,7 +1093,7 @@ const BookingPage = () => {
                             <div className="flex flex-wrap items-center justify-center gap-6 py-2 text-xs text-slate-500">
                                 <span className="flex items-center gap-1"><Shield size={14} className="text-green-500" /> Secure Booking</span>
                                 <span className="flex items-center gap-1"><Star size={14} className="text-amber-400" /> Trusted by 1000+ travelers</span>
-                                <span className="flex items-center gap-1"><CheckCircle size={14} className="text-blue-400" /> Instant Confirmation</span>
+                                <span className="flex items-center gap-1"><CheckCircle size={14} className="text-blue-400" /> Pay after team confirms</span>
                             </div>
 
                             <div className="flex justify-between pt-4">
@@ -1010,7 +1101,7 @@ const BookingPage = () => {
                                     <ArrowLeft size={18} /> Back
                                 </button>
                                 <button onClick={handleConfirm} disabled={submitting} className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-10 py-4 rounded-xl font-bold flex items-center gap-2 transition-all hover:scale-[1.02] shadow-xl shadow-blue-600/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100">
-                                    {submitting ? <><Loader size={20} className="animate-spin" /> Processing...</> : <>Confirm & Pay ₹{finalTotal.toLocaleString()}</>}
+                                    {submitting ? <><Loader size={20} className="animate-spin" /> Submitting...</> : <>Confirm Booking Request</>}
                                 </button>
                             </div>
                         </div>

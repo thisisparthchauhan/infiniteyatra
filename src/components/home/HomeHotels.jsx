@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Star, Wifi, Coffee, MapPin, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+import LazyImage from './common/LazyImage';
 
 const hotels = [
     {
@@ -106,9 +107,10 @@ const HomeHotels = () => {
 
                             {/* Image */}
                             <div className="h-64 overflow-hidden relative">
-                                <img
+                                <LazyImage
                                     src={hotel.image}
                                     alt={hotel.name}
+                                    containerClassName="w-full h-full"
                                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-[#111] via-transparent to-transparent opacity-80" />

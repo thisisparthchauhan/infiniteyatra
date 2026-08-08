@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { MapPin, Plus, Filter, TrendingUp, Clock, Heart, Sparkles, User } from 'lucide-react';
 import { collection, query, orderBy, getDocs, doc, updateDoc, increment, where, getDoc } from 'firebase/firestore';
-import { db } from '../../firebase';
-import { useAuth } from '../../context/AuthContext';
-import StoryCard from '../../components/stories/StoryCard';
-import CreateStoryModal from '../../components/stories/CreateStoryModal';
-import SEO from '../../components/SEO';
-import { seededStories } from '../../data/seededStories';
-import parthImg from '../../assets/parth-chauhan-new.jpg';
+import { db } from '../firebase';
+import { useAuth } from '../context/AuthContext';
+import StoryCard from '../components/StoryCard';
+import CreateStoryModal from '../components/CreateStoryModal';
+import SEO from '../components/common/SEO';
+import { seededStories } from '../data/seededStories';
+import parthImg from '../assets/parth-chauhan-new.jpg';
 
 const StoriesPage = () => {
     const [stories, setStories] = useState([]);

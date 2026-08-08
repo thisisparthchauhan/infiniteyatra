@@ -4,10 +4,10 @@ import {
     Copy, Check, ExternalLink, Lock, Plane, Hotel, Car, Star, Users, 
     Gift, Clock, ArrowRight, Sparkles, Calendar, CreditCard, Award
 } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
-import { useToast } from '../../context/ToastContext';
-import { getPassport, initPassport, applyReferralCode } from '../../services/passportService';
-import SEO from '../../components/SEO';
+import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
+import { getPassport, initPassport, applyReferralCode } from '../services/passportService';
+import SEO from '../components/common/SEO';
 
 // ── Animated credit counter ──
 const CreditCounter = ({ target }) => {

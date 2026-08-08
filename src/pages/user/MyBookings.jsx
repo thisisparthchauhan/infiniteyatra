@@ -1,16 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { db } from '../../firebase';
-import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
-import { useAuth } from '../../context/AuthContext';
-import { Loader, Calendar, MapPin, Clock, AlertCircle, ArrowRight } from 'lucide-react';
+import { db } from '../firebase';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { useAuth } from '../context/AuthContext';
+import { Loader, Calendar, MapPin, Clock, AlertCircle, ArrowRight, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import SEO from '../../components/SEO';
+import SEO from '../components/common/SEO';
+import ReviewModal from '../components/ReviewModal';
 
 const MyBookings = () => {
     const { currentUser } = useAuth();
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [reviewBooking, setReviewBooking] = useState(null); // booking to review
+    const [reviewedBookingIds, setReviewedBookingIds] = useState(new Set());
 
     const fetchBookings = async () => {
         if (!currentUser) return;
@@ -38,6 +41,13 @@ const MyBookings = () => {
             });
 
             setBookings(bookingsData);
+
+            // Check which bookings already have a review
+            if (bookingsData.length > 0) {
+                const reviewSnap = await getDocs(query(collection(db, 'reviews'), where('userId', '==', currentUser.uid)));
+                const ids = new Set(reviewSnap.docs.map(d => d.data().bookingId));
+                setReviewedBookingIds(ids);
+            }
         } catch (error) {
             console.error("Error fetching bookings:", error);
             // Show the actual error message for debugging
@@ -76,6 +86,13 @@ const MyBookings = () => {
     }
 
     return (
+        <>
+        {reviewBooking && (
+            <ReviewModal
+                booking={reviewBooking}
+                onClose={() => { setReviewBooking(null); fetchBookings(); }}
+            />
+        )}
         <div className="min-h-screen bg-black py-24 px-6 relative overflow-hidden">
             {/* Background Glows */}
             <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-600/20 rounded-full blur-[128px] pointer-events-none"></div>
@@ -165,6 +182,24 @@ const MyBookings = () => {
                                                 </p>
                                             </div>
                                         )}
+
+                                        {/* Write Review — shown after trip date has passed */}
+                                        {booking.bookingDate && new Date(booking.bookingDate) < new Date() && (
+                                            <div className="mt-4 flex justify-end">
+                                                {reviewedBookingIds.has(booking.id) ? (
+                                                    <span className="flex items-center gap-2 text-sm text-green-400 bg-green-500/10 border border-green-500/20 px-4 py-2 rounded-lg">
+                                                        <Star size={14} className="fill-green-400" /> Review Submitted
+                                                    </span>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => setReviewBooking(booking)}
+                                                        className="flex items-center gap-2 text-sm font-medium bg-yellow-500/10 hover:bg-yellow-500/20 border border-yellow-500/30 text-yellow-300 px-4 py-2 rounded-lg transition-colors"
+                                                    >
+                                                        <Star size={14} /> Write a Review
+                                                    </button>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             ))}
@@ -182,6 +217,7 @@ const MyBookings = () => {
                 )}
             </div>
         </div>
+        </>
     );
 };
 

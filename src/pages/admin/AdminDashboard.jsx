@@ -2,51 +2,54 @@ import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, Bell, Search, ShieldAlert, Home, ChevronDown, User, LogOut, Settings, Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import SEO from '../../components/SEO';
-import AdminSidebar from '../../components/admin/AdminSidebar';
-import { useRole } from '../../context/RoleContext';
-import { USER_ROLES } from '../../config/roles';
+import SEO from '../components/common/SEO';
+import AdminSidebar from '../components/admin/AdminSidebar';
+import { useRole } from '../context/RoleContext';
+import { useAuth } from '../context/AuthContext';
+import { USER_ROLES } from '../config/roles';
 
 // Sub-Modules
-import Overview from '../../components/admin/dashboard/Overview';
-import Bookings from '../../components/admin/dashboard/Bookings';
-import Inventory from '../../components/admin/dashboard/Inventory';
-import Operations from '../../components/admin/dashboard/Operations';
-import Financials from '../../components/admin/dashboard/Financials';
-import CustomerCRM from '../../components/admin/dashboard/CustomerCRM';
-import Content from '../../components/admin/dashboard/Content';
-import AdminExperiences from '../../components/admin/experiences/AdminExperiences';
-import InfluencerROI from '../../components/admin/dashboard/InfluencerROI';
-const AdminImageUpload = lazy(() => import('../../components/AdminImageUpload'));
-const AddStaffModal = lazy(() => import('../../components/admin/AddStaffModal'));
-const AdminHomepageManager = lazy(() => import('../../components/admin/dashboard/AdminHomepageManager'));
-const AdminHotelManager = lazy(() => import('../../components/admin/hotels/AdminHotelManager'));
-const AdminHotelFinance = lazy(() => import('../../components/admin/hotels/AdminHotelFinance'));
-const AdminHotelBookings = lazy(() => import('../../components/admin/hotels/AdminHotelBookings'));
-const AdminHotelInquiries = lazy(() => import('../../components/admin/hotels/AdminHotelInquiries'));
-const AdminHotelReviews = lazy(() => import('../../components/admin/hotels/AdminHotelReviews'));
-const AdminAvailabilityManager = lazy(() => import('../../components/admin/hotels/AdminAvailabilityManager'));
-const AdminVendorManager = lazy(() => import('../../components/admin/hotels/AdminVendorManager'));
-const LiveAnalytics = lazy(() => import('../../components/admin/analytics/LiveAnalytics'));
+import Overview from '../components/admin/dashboard/Overview';
+import Bookings from '../components/admin/dashboard/Bookings';
+import Inventory from '../components/admin/dashboard/Inventory';
+const AdminPackageReviews = lazy(() => import('../components/admin/dashboard/AdminPackageReviews'));
+import Operations from '../components/admin/dashboard/Operations';
+import Financials from '../components/admin/dashboard/Financials';
+import CustomerCRM from '../components/admin/dashboard/CustomerCRM';
+import Content from '../components/admin/dashboard/Content';
+import AdminExperiences from '../components/admin/experiences/AdminExperiences';
+import InfluencerROI from '../components/admin/dashboard/InfluencerROI';
+const AdminImageUpload = lazy(() => import('../components/AdminImageUpload'));
+const AddStaffModal = lazy(() => import('../components/admin/AddStaffModal'));
+const AdminHomepageManager = lazy(() => import('../components/admin/dashboard/AdminHomepageManager'));
+const AdminHotelManager = lazy(() => import('../components/admin/hotels/AdminHotelManager'));
+const AdminHotelFinance = lazy(() => import('../components/admin/hotels/AdminHotelFinance'));
+const AdminHotelBookings = lazy(() => import('../components/admin/hotels/AdminHotelBookings'));
+const AdminHotelInquiries = lazy(() => import('../components/admin/hotels/AdminHotelInquiries'));
+const AdminHotelReviews = lazy(() => import('../components/admin/hotels/AdminHotelReviews'));
+const AdminAvailabilityManager = lazy(() => import('../components/admin/hotels/AdminAvailabilityManager'));
+const AdminVendorManager = lazy(() => import('../components/admin/hotels/AdminVendorManager'));
+const LiveAnalytics = lazy(() => import('../components/admin/analytics/LiveAnalytics'));
 
-const AdminTransportCities = lazy(() => import('../../components/admin/transport/AdminTransportCities'));
-const AdminTransportVehicles = lazy(() => import('../../components/admin/transport/AdminTransportVehicles'));
-const AdminTransportBookings = lazy(() => import('../../components/admin/transport/AdminTransportBookings'));
-const AdminTransportContent = lazy(() => import('../../components/admin/transport/AdminTransportContent'));
-const AdminTransportSettings = lazy(() => import('../../components/admin/transport/AdminTransportSettings'));
-const AdminTransportOverview = lazy(() => import('../../components/admin/transport/AdminTransportOverview'));
-const AdminLeads = lazy(() => import('../../components/admin/dashboard/AdminLeads'));
-const AdminSitemap = lazy(() => import('../../components/admin/AdminSitemap'));
-const AdminSpaceWaitlist = lazy(() => import('../../components/admin/space/AdminSpaceWaitlist'));
-const AdminPassport = lazy(() => import('../../components/admin/AdminPassport'));
-const AdminCars = lazy(() => import('../../components/admin/transport/AdminCars'));
-const AdminCarBookings = lazy(() => import('../../components/admin/transport/AdminCarBookings'));
-const AdminCruiseBookings = lazy(() => import('../../components/admin/cruise/AdminCruiseBookings'));
-const AdminCycleBookings = lazy(() => import('../../components/admin/cruise/AdminCycleBookings'));
+const AdminTransportCities = lazy(() => import('../components/admin/transport/AdminTransportCities'));
+const AdminTransportVehicles = lazy(() => import('../components/admin/transport/AdminTransportVehicles'));
+const AdminTransportBookings = lazy(() => import('../components/admin/transport/AdminTransportBookings'));
+const AdminTransportContent = lazy(() => import('../components/admin/transport/AdminTransportContent'));
+const AdminTransportSettings = lazy(() => import('../components/admin/transport/AdminTransportSettings'));
+const AdminTransportOverview = lazy(() => import('../components/admin/transport/AdminTransportOverview'));
+const AdminLeads = lazy(() => import('../components/admin/dashboard/AdminLeads'));
+const AdminSitemap = lazy(() => import('../components/admin/AdminSitemap'));
+const AdminSpaceWaitlist = lazy(() => import('../components/admin/space/AdminSpaceWaitlist'));
+const AdminPassport = lazy(() => import('../components/admin/AdminPassport'));
+const AdminCars = lazy(() => import('../components/admin/transport/AdminCars'));
+const AdminCarBookings = lazy(() => import('../components/admin/transport/AdminCarBookings'));
+const AdminCruiseBookings = lazy(() => import('../components/admin/cruise/AdminCruiseBookings'));
+const AdminCycleBookings = lazy(() => import('../components/admin/cruise/AdminCycleBookings'));
 
 
 const AdminDashboard = () => {
     const { hasPermission, getFirstAllowedTab, currentRole, setCurrentRole, currentWorkspace } = useRole();
+    const { currentUser } = useAuth();
     const [activeTab, setActiveTab] = useState(getFirstAllowedTab());
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [showStaffModal, setShowStaffModal] = useState(false);
@@ -66,6 +69,7 @@ const AdminDashboard = () => {
             finance: 'Financials (Tours)',
             crm: 'Tour Clients',
             packages: 'Package Inventory',
+            'package-reviews': 'Package Reviews',
             homepage: 'Homepage Manager',
             operations: 'Trip Operations Center',
             staff: 'Team & Permissions',
@@ -119,6 +123,7 @@ const AdminDashboard = () => {
             case 'overview': return <Overview setActiveTab={setActiveTab} />;
             case 'bookings': return <Bookings />;
             case 'packages': return <Inventory />;
+            case 'package-reviews': return <AdminPackageReviews />;
             case 'homepage': return <AdminHomepageManager />;
             case 'hotels': return <AdminHotelManager />;
             case 'hotel-bookings': return <AdminHotelBookings />;
@@ -210,11 +215,11 @@ const AdminDashboard = () => {
                                         className="flex items-center gap-3 p-1 pr-3 rounded-full hover:bg-white/5 transition-colors group"
                                     >
                                         <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 ring-2 ring-white/10 group-hover:ring-white/20 flex items-center justify-center text-sm font-bold text-white shadow-lg shadow-blue-500/20">
-                                            PC
+                                            {currentUser?.email?.charAt(0)?.toUpperCase() || 'A'}
                                         </div>
                                         <div className="hidden md:block text-left">
-                                            <p className="text-xs font-bold text-white group-hover:text-blue-400 transition-colors">Parth Chauhan</p>
-                                            <p className="text-[10px] text-slate-400">chauhanparth165@gmail.com</p>
+                                            <p className="text-xs font-bold text-white group-hover:text-blue-400 transition-colors">{currentUser?.displayName || currentUser?.email?.split('@')[0] || 'Admin'}</p>
+                                            <p className="text-[10px] text-slate-400">{currentUser?.email || ''}</p>
                                         </div>
                                         <ChevronDown size={14} className={`text-slate-500 transition-transform duration-200 ${isProfileOpen ? 'rotate-180' : ''}`} />
                                     </button>
@@ -240,8 +245,8 @@ const AdminDashboard = () => {
                                                     <div className="px-5 py-4 border-b border-white/5 bg-white/5">
                                                         <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Account</p>
                                                         <Link to="/profile" className="block group/profile">
-                                                            <p className="text-sm font-bold text-white group-hover/profile:text-blue-400 transition-colors">Parth Chauhan</p>
-                                                            <p className="text-xs text-slate-400">chauhanparth165@gmail.com</p>
+                                                            <p className="text-sm font-bold text-white group-hover/profile:text-blue-400 transition-colors">{currentUser?.displayName || currentUser?.email?.split('@')[0] || 'Admin'}</p>
+                                                            <p className="text-xs text-slate-400">{currentUser?.email || ''}</p>
                                                         </Link>
                                                     </div>
                                                 </motion.div>

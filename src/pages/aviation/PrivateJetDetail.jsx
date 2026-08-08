@@ -8,9 +8,9 @@ import {
     ChevronDown, Home, ImageIcon, Send, Loader2
 } from 'lucide-react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../../firebase';
-import { privateJetFleet } from '../../data/privateJets';
-import SEO from '../../components/SEO';
+import { db } from '../firebase';
+import { privateJetFleet } from '../data/privateJets';
+import SEO from '../components/common/SEO';
 
 const GOLD = 'text-amber-400';
 const GOLD_BG = 'bg-amber-400';

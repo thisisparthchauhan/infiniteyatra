@@ -7,10 +7,10 @@ import {
     UtensilsCrossed, Dog, Wind, ChevronDown, Flame, TrendingUp, Users
 } from 'lucide-react';
 import { collection, getDocs, query, where } from 'firebase/firestore';
-import { db } from '../../firebase';
-import { hotels as staticHotels } from '../../data/hotels';
-import HotelCard from '../../components/hotels/HotelCard';
-import SEO from '../../components/SEO';
+import { db } from '../firebase';
+import { hotels as staticHotels } from '../data/hotels';
+import HotelCard from '../components/Hotels/HotelCard';
+import SEO from '../components/common/SEO';
 
 const PROPERTY_TYPES = ['All', 'Hotel', 'Resort', 'Homestay', 'Villa', 'Cottage', 'Dormitory', 'Guest House', 'Camp'];
 
@@ -44,7 +44,6 @@ const CityHotels = () => {
     const { citySlug } = useParams();
     const navigate = useNavigate();
     const [allHotels, setAllHotels] = useState([]);
-    const [cityInfo, setCityInfo] = useState(null); // from hotel_cities Firestore
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [propertyType, setPropertyType] = useState('All');
@@ -58,19 +57,8 @@ const CityHotels = () => {
     }, [citySlug]);
 
     useEffect(() => {
-        const fetchData = async () => {
+        const fetchHotels = async () => {
             setLoading(true);
-
-            // Fetch city info from hotel_cities
-            try {
-                const { doc: firestoreDoc, getDoc } = await import('firebase/firestore');
-                const citySnap = await getDoc(firestoreDoc(db, 'hotel_cities', citySlug));
-                if (citySnap.exists()) setCityInfo(citySnap.data());
-            } catch (err) {
-                console.warn('City info fetch failed:', err);
-            }
-
-            // Fetch hotels
             try {
                 let fetched = [];
                 try {
@@ -89,8 +77,8 @@ const CityHotels = () => {
                 setLoading(false);
             }
         };
-        fetchData();
-    }, [citySlug]);
+        fetchHotels();
+    }, []);
 
     const cityHotels = useMemo(() => {
         let result = allHotels.filter(hotel => {
@@ -179,20 +167,9 @@ const CityHotels = () => {
                 url={`/hotels/city/${citySlug}`}
             />
 
-            {/* ─── City Hero ─── */}
-            <div className="relative overflow-hidden pt-20">
-                {/* City background image */}
-                {cityInfo?.image && (
-                    <div className="absolute inset-0 h-72">
-                        <img src={cityInfo.image} alt={cityName} className="w-full h-full object-cover opacity-30" />
-                        <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a]/60 via-[#0a0a0a]/80 to-[#0a0a0a]" />
-                    </div>
-                )}
-                {!cityInfo?.image && (
-                    <div className="absolute inset-0 h-72 bg-gradient-to-b from-amber-900/10 via-[#0a0a0a]/80 to-[#0a0a0a]" />
-                )}
-
-                <div className="relative container mx-auto px-4 max-w-7xl pt-10 pb-10">
+            {/* ─── Hero ─── */}
+            <div className="relative bg-gradient-to-b from-blue-900/20 via-[#0a0a0a] to-[#0a0a0a] pt-28 pb-10">
+                <div className="container mx-auto px-4 max-w-7xl">
                     {/* Breadcrumb */}
                     <nav className="flex items-center gap-2 text-xs text-zinc-500 mb-6">
                         <Link to="/" className="hover:text-white transition-colors flex items-center gap-1"><Home size={12} /> Home</Link>
@@ -204,38 +181,25 @@ const CityHotels = () => {
 
                     <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                         <div>
-                            {cityInfo?.partner === 'bloom' && (
-                                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold rounded-full mb-3">
-                                    ✦ Bloom Hotels Partner City
-                                </span>
-                            )}
-                            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-2">
-                                Hotels in{' '}
-                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500">{cityName}</span>
+                            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-3">
+                                Hotels in <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">{cityName}</span>
                             </h1>
-                            {cityInfo?.state && (
-                                <p className="text-zinc-500 text-sm flex items-center gap-1 mb-2">
-                                    <MapPin size={13} className="text-amber-500" /> {cityInfo.state}
-                                </p>
-                            )}
-                            {cityInfo?.description && (
-                                <p className="text-zinc-400 text-sm max-w-xl">{cityInfo.description}</p>
-                            )}
-                            <p className="text-zinc-400 text-sm flex items-center gap-2 mt-2">
-                                <Building2 size={14} className="text-amber-400" />
+                            <p className="text-zinc-400 flex items-center gap-2">
+                                <MapPin size={16} className="text-orange-400" />
                                 {loading ? 'Loading...' : `${cityHotels.length} ${cityHotels.length === 1 ? 'property' : 'properties'} found`}
+                                {' '}— Hotels, Resorts, Homestays & more
                             </p>
                         </div>
 
                         {/* Search */}
-                        <div className="relative w-full md:w-80 shrink-0">
+                        <div className="relative w-full md:w-80">
                             <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" />
                             <input
                                 type="text"
                                 placeholder={`Search in ${cityName}...`}
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-11 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-zinc-500 focus:outline-none focus:border-amber-500/50 transition-colors"
+                                className="w-full pl-11 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-zinc-500 focus:outline-none focus:border-blue-500/50 transition-colors"
                             />
                             {searchQuery && (
                                 <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white">

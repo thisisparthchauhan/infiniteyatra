@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useWishlist } from '../../context/WishlistContext';
+import LazyImage from '../common/LazyImage';
 
 // ---------------------------------------------------------------------------
 // Constants & helpers
@@ -276,17 +277,21 @@ const HotelCard = ({
         >
           {/* Images with crossfade */}
           <AnimatePresence mode="wait">
-            <motion.img
+            <motion.div
               key={currentImg}
-              src={allImages[currentImg]}
-              alt={`${name} - photo ${currentImg + 1}`}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="absolute inset-0 w-full h-full object-cover"
-              loading="lazy"
-            />
+              className="absolute inset-0 w-full h-full"
+            >
+              <LazyImage
+                src={allImages[currentImg]}
+                alt={`${name} - photo ${currentImg + 1}`}
+                containerClassName="w-full h-full"
+                className="w-full h-full object-cover"
+              />
+            </motion.div>
           </AnimatePresence>
 
           {/* Gradient overlay */}

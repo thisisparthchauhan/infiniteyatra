@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { User, Calendar, Heart, Gift, Settings, LogOut } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import SEO from '../../components/SEO';
-import ReferralDashboard from '../../components/passport/ReferralDashboard';
+import SEO from '../components/common/SEO';
+import ReferralDashboard from '../components/ReferralDashboard';
 import MyBookings from './MyBookings';
 import MyTrips from './MyTrips';
 import WishlistPage from './WishlistPage';

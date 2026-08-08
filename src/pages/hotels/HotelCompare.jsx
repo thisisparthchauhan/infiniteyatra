@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../../firebase';
-import SEO from '../../components/SEO';
+import { db } from '../firebase';
+import SEO from '../components/common/SEO';
 import { X, Plus, ChevronRight, Star, MapPin, Loader2, Wifi, Coffee, Car, Waves, Dumbbell, Wind, CheckCircle2, XCircle, Building2 } from 'lucide-react';
 
 const AMENITY_ICONS = {

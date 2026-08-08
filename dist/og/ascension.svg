@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <radialGradient id="bgGlow" cx="50%" cy="0%" r="80%">
+      <stop offset="0%" stop-color="#1a1a2e" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="#000"/>
+  <rect width="1200" height="630" fill="url(#bgGlow)"/>
+
+  <!-- Decorative stars -->
+  <g fill="#fff">
+    <circle cx="120" cy="90" r="1.5" opacity="0.6"/>
+    <circle cx="280" cy="150" r="1" opacity="0.4"/>
+    <circle cx="460" cy="80" r="2" opacity="0.7"/>
+    <circle cx="680" cy="120" r="1" opacity="0.5"/>
+    <circle cx="880" cy="60" r="1.5" opacity="0.6"/>
+    <circle cx="1080" cy="160" r="1" opacity="0.4"/>
+    <circle cx="1130" cy="320" r="1.5" opacity="0.5"/>
+    <circle cx="80" cy="400" r="1" opacity="0.4"/>
+    <circle cx="160" cy="520" r="1.5" opacity="0.5"/>
+    <circle cx="1050" cy="500" r="1" opacity="0.4"/>
+    <circle cx="940" cy="560" r="1.5" opacity="0.5"/>
+  </g>
+
+  <!-- Top label centered -->
+  <text x="600" y="80" text-anchor="middle" fill="#fff" fill-opacity="0.4" font-family="ui-monospace, monospace" font-size="14" letter-spacing="5">FOUNDER DOCUMENT · INITIATED 2026</text>
+
+  <!-- Section label -->
+  <g transform="translate(60, 130)">
+    <text x="0" y="0" fill="#fff" fill-opacity="0.5" font-family="ui-monospace, monospace" font-size="13" letter-spacing="2">00</text>
+    <line x1="35" y1="-5" x2="75" y2="-5" stroke="#fff" stroke-opacity="0.25"/>
+    <text x="85" y="0" fill="#fff" fill-opacity="0.65" font-family="ui-monospace, monospace" font-size="13" letter-spacing="3">MISSION</text>
+  </g>
+
+  <!-- Hero title -->
+  <text x="60" y="270" fill="#fff" font-family="Helvetica Neue, Arial, sans-serif" font-weight="900" font-size="100" letter-spacing="-2">THE</text>
+  <text x="60" y="370" fill="#fff" font-family="Helvetica Neue, Arial, sans-serif" font-weight="900" font-size="100" letter-spacing="-2">ASCENSION</text>
+  <text x="60" y="470" fill="#fff" font-family="Helvetica Neue, Arial, sans-serif" font-weight="900" font-size="100" letter-spacing="-2">PROJECT</text>
+
+  <!-- Subtitle -->
+  <text x="60" y="540" fill="#fff" fill-opacity="0.65" font-family="Helvetica Neue, Inter, sans-serif" font-size="22" font-weight="300">Humanity's next frontier — a multi-century initiative.</text>
+
+  <!-- Bottom signature line -->
+  <line x1="60" y1="578" x2="1140" y2="578" stroke="#fff" stroke-opacity="0.15"/>
+  <text x="60" y="605" fill="#fff" fill-opacity="0.55" font-family="ui-monospace, monospace" font-size="12" letter-spacing="3">FOUNDED BY ARIUS RAYNOTT</text>
+  <text x="1140" y="605" text-anchor="end" fill="#fff" fill-opacity="0.45" font-family="ui-monospace, monospace" font-size="12" letter-spacing="3">A DIVISION OF INFINITE YATRA</text>
+</svg>

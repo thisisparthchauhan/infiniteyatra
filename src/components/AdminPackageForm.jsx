@@ -32,11 +32,18 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
         goodToKnow: [''],
         whoIsThisFor: [''],
         thingsToCarry: [''],
+        cancellationPolicy: initialData?.cancellationPolicy?.length ? initialData.cancellationPolicy : [
+            'Token Amount: ₹2,000 per person (Non-Refundable & Non-Transferable)',
+            'More than 7 days before trip: Full refund minus token amount',
+            '4–7 days before trip: 50% refund only',
+            'Less than 72 hours / No Show: No refund',
+        ],
+        generalPolicy: initialData?.generalPolicy || 'All participants must carry valid ID proof. Follow trek leader instructions at all times. Respect local culture and environment.',
         faqs: [
             { question: '', answer: '' }
         ],
         itinerary: [
-            { day: 1, title: '', description: '', activities: [''] }
+            { day: 1, title: '', description: '', activities: [''], distance: '', time: '', trekDistance: '', trekTime: '', altitude: '', stay: '', meals: '' }
         ],
         images: [], // Array of URLs
         ...initialData,
@@ -44,9 +51,21 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
         category: initialData?.category
             ? (Array.isArray(initialData.category) ? initialData.category : [initialData.category])
             : ['trek'],
+        batchDates: initialData?.batchDates || [],
         linkedHotelIds: initialData?.linkedHotelIds || [],
         linkedVehicleIds: initialData?.linkedVehicleIds || [],
         packageRoute: initialData?.packageRoute || '',
+        // Pickup locations with per-location pricing
+        pickupLocations: initialData?.pickupLocations || [],
+        // Departure type
+        departureType: initialData?.departureType || 'daily',
+        minimumClients: initialData?.minimumClients || '',
+        weeklyDay: initialData?.weeklyDay !== undefined ? initialData.weeklyDay : 5, // 5 = Friday default
+        // Minimum persons per booking (applies to all departure types)
+        minimumPersons: initialData?.minimumPersons || '',
+        // Season window
+        seasonStartDate: initialData?.seasonStartDate || '',
+        seasonEndDate: initialData?.seasonEndDate || '',
     });
 
     const [allHotels, setAllHotels] = useState([]);
@@ -55,6 +74,9 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
     const [allVehicles, setAllVehicles] = useState([]);
     const [fetchingVehicles, setFetchingVehicles] = useState(false);
     const [vehicleSearch, setVehicleSearch] = useState('');
+
+    const [tempBatchDate, setTempBatchDate] = useState('');
+    const [tempAvailableSeats, setTempAvailableSeats] = useState('');
 
     // Fetch visible hotels on mount
     useEffect(() => {
@@ -149,6 +171,25 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
         }));
     };
 
+    // Handle Pickup Locations
+    const addPickupLocation = () => {
+        setFormData(prev => ({
+            ...prev,
+            pickupLocations: [...prev.pickupLocations, { location: '', price: '', b2bPrice: '' }]
+        }));
+    };
+    const removePickupLocation = (index) => {
+        setFormData(prev => ({
+            ...prev,
+            pickupLocations: prev.pickupLocations.filter((_, i) => i !== index)
+        }));
+    };
+    const updatePickupLocation = (index, field, value) => {
+        const updated = [...formData.pickupLocations];
+        updated[index] = { ...updated[index], [field]: value };
+        setFormData(prev => ({ ...prev, pickupLocations: updated }));
+    };
+
     // Handle Itinerary
     const handleItineraryChange = (index, field, value) => {
         const newItinerary = [...formData.itinerary];
@@ -161,7 +202,7 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
             ...prev,
             itinerary: [
                 ...prev.itinerary,
-                { day: prev.itinerary.length + 1, title: '', description: '', activities: [''] }
+                { day: prev.itinerary.length + 1, title: '', description: '', activities: [''], distance: '', time: '', trekDistance: '', trekTime: '', altitude: '', stay: '', meals: '' }
             ]
         }));
     };
@@ -294,6 +335,8 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
             goodToKnow: formData.goodToKnow.filter(i => i.trim()),
             whoIsThisFor: formData.whoIsThisFor.filter(i => i.trim()),
             thingsToCarry: formData.thingsToCarry.filter(i => i.trim()),
+            cancellationPolicy: formData.cancellationPolicy.filter(i => i.trim()),
+            generalPolicy: formData.generalPolicy?.trim() || '',
             faqs: formData.faqs.filter(f => f.question.trim() && f.answer.trim()),
             itinerary: formData.itinerary.map(day => ({
                 ...day,
@@ -302,6 +345,15 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
             linkedHotelIds: formData.linkedHotelIds || [],
             linkedVehicleIds: formData.linkedVehicleIds || [],
             packageRoute: formData.packageRoute || '',
+            pickupLocations: (formData.pickupLocations || [])
+                .filter(p => p.location.trim())
+                .map(p => ({ location: p.location.trim(), price: Number(p.price) || 0, b2bPrice: Number(p.b2bPrice) || 0 })),
+            departureType: formData.departureType || 'daily',
+            minimumClients: formData.departureType === 'minimum-clients' ? (Number(formData.minimumClients) || 0) : 0,
+            weeklyDay: formData.departureType === 'weekly' ? Number(formData.weeklyDay) : null,
+            minimumPersons: Number(formData.minimumPersons) || 1,
+            seasonStartDate: formData.seasonStartDate || '',
+            seasonEndDate: formData.seasonEndDate || '',
         };
 
         onSave(cleanedData);
@@ -404,6 +456,110 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
                                     className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-blue-500 outline-none"
                                 />
                             </div>
+                            {/* ── Pickup Locations with Per-Location Pricing ── */}
+                            <div className="col-span-1 md:col-span-2 border border-white/10 rounded-xl p-4 space-y-3 bg-black/20">
+                                <div className="flex items-center justify-between">
+                                    <label className="text-sm font-bold text-slate-300">📍 Pickup Locations & Pricing <span className="text-slate-500 font-normal text-xs">(optional — leave empty to use main price above)</span></label>
+                                    <button type="button" onClick={addPickupLocation} className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1 border border-blue-500/30 px-2 py-1 rounded-lg">
+                                        <Plus size={12} /> Add Location
+                                    </button>
+                                </div>
+                                {formData.pickupLocations.length === 0 && (
+                                    <p className="text-xs text-slate-500 italic">No pickup locations added. All clients pay the main Selling Price above.</p>
+                                )}
+                                {formData.pickupLocations.map((loc, idx) => (
+                                    <div key={idx} className="grid grid-cols-3 gap-2 items-center">
+                                        <input type="text" value={loc.location} onChange={(e) => updatePickupLocation(idx, 'location', e.target.value)}
+                                            className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white text-sm" placeholder="📍 Location (e.g. Delhi)" />
+                                        <input type="number" value={loc.price} onChange={(e) => updatePickupLocation(idx, 'price', e.target.value)}
+                                            className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white text-sm" placeholder="₹ Client Price" />
+                                        <div className="flex gap-2">
+                                            <input type="number" value={loc.b2bPrice} onChange={(e) => updatePickupLocation(idx, 'b2bPrice', e.target.value)}
+                                                className="flex-1 bg-black/40 border border-purple-500/20 rounded-lg px-3 py-2 text-white text-sm" placeholder="₹ B2B Price" />
+                                            <button type="button" onClick={() => removePickupLocation(idx)} className="text-slate-500 hover:text-red-400 shrink-0"><X size={16} /></button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* ── Departure Type ── */}
+                            <div className="col-span-1 md:col-span-2 border border-white/10 rounded-xl p-4 space-y-3 bg-black/20">
+                                <label className="text-sm font-bold text-slate-300">🚀 Departure Type</label>
+                                <div className="flex gap-3 flex-wrap">
+                                    {[
+                                        { value: 'daily', label: '📅 Daily Departure' },
+                                        { value: 'weekly', label: '📆 Weekly Departure' },
+                                        { value: 'minimum-clients', label: '👥 Minimum Clients' },
+                                    ].map(opt => (
+                                        <label key={opt.value} className={`flex items-center gap-2 cursor-pointer px-4 py-2 rounded-lg border transition-all text-sm ${formData.departureType === opt.value ? 'bg-blue-600/20 border-blue-500 text-white' : 'bg-black/40 border-white/10 text-slate-400 hover:border-white/30'}`}>
+                                            <input type="radio" name="departureType" value={opt.value} checked={formData.departureType === opt.value}
+                                                onChange={handleChange} className="accent-blue-500" />
+                                            {opt.label}
+                                        </label>
+                                    ))}
+                                </div>
+                                {formData.departureType === 'weekly' && (
+                                    <div className="space-y-2">
+                                        <label className="text-sm text-slate-400">Departure Day — small groups join every week on:</label>
+                                        <div className="flex gap-2 flex-wrap">
+                                            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, idx) => (
+                                                <button
+                                                    key={idx} type="button"
+                                                    onClick={() => setFormData(prev => ({ ...prev, weeklyDay: idx }))}
+                                                    className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-all ${Number(formData.weeklyDay) === idx ? 'bg-blue-600 border-blue-600 text-white' : 'bg-black/40 border-white/10 text-slate-400 hover:border-white/30 hover:text-white'}`}
+                                                >
+                                                    {day}
+                                                </button>
+                                            ))}
+                                        </div>
+                                        <p className="text-xs text-slate-500">1 person or any size group → only this day of the week.</p>
+                                    </div>
+                                )}
+                                {formData.departureType === 'minimum-clients' && (
+                                    <div className="flex items-center gap-3">
+                                        <label className="text-sm text-slate-400 whitespace-nowrap">Minimum Clients Required (to run trip):</label>
+                                        <input type="number" name="minimumClients" value={formData.minimumClients}
+                                            onChange={handleChange} min="1" placeholder="e.g. 6"
+                                            className="w-28 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white text-sm" />
+                                    </div>
+                                )}
+
+                                {/* Private Group — any-date departure (works alongside weekly/daily) */}
+                                <div className="mt-2 pt-3 border-t border-white/10 space-y-2">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-sm font-bold text-amber-300">🚀 Private Group Departure</span>
+                                        <span className="text-xs text-slate-500">(works alongside weekly/daily above)</span>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <label className="text-sm text-slate-400 whitespace-nowrap">If group has</label>
+                                        <input type="number" name="minimumPersons" value={formData.minimumPersons}
+                                            onChange={handleChange} min="1" placeholder="e.g. 4"
+                                            className="w-24 bg-black/40 border border-amber-500/30 rounded-lg px-3 py-2 text-white text-sm" />
+                                        <label className="text-sm text-slate-400">or more persons → they can pick <strong className="text-amber-300">any date</strong></label>
+                                    </div>
+                                    <p className="text-xs text-slate-500">
+                                        Example: Weekly (Fridays) + Private Group (4+) → 1–3 people book only Fridays. 4+ people pick any date.
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* ── Season Dates ── */}
+                            <div className="col-span-1 md:col-span-2 border border-white/10 rounded-xl p-4 space-y-3 bg-black/20">
+                                <label className="text-sm font-bold text-slate-300">📅 Season / Booking Window <span className="text-slate-500 font-normal text-xs">(optional — leave empty to allow any date)</span></label>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label className="text-xs text-slate-400 mb-1 block">Season Opens</label>
+                                        <input type="date" name="seasonStartDate" value={formData.seasonStartDate} onChange={handleChange}
+                                            className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white text-sm" />
+                                    </div>
+                                    <div>
+                                        <label className="text-xs text-slate-400 mb-1 block">Season Closes</label>
+                                        <input type="date" name="seasonEndDate" value={formData.seasonEndDate} onChange={handleChange}
+                                            className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white text-sm" />
+                                    </div>
+                                </div>
+                            </div>
+
                             <div>
                                 <label className="block text-sm text-slate-400 mb-1">Categories</label>
                                 <div className="flex flex-wrap gap-2">
@@ -464,6 +620,90 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
                                 rows={4}
                                 className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-blue-500 outline-none resize-none"
                             />
+                        </div>
+                    </div>
+
+                    {/* Batch Dates & Availability */}
+                    <div className="space-y-4 pt-6 border-t border-white/10">
+                        <div className="flex justify-between items-center">
+                            <div>
+                                <h3 className="text-lg font-bold text-blue-400">Batch Dates & Availability</h3>
+                                <p className="text-xs text-slate-400">Manage real-time seat availability for specific dates.</p>
+                            </div>
+                        </div>
+
+                        <div className="bg-black/20 p-4 rounded-xl border border-white/10">
+                            <div className="flex gap-4 mb-4">
+                                <div className="flex-1">
+                                    <label className="block text-sm text-slate-400 mb-1">Select Date</label>
+                                    <input 
+                                        type="date" 
+                                        value={tempBatchDate} 
+                                        onChange={(e) => setTempBatchDate(e.target.value)}
+                                        className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-white" 
+                                    />
+                                </div>
+                                <div className="w-32">
+                                    <label className="block text-sm text-slate-400 mb-1">Available Seats</label>
+                                    <input 
+                                        type="number" 
+                                        value={tempAvailableSeats} 
+                                        onChange={(e) => setTempAvailableSeats(e.target.value)}
+                                        className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-white" 
+                                        min="0"
+                                    />
+                                </div>
+                                <div className="flex items-end">
+                                    <button 
+                                        type="button"
+                                        onClick={() => {
+                                            if (!tempBatchDate || !tempAvailableSeats) {
+                                                alert("Please select a date and enter available seats.");
+                                                return;
+                                            }
+                                            const newBatch = { date: tempBatchDate, availableSeats: parseInt(tempAvailableSeats, 10) };
+                                            // Remove if date already exists
+                                            const filtered = formData.batchDates.filter(b => b.date !== tempBatchDate);
+                                            const updated = [...filtered, newBatch].sort((a, b) => new Date(a.date) - new Date(b.date));
+                                            setFormData(prev => ({ ...prev, batchDates: updated }));
+                                            setTempBatchDate('');
+                                            setTempAvailableSeats('');
+                                        }}
+                                        className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg font-bold transition-colors h-[42px]"
+                                    >
+                                        Add
+                                    </button>
+                                </div>
+                            </div>
+
+                            {formData.batchDates && formData.batchDates.length > 0 ? (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                                    {formData.batchDates.map((batch, idx) => (
+                                        <div key={idx} className="flex justify-between items-center bg-white/5 border border-white/10 p-3 rounded-lg">
+                                            <div>
+                                                <div className="text-sm font-bold text-white">
+                                                    {new Date(batch.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                                </div>
+                                                <div className={`text-xs ${batch.availableSeats > 10 ? 'text-green-400' : batch.availableSeats > 0 ? 'text-yellow-400' : 'text-red-400'}`}>
+                                                    {batch.availableSeats} spots left
+                                                </div>
+                                            </div>
+                                            <button 
+                                                type="button" 
+                                                onClick={() => {
+                                                    const updated = formData.batchDates.filter((_, i) => i !== idx);
+                                                    setFormData(prev => ({ ...prev, batchDates: updated }));
+                                                }}
+                                                className="text-slate-500 hover:text-red-500 transition-colors"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-sm text-slate-500 italic">No batch dates added yet. The package will not have specific date availability shown.</p>
+                            )}
                         </div>
                     </div>
 
@@ -651,6 +891,40 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
                             </button>
                         </div>
 
+                        {/* General Policy */}
+                        <div className="space-y-2">
+                            <label className="block text-sm font-bold text-slate-300">📋 General Policy</label>
+                            <p className="text-xs text-slate-500">Applies to all clients. Edit freely.</p>
+                            <textarea
+                                value={formData.generalPolicy || ''}
+                                onChange={(e) => setFormData(prev => ({ ...prev, generalPolicy: e.target.value }))}
+                                rows={3}
+                                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white resize-y"
+                                placeholder="All participants must carry valid ID proof. Follow trek leader instructions at all times..."
+                            />
+                        </div>
+
+                        {/* Cancellation Policy */}
+                        <div className="space-y-2">
+                            <label className="block text-sm font-bold text-slate-300">❌ Cancellation Policy</label>
+                            <p className="text-xs text-slate-500">Token amount auto-updates from Token Price field. Edit each item as needed.</p>
+                            {(formData.cancellationPolicy || []).map((item, index) => (
+                                <div key={index} className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        value={item}
+                                        onChange={(e) => handleListChange('cancellationPolicy', index, e.target.value)}
+                                        className="flex-1 bg-black/40 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white"
+                                        placeholder="e.g. More than 7 days: Full refund minus token amount"
+                                    />
+                                    <button onClick={() => removeListItem('cancellationPolicy', index)} className="text-slate-500 hover:text-red-400"><X size={16} /></button>
+                                </div>
+                            ))}
+                            <button onClick={() => addListItem('cancellationPolicy')} className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1">
+                                <Plus size={14} /> Add Policy Item
+                            </button>
+                        </div>
+
                         {/* FAQs */}
                         <div className="col-span-1 md:col-span-3 space-y-4 pt-4 mt-2 border-t border-white/10">
                             <h3 className="text-md font-bold text-blue-400">Frequently Asked Questions</h3>
@@ -717,6 +991,69 @@ const AdminPackageForm = ({ initialData, onSave, onCancel }) => {
                                             rows={2}
                                             className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white text-sm"
                                         />
+
+                                        {/* Day Info (optional) */}
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-bold text-slate-400 uppercase">Day Info <span className="text-slate-600 normal-case font-normal">(optional — leave blank to hide)</span></label>
+                                            {/* Drive */}
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                                <input
+                                                    type="text"
+                                                    value={day.distance || ''}
+                                                    onChange={(e) => handleItineraryChange(dayIndex, 'distance', e.target.value)}
+                                                    className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white text-sm"
+                                                    placeholder="🚗 Drive Distance (e.g. 180 km)"
+                                                />
+                                                <input
+                                                    type="text"
+                                                    value={day.time || ''}
+                                                    onChange={(e) => handleItineraryChange(dayIndex, 'time', e.target.value)}
+                                                    className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white text-sm"
+                                                    placeholder="⏱ Drive Time (e.g. 7-8 hours)"
+                                                />
+                                            </div>
+                                            {/* Trek */}
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                                <input
+                                                    type="text"
+                                                    value={day.trekDistance || ''}
+                                                    onChange={(e) => handleItineraryChange(dayIndex, 'trekDistance', e.target.value)}
+                                                    className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white text-sm"
+                                                    placeholder="🥾 Trek Distance (e.g. 18-20 km)"
+                                                />
+                                                <input
+                                                    type="text"
+                                                    value={day.trekTime || ''}
+                                                    onChange={(e) => handleItineraryChange(dayIndex, 'trekTime', e.target.value)}
+                                                    className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white text-sm"
+                                                    placeholder="⏱ Trek Time (e.g. 8-10 hours)"
+                                                />
+                                            </div>
+                                            {/* Altitude, Stay, Meals */}
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                                                <input
+                                                    type="text"
+                                                    value={day.altitude || ''}
+                                                    onChange={(e) => handleItineraryChange(dayIndex, 'altitude', e.target.value)}
+                                                    className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white text-sm"
+                                                    placeholder="⛰ Altitude (e.g. 12,100 ft)"
+                                                />
+                                                <input
+                                                    type="text"
+                                                    value={day.stay || ''}
+                                                    onChange={(e) => handleItineraryChange(dayIndex, 'stay', e.target.value)}
+                                                    className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white text-sm"
+                                                    placeholder="🏕 Stay (e.g. Camping / Hotel)"
+                                                />
+                                                <input
+                                                    type="text"
+                                                    value={day.meals || ''}
+                                                    onChange={(e) => handleItineraryChange(dayIndex, 'meals', e.target.value)}
+                                                    className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white text-sm"
+                                                    placeholder="🍽 Meals (e.g. Breakfast & Dinner)"
+                                                />
+                                            </div>
+                                        </div>
 
                                         {/* Activities */}
                                         <div className="space-y-2">

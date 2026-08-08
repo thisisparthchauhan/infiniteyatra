@@ -8,8 +8,8 @@ import autoTable from 'jspdf-autotable';
 const BookingSuccess = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const { bookingId, packageTitle, totalAmount, date } = location.state || {};
-    const amountPaid = location.state?.amountPaid || totalAmount || 0;
+    const { bookingId, packageTitle, totalAmount, date, isRequest } = location.state || {};
+    const amountPaid = location.state?.amountPaid || 0;
     const hasDownloaded = useRef(false);
 
     const balanceDue = (totalAmount || 0) - (amountPaid || 0);
@@ -142,28 +142,26 @@ const BookingSuccess = () => {
                         <CheckCircle size={48} className="text-green-600" />
                     </div>
 
-                    <h1 className="text-3xl font-bold text-slate-900 mb-2">Booking Confirmed!</h1>
-                    <p className="text-slate-600 mb-8">
-                        Your trip to <strong className="text-slate-900">{packageTitle}</strong> is successfully booked.
+                    <h1 className="text-3xl font-bold text-slate-900 mb-2">Booking Request Received! 🎉</h1>
+                    <p className="text-slate-600 mb-6">
+                        Your request for <strong className="text-slate-900">{packageTitle}</strong> has been received. Our team will contact you shortly on WhatsApp/phone to confirm details and arrange payment.
                     </p>
+
+                    {/* Pending status banner */}
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-8 text-left flex items-start gap-3">
+                        <div className="w-2.5 h-2.5 rounded-full bg-yellow-500 mt-1.5 flex-shrink-0 animate-pulse" />
+                        <p className="text-sm text-yellow-800">
+                            <strong>Status: Pending Confirmation.</strong> No payment has been taken yet. You only pay once our team confirms your booking.
+                        </p>
+                    </div>
 
                     <div className="bg-slate-50 rounded-2xl p-6 mb-8 text-left border border-slate-200">
                         <div className="flex justify-between items-center mb-4 pb-4 border-b border-slate-200">
                             <span className="text-slate-500 text-sm">Booking ID</span>
                             <span className="font-mono font-bold text-slate-900">{bookingId}</span>
                         </div>
-                        <div className="flex justify-between items-center mb-2">
-                            <span className="text-slate-500 text-sm">Amount Paid</span>
-                            <span className="font-bold text-green-600">₹{amountPaid?.toLocaleString()}</span>
-                        </div>
-                        {balanceDue > 0 && (
-                            <div className="flex justify-between items-center mb-2">
-                                <span className="text-slate-500 text-sm">Balance Due</span>
-                                <span className="font-bold text-orange-600">₹{balanceDue?.toLocaleString()}</span>
-                            </div>
-                        )}
                         <div className="flex justify-between items-center mb-4 pb-4 border-b border-slate-200">
-                            <span className="text-slate-500 text-sm">Total Amount</span>
+                            <span className="text-slate-500 text-sm">Estimated Total</span>
                             <span className="font-bold text-slate-900">₹{totalAmount?.toLocaleString()}</span>
                         </div>
                         <div className="flex justify-between items-center">
@@ -193,35 +191,24 @@ const BookingSuccess = () => {
                                 <Mail size={24} className="text-purple-600" />
                             </div>
                             <div>
-                                <p className="font-bold text-purple-900">Email Confirmation</p>
-                                <p className="text-sm text-purple-700">Ticket sent to your inbox</p>
+                                <p className="font-bold text-purple-900">Email Updates</p>
+                                <p className="text-sm text-purple-700">Confirmation will be emailed once approved</p>
                             </div>
                         </div>
                     </div>
 
-                    {balanceDue > 0 && (
-                        <div className="mt-8 bg-orange-50 border border-orange-200 rounded-xl p-6 text-left">
-                            <h3 className="text-lg font-bold text-orange-800 mb-2 flex items-center gap-2">
-                                <Smartphone size={20} />
-                                Payment Instructions
-                            </h3>
-                            <p className="text-sm text-orange-700 mb-4">
-                                To complete your payment of <strong>₹{balanceDue?.toLocaleString()}</strong>, please use the details below.
-                            </p>
-                            <div className="bg-white p-4 rounded-lg border border-orange-100">
-                                <div className="flex justify-between items-center mb-2">
-                                    <span className="text-slate-500 text-sm">UPI ID</span>
-                                    <div className="flex items-center gap-2">
-                                        <span className="font-mono font-bold text-slate-800">infiniteyatra@upi</span>
-                                        <button onClick={() => navigator.clipboard.writeText('infiniteyatra@upi')} className="text-blue-600 hover:text-blue-800"><Copy size={14} /></button>
-                                    </div>
-                                </div>
-                                <div className="text-xs text-slate-400 text-center mt-2">
-                                    Include your Booking ID ({bookingId}) in remarks.
-                                </div>
-                            </div>
-                        </div>
-                    )}
+                    <div className="mt-8 bg-blue-50 border border-blue-200 rounded-xl p-6 text-left">
+                        <h3 className="text-lg font-bold text-blue-800 mb-2 flex items-center gap-2">
+                            <Smartphone size={20} />
+                            What happens next?
+                        </h3>
+                        <ol className="text-sm text-blue-700 space-y-1.5 list-decimal list-inside">
+                            <li>Our team reviews your booking request.</li>
+                            <li>We contact you on WhatsApp/phone to confirm availability & details.</li>
+                            <li>Once confirmed, we share secure payment options.</li>
+                            <li>Your trip is booked — get ready for the adventure! 🏔️</li>
+                        </ol>
+                    </div>
 
                     <div className="mt-8 flex flex-col md:flex-row gap-4">
                         <button

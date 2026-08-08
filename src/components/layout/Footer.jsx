@@ -4,7 +4,8 @@ import { Phone, Mail, Lock, Globe, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import msmeLogo from '../../assets/msme-logo.png';
 import { db } from '../../firebase';
-import { collection, addDoc, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { api, USE_API } from '../../lib/api';
 import { useToast } from '../../context/ToastContext';
 
 /* ─── Brand SVG Icons ─── */
@@ -33,6 +34,9 @@ const YouTubeIcon = ({ size = 20, className }) => (
 );
 
 
+
+/* ─── Formspree newsletter endpoint ─── */
+const FORMSPREE_ENDPOINT = 'https://formspree.io/f/mdaqppkj';
 
 /* ─── Sub-components ─── */
 
@@ -109,21 +113,42 @@ const Footer = memo(() => {
         setStatus('loading');
 
         try {
-            // Check for duplicates
-            const q = query(collection(db, 'newsletter_subscribers'), where('email', '==', email));
-            const snap = await getDocs(q);
-            if (!snap.empty) {
-                setStatus('duplicate');
-                addToast("You're already subscribed! 🙌", 'info');
-                setTimeout(() => setStatus('idle'), 3000);
-                return;
+            if (USE_API) {
+                // New MongoDB API — unique index dedupes; a duplicate returns 200.
+                const res = await api.post('/api/newsletter', { email, source: 'footer' });
+                if (res.duplicate) {
+                    setStatus('duplicate');
+                    addToast("You're already subscribed! 🙌", 'info');
+                    setEmail('');
+                    setTimeout(() => setStatus('idle'), 3000);
+                    return;
+                }
+            } else {
+                // Legacy Firebase path. No client-side duplicate check — listing
+                // newsletter_subscribers is admin-only (rules), and opening it
+                // publicly would leak emails. Duplicates are de-duped admin-side.
+                await addDoc(collection(db, 'newsletter_subscribers'), {
+                    email,
+                    subscribedAt: serverTimestamp(),
+                    source: 'footer'
+                });
             }
 
-            await addDoc(collection(db, 'newsletter_subscribers'), {
-                email,
-                subscribedAt: serverTimestamp(),
-                source: 'footer'
-            });
+            // Notify via Formspree (non-blocking — subscriber is already saved).
+            try {
+                await fetch(FORMSPREE_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                    body: JSON.stringify({
+                        email,
+                        source: 'footer',
+                        _subject: 'New newsletter subscriber — Infinite Yatra',
+                    }),
+                });
+            } catch (formspreeError) {
+                console.error('Formspree notification failed:', formspreeError);
+            }
+
             setStatus('success');
             addToast('🎉 You\'re in! Watch your inbox for adventures.', 'success');
             setEmail('');
@@ -146,7 +171,7 @@ const Footer = memo(() => {
     ];
 
     const supportLinks = [
-        { label: 'About Us', to: '/#about' },
+        { label: 'About Us', to: '/contact' },
         { label: 'Contact Us', to: '/contact' },
         { label: 'Careers', to: '/careers' },
         { label: 'Terms & Conditions', to: '/terms' },
@@ -154,10 +179,10 @@ const Footer = memo(() => {
     ];
 
     const socialLinks = [
-        { icon: InstagramIcon, href: 'https://instagram.com/infinite.yatra', title: 'Instagram', ariaLabel: 'Follow Infinite Yatra on Instagram', hoverBg: 'hover:bg-gradient-to-br hover:from-[#f09433] hover:via-[#e6683c] hover:to-[#dc2743]' },
-        { icon: WhatsAppIcon, href: 'https://whatsapp.com/channel/0029VbBX7rv3gvWStqSdXf08', title: 'WhatsApp', ariaLabel: 'Join Infinite Yatra on WhatsApp', hoverBg: 'hover:bg-[#25D366]' },
-        { icon: XIcon, href: 'https://x.com/infiniteyatra', title: 'X (Twitter)', ariaLabel: 'Follow Infinite Yatra on X', hoverBg: 'hover:bg-black hover:text-white' },
-        { icon: YouTubeIcon, href: 'https://www.youtube.com/channel/UCdWYIKLuKMh_hZIJleWajdg', title: 'YouTube', ariaLabel: 'Watch Infinite Yatra on YouTube', hoverBg: 'hover:bg-[#FF0000]' },
+        { icon: InstagramIcon, href: 'https://instagram.com/infinite.yatra', title: 'Instagram', hoverBg: 'hover:bg-gradient-to-br hover:from-[#f09433] hover:via-[#e6683c] hover:to-[#dc2743]' },
+        { icon: WhatsAppIcon, href: 'https://whatsapp.com/channel/0029VbBX7rv3gvWStqSdXf08', title: 'WhatsApp', hoverBg: 'hover:bg-[#25D366]' },
+        { icon: XIcon, href: 'https://x.com/infiniteyatra', title: 'X', hoverBg: 'hover:bg-black hover:text-white' },
+        { icon: YouTubeIcon, href: 'https://www.youtube.com/channel/UCdWYIKLuKMh_hZIJleWajdg', title: 'YouTube', hoverBg: 'hover:bg-[#FF0000]' },
     ];
 
 
@@ -168,20 +193,20 @@ const Footer = memo(() => {
                 {/* Gradient top border */}
                 <div className="h-px w-full bg-gradient-to-r from-[#7C3AED] to-[#2563EB]" />
 
-                <div className="container mx-auto px-6 py-16">
+                <div className="w-full max-w-[100rem] mx-auto px-4 lg:px-6 xl:px-8 py-16">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-10">
 
                         {/* ── Column 1: Brand ── */}
-                        <div className="space-y-6 flex flex-col items-center lg:items-start xl:items-center">
-                            <div className="w-auto flex flex-col items-center">
-                                <h3
-                                    className="text-2xl font-black tracking-[0.2em] text-white text-center"
+                        <div className="space-y-6 flex flex-col items-center lg:items-start">
+                            <div className="w-auto flex flex-col items-center leading-none">
+                                <span
+                                    className="text-2xl font-black tracking-[0.2em] text-white drop-shadow-sm whitespace-nowrap text-center"
                                     style={{ fontFamily: "'Raleway', sans-serif" }}
                                 >
                                     INFINITE YATRA
-                                </h3>
+                                </span>
                                 <span
-                                    className="text-[10px] tracking-[0.3em] font-extrabold text-white/80 block w-full text-center mt-1"
+                                    className="text-[10px] tracking-[0.3em] font-extrabold text-white/90 block w-full text-center"
                                     style={{ fontFamily: "'Raleway', sans-serif" }}
                                 >
                                     EXPLORE INFINITE
@@ -199,10 +224,9 @@ const Footer = memo(() => {
                                     <span>info@infiniteyatra.com</span>
                                 </a>
                                 <a
-                                    href="https://wa.me/919265799325?text=Hi%20Infinite%20Yatra%2C%20I%20want%20to%20know%20more%20about%20your%20travel%20packages."
+                                    href="https://wa.me/919265799325"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    aria-label="Chat with Infinite Yatra on WhatsApp"
                                     className="inline-flex items-center gap-2 px-4 py-2 mt-1 rounded-full border border-green-500/40 text-green-400 text-xs font-medium hover:bg-green-500/10 transition-all duration-200"
                                 >
                                     💬 Chat on WhatsApp
@@ -287,7 +311,6 @@ const Footer = memo(() => {
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 title={social.title}
-                                                aria-label={social.ariaLabel}
                                                 className={`p-4 rounded-2xl bg-[#111111] border border-[#222222] text-[#888888]
                                                     ${social.hoverBg} hover:text-white hover:border-transparent
                                                     transition-all duration-300 shadow-xl`}

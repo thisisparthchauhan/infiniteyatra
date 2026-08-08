@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { db } from '../../firebase';
+import { db } from '../firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { MapPin, Calendar, Clock, TrendingUp, Sparkles, Share2, ArrowLeft, Loader2 } from 'lucide-react';
-import SEO from '../../components/SEO';
-import { useToast } from '../../context/ToastContext';
+import SEO from '../components/common/SEO';
+import { useToast } from '../context/ToastContext';
 
 const TripDetails = () => {
     const { tripId } = useParams();

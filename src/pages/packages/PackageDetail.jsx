@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { MapPin, Calendar, ChevronDown, Check, X, Phone, MessageCircle, Plus, Minus, Car } from 'lucide-react';
-import { usePackages } from '../../context/PackageContext';
-import { db } from '../../firebase';
-import { collection, query, where, limit, getDocs, documentId } from 'firebase/firestore';
-import SEO from '../../components/SEO';
-import AnimatedBanner from '../../components/packages/AnimatedBanner';
-import PhotoGallery from '../../components/packages/PhotoGallery';
-import LinkedVehicleCard from '../../components/packages/LinkedVehicleCard';
+import { MapPin, Calendar, ChevronDown, Check, X, Phone, MessageCircle, Plus, Minus, Car, Star } from 'lucide-react';
+import { usePackages } from '../context/PackageContext';
+import { db } from '../firebase';
+import { collection, query, where, limit, getDocs, documentId, orderBy } from 'firebase/firestore';
+import SEO from '../components/common/SEO';
+import AnimatedBanner from '../components/AnimatedBanner';
+import PhotoGallery from '../components/PhotoGallery';
+import LinkedVehicleCard from '../components/LinkedVehicleCard';
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import './PackageDetail.css';
 
 const LinkedHotelCard = ({ hotel, navigate }) => {
@@ -80,6 +82,9 @@ const PackageDetail = () => {
     const [transportOptions, setTransportOptions] = useState([]);
     const [linkedHotels, setLinkedHotels] = useState([]);
     const [linkedVehicles, setLinkedVehicles] = useState([]);
+    const [selectedLocationIdx, setSelectedLocationIdx] = useState(0);
+    const [reviews, setReviews] = useState([]);
+    const [reviewPhotoModal, setReviewPhotoModal] = useState(null);
     const { getPackageById, loading } = usePackages();
 
     useEffect(() => {
@@ -88,8 +93,12 @@ const PackageDetail = () => {
         if (packageData) {
             setPkg(packageData);
             // Set first available date if exists
-            if (packageData.availableDates && packageData.availableDates.length > 0) {
-                setSelectedDate(packageData.availableDates[0]);
+            if (packageData.batchDates && packageData.batchDates.length > 0) {
+                const sorted = [...packageData.batchDates].sort((a,b) => new Date(a.date) - new Date(b.date));
+                const firstAvailable = sorted.find(d => d.availableSeats > 0);
+                setSelectedDate(firstAvailable ? new Date(firstAvailable.date) : new Date(sorted[0].date));
+            } else if (packageData.availableDates && packageData.availableDates.length > 0) {
+                setSelectedDate(new Date(packageData.availableDates[0]));
             }
             window.scrollTo(0, 0);
 
@@ -167,6 +176,24 @@ const PackageDetail = () => {
         fetchLinkedVehicles();
     }, [pkg?.linkedVehicleIds]);
 
+    // Fetch approved reviews for this package
+    useEffect(() => {
+        const fetchReviews = async () => {
+            if (!pkg?.id) return;
+            try {
+                const snap = await getDocs(query(
+                    collection(db, 'reviews'),
+                    where('packageId', '==', pkg.id),
+                    where('status', '==', 'approved')
+                ));
+                const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                data.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+                setReviews(data);
+            } catch (err) { console.error('Failed to fetch reviews', err); }
+        };
+        fetchReviews();
+    }, [pkg?.id]);
+
     const toggleDay = (dayIndex) => {
         setExpandedDay(expandedDay === dayIndex ? null : dayIndex);
     };
@@ -185,7 +212,15 @@ const PackageDetail = () => {
     };
 
     const handleBookNow = () => {
-        navigate(`/booking/${id}`);
+        const hasLocations = pkg?.pickupLocations && pkg.pickupLocations.length > 0;
+        const selectedLoc = hasLocations ? pkg.pickupLocations[selectedLocationIdx] : null;
+        navigate(`/booking/${id}`, {
+            state: {
+                selectedLocation: selectedLoc ? selectedLoc.location : null,
+                locationPrice: selectedLoc ? selectedLoc.price : null,
+                selectedDate: selectedDate ? selectedDate.toLocaleDateString('en-CA') : null,
+            }
+        });
     };
 
     const handleSendEnquiry = () => {
@@ -363,40 +398,22 @@ const PackageDetail = () => {
                                         <div className="itinerary-content">
                                             <p>{day.description}</p>
 
-                                            {/* Day Stats */}
-                                            {day.stats && (
+                                            {/* Day Stats — only shown if admin filled them */}
+                                            {(day.distance || day.time || day.trekDistance || day.trekTime || day.altitude) && (
                                                 <div className="day-stats">
-                                                    {day.stats.distance && (
-                                                        <div className="stat-item" title="Distance">
-                                                            <span>🚗/🥾</span> {day.stats.distance}
-                                                        </div>
-                                                    )}
-                                                    {day.stats.time && (
-                                                        <div className="stat-item" title="Time">
-                                                            <span>⏱</span> {day.stats.time}
-                                                        </div>
-                                                    )}
-                                                    {day.stats.altitude && (
-                                                        <div className="stat-item" title="Altitude">
-                                                            <span>⛰</span> {day.stats.altitude}
-                                                        </div>
-                                                    )}
+                                                    {day.distance && <div className="stat-item" title="Drive Distance"><span>🚗</span> {day.distance}</div>}
+                                                    {day.time && <div className="stat-item" title="Drive Time"><span>⏱</span> {day.time}</div>}
+                                                    {day.trekDistance && <div className="stat-item" title="Trek Distance"><span>🥾</span> {day.trekDistance}</div>}
+                                                    {day.trekTime && <div className="stat-item" title="Trek Time"><span>⏱</span> {day.trekTime}</div>}
+                                                    {day.altitude && <div className="stat-item" title="Altitude"><span>⛰</span> {day.altitude}</div>}
                                                 </div>
                                             )}
 
-                                            {/* Stay and Meals */}
+                                            {/* Stay & Meals — only shown if admin filled them */}
                                             {(day.stay || day.meals) && (
                                                 <div className="day-logistics">
-                                                    {day.stay && (
-                                                        <div className="logistics-item">
-                                                            <strong>Stay:</strong> {day.stay}
-                                                        </div>
-                                                    )}
-                                                    {day.meals && (
-                                                        <div className="logistics-item">
-                                                            <strong>Meals:</strong> {day.meals}
-                                                        </div>
-                                                    )}
+                                                    {day.stay && <div className="logistics-item"><strong>Stay:</strong> {day.stay}</div>}
+                                                    {day.meals && <div className="logistics-item"><strong>Meals:</strong> {day.meals}</div>}
                                                 </div>
                                             )}
 
@@ -510,12 +527,17 @@ const PackageDetail = () => {
                             </div>
                         ) : (
                             <div className="carry-tags">
-                                {(pkg.thingsToCarry || thingsToCarry).map((item, index) => (
-                                    <span key={index} className="carry-tag">
-                                        <span className="carry-icon">{item.icon}</span>
-                                        {item.category}
-                                    </span>
-                                ))}
+                                {(pkg.thingsToCarry && pkg.thingsToCarry.length > 0 ? pkg.thingsToCarry : thingsToCarry).map((item, index) => {
+                                    // Support both plain strings (from admin) and legacy {icon, category} objects
+                                    const label = typeof item === 'string' ? item : item.category;
+                                    const icon = typeof item === 'string' ? null : item.icon;
+                                    return (
+                                        <span key={index} className="carry-tag">
+                                            {icon && <span className="carry-icon">{icon}</span>}
+                                            {label}
+                                        </span>
+                                    );
+                                })}
                             </div>
                         )}
                     </section>
@@ -531,7 +553,7 @@ const PackageDetail = () => {
                         </button>
                         {expandedSection === 'general' && (
                             <div className="policy-content">
-                                <p>All participants must carry valid ID proof. Follow trek leader instructions at all times. Respect local culture and environment.</p>
+                                <p>{pkg.generalPolicy || 'All participants must carry valid ID proof. Follow trek leader instructions at all times. Respect local culture and environment.'}</p>
                             </div>
                         )}
                     </section>
@@ -548,14 +570,35 @@ const PackageDetail = () => {
                             </button>
                             {expandedSection === 'cancellation' && (
                                 <div className="policy-content">
-                                    <ul className="info-list policy-list">
-                                        {pkg.cancellationPolicy.map((item, index) => (
-                                            <li key={index} style={{ alignItems: 'flex-start', display: 'flex', gap: '8px', marginBottom: '8px' }}>
-                                                <span className="info-bullet" style={{ color: '#ef4444' }}>•</span>
-                                                <span>{item}</span>
-                                            </li>
-                                        ))}
-                                    </ul>
+                                    <div style={{
+                                        display: 'grid',
+                                        gridTemplateColumns: 'repeat(2, 1fr)',
+                                        gap: '12px',
+                                        padding: '4px 0'
+                                    }}>
+                                        {pkg.cancellationPolicy.map((item, index) => {
+                                            // Replace any hardcoded ₹ token amount with the actual tokenPrice from admin
+                                            let displayItem = item;
+                                            if (pkg.tokenPrice && /token/i.test(item)) {
+                                                const formatted = `₹${Number(pkg.tokenPrice).toLocaleString('en-IN')}`;
+                                                displayItem = item.replace(/₹[\d,]+/, formatted);
+                                            }
+                                            return (
+                                                <div key={index} style={{
+                                                    background: 'rgba(255,255,255,0.05)',
+                                                    border: '1px solid rgba(255,255,255,0.1)',
+                                                    borderRadius: '12px',
+                                                    padding: '16px',
+                                                    display: 'flex',
+                                                    alignItems: 'flex-start',
+                                                    gap: '10px'
+                                                }}>
+                                                    <span style={{ color: '#ef4444', fontSize: '18px', lineHeight: '1.4', flexShrink: 0 }}>•</span>
+                                                    <span style={{ fontSize: '14px', lineHeight: '1.5', color: 'inherit' }}>{displayItem}</span>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
                                 </div>
                             )}
                         </section>
@@ -689,40 +732,209 @@ const PackageDetail = () => {
                             </div>
                         </section>
                     )}
+                    {/* ── Traveler Reviews ── */}
+                    {reviews.length > 0 && (
+                        <section style={{ marginBottom: '4rem' }}>
+                            <h2>⭐ Traveler Reviews</h2>
+                            {/* Average rating */}
+                            {(() => {
+                                const avg = reviews.reduce((s, r) => s + r.rating, 0) / reviews.length;
+                                return (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem', padding: '12px 16px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                                        <span style={{ fontSize: '2.5rem', fontWeight: 800, color: '#facc15' }}>{avg.toFixed(1)}</span>
+                                        <div>
+                                            <div style={{ display: 'flex', gap: '3px', marginBottom: '4px' }}>
+                                                {[1,2,3,4,5].map(s => (
+                                                    <Star key={s} size={16} className={s <= Math.round(avg) ? 'fill-yellow-400 text-yellow-400' : 'text-slate-600'} />
+                                                ))}
+                                            </div>
+                                            <p style={{ fontSize: '13px', color: '#94a3b8' }}>{reviews.length} verified review{reviews.length !== 1 ? 's' : ''}</p>
+                                        </div>
+                                    </div>
+                                );
+                            })()}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                {reviews.map(r => (
+                                    <div key={r.id} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '20px' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+                                            <div>
+                                                <div style={{ display: 'flex', gap: '2px', marginBottom: '4px' }}>
+                                                    {[1,2,3,4,5].map(s => (
+                                                        <Star key={s} size={14} className={s <= r.rating ? 'fill-yellow-400 text-yellow-400' : 'text-slate-600'} />
+                                                    ))}
+                                                </div>
+                                                {r.title && <p style={{ fontWeight: 700, color: '#fff', fontSize: '15px' }}>{r.title}</p>}
+                                                <p style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
+                                                    {r.userName} · {r.createdAt?.toDate?.()?.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) || ''}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <p style={{ color: '#cbd5e1', fontSize: '14px', lineHeight: '1.6' }}>{r.review}</p>
+                                        {r.photos && r.photos.length > 0 && (
+                                            <div style={{ display: 'flex', gap: '8px', marginTop: '12px', flexWrap: 'wrap' }}>
+                                                {r.photos.map((photo, idx) => (
+                                                    <img key={idx} src={photo} alt="" onClick={() => setReviewPhotoModal(photo)}
+                                                        style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '8px', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.1)' }} />
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </section>
+                    )}
+
                 </div>
 
                 {/* Right Column - Sticky Booking Sidebar */}
                 <div className="booking-sidebar">
                     <div className="booking-card">
-                        {/* Pricing */}
-                        <div className="pricing-section">
-                            <div className="price-display">
-                                <span className="from-text">From</span>
-                                <span className="price">₹{pkg.price.toLocaleString()}</span>
-                                <span className="per-person">/person</span>
-                            </div>
-                        </div>
-
-                        {/* Date Selection */}
-                        {pkg.availableDates && pkg.availableDates.length > 0 && (
-                            <div className="date-selection">
-                                {pkg.availableDates.slice(0, 2).map((date, index) => (
-                                    <div
-                                        key={index}
-                                        className={`date-option ${selectedDate === date ? 'selected' : ''}`}
-                                        onClick={() => setSelectedDate(date)}
-                                    >
-                                        <div className="date-radio">
-                                            {selectedDate === date && <div className="radio-dot"></div>}
+                        {/* Pricing — dynamic based on selected location */}
+                        {(() => {
+                            const hasLocations = pkg.pickupLocations && pkg.pickupLocations.length > 0;
+                            const activeLoc = hasLocations ? pkg.pickupLocations[selectedLocationIdx] : null;
+                            const displayPrice = activeLoc ? activeLoc.price : pkg.price;
+                            return (
+                                <>
+                                    {/* Pickup Location Selector — hidden on mobile fixed bar */}
+                                    {hasLocations && (
+                                        <div className="mobile-hide-in-bar" style={{ marginBottom: '12px' }}>
+                                            <label style={{ display: 'block', fontSize: '12px', color: '#94a3b8', marginBottom: '6px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>📍 Select Pickup Location</label>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                                {pkg.pickupLocations.map((loc, idx) => (
+                                                    <button
+                                                        key={idx}
+                                                        type="button"
+                                                        onClick={() => setSelectedLocationIdx(idx)}
+                                                        style={{
+                                                            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                                                            padding: '10px 14px', borderRadius: '10px', border: `1.5px solid ${selectedLocationIdx === idx ? '#3b82f6' : 'rgba(255,255,255,0.1)'}`,
+                                                            background: selectedLocationIdx === idx ? 'rgba(59,130,246,0.12)' : 'rgba(0,0,0,0.2)',
+                                                            cursor: 'pointer', transition: 'all 0.2s', width: '100%', textAlign: 'left'
+                                                        }}
+                                                    >
+                                                        <span style={{ color: selectedLocationIdx === idx ? '#93c5fd' : '#cbd5e1', fontSize: '14px', fontWeight: 500 }}>{loc.location}</span>
+                                                        <span style={{ color: selectedLocationIdx === idx ? '#60a5fa' : '#94a3b8', fontSize: '15px', fontWeight: 700 }}>₹{Number(loc.price).toLocaleString('en-IN')}</span>
+                                                    </button>
+                                                ))}
+                                            </div>
                                         </div>
-                                        <div className="date-info">
-                                            <div className="date-range">{formatDate(date)}</div>
-                                            <div className="date-price">₹{pkg.price.toLocaleString()} <span>/ person • {pkg.duration.split('/')[0].trim()} left</span></div>
+                                    )}
+
+                                    {/* Price Display */}
+                                    <div className="pricing-section">
+                                        <div className="price-display">
+                                            <span className="from-text">From</span>
+                                            <span className="price">₹{Number(displayPrice).toLocaleString()}</span>
+                                            <span className="per-person">/person</span>
                                         </div>
                                     </div>
-                                ))}
+                                </>
+                            );
+                        })()}
+
+                        {/* Minimum Persons Badge — hidden on mobile fixed bar */}
+                        {pkg.minimumPersons && pkg.minimumPersons > 1 && (
+                            <div className="mobile-hide-in-bar" style={{ margin: '8px 0', padding: '10px 12px', background: 'rgba(251,191,36,0.08)', borderRadius: '10px', border: '1px solid rgba(251,191,36,0.25)' }}>
+                                <div style={{ fontSize: '13px', color: '#fcd34d', fontWeight: 600, marginBottom: '2px' }}>👥 Min. {pkg.minimumPersons} persons per booking</div>
+                                <div style={{ fontSize: '11px', color: '#ca8a04' }}>Have a group of {pkg.minimumPersons}+? Pick <strong>any date</strong> you want!</div>
                             </div>
                         )}
+
+                        {/* Departure Type Badge — hidden on mobile fixed bar */}
+                        {pkg.departureType && (
+                            <div className="mobile-hide-in-bar" style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '8px 0', padding: '8px 12px', background: 'rgba(255,255,255,0.04)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                                <span style={{ fontSize: '13px', color: '#94a3b8' }}>
+                                    {pkg.departureType === 'daily' && '📅 Daily Departures'}
+                                    {pkg.departureType === 'weekly' && `📆 Every ${['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][pkg.weeklyDay ?? 5]}`}
+                                    {pkg.departureType === 'minimum-clients' && `👥 Min. ${pkg.minimumClients || ''} clients required`}
+                                </span>
+                            </div>
+                        )}
+
+                        {/* Season Dates Badge — hidden on mobile fixed bar */}
+                        {(pkg.seasonStartDate || pkg.seasonEndDate) && (
+                            <div className="mobile-hide-in-bar" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', padding: '8px 12px', background: 'rgba(34,197,94,0.06)', borderRadius: '8px', border: '1px solid rgba(34,197,94,0.15)' }}>
+                                <span style={{ fontSize: '13px', color: '#86efac' }}>
+                                    🗓 Season: {pkg.seasonStartDate ? new Date(pkg.seasonStartDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}
+                                    {pkg.seasonStartDate && pkg.seasonEndDate ? ' – ' : ''}
+                                    {pkg.seasonEndDate ? new Date(pkg.seasonEndDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}
+                                </span>
+                            </div>
+                        )}
+
+                        {/* Date Selection */}
+                        <div className="date-selection-calendar">
+                            <h3 className="calendar-title">Select Departure Date</h3>
+                            <DatePicker
+                                selected={selectedDate}
+                                onChange={(date) => setSelectedDate(date)}
+                                inline
+                                minDate={pkg.seasonStartDate ? new Date(pkg.seasonStartDate) : undefined}
+                                maxDate={pkg.seasonEndDate ? new Date(pkg.seasonEndDate) : undefined}
+                                renderDayContents={(day, date) => {
+                                    if (!pkg?.batchDates) return <span>{day}</span>;
+                                    const dateString = date.toLocaleDateString('en-CA');
+                                    const batch = pkg.batchDates.find(b => b.date === dateString);
+
+                                    let indicatorClass = '';
+                                    let tooltipText = '';
+
+                                    if (batch) {
+                                        if (batch.availableSeats === 0) {
+                                            indicatorClass = 'sold-out';
+                                            tooltipText = 'Sold Out';
+                                        } else if (batch.availableSeats <= 10) {
+                                            indicatorClass = 'filling-fast';
+                                            tooltipText = `Only ${batch.availableSeats} spots left!`;
+                                        } else {
+                                            indicatorClass = 'available';
+                                            tooltipText = 'Available';
+                                        }
+                                    }
+
+                                    return (
+                                        <div className={`custom-day ${indicatorClass}`} title={tooltipText}>
+                                            <span>{day}</span>
+                                            {batch && <div className="day-indicator"></div>}
+                                        </div>
+                                    );
+                                }}
+                                filterDate={(date) => {
+                                    // Season window restriction always applies
+                                    if (pkg.seasonStartDate && date < new Date(pkg.seasonStartDate)) return false;
+                                    if (pkg.seasonEndDate && date > new Date(pkg.seasonEndDate)) return false;
+                                    // If minimumPersons is set → group can book ANY date
+                                    if (pkg.minimumPersons && pkg.minimumPersons > 1) return true;
+                                    // Daily: all dates
+                                    if (pkg.departureType === 'daily') return true;
+                                    // Weekly: every matching weekday + special batch dates
+                                    if (pkg.departureType === 'weekly') {
+                                        const isWeeklyDay = pkg.weeklyDay !== null && pkg.weeklyDay !== undefined && date.getDay() === Number(pkg.weeklyDay);
+                                        const isSpecialBatch = pkg.batchDates && pkg.batchDates.some(b => b.date === date.toLocaleDateString('en-CA'));
+                                        return isWeeklyDay || isSpecialBatch;
+                                    }
+                                    // Batch / minimum-clients: only batch dates
+                                    if (!pkg?.batchDates || pkg.batchDates.length === 0) {
+                                        if (!pkg?.availableDates) return true;
+                                        return pkg.availableDates.includes(date.toLocaleDateString('en-CA'));
+                                    }
+                                    return pkg.batchDates.some(b => b.date === date.toLocaleDateString('en-CA'));
+                                }}
+                            />
+                            {selectedDate && (
+                                <div className="selected-date-info">
+                                    <div className="date-range">{selectedDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+                                    <div className="date-price">
+                                        ₹{(() => {
+                                            const hasLoc = pkg.pickupLocations && pkg.pickupLocations.length > 0;
+                                            return hasLoc ? Number(pkg.pickupLocations[selectedLocationIdx].price).toLocaleString() : pkg.price.toLocaleString();
+                                        })()} <span>/ person</span>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
 
 
 
@@ -749,6 +961,16 @@ const PackageDetail = () => {
 
             {/* Animated Banner at the end */}
             <AnimatedBanner />
+
+            {/* Review Photo Viewer */}
+            {reviewPhotoModal && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/90 p-4" onClick={() => setReviewPhotoModal(null)}>
+                    <img src={reviewPhotoModal} alt="" className="max-w-full max-h-[90vh] rounded-xl" />
+                    <button onClick={() => setReviewPhotoModal(null)} className="absolute top-6 right-6 bg-white/10 p-2 rounded-full hover:bg-white/20 transition-colors text-white">
+                        <X size={24} />
+                    </button>
+                </div>
+            )}
 
             {/* Full Screen Gallery Overlay */}
             {showGallery && (

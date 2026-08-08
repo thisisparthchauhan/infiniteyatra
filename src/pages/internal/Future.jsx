@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { motion, useInView } from 'framer-motion';
+import { motion, useInView, useScroll, useTransform, useSpring } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { ArrowDown, ChevronDown } from 'lucide-react';
+import { ArrowDown, ChevronDown, ChevronRight } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
-import SpaceWaitlistModal from '../../components/SpaceWaitlistModal';
+import SpaceWaitlistModal from '../components/SpaceWaitlistModal';
+import { trackEvent, trackPageView, createScrollDepthTracker } from '../utils/analytics';
 
 /* =========================================
    1. Canvas Starfield Background
@@ -14,8 +15,18 @@ const StarField = () => {
     useEffect(() => {
         const canvas = canvasRef.current;
         if (!canvas) return;
+
+        // Respect users who don't want motion — render a single static frame instead
+        const prefersReducedMotion = typeof window !== 'undefined'
+            && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
         const ctx = canvas.getContext('2d');
-        let animationFrameId;
+        let animationFrameId = null;
+        let isPaused = false;
+
+        // Adaptive star count — mobile gets ~38% of desktop count (lighter on battery + cleaner look)
+        const isMobile = window.innerWidth < 768;
+        const numStars = isMobile ? 120 : 320;
 
         const resize = () => {
             canvas.width = window.innerWidth;
@@ -24,7 +35,6 @@ const StarField = () => {
         window.addEventListener('resize', resize);
         resize();
 
-        const numStars = 320;
         const stars = Array.from({ length: numStars }).map(() => ({
             x: Math.random() * canvas.width,
             y: Math.random() * canvas.height,
@@ -37,19 +47,16 @@ const StarField = () => {
             isLarge: Math.random() > 0.95
         }));
 
-        const draw = () => {
+        const drawFrame = (animate) => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-
             stars.forEach(star => {
-                star.phase += star.speed;
-                // Sin wave alpha (0.2 to 1)
+                if (animate) star.phase += star.speed;
                 const alpha = Math.abs(Math.sin(star.phase)) * 0.8 + 0.2;
 
                 ctx.globalAlpha = alpha;
                 ctx.fillStyle = star.color;
 
                 if (star.isLarge) {
-                    // Draw a subtle cross/sparkle for large stars
                     ctx.beginPath();
                     ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
                     ctx.fill();
@@ -63,19 +70,44 @@ const StarField = () => {
                     ctx.fill();
                 }
             });
-
-            animationFrameId = requestAnimationFrame(draw);
         };
 
-        draw();
+        const loop = () => {
+            if (isPaused) return;
+            drawFrame(true);
+            animationFrameId = requestAnimationFrame(loop);
+        };
+
+        if (prefersReducedMotion) {
+            // Render once, no rAF loop — saves CPU completely
+            drawFrame(false);
+        } else {
+            loop();
+        }
+
+        // Pause when tab is hidden — frees CPU/battery in background
+        const onVisibility = () => {
+            if (document.hidden) {
+                isPaused = true;
+                if (animationFrameId) {
+                    cancelAnimationFrame(animationFrameId);
+                    animationFrameId = null;
+                }
+            } else if (!prefersReducedMotion && isPaused) {
+                isPaused = false;
+                loop();
+            }
+        };
+        document.addEventListener('visibilitychange', onVisibility);
 
         return () => {
             window.removeEventListener('resize', resize);
-            cancelAnimationFrame(animationFrameId);
+            document.removeEventListener('visibilitychange', onVisibility);
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
         };
     }, []);
 
-    return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-0" />;
+    return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-0" aria-hidden="true" role="presentation" />;
 };
 
 /* =========================================
@@ -168,282 +200,346 @@ const GlowCard = ({ children, className = "" }) => {
 };
 
 /* =========================================
-   4. Thruster Fire SVGs
+   4. Vehicle Schematic Illustrations
+   — Static monochrome technical line-art —
 ========================================= */
-const ThrusterPulse = ({ children }) => (
-    <motion.div
-        animate={{ opacity: [0.7, 1, 0.8], scaleY: [0.9, 1.1, 0.95] }}
-        transition={{ duration: 0.15, repeat: Infinity, repeatType: "mirror" }}
-        style={{ transformOrigin: "top center" }}
-        className="flex justify-center"
-    >
+
+const SchematicWrapper = ({ children, className = "" }) => (
+    <div className={`w-full flex items-center justify-center ${className}`}>
         {children}
-    </motion.div>
+    </div>
 );
 
-/* =========================================
-   5. Rocket SVG Components
-========================================= */
-
-// CARD 1: IY AURORA (Orbital - Space Shuttle)
+// VEHICLE 01: IY AURORA — Orbital shuttle, side-profile schematic
 const RocketAurora = () => (
-    <motion.div
-        animate={{ y: [0, -13, 0] }}
-        transition={{ duration: 5, ease: "easeInOut", repeat: Infinity }}
-        className="w-full h-64 relative flex items-center justify-center pt-8 z-10 drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]"
-    >
-        <svg width="120" height="180" viewBox="0 0 120 180" fill="none" xmlns="http://www.w3.org/2000/svg">
-            {/* External Tank */}
-            <rect x="50" y="20" width="20" height="120" rx="10" fill="#E67E22" />
-            <path d="M50 20 L70 20 V140 H50 Z" fill="#D35400" opacity="0.4" />
+    <SchematicWrapper className="h-56 md:h-72">
+        <svg viewBox="0 0 320 240" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full max-w-md" aria-hidden="true" role="presentation">
+            {/* Reticle / target lines */}
+            <line x1="0" y1="120" x2="40" y2="120" stroke="#ffffff" strokeOpacity="0.15" strokeWidth="0.5" />
+            <line x1="280" y1="120" x2="320" y2="120" stroke="#ffffff" strokeOpacity="0.15" strokeWidth="0.5" />
+            <line x1="160" y1="0" x2="160" y2="30" stroke="#ffffff" strokeOpacity="0.15" strokeWidth="0.5" />
+            <line x1="160" y1="210" x2="160" y2="240" stroke="#ffffff" strokeOpacity="0.15" strokeWidth="0.5" />
 
-            {/* SRBs */}
-            <rect x="36" y="30" width="8" height="100" fill="#F8FAFC" />
-            <path d="M36 30 L40 20 L44 30 Z" fill="#F8FAFC" />
-            <path d="M32 130 H48 L46 140 H34 Z" fill="#334155" /> {/* SRB Left Nozzle */}
+            {/* External tank */}
+            <rect x="142" y="50" width="20" height="120" rx="8" stroke="#ffffff" strokeOpacity="0.8" strokeWidth="1" fill="none" />
+            <line x1="142" y1="80" x2="162" y2="80" stroke="#ffffff" strokeOpacity="0.3" strokeWidth="0.5" />
+            <line x1="142" y1="120" x2="162" y2="120" stroke="#ffffff" strokeOpacity="0.3" strokeWidth="0.5" />
 
-            <rect x="76" y="30" width="8" height="100" fill="#F8FAFC" />
-            <path d="M76 30 L80 20 L84 30 Z" fill="#F8FAFC" />
-            <path d="M72 130 H88 L86 140 H74 Z" fill="#334155" /> {/* SRB Right Nozzle */}
+            {/* SRB Left */}
+            <rect x="115" y="60" width="14" height="100" rx="2" stroke="#ffffff" strokeOpacity="0.7" strokeWidth="1" fill="none" />
+            <path d="M115 60 L122 48 L129 60" stroke="#ffffff" strokeOpacity="0.7" strokeWidth="1" fill="none" />
+            {/* SRB Right */}
+            <rect x="175" y="60" width="14" height="100" rx="2" stroke="#ffffff" strokeOpacity="0.7" strokeWidth="1" fill="none" />
+            <path d="M175 60 L182 48 L189 60" stroke="#ffffff" strokeOpacity="0.7" strokeWidth="1" fill="none" />
 
-            {/* Orbiter Body */}
-            {/* Wings */}
-            <path d="M60 70 L25 125 H95 L60 70 Z" fill="#94A3B8" stroke="#334155" strokeWidth="1" />
-            <path d="M60 70 L25 125 H95 L60 70 Z" fill="#1E293B" opacity="0.3" /> {/* thermal tile shade */}
+            {/* Orbiter wings */}
+            <path d="M152 110 L80 165 L240 165 L168 110 Z" stroke="#ffffff" strokeOpacity="0.8" strokeWidth="1" fill="none" />
+            <line x1="100" y1="160" x2="220" y2="160" stroke="#ffffff" strokeOpacity="0.2" strokeWidth="0.5" />
 
-            {/* Main fuselage */}
-            <path d="M60 40 C65 40, 70 70, 70 125 H50 C50 70, 55 40, 60 40 Z" fill="#F1F5F9" />
-            <path d="M60 40 C65 40, 70 70, 70 125 H60 V40 Z" fill="#FFFFFF" opacity="0.6" />
+            {/* Cockpit dome */}
+            <path d="M148 70 Q160 60 172 70" stroke="#ffffff" strokeOpacity="0.8" strokeWidth="1" fill="none" />
+            <ellipse cx="160" cy="74" rx="6" ry="2" stroke="#ffffff" strokeOpacity="0.5" strokeWidth="0.6" fill="none" />
 
-            {/* Cockpit Window */}
-            <path d="M56 60 Q60 55 64 60 Q60 62 56 60 Z" fill="#020617" />
-            <line x1="60" y1="56" x2="60" y2="61" stroke="#F1F5F9" strokeWidth="0.5" />
+            {/* Nozzles */}
+            <ellipse cx="153" cy="172" rx="4" ry="2.5" stroke="#ffffff" strokeOpacity="0.6" strokeWidth="0.6" fill="none" />
+            <ellipse cx="167" cy="172" rx="4" ry="2.5" stroke="#ffffff" strokeOpacity="0.6" strokeWidth="0.6" fill="none" />
+            <ellipse cx="160" cy="178" rx="4" ry="2.5" stroke="#ffffff" strokeOpacity="0.6" strokeWidth="0.6" fill="none" />
 
-            {/* Flag stripe (abstracted to line) */}
-            <line x1="56" y1="80" x2="64" y2="80" stroke="#EF4444" strokeWidth="2" />
-            <line x1="56" y1="82" x2="64" y2="82" stroke="#FFFFFF" strokeWidth="1" />
-
-            {/* Tail fin */}
-            <path d="M60 90 L60 125 L65 125 Z" fill="#CBD5E1" />
-
-            {/* SSME Nozzles */}
-            <ellipse cx="55" cy="128" rx="4" ry="2" fill="none" stroke="#475569" strokeWidth="1" />
-            <ellipse cx="65" cy="128" rx="4" ry="2" fill="none" stroke="#475569" strokeWidth="1" />
-            <ellipse cx="60" cy="132" rx="4" ry="2" fill="none" stroke="#475569" strokeWidth="1" />
+            {/* Dimensions / labels */}
+            <text x="48" y="58" fill="#ffffff" fillOpacity="0.4" fontSize="7" fontFamily="ui-monospace,monospace" letterSpacing="1.2">EXT TANK</text>
+            <line x1="80" y1="55" x2="115" y2="60" stroke="#ffffff" strokeOpacity="0.2" strokeWidth="0.5" />
+            <text x="226" y="58" fill="#ffffff" fillOpacity="0.4" fontSize="7" fontFamily="ui-monospace,monospace" letterSpacing="1.2">SRB</text>
+            <line x1="245" y1="55" x2="220" y2="60" stroke="#ffffff" strokeOpacity="0.2" strokeWidth="0.5" />
+            <text x="44" y="200" fill="#ffffff" fillOpacity="0.4" fontSize="7" fontFamily="ui-monospace,monospace" letterSpacing="1.2">ORBITER</text>
+            <line x1="80" y1="195" x2="110" y2="165" stroke="#ffffff" strokeOpacity="0.2" strokeWidth="0.5" />
         </svg>
-
-        {/* Flames */}
-        <div className="absolute top-[170px] flex w-[120px] justify-between px-[36px]">
-            {/* SRB Flame Left */}
-            <ThrusterPulse><div className="w-2 h-10 bg-gradient-to-b from-white via-orange-500 to-transparent blur-[1px] rounded-full mt-2" /></ThrusterPulse>
-            {/* SSME Flame Center */}
-            <ThrusterPulse><div className="w-3 h-12 bg-gradient-to-b from-blue-300 via-cyan-500 to-transparent blur-[1px] rounded-full mt-4" /></ThrusterPulse>
-            {/* SRB Flame Right */}
-            <ThrusterPulse><div className="w-2 h-10 bg-gradient-to-b from-white via-orange-500 to-transparent blur-[1px] rounded-full mt-2" /></ThrusterPulse>
-        </div>
-    </motion.div>
+    </SchematicWrapper>
 );
 
-// CARD 2: IY HORIZON (Deep Space Ion Cruiser)
+// VEHICLE 02: IY HORIZON — Deep-space ion cruiser
 const RocketHorizon = () => (
-    <motion.div
-        animate={{ y: [0, -10, 0] }}
-        transition={{ duration: 6, ease: "easeInOut", repeat: Infinity }}
-        className="w-full h-64 relative flex items-center justify-center pt-8 z-10 drop-shadow-[0_0_20px_rgba(0,255,255,0.15)]"
-    >
-        <svg width="200" height="150" viewBox="0 0 200 150" fill="none" xmlns="http://www.w3.org/2000/svg">
-            {/* Solar Arrays */}
-            <rect x="20" y="60" width="70" height="25" fill="#0F172A" />
-            <rect x="110" y="60" width="70" height="25" fill="#0F172A" />
+    <SchematicWrapper className="h-56 md:h-72">
+        <svg viewBox="0 0 320 240" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full max-w-md" aria-hidden="true" role="presentation">
+            {/* Reticle */}
+            <line x1="0" y1="120" x2="30" y2="120" stroke="#ffffff" strokeOpacity="0.15" strokeWidth="0.5" />
+            <line x1="290" y1="120" x2="320" y2="120" stroke="#ffffff" strokeOpacity="0.15" strokeWidth="0.5" />
 
-            {/* Solar Array Grid Lines */}
-            <path d="M20 68 H90 M20 76 H90 M110 68 H180 M110 76 H180" stroke="#00FFFF" strokeWidth="0.5" opacity="0.3" />
-            <path d="M35 60 V85 M55 60 V85 M75 60 V85 M125 60 V85 M145 60 V85 M165 60 V85" stroke="#00FFFF" strokeWidth="0.5" opacity="0.3" />
+            {/* Solar arrays */}
+            <rect x="40" y="100" width="90" height="40" stroke="#ffffff" strokeOpacity="0.8" strokeWidth="1" fill="none" />
+            <rect x="190" y="100" width="90" height="40" stroke="#ffffff" strokeOpacity="0.8" strokeWidth="1" fill="none" />
+            {/* Solar grid */}
+            {[55, 70, 85, 100, 115].map(x => (
+                <line key={`l${x}`} x1={x} y1="100" x2={x} y2="140" stroke="#ffffff" strokeOpacity="0.25" strokeWidth="0.5" />
+            ))}
+            {[205, 220, 235, 250, 265].map(x => (
+                <line key={`r${x}`} x1={x} y1="100" x2={x} y2="140" stroke="#ffffff" strokeOpacity="0.25" strokeWidth="0.5" />
+            ))}
+            <line x1="40" y1="115" x2="130" y2="115" stroke="#ffffff" strokeOpacity="0.25" strokeWidth="0.5" />
+            <line x1="40" y1="125" x2="130" y2="125" stroke="#ffffff" strokeOpacity="0.25" strokeWidth="0.5" />
+            <line x1="190" y1="115" x2="280" y2="115" stroke="#ffffff" strokeOpacity="0.25" strokeWidth="0.5" />
+            <line x1="190" y1="125" x2="280" y2="125" stroke="#ffffff" strokeOpacity="0.25" strokeWidth="0.5" />
 
-            {/* Horizontal Boom Arms */}
-            <line x1="90" y1="72.5" x2="110" y2="72.5" stroke="#64748B" strokeWidth="4" />
+            {/* Booms */}
+            <line x1="130" y1="120" x2="150" y2="120" stroke="#ffffff" strokeOpacity="0.7" strokeWidth="2" />
+            <line x1="170" y1="120" x2="190" y2="120" stroke="#ffffff" strokeOpacity="0.7" strokeWidth="2" />
 
-            {/* Central Spine */}
-            <rect x="94" y="30" width="12" height="90" rx="6" fill="url(#horizon-grad)" />
-            <defs>
-                <linearGradient id="horizon-grad" x1="94" y1="30" x2="106" y2="30" gradientUnits="userSpaceOnUse">
-                    <stop stopColor="#F8FAFC" />
-                    <stop offset="1" stopColor="#1E293B" />
-                </linearGradient>
-            </defs>
+            {/* Central spine */}
+            <rect x="150" y="50" width="20" height="140" rx="3" stroke="#ffffff" strokeOpacity="0.8" strokeWidth="1" fill="none" />
 
-            {/* Nose Fairing */}
-            <path d="M94 30 L100 15 L106 30 Z" fill="#CBD5E1" />
-            <line x1="100" y1="15" x2="100" y2="5" stroke="#94A3B8" strokeWidth="1.5" />
-            <circle cx="100" cy="5" r="1.5" fill="#00FFFF" />
+            {/* Antenna */}
+            <line x1="160" y1="50" x2="160" y2="30" stroke="#ffffff" strokeOpacity="0.6" strokeWidth="1" />
+            <circle cx="160" cy="28" r="2" stroke="#ffffff" strokeOpacity="0.6" strokeWidth="0.8" fill="none" />
 
-            {/* Habitat Module */}
-            <rect x="91" y="55" width="18" height="35" rx="2" fill="#334155" />
-            <circle cx="100" cy="65" r="3" fill="#020617" stroke="#00FFFF" strokeWidth="0.5" />
-            <circle cx="100" cy="77" r="3" fill="#020617" stroke="#00FFFF" strokeWidth="0.5" />
+            {/* Habitat module */}
+            <rect x="146" y="95" width="28" height="55" rx="2" stroke="#ffffff" strokeOpacity="0.7" strokeWidth="1" fill="none" />
+            <circle cx="160" cy="108" r="3" stroke="#ffffff" strokeOpacity="0.6" strokeWidth="0.6" fill="none" />
+            <circle cx="160" cy="125" r="3" stroke="#ffffff" strokeOpacity="0.6" strokeWidth="0.6" fill="none" />
+            <circle cx="160" cy="142" r="3" stroke="#ffffff" strokeOpacity="0.6" strokeWidth="0.6" fill="none" />
 
-            {/* Heat Shield Disk */}
-            <ellipse cx="100" cy="115" rx="14" ry="4" fill="#64748B" />
-            <ellipse cx="100" cy="115" rx="14" ry="4" fill="none" stroke="#94A3B8" strokeWidth="1" />
+            {/* Heat shield disk */}
+            <ellipse cx="160" cy="178" rx="18" ry="3" stroke="#ffffff" strokeOpacity="0.7" strokeWidth="1" fill="none" />
 
-            {/* Ion Engine Bell */}
-            <path d="M96 115 L93 125 H107 L104 115 Z" fill="#0F172A" />
-            <ellipse cx="100" cy="125" rx="7" ry="2" fill="none" stroke="#00FFFF" strokeWidth="1" />
+            {/* Ion engine bell */}
+            <path d="M152 178 L148 195 L172 195 L168 178 Z" stroke="#ffffff" strokeOpacity="0.7" strokeWidth="1" fill="none" />
+            <ellipse cx="160" cy="195" rx="9" ry="2" stroke="#ffffff" strokeOpacity="0.5" strokeWidth="0.6" fill="none" />
+
+            {/* Labels */}
+            <text x="58" y="92" fill="#ffffff" fillOpacity="0.4" fontSize="7" fontFamily="ui-monospace,monospace" letterSpacing="1.2">SOLAR ARRAY</text>
+            <text x="206" y="92" fill="#ffffff" fillOpacity="0.4" fontSize="7" fontFamily="ui-monospace,monospace" letterSpacing="1.2">SOLAR ARRAY</text>
+            <text x="180" y="118" fill="#ffffff" fillOpacity="0.4" fontSize="7" fontFamily="ui-monospace,monospace" letterSpacing="1.2">HABITAT</text>
+            <line x1="178" y1="115" x2="174" y2="115" stroke="#ffffff" strokeOpacity="0.2" strokeWidth="0.5" />
+            <text x="178" y="200" fill="#ffffff" fillOpacity="0.4" fontSize="7" fontFamily="ui-monospace,monospace" letterSpacing="1.2">ION DRIVE</text>
         </svg>
-
-        {/* Ion Plume Flame */}
-        <div className="absolute top-[160px] w-full flex justify-center mt-[-3px]">
-            <ThrusterPulse>
-                <div className="w-1 h-24 bg-gradient-to-b from-[#00FFFF] to-transparent blur-[2px] rounded-full" />
-                <div className="absolute w-2 h-10 bg-gradient-to-b from-white to-[#00FFFF] blur-[4px] rounded-full" />
-            </ThrusterPulse>
-        </div>
-    </motion.div>
+    </SchematicWrapper>
 );
 
-// CARD 3: IY SELENE (Lunar Apollo-class)
+// VEHICLE 03: IY SELENE — Lunar lander
 const RocketSelene = () => (
-    <motion.div
-        animate={{ y: [0, -15, 0] }}
-        transition={{ duration: 5.5, ease: "easeInOut", repeat: Infinity }}
-        className="w-full h-64 relative flex items-center justify-center pt-10 z-10 drop-shadow-[0_0_15px_rgba(234,179,8,0.2)]"
-    >
-        <svg width="140" height="140" viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <SchematicWrapper className="h-56 md:h-72">
+        <svg viewBox="0 0 320 240" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full max-w-md" aria-hidden="true" role="presentation">
+            {/* Reticle */}
+            <line x1="0" y1="120" x2="40" y2="120" stroke="#ffffff" strokeOpacity="0.15" strokeWidth="0.5" />
+            <line x1="280" y1="120" x2="320" y2="120" stroke="#ffffff" strokeOpacity="0.15" strokeWidth="0.5" />
+            <line x1="160" y1="195" x2="160" y2="220" stroke="#ffffff" strokeOpacity="0.15" strokeWidth="0.5" />
 
-            {/* Landing Legs */}
-            {/* Secondary Legs (shorter) */}
-            <line x1="70" y1="80" x2="40" y2="120" stroke="#A16207" strokeWidth="2" />
-            <line x1="70" y1="80" x2="100" y2="120" stroke="#A16207" strokeWidth="2" />
-            <ellipse cx="40" cy="120" rx="5" ry="2" fill="#D97706" />
-            <ellipse cx="100" cy="120" rx="5" ry="2" fill="#D97706" />
+            {/* Landing legs */}
+            <line x1="160" y1="135" x2="100" y2="195" stroke="#ffffff" strokeOpacity="0.8" strokeWidth="1.2" />
+            <line x1="160" y1="135" x2="220" y2="195" stroke="#ffffff" strokeOpacity="0.8" strokeWidth="1.2" />
+            <line x1="160" y1="135" x2="130" y2="195" stroke="#ffffff" strokeOpacity="0.5" strokeWidth="1" />
+            <line x1="160" y1="135" x2="190" y2="195" stroke="#ffffff" strokeOpacity="0.5" strokeWidth="1" />
 
-            {/* Primary Legs (longer setup) */}
-            <line x1="70" y1="75" x2="15" y2="130" stroke="#CA8A04" strokeWidth="2.5" />
-            <line x1="70" y1="75" x2="125" y2="130" stroke="#CA8A04" strokeWidth="2.5" />
-            <ellipse cx="15" cy="130" rx="7" ry="3" fill="#F59E0B" />
-            <ellipse cx="125" cy="130" rx="7" ry="3" fill="#F59E0B" />
+            {/* Foot pads */}
+            <ellipse cx="100" cy="197" rx="8" ry="2.5" stroke="#ffffff" strokeOpacity="0.8" strokeWidth="1" fill="none" />
+            <ellipse cx="220" cy="197" rx="8" ry="2.5" stroke="#ffffff" strokeOpacity="0.8" strokeWidth="1" fill="none" />
+            <ellipse cx="130" cy="197" rx="6" ry="2" stroke="#ffffff" strokeOpacity="0.5" strokeWidth="0.8" fill="none" />
+            <ellipse cx="190" cy="197" rx="6" ry="2" stroke="#ffffff" strokeOpacity="0.5" strokeWidth="0.8" fill="none" />
 
-            {/* Contact Probes */}
-            <line x1="15" y1="130" x2="15" y2="138" stroke="#CA8A04" strokeWidth="1" />
-            <line x1="125" y1="130" x2="125" y2="138" stroke="#CA8A04" strokeWidth="1" />
-            <circle cx="15" cy="138" r="1.5" fill="#FEF08A" />
-            <circle cx="125" cy="138" r="1.5" fill="#FEF08A" />
+            {/* Descent stage (octagonal box) */}
+            <path d="M125 95 L195 95 L210 110 L210 140 L195 155 L125 155 L110 140 L110 110 Z"
+                stroke="#ffffff" strokeOpacity="0.8" strokeWidth="1" fill="none" />
+            <line x1="110" y1="125" x2="210" y2="125" stroke="#ffffff" strokeOpacity="0.3" strokeWidth="0.5" />
+            <line x1="125" y1="95" x2="125" y2="155" stroke="#ffffff" strokeOpacity="0.3" strokeWidth="0.5" />
+            <line x1="160" y1="95" x2="160" y2="155" stroke="#ffffff" strokeOpacity="0.3" strokeWidth="0.5" />
+            <line x1="195" y1="95" x2="195" y2="155" stroke="#ffffff" strokeOpacity="0.3" strokeWidth="0.5" />
 
-            {/* Descent Stage */}
-            <rect x="45" y="65" width="50" height="30" fill="#CA8A04" />
-            {/* Foil horizontal striping */}
-            <path d="M45 70 H95 M45 75 H95 M45 80 H95 M45 85 H95 M45 90 H95" stroke="#FDE047" strokeWidth="1.5" opacity="0.6" />
-            {/* Foil vertical seams */}
-            <path d="M55 65 V95 M70 65 V95 M85 65 V95" stroke="#A16207" strokeWidth="1" />
-            {/* Hatch on descent top */}
-            <rect x="63" y="62" width="14" height="3" fill="#A16207" />
-
-            {/* Ascent Stage */}
-            <rect x="52" y="30" width="36" height="32" rx="4" fill="#FDE68A" />
-            <rect x="52" y="30" width="18" height="32" rx="4" fill="#FEF08A" opacity="0.7" />
-
-            {/* Dome Top */}
-            <path d="M52 30 Q70 15 88 30 Z" fill="#FDE68A" />
-
+            {/* Ascent stage */}
+            <rect x="135" y="55" width="50" height="40" rx="3" stroke="#ffffff" strokeOpacity="0.85" strokeWidth="1" fill="none" />
             {/* Window */}
-            <ellipse cx="70" cy="45" rx="8" ry="12" fill="#020617" stroke="#EAB308" strokeWidth="1.5" />
-            <path d="M68 40 L74 45 L68 50 Z" fill="#00FFFF" opacity="0.3" />
+            <ellipse cx="160" cy="72" rx="6" ry="9" stroke="#ffffff" strokeOpacity="0.7" strokeWidth="0.8" fill="none" />
 
-            {/* RCS Thruster Blocks */}
-            <rect x="48" y="45" width="4" height="8" fill="#64748B" />
-            <rect x="88" y="45" width="4" height="8" fill="#64748B" />
-            <line x1="44" y1="49" x2="48" y2="49" stroke="#94A3B8" strokeWidth="1" />
-            <line x1="92" y1="49" x2="88" y2="49" stroke="#94A3B8" strokeWidth="1" />
+            {/* RCS thruster blocks */}
+            <rect x="128" y="68" width="6" height="8" stroke="#ffffff" strokeOpacity="0.6" strokeWidth="0.6" fill="none" />
+            <rect x="186" y="68" width="6" height="8" stroke="#ffffff" strokeOpacity="0.6" strokeWidth="0.6" fill="none" />
 
-            {/* Engine Shroud Descent */}
-            <ellipse cx="70" cy="98" rx="10" ry="3" fill="#1E293B" />
+            {/* Dome */}
+            <path d="M135 55 Q160 38 185 55" stroke="#ffffff" strokeOpacity="0.85" strokeWidth="1" fill="none" />
+
+            {/* Antenna */}
+            <line x1="160" y1="40" x2="160" y2="28" stroke="#ffffff" strokeOpacity="0.5" strokeWidth="0.8" />
+            <circle cx="160" cy="26" r="1.5" stroke="#ffffff" strokeOpacity="0.6" strokeWidth="0.6" fill="none" />
+
+            {/* Engine bell */}
+            <ellipse cx="160" cy="158" rx="14" ry="3" stroke="#ffffff" strokeOpacity="0.6" strokeWidth="0.8" fill="none" />
+
+            {/* Labels */}
+            <text x="40" y="58" fill="#ffffff" fillOpacity="0.4" fontSize="7" fontFamily="ui-monospace,monospace" letterSpacing="1.2">ASCENT</text>
+            <line x1="80" y1="55" x2="135" y2="62" stroke="#ffffff" strokeOpacity="0.2" strokeWidth="0.5" />
+            <text x="42" y="130" fill="#ffffff" fillOpacity="0.4" fontSize="7" fontFamily="ui-monospace,monospace" letterSpacing="1.2">DESCENT</text>
+            <line x1="80" y1="127" x2="110" y2="125" stroke="#ffffff" strokeOpacity="0.2" strokeWidth="0.5" />
+            <text x="232" y="200" fill="#ffffff" fillOpacity="0.4" fontSize="7" fontFamily="ui-monospace,monospace" letterSpacing="1.2">FOOT PAD</text>
         </svg>
-
-        {/* Frame / Flame */}
-        <div className="absolute top-[148px] w-full flex justify-center mt-0" style={{ transform: 'translateX(-0.5px)' }}>
-            <ThrusterPulse>
-                <div className="w-1.5 h-16 bg-gradient-to-b from-white via-orange-400 to-transparent blur-[1px] rounded-full" />
-            </ThrusterPulse>
-        </div>
-    </motion.div>
+    </SchematicWrapper>
 );
 
-// CARD 4: IY MANGAL (Interplanetary Starship class)
+// VEHICLE 04: IY MANGAL — Interplanetary Starship
 const RocketMangal = () => (
-    <motion.div
-        animate={{ y: [0, -9, 0] }}
-        transition={{ duration: 4.8, ease: "easeInOut", repeat: Infinity }}
-        className="w-full h-64 relative flex items-center justify-center pt-8 z-10 drop-shadow-[0_0_20px_rgba(239,68,68,0.1)]"
-    >
-        <svg width="120" height="180" viewBox="0 0 120 180" fill="none" xmlns="http://www.w3.org/2000/svg">
-            {/* Super Heavy Booster */}
-            <rect x="44" y="90" width="32" height="60" fill="url(#mangal-grad)" />
-            <defs>
-                <linearGradient id="mangal-grad" x1="44" y1="0" x2="76" y2="0" gradientUnits="userSpaceOnUse">
-                    <stop stopColor="#F8FAFC" />
-                    <stop offset="1" stopColor="#475569" />
-                </linearGradient>
-            </defs>
-            <path d="M44 110 H76 M44 130 H76" stroke="#94A3B8" strokeWidth="0.5" />
+    <SchematicWrapper className="h-56 md:h-72">
+        <svg viewBox="0 0 320 280" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full max-w-md" aria-hidden="true" role="presentation">
+            {/* Reticle */}
+            <line x1="0" y1="140" x2="40" y2="140" stroke="#ffffff" strokeOpacity="0.15" strokeWidth="0.5" />
+            <line x1="280" y1="140" x2="320" y2="140" stroke="#ffffff" strokeOpacity="0.15" strokeWidth="0.5" />
+            <line x1="160" y1="0" x2="160" y2="25" stroke="#ffffff" strokeOpacity="0.15" strokeWidth="0.5" />
+            <line x1="160" y1="250" x2="160" y2="280" stroke="#ffffff" strokeOpacity="0.15" strokeWidth="0.5" />
 
-            {/* Grid Fins */}
-            <rect x="36" y="95" width="8" height="15" fill="#334155" />
-            <path d="M36 98 H44 M36 101 H44 M36 104 H44 M36 107 H44 M39 95 V110 M41 95 V110" stroke="#EF4444" strokeWidth="0.5" opacity="0.6" />
-
-            <rect x="76" y="95" width="8" height="15" fill="#334155" />
-            <path d="M76 98 H84 M76 101 H84 M76 104 H84 M76 107 H84 M79 95 V110 M81 95 V110" stroke="#EF4444" strokeWidth="0.5" opacity="0.6" />
-
-            {/* Raptor Engine Bells */}
-            {/* A rough circular cluster of 7 bells */}
-            <ellipse cx="60" cy="155" rx="14" ry="4" fill="#0F172A" />
-            <ellipse cx="50" cy="153" rx="4" ry="2" fill="none" stroke="#64748B" strokeWidth="0.5" />
-            <ellipse cx="55" cy="154" rx="4" ry="2" fill="none" stroke="#64748B" strokeWidth="0.5" />
-            <ellipse cx="65" cy="154" rx="4" ry="2" fill="none" stroke="#64748B" strokeWidth="0.5" />
-            <ellipse cx="70" cy="153" rx="4" ry="2" fill="none" stroke="#64748B" strokeWidth="0.5" />
-            <ellipse cx="55" cy="150" rx="4" ry="2" fill="none" stroke="#64748B" strokeWidth="0.5" />
-            <ellipse cx="65" cy="150" rx="4" ry="2" fill="none" stroke="#64748B" strokeWidth="0.5" />
-            <ellipse cx="60" cy="152" rx="4" ry="2" fill="none" stroke="#CBD5E1" strokeWidth="0.5" /> {/* Center */}
-
-            {/* Upper Stage Starship */}
-            <path d="M44 20 C44 20, 60 0, 76 20 V90 H44 Z" fill="url(#mangal-grad)" />
-            <path d="M44 40 H76 M44 60 H76 M44 80 H76" stroke="#94A3B8" strokeWidth="0.5" />
-            <path d="M52 20 V90 M60 20 V90 M68 20 V90" stroke="#94A3B8" strokeWidth="0.5" opacity="0.3" />
+            {/* Upper stage (Starship) */}
+            <path d="M140 35 Q160 18 180 35 L180 130 L140 130 Z" stroke="#ffffff" strokeOpacity="0.85" strokeWidth="1" fill="none" />
+            <line x1="140" y1="65" x2="180" y2="65" stroke="#ffffff" strokeOpacity="0.3" strokeWidth="0.5" />
+            <line x1="140" y1="90" x2="180" y2="90" stroke="#ffffff" strokeOpacity="0.3" strokeWidth="0.5" />
+            <line x1="140" y1="115" x2="180" y2="115" stroke="#ffffff" strokeOpacity="0.3" strokeWidth="0.5" />
 
             {/* Portholes */}
-            <circle cx="60" cy="30" r="2" fill="#020617" />
-            <circle cx="60" cy="40" r="2" fill="#020617" />
-            <circle cx="60" cy="54" r="3.5" fill="#020617" />
-            <path d="M58 52 Q60 50 62 52" stroke="#FFFFFF" strokeWidth="0.5" fill="none" />
+            <circle cx="160" cy="55" r="2" stroke="#ffffff" strokeOpacity="0.6" strokeWidth="0.6" fill="none" />
+            <circle cx="160" cy="75" r="2" stroke="#ffffff" strokeOpacity="0.6" strokeWidth="0.6" fill="none" />
 
-            {/* INFINITE YATRA Text Stripe */}
-            <rect x="44" y="65" width="32" height="6" fill="#7F1D1D" opacity="0.8" />
-            <text x="60" y="69.5" fill="#FFFFFF" fontSize="4" fontFamily="Orbitron" fontWeight="bold" textAnchor="middle" letterSpacing="0.5">INFINITE YATRA</text>
+            {/* Forward fins (top) */}
+            <path d="M140 45 L122 60 L140 70 Z" stroke="#ffffff" strokeOpacity="0.7" strokeWidth="1" fill="none" />
+            <path d="M180 45 L198 60 L180 70 Z" stroke="#ffffff" strokeOpacity="0.7" strokeWidth="1" fill="none" />
 
-            {/* Forward Aft Flaps */}
-            <path d="M44 25 L38 35 L44 40 Z" fill="#94A3B8" />
-            <path d="M76 25 L82 35 L76 40 Z" fill="#94A3B8" />
+            {/* Aft fins (bottom of upper stage) */}
+            <path d="M140 105 L115 130 L140 130 Z" stroke="#ffffff" strokeOpacity="0.7" strokeWidth="1" fill="none" />
+            <path d="M180 105 L205 130 L180 130 Z" stroke="#ffffff" strokeOpacity="0.7" strokeWidth="1" fill="none" />
 
-            {/* Lower Aft Flaps */}
-            <path d="M44 70 L34 85 L44 90 Z" fill="#94A3B8" />
-            <path d="M76 70 L86 85 L76 90 Z" fill="#94A3B8" />
+            {/* Booster */}
+            <rect x="140" y="135" width="40" height="95" rx="2" stroke="#ffffff" strokeOpacity="0.85" strokeWidth="1" fill="none" />
+            <line x1="140" y1="160" x2="180" y2="160" stroke="#ffffff" strokeOpacity="0.3" strokeWidth="0.5" />
+            <line x1="140" y1="185" x2="180" y2="185" stroke="#ffffff" strokeOpacity="0.3" strokeWidth="0.5" />
+            <line x1="140" y1="210" x2="180" y2="210" stroke="#ffffff" strokeOpacity="0.3" strokeWidth="0.5" />
+
+            {/* Grid fins */}
+            <rect x="128" y="142" width="12" height="18" stroke="#ffffff" strokeOpacity="0.6" strokeWidth="0.8" fill="none" />
+            <line x1="128" y1="148" x2="140" y2="148" stroke="#ffffff" strokeOpacity="0.4" strokeWidth="0.4" />
+            <line x1="128" y1="154" x2="140" y2="154" stroke="#ffffff" strokeOpacity="0.4" strokeWidth="0.4" />
+            <line x1="132" y1="142" x2="132" y2="160" stroke="#ffffff" strokeOpacity="0.4" strokeWidth="0.4" />
+            <line x1="136" y1="142" x2="136" y2="160" stroke="#ffffff" strokeOpacity="0.4" strokeWidth="0.4" />
+
+            <rect x="180" y="142" width="12" height="18" stroke="#ffffff" strokeOpacity="0.6" strokeWidth="0.8" fill="none" />
+            <line x1="180" y1="148" x2="192" y2="148" stroke="#ffffff" strokeOpacity="0.4" strokeWidth="0.4" />
+            <line x1="180" y1="154" x2="192" y2="154" stroke="#ffffff" strokeOpacity="0.4" strokeWidth="0.4" />
+            <line x1="184" y1="142" x2="184" y2="160" stroke="#ffffff" strokeOpacity="0.4" strokeWidth="0.4" />
+            <line x1="188" y1="142" x2="188" y2="160" stroke="#ffffff" strokeOpacity="0.4" strokeWidth="0.4" />
+
+            {/* Raptor engine cluster */}
+            <ellipse cx="160" cy="237" rx="22" ry="4" stroke="#ffffff" strokeOpacity="0.8" strokeWidth="1" fill="none" />
+            {[145, 153, 161, 169, 175].map((cx, i) => (
+                <ellipse key={i} cx={cx} cy={234 + (i === 2 ? 4 : 0)} rx="4" ry="2" stroke="#ffffff" strokeOpacity="0.6" strokeWidth="0.6" fill="none" />
+            ))}
+
+            {/* Labels */}
+            <text x="42" y="60" fill="#ffffff" fillOpacity="0.4" fontSize="7" fontFamily="ui-monospace,monospace" letterSpacing="1.2">UPPER STAGE</text>
+            <line x1="100" y1="58" x2="140" y2="58" stroke="#ffffff" strokeOpacity="0.2" strokeWidth="0.5" />
+            <text x="210" y="155" fill="#ffffff" fillOpacity="0.4" fontSize="7" fontFamily="ui-monospace,monospace" letterSpacing="1.2">GRID FIN</text>
+            <line x1="208" y1="152" x2="194" y2="150" stroke="#ffffff" strokeOpacity="0.2" strokeWidth="0.5" />
+            <text x="50" y="240" fill="#ffffff" fillOpacity="0.4" fontSize="7" fontFamily="ui-monospace,monospace" letterSpacing="1.2">RAPTOR CLUSTER</text>
+            <line x1="115" y1="237" x2="138" y2="237" stroke="#ffffff" strokeOpacity="0.2" strokeWidth="0.5" />
         </svg>
-
-        {/* 5 Raptor Flames */}
-        <div className="absolute top-[188px] w-full flex justify-center gap-1.5 opacity-90">
-            <ThrusterPulse><div className="w-1.5 h-10 bg-gradient-to-b from-white via-orange-500 to-transparent blur-[1.5px] rounded-full" /></ThrusterPulse>
-            <ThrusterPulse><div className="w-2 h-14 bg-gradient-to-b from-white via-orange-400 to-transparent blur-[1.5px] rounded-full" /></ThrusterPulse>
-            <div style={{ transform: 'translateY(4px)' }}>
-                <ThrusterPulse><div className="w-2.5 h-16 bg-gradient-to-b from-white via-yellow-400 to-transparent blur-[1.5px] rounded-full" /></ThrusterPulse>
-            </div>
-            <ThrusterPulse><div className="w-2 h-14 bg-gradient-to-b from-white via-orange-400 to-transparent blur-[1.5px] rounded-full" /></ThrusterPulse>
-            <ThrusterPulse><div className="w-1.5 h-10 bg-gradient-to-b from-white via-orange-500 to-transparent blur-[1.5px] rounded-full" /></ThrusterPulse>
-        </div>
-    </motion.div>
+    </SchematicWrapper>
 );
 
 
 /* =========================================
-   MAIN PAGE COMPONENT 
+   Timeline — scroll-driven station list
+   The vertical rail fills as the user scrolls
+   past the section; each row reveals in sequence
+   with the station dot pinning to the rail.
+========================================= */
+const TimelineSection = ({ items }) => {
+    const ref = useRef(null);
+    const { scrollYProgress } = useScroll({
+        target: ref,
+        offset: ['start 80%', 'end 60%'],
+    });
+    const railScaleY = useSpring(scrollYProgress, { stiffness: 90, damping: 25, restDelta: 0.001 });
+    return (
+        <div ref={ref} className="relative space-y-px bg-white/10">
+            {/* Rail — only visible on md+ where the 2-col label sits to the left of the title */}
+            <div
+                aria-hidden="true"
+                className="hidden md:block absolute top-0 bottom-0 left-[16.66%] -ml-px w-[1px] bg-white/10"
+            />
+            <motion.div
+                aria-hidden="true"
+                style={{ scaleY: railScaleY, transformOrigin: '0% 0%' }}
+                className="hidden md:block absolute top-0 bottom-0 left-[16.66%] -ml-px w-[1px] bg-white/70"
+            />
+
+            {items.map((item, i) => (
+                <TimelineRow key={i} item={item} index={i} total={items.length} />
+            ))}
+        </div>
+    );
+};
+
+const TimelineRow = ({ item, index, total }) => {
+    const ref = useRef(null);
+    const isInView = useInView(ref, { once: true, margin: '-15% 0% -15% 0%' });
+    return (
+        <motion.div
+            ref={ref}
+            initial={{ opacity: 0, y: 40 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.9, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
+            className="relative bg-black px-2 md:px-6 py-10 md:py-14 grid grid-cols-12 gap-6 group"
+        >
+            {/* Station dot — sits on the rail (centered on the 16.66% boundary) */}
+            <motion.div
+                aria-hidden="true"
+                initial={{ scale: 0, opacity: 0 }}
+                animate={isInView ? { scale: 1, opacity: 1 } : {}}
+                transition={{ duration: 0.6, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                className="hidden md:block absolute top-[58px] left-[16.66%] -ml-[6px] w-[11px] h-[11px] rounded-full bg-black border-2 border-white"
+            />
+
+            {/* Phase / year */}
+            <div className="col-span-12 md:col-span-2 md:pl-6">
+                <motion.p
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={isInView ? { opacity: 1, x: 0 } : {}}
+                    transition={{ duration: 0.7, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+                    className="font-mono text-[12px] tracking-[2px] text-white/60 mb-1"
+                >{item.phase}</motion.p>
+                <motion.p
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={isInView ? { opacity: 1, x: 0 } : {}}
+                    transition={{ duration: 0.7, delay: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                    className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] text-2xl text-white tracking-tight"
+                >{item.year}</motion.p>
+            </div>
+
+            {/* Title */}
+            <div className="col-span-12 md:col-span-4 md:pl-2">
+                <motion.h3
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={isInView ? { opacity: 1, y: 0 } : {}}
+                    transition={{ duration: 0.7, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                    className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-2xl md:text-3xl text-white tracking-tight"
+                >{item.title}</motion.h3>
+            </div>
+
+            {/* Desc */}
+            <div className="col-span-12 md:col-span-6">
+                <motion.p
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={isInView ? { opacity: 1, y: 0 } : {}}
+                    transition={{ duration: 0.8, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                    className="text-white/60 text-base leading-relaxed font-light"
+                    style={{ fontFamily: "'Inter', 'Helvetica Neue', sans-serif" }}
+                >{item.desc}</motion.p>
+            </div>
+
+            {/* Phase counter top-right */}
+            <motion.p
+                aria-hidden="true"
+                initial={{ opacity: 0 }}
+                animate={isInView ? { opacity: 1 } : {}}
+                transition={{ duration: 0.6, delay: 0.45 }}
+                className="absolute top-6 right-2 md:right-6 font-mono text-[11px] tracking-[3px] text-white/30"
+            >{String(index + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}</motion.p>
+        </motion.div>
+    );
+};
+
+/* =========================================
+   MAIN PAGE COMPONENT
 ========================================= */
 const Future = () => {
     const [isWaitlistOpen, setIsWaitlistOpen] = useState(false);
@@ -454,276 +550,684 @@ const Future = () => {
         if (params.get('ref') === 'mission-share') {
             const t1 = setTimeout(() => setShowShareBanner(true), 2000);
             const t2 = setTimeout(() => setShowShareBanner(false), 7000);
+            trackEvent('referral_arrival', { source: 'mission-share' });
             return () => { clearTimeout(t1); clearTimeout(t2); };
         }
     }, []);
 
+    // ── Analytics: page_view + scroll depth ──
+    useEffect(() => {
+        trackPageView('/future', 'Infinite Yatra Space Program');
+        const trackDepth = createScrollDepthTracker('future');
+        const onScroll = () => {
+            const max = document.documentElement.scrollHeight - window.innerHeight;
+            if (max > 0) trackDepth(Math.round((window.scrollY / max) * 100));
+        };
+        window.addEventListener('scroll', onScroll, { passive: true });
+        return () => window.removeEventListener('scroll', onScroll);
+    }, []);
+
+    const openWaitlist = (source) => {
+        trackEvent('waitlist_open', { source });
+        setIsWaitlistOpen(true);
+    };
+
+    const FLEET = [
+        {
+            num: '01', code: 'IY-A1', name: 'IY Aurora', class: 'Orbital',
+            altitude: '400 KM', duration: '72 HRS', crew: '6 PAX',
+            desc: 'Your first step beyond the atmosphere. Aurora carries 6 passengers to 400km altitude for 3-day orbital stays with panoramic Earth views.',
+            Rocket: RocketAurora,
+        },
+        {
+            num: '02', code: 'IY-H2', name: 'IY Horizon', class: 'Deep Space',
+            altitude: '2.7 AU', duration: '180 DAYS', crew: '4 PAX',
+            desc: "Built for the long voyage. Horizon's ion propulsion carries research teams to the asteroid belt, opening a new era of scientific tourism.",
+            Rocket: RocketHorizon,
+        },
+        {
+            num: '03', code: 'IY-S3', name: 'IY Selene', class: 'Lunar',
+            altitude: '384K KM', duration: '7 DAYS', crew: '2 PAX',
+            desc: 'Walk on the Moon. Selene touches down in the Sea of Tranquility, offering the first commercial lunar surface stays — 72 hours under the stars.',
+            Rocket: RocketSelene,
+        },
+        {
+            num: '04', code: 'IY-M4', name: 'IY Mars', class: 'Interplanetary',
+            altitude: '225M KM', duration: '6 MONTHS', crew: '100 PAX',
+            desc: 'IY Mars — named after the red planet (Mangal in Sanskrit) — our vision for multi-month interplanetary transit. Humanity\'s next chapter.',
+            Rocket: RocketMangal,
+        },
+    ];
+
+    const TIMELINE = [
+        { phase: 'Phase 0', year: '2026', title: 'Earth Mastered', desc: 'Complete the foundation of terrestrial operations and infrastructure.' },
+        { phase: 'Phase I', year: '2028', title: 'Stratosphere Tours', desc: 'Begin commercial flights to the edge of space — high-altitude tourism.' },
+        { phase: 'Phase II', year: '2031', title: 'Orbital Stays', desc: 'First passengers stay aboard low-Earth orbit habitats — 3-day cycles.' },
+        { phase: 'Phase III', year: '2035', title: 'The Moon', desc: 'Commercial lunar surface stays in the Sea of Tranquility.' },
+        { phase: 'Phase IV', year: '2040+', title: 'Mars & Beyond', desc: 'Multi-month Mars transit, the beginning of interplanetary civilization.' },
+    ];
+
     return (
         <>
             <Helmet>
+                <title>Infinite Yatra Space Program — Today Across Earth. Tomorrow Beyond It.</title>
+                <meta name="description" content="Infinite Yatra's space program — four vehicles (Aurora, Horizon, Selene, Mars) and a five-phase timeline taking humanity from orbital tourism to interplanetary transit." />
+                <link rel="canonical" href="https://www.infiniteyatra.com/future" />
+
+                {/* Open Graph */}
+                <meta property="og:type" content="website" />
+                <meta property="og:site_name" content="Infinite Yatra" />
+                <meta property="og:url" content="https://www.infiniteyatra.com/future" />
+                <meta property="og:title" content="Infinite Yatra Space Program" />
+                <meta property="og:description" content="Today across Earth. Tomorrow beyond it. Four vehicles. One trajectory." />
+                <meta property="og:image" content="https://www.infiniteyatra.com/og/future.png" />
+                <meta property="og:image:width" content="1200" />
+                <meta property="og:image:height" content="630" />
+                <meta property="og:image:alt" content="Infinite Yatra Space Program — black hero card with the brand wordmark and program status panel." />
+
+                {/* Twitter / X */}
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content="Infinite Yatra Space Program" />
+                <meta name="twitter:description" content="Today across Earth. Tomorrow beyond it." />
+                <meta name="twitter:image" content="https://www.infiniteyatra.com/og/future.png" />
+
+                {/* Theme color (mobile browser chrome) */}
+                <meta name="theme-color" content="#000000" />
+
+                {/* JSON-LD structured data */}
+                <script type="application/ld+json">{JSON.stringify({
+                    "@context": "https://schema.org",
+                    "@type": "WebPage",
+                    "name": "Infinite Yatra Space Program",
+                    "url": "https://www.infiniteyatra.com/future",
+                    "description": "Infinite Yatra's space program — four vehicles and a five-phase timeline from orbital tourism to interplanetary transit.",
+                    "isPartOf": {
+                        "@type": "WebSite",
+                        "name": "Infinite Yatra",
+                        "url": "https://www.infiniteyatra.com"
+                    },
+                    "about": {
+                        "@type": "Organization",
+                        "name": "Infinite Yatra Space Program",
+                        "description": "A multi-decade space tourism and interplanetary transit initiative."
+                    }
+                })}</script>
+
                 <link rel="preconnect" href="https://fonts.googleapis.com" />
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="true" />
-                <link href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Orbitron:wght@400;500;700;900&display=swap" rel="stylesheet" />
+                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
             </Helmet>
 
+            {/* Print stylesheet — converts the page into a clean Fleet Brief on paper */}
+            <style>{`
+                @media print {
+                    @page { size: A4; margin: 18mm 14mm; }
+                    html, body { background: #fff !important; color: #111 !important; cursor: default !important; }
+                    [data-page="future"] { background: #fff !important; color: #111 !important; min-height: auto !important; cursor: default !important; }
+                    [data-page="future"] * { color: #111 !important; background: transparent !important; box-shadow: none !important; cursor: default !important; }
+
+                    /* Hide screen-only chrome */
+                    [data-page="future"] nav,
+                    [data-page="future"] footer,
+                    [data-page="future"] canvas,
+                    [data-page="future"] [data-print="hide"] {
+                        display: none !important;
+                    }
+
+                    /* Hide decorative SVG elements but KEEP vehicle schematics (they're content) */
+                    [data-page="future"] [aria-hidden="true"][role="presentation"]:not(svg) {
+                        display: none !important;
+                    }
+
+                    /* Vehicle schematic SVGs — invert strokes from white to black so they print */
+                    [data-page="future"] svg[role="presentation"] line,
+                    [data-page="future"] svg[role="presentation"] path,
+                    [data-page="future"] svg[role="presentation"] circle,
+                    [data-page="future"] svg[role="presentation"] rect,
+                    [data-page="future"] svg[role="presentation"] ellipse {
+                        stroke: #111 !important;
+                    }
+                    [data-page="future"] svg[role="presentation"] text { fill: #555 !important; }
+
+                    /* Borders -> grey hairlines on paper */
+                    [data-page="future"] [class*="border-white"] { border-color: #ccc !important; }
+                    [data-page="future"] [class*="bg-white"]:not(button) { background: transparent !important; }
+
+                    /* Sections — clean page breaks */
+                    [data-page="future"] section {
+                        page-break-inside: avoid;
+                        break-inside: avoid;
+                        padding: 0 0 14mm 0 !important;
+                        min-height: auto !important;
+                        scroll-margin-top: 0 !important;
+                    }
+                    [data-page="future"] section h1,
+                    [data-page="future"] section h2,
+                    [data-page="future"] section h3 { page-break-after: avoid; break-after: avoid; }
+
+                    /* Paper typography */
+                    [data-page="future"] h1 { font-size: 32pt !important; line-height: 1.05 !important; }
+                    [data-page="future"] h2 { font-size: 20pt !important; line-height: 1.1 !important; }
+                    [data-page="future"] h3 { font-size: 14pt !important; }
+                    [data-page="future"] p, [data-page="future"] li { font-size: 11pt !important; line-height: 1.55 !important; }
+                    [data-page="future"] .font-mono { font-size: 8pt !important; letter-spacing: 1px !important; }
+
+                    /* Status dot pulses don't print well */
+                    [data-page="future"] .animate-pulse { animation: none !important; }
+                }
+            `}</style>
+
             <div
-                className="bg-[#000] text-white min-h-screen relative overflow-x-hidden"
+                data-page="future"
+                className="bg-black text-white min-h-screen relative overflow-x-hidden antialiased"
                 style={{
-                    fontFamily: "'Exo 2', sans-serif",
-                    cursor: "none" // We use custom cursor
+                    fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
+                    cursor: "none"
                 }}
             >
                 <CustomCursor />
 
-                {/* ── Background Stack ── */}
-                <div
-                    className="fixed inset-0 pointer-events-none z-0"
-                    style={{ background: 'radial-gradient(circle at center, #0C0420 0%, #050212 50%, #000000 100%)' }}
-                />
-                <StarField />
+                {/* Skip to content — keyboard / screen reader users */}
+                <a
+                    href="#hero"
+                    className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[300] focus:bg-white focus:text-black focus:px-4 focus:py-2 focus:text-[12px] focus:tracking-[2px] focus:uppercase focus:font-medium"
+                >
+                    Skip to content
+                </a>
 
-                <motion.div
-                    className="fixed inset-0 pointer-events-none z-30 h-[10px] bg-[#00FFFF]/5 shadow-[0_0_20px_rgba(0,255,255,0.1)]"
-                    animate={{ y: ["-10vh", "110vh"] }}
-                    transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-                />
-
-                <div className="fixed inset-0 pointer-events-none z-10">
-                    <div className="absolute top-[10%] left-[20%] w-[40vw] h-[40vw] rounded-full bg-[#7B2FFF]/10 blur-[150px]" />
-                    <div className="absolute top-[50%] right-[10%] w-[50vw] h-[50vw] rounded-full bg-[#00FFFF]/5 blur-[150px]" />
-                    <div className="absolute bottom-[0%] left-[-10%] w-[60vw] h-[40vw] rounded-full bg-[#C8AAFF]/5 blur-[150px]" />
+                {/* ── Subtle Background ── */}
+                <div className="fixed inset-0 pointer-events-none z-0">
+                    <div className="absolute inset-0"
+                        style={{ background: 'radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.03) 0%, transparent 50%)' }} />
+                    <div className="absolute inset-0 opacity-[0.015] mix-blend-overlay"
+                        style={{
+                            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E")`,
+                        }} />
                 </div>
+                <StarField />
 
                 {/* Share URL Banner */}
                 {showShareBanner && (
-                    <motion.div 
+                    <motion.div
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
                         transition={{ duration: 0.8 }}
-                        className="fixed top-[86px] left-1/2 -translate-x-1/2 z-50 bg-[#0A0618]/90 backdrop-blur-md border border-[#7B2FFF]/50 px-6 py-3 rounded shadow-[0_0_20px_rgba(123,47,255,0.3)] text-center text-[#C8AAFF] font-['Orbitron'] text-[11px] tracking-[2px]"
+                        className="fixed top-[80px] left-1/2 -translate-x-1/2 z-50 bg-black/90 backdrop-blur-md border border-white/15 px-6 py-3 text-center text-white font-mono text-[13px] tracking-[2px]"
                     >
-                        🚀 Someone shared their mission with you. This is what awaits humanity.
+                        Someone shared their mission with you. This is what awaits humanity.
                     </motion.div>
                 )}
 
-                {/* ── Navbar ── Fully Opaque */}
-                <nav className="fixed top-0 left-0 w-full h-[70px] px-[56px] flex justify-between items-center z-[100] bg-[#040112] border-b border-[#7B2FFF]/20 shadow-[0_4px_40px_rgba(0,0,0,0.9)]">
-                    <div className="font-['Orbitron'] font-black text-[15px] tracking-[4px] text-white whitespace-nowrap leading-tight">
-                        INFINITE YATRA
-                        <div className="text-[#7B2FFF] text-[8px] tracking-[6px] block">EXPLORE INFINITE</div>
-                    </div>
+                {/* ══════════════════════════════════════════
+                    NAVBAR — SpaceX style
+                ══════════════════════════════════════════ */}
+                <nav className="fixed top-0 left-0 w-full z-[100] bg-black/80 backdrop-blur-md border-b border-white/[0.06]">
+                    {/* Matched container to footer: same px + max-w-7xl mx-auto so logos line up vertically */}
+                    <div className="px-6 md:px-16 lg:px-24 h-[68px]">
+                        <div className="max-w-7xl mx-auto h-full flex items-center justify-between">
+                            <Link to="/" className="flex flex-col items-center">
+                                <span className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-[13px] tracking-[2.5px] text-white">
+                                    INFINITE YATRA
+                                </span>
+                                <span className="font-mono text-[10px] tracking-[3px] text-white/60 mt-0.5 text-center">
+                                    EXPLORE INFINITE
+                                </span>
+                            </Link>
 
-                    <Link to="/" className="hidden md:flex font-['Orbitron'] text-xs font-bold tracking-[0.1em] text-[#00FFFF] px-4 py-2 border border-[#00FFFF]/50 hover:bg-[#00FFFF]/10 transition-colors">
-                        ← RETURN TO EARTH
-                    </Link>
+                            <Link to="/"
+                                className="group flex items-center gap-1.5 border border-white/30 hover:bg-white hover:text-black hover:border-white px-3 md:px-4 py-1.5 md:py-2 transition-all duration-500 shrink-0">
+                                <span className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] text-[10px] md:text-[13px] tracking-[2px] md:tracking-[3px] font-medium whitespace-nowrap">
+                                    ← <span className="hidden sm:inline">RETURN TO </span>EARTH
+                                </span>
+                            </Link>
+                        </div>
+                    </div>
                 </nav>
 
-                {/* =========================================
-                    SECTION 1: HERO
-                ========================================= */}
-                <section className="relative w-full h-screen flex flex-col justify-center items-center px-6 z-20 text-center uppercase pt-[70px]">
-                    <FadeUp delay={0.5}>
-                        <p className="font-['Orbitron'] text-[#7B2FFF] text-sm md:text-base tracking-[8px] mb-4 font-bold drop-shadow-[0_0_8px_rgba(123,47,255,0.4)]">
-                            MISSION BRIEF — CLASSIFIED
-                        </p>
-                    </FadeUp>
+                {/* ══════════════════════════════════════════
+                    SECTION 0: HERO — full-bleed bottom-left
+                ══════════════════════════════════════════ */}
+                <section id="hero" className="relative w-full min-h-screen flex flex-col justify-end overflow-hidden z-20" style={{scrollMarginTop: "80px"}}>
+                    {/* Centered top text */}
+                    <div className="absolute top-[100px] left-0 w-full text-center">
+                        <FadeUp delay={0.3}>
+                            <p className="font-mono text-[12px] tracking-[3px] text-white/60">
+                                MISSION BRIEF · CLASSIFIED · INITIATED 2026
+                            </p>
+                        </FadeUp>
+                    </div>
 
-                    <FadeUp delay={0.7}>
-                        <h1
-                            className="font-['Orbitron'] font-black leading-none mb-2 text-transparent bg-clip-text bg-gradient-to-br from-white via-[#C8AAFF] to-[#7B2FFF] drop-shadow-[0_0_30px_rgba(123,47,255,0.3)]"
-                            style={{ fontSize: 'clamp(50px, 9vw, 112px)' }}
-                        >
-                            INFINITE YATRA
-                        </h1>
-                    </FadeUp>
+                    <div className="relative z-10 px-6 md:px-16 lg:px-24 pb-12 md:pb-32">
+                        <div className="max-w-7xl mx-auto">
+                            <FadeUp delay={0.5}>
+                                <p className="font-mono text-[13px] tracking-[2.5px] text-white/50 mb-6">
+                                    00 — SPACE PROGRAM
+                                </p>
+                            </FadeUp>
 
-                    <FadeUp delay={0.9}>
-                        <h2 className="font-['Orbitron'] font-bold text-2xl md:text-3xl tracking-[12px] text-[#00FFFF] mb-12 drop-shadow-[0_0_15px_rgba(0,255,255,0.4)] ml-[12px]">
-                            SPACE PROGRAM
-                        </h2>
-                    </FadeUp>
+                            <FadeUp delay={0.7}>
+                                <h1 className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-white leading-[0.95] tracking-tight mb-8 max-w-full"
+                                    style={{
+                                        fontSize: 'clamp(36px, 9vw, 150px)',
+                                        overflowWrap: 'normal',
+                                        wordBreak: 'keep-all'
+                                    }}>
+                                    INFINITE<br />YATRA
+                                </h1>
+                            </FadeUp>
 
-                    <FadeUp delay={1.1}>
-                        <p className="max-w-2xl text-[#A0AEC0] text-lg leading-relaxed font-light mx-auto normal-case tracking-wide">
-                            The journey doesn't end on Earth. One day, Infinite Yatra will take travelers beyond our planet — and into the infinite.
-                        </p>
-                    </FadeUp>
+                            <FadeUp delay={0.9}>
+                                <div className="grid md:grid-cols-2 gap-8 md:gap-12 max-w-5xl">
+                                    <p className="text-white/70 text-lg md:text-xl leading-relaxed font-light"
+                                        style={{ fontFamily: "'Inter', 'Helvetica Neue', sans-serif", textTransform: 'lowercase' }}>
+                                        The journey doesn't end on Earth. One day, Infinite Yatra will take travelers beyond our planet — and into the infinite.
+                                    </p>
+                                    <div className="flex flex-col gap-6">
+                                        <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                                            <span className="font-mono text-[12px] tracking-[2px] text-white/60">PROGRAM</span>
+                                            <span className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] text-sm tracking-wider text-white">SPACE</span>
+                                        </div>
+                                        <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                                            <span className="font-mono text-[12px] tracking-[2px] text-white/60">FLEET</span>
+                                            <span className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] text-sm tracking-wider text-white">4 VEHICLES</span>
+                                        </div>
+                                        <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                                            <span className="font-mono text-[12px] tracking-[2px] text-white/60">STATUS</span>
+                                            <span className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] text-sm tracking-wider text-white flex items-center gap-2">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                                                DEVELOPMENT
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </FadeUp>
+                        </div>
+                    </div>
 
                     <motion.div
-                        className="absolute bottom-12 flex flex-col items-center gap-3 opacity-60"
-                        animate={{ y: [0, 10, 0] }}
-                        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                        aria-hidden="true"
+                        data-print="hide"
+                        animate={{ y: [0, 8, 0] }}
+                        transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+                        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-40"
                     >
-                        <span className="font-['Orbitron'] text-[10px] tracking-[4px] text-white/80 uppercase">SCROLL SEQUENCE</span>
-                        <div className="w-[1px] h-14 bg-gradient-to-b from-white to-transparent" />
-                        <ArrowDown size={14} className="text-white/60" />
+                        <span className="font-mono text-[13px] tracking-[3px] text-white/60">SCROLL</span>
+                        <ChevronDown size={12} className="text-white/60" />
                     </motion.div>
                 </section>
 
-                {/* =========================================
-                    SECTION 2: FLEET
-                ========================================= */}
-                <section className="relative w-full min-h-screen py-24 px-6 md:px-12 z-20 max-w-7xl mx-auto">
-                    <FadeUp delay={0.2}>
-                        <h2 className="font-['Orbitron'] text-3xl font-bold mb-16 text-white border-l-[3px] border-[#00FFFF] pl-4 tracking-widest uppercase">
-                            The Fleet
-                        </h2>
-                    </FadeUp>
+                <div className="px-6 md:px-16 lg:px-24 relative z-20">
+                    <div className="max-w-7xl mx-auto h-[1px] bg-white/10" />
+                </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        {/* IY AURORA */}
-                        <FadeUp delay={0.3}>
-                            <GlowCard className="h-full flex flex-col">
-                                <div className="flex flex-col sm:flex-row justify-between items-start mb-8 gap-4">
-                                    <div className="font-['Orbitron'] font-bold text-2xl tracking-widest text-white">IY AURORA</div>
-                                    <span className="px-3 py-1 bg-[#7B2FFF]/10 border border-[#7B2FFF]/30 text-[#C8AAFF] text-[10px] tracking-[2px] font-['Orbitron'] uppercase">Orbital Class</span>
-                                </div>
-                                <RocketAurora />
-                                <div className="mt-8 pt-6 border-t border-white/10 flex-grow">
-                                    <div className="flex justify-between text-[11px] font-['Orbitron'] text-[#888] mb-4 tracking-wider">
-                                        <span>ALTITUDE 400 KM</span>
-                                        <span>DURATION 72 HRS</span>
-                                        <span>CREW 6 PAX</span>
-                                    </div>
-                                    <p className="text-sm text-gray-400 leading-relaxed font-light">
-                                        Your first step beyond the atmosphere. The Aurora carries 6 passengers to 400km altitude for 3-day orbital stays with panoramic Earth views.
-                                    </p>
-                                </div>
-                            </GlowCard>
+                {/* ══════════════════════════════════════════
+                    SECTION 1: FLEET
+                ══════════════════════════════════════════ */}
+                <section id="fleet" style={{scrollMarginTop: "80px"}} className="relative px-6 md:px-16 lg:px-24 py-20 md:py-40 z-20">
+                    <div className="max-w-7xl mx-auto">
+                        <FadeUp>
+                            <div className="flex items-center gap-3 mb-12">
+                                <span className="font-mono text-[13px] text-white/60 tracking-[2px]">01</span>
+                                <div className="w-8 h-[1px] bg-white/20" />
+                                <span className="font-mono text-[13px] text-white/60 tracking-[3px]">THE FLEET</span>
+                            </div>
                         </FadeUp>
 
-                        {/* IY HORIZON */}
-                        <FadeUp delay={0.4}>
-                            <GlowCard className="h-full flex flex-col">
-                                <div className="flex flex-col sm:flex-row justify-between items-start mb-8 gap-4">
-                                    <div className="font-['Orbitron'] font-bold text-2xl tracking-widest text-white">IY HORIZON</div>
-                                    <span className="px-3 py-1 bg-[#00FFFF]/10 border border-[#00FFFF]/30 text-[#00FFFF] text-[10px] tracking-[2px] font-['Orbitron'] uppercase">Deep Space</span>
-                                </div>
-                                <RocketHorizon />
-                                <div className="mt-8 pt-6 border-t border-white/10 flex-grow">
-                                    <div className="flex justify-between text-[11px] font-['Orbitron'] text-[#888] mb-4 tracking-wider">
-                                        <span>RANGE 2.7 AU</span>
-                                        <span>DURATION 180 D</span>
-                                        <span>CREW 4 PAX</span>
-                                    </div>
-                                    <p className="text-sm text-gray-400 leading-relaxed font-light">
-                                        Built for the long voyage. The Horizon's ion propulsion carries research teams to the asteroid belt, opening a new era of scientific tourism.
+                        <div className="grid md:grid-cols-12 gap-8 md:gap-12 mb-12 md:mb-20">
+                            <div className="md:col-span-7 min-w-0">
+                                <FadeUp delay={0.1}>
+                                    <h2 className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-white leading-[1.05] tracking-tight"
+                                        style={{ fontSize: 'clamp(36px, 5vw, 64px)' }}>
+                                        Four vehicles. One trajectory.
+                                    </h2>
+                                </FadeUp>
+                            </div>
+                            <div className="md:col-span-5 md:pt-2">
+                                <FadeUp delay={0.2}>
+                                    <p className="text-white/60 text-base leading-relaxed font-light"
+                                        style={{ fontFamily: "'Inter', 'Helvetica Neue', sans-serif" }}>
+                                        Each vehicle in the Infinite Yatra fleet is engineered for a distinct phase of human expansion — from orbital tourism to interplanetary transit.
                                     </p>
-                                </div>
-                            </GlowCard>
-                        </FadeUp>
+                                </FadeUp>
+                            </div>
+                        </div>
 
-                        {/* IY SELENE */}
-                        <FadeUp delay={0.5}>
-                            <GlowCard className="h-full flex flex-col">
-                                <div className="flex flex-col sm:flex-row justify-between items-start mb-8 gap-4">
-                                    <div className="font-['Orbitron'] font-bold text-2xl tracking-widest text-white">IY SELENE</div>
-                                    <span className="px-3 py-1 bg-[#CA8A04]/10 border border-[#CA8A04]/30 text-[#FDE68A] text-[10px] tracking-[2px] font-['Orbitron'] uppercase">Lunar Class</span>
-                                </div>
-                                <RocketSelene />
-                                <div className="mt-8 pt-6 border-t border-white/10 flex-grow">
-                                    <div className="flex flex-wrap justify-between text-[11px] font-['Orbitron'] text-[#888] mb-4 tracking-wider gap-2">
-                                        <span>DISTANCE 384K KM</span>
-                                        <span>MISSION 7 DAYS</span>
-                                        <span>PIONEERS 2 PAX</span>
-                                    </div>
-                                    <p className="text-sm text-gray-400 leading-relaxed font-light">
-                                        Walk on the Moon. The Selene touches down in the Sea of Tranquility, offering the first commercial lunar surface stays — 72 hours under the stars.
-                                    </p>
-                                </div>
-                            </GlowCard>
-                        </FadeUp>
+                        {/* Fleet grid — SpaceX-style tile layout */}
+                        <div className="grid md:grid-cols-2 gap-px bg-white/10">
+                            {FLEET.map((v, i) => (
+                                <FadeUp key={v.code} delay={0.1 * i}>
+                                    <div className="bg-black p-8 md:p-10 h-full group hover:bg-white/[0.02] transition-colors duration-500">
+                                        <div className="flex items-start justify-between mb-2">
+                                            <p className="font-mono text-[12px] tracking-[3px] text-white/55">{v.num} / {v.code}</p>
+                                            <p className="font-mono text-[12px] tracking-[3px] text-white/60">{v.class}</p>
+                                        </div>
 
-                        {/* IY MANGAL */}
-                        <FadeUp delay={0.6}>
-                            <GlowCard className="h-full flex flex-col">
-                                <div className="flex flex-col sm:flex-row justify-between items-start mb-8 gap-4">
-                                    <div className="font-['Orbitron'] font-bold text-2xl tracking-widest text-white">IY MANGAL</div>
-                                    <span className="px-3 py-1 bg-[#EF4444]/10 border border-[#EF4444]/30 text-[#FCA5A5] text-[10px] tracking-[2px] font-['Orbitron'] uppercase">Interplanetary</span>
-                                </div>
-                                <RocketMangal />
-                                <div className="mt-8 pt-6 border-t border-white/10 flex-grow">
-                                    <div className="flex flex-wrap justify-between text-[11px] font-['Orbitron'] text-[#888] mb-4 tracking-wider gap-2">
-                                        <span>RANGE 225M KM</span>
-                                        <span>TRANSIT 6 MO</span>
-                                        <span>CAPACITY 100 PAX</span>
+                                        <h3 className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-3xl text-white tracking-tight mb-2">
+                                            {v.name}
+                                        </h3>
+
+                                        {/* Rocket SVG */}
+                                        <div className="my-4 opacity-90">
+                                            <v.Rocket />
+                                        </div>
+
+                                        {/* Specs row */}
+                                        <div className="grid grid-cols-3 gap-3 border-y border-white/10 py-4 mb-5">
+                                            <div>
+                                                <p className="font-mono text-[13px] tracking-[2px] text-white/60 mb-1">ALTITUDE</p>
+                                                <p className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] text-xs tracking-wider text-white">{v.altitude}</p>
+                                            </div>
+                                            <div>
+                                                <p className="font-mono text-[13px] tracking-[2px] text-white/60 mb-1">DURATION</p>
+                                                <p className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] text-xs tracking-wider text-white">{v.duration}</p>
+                                            </div>
+                                            <div>
+                                                <p className="font-mono text-[13px] tracking-[2px] text-white/60 mb-1">CREW</p>
+                                                <p className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] text-xs tracking-wider text-white">{v.crew}</p>
+                                            </div>
+                                        </div>
+
+                                        <p className="text-white/60 text-sm leading-relaxed font-light"
+                                            style={{ fontFamily: "'Inter', 'Helvetica Neue', sans-serif" }}>
+                                            {v.desc}
+                                        </p>
                                     </div>
-                                    <p className="text-sm text-gray-400 leading-relaxed font-light">
-                                        Named after the red planet in Sanskrit, the Mangal is Infinite Yatra's vision for multi-month Mars transit — humanity's next chapter.
-                                    </p>
-                                </div>
-                            </GlowCard>
-                        </FadeUp>
+                                </FadeUp>
+                            ))}
+                        </div>
                     </div>
                 </section>
 
-                {/* =========================================
-                    SECTION 3: TIMELINE
-                ========================================= */}
-                <section className="relative w-full py-32 px-6 z-20 overflow-hidden">
-                    <FadeUp>
-                        <h2 className="font-['Orbitron'] text-center text-3xl font-bold mb-24 text-white tracking-widest uppercase border-b border-white/10 pb-6 inline-block w-full max-w-xs mx-auto block">
-                            Timeline
-                        </h2>
-                    </FadeUp>
+                <div className="px-6 md:px-16 lg:px-24 relative z-20">
+                    <div className="max-w-7xl mx-auto h-[1px] bg-white/10" />
+                </div>
 
-                    <div className="relative max-w-4xl mx-auto">
-                        {/* Central Purple Line */}
-                        <div className="absolute left-[30px] md:left-1/2 top-0 bottom-0 w-[1px] bg-gradient-to-b from-[#7B2FFF] via-[#00FFFF] to-transparent md:-translate-x-1/2" />
+                {/* ══════════════════════════════════════════
+                    SECTION 2: TIMELINE
+                ══════════════════════════════════════════ */}
+                <section id="timeline" style={{scrollMarginTop: "80px"}} className="relative px-6 md:px-16 lg:px-24 py-20 md:py-40 z-20">
+                    <div className="max-w-7xl mx-auto">
+                        <FadeUp>
+                            <div className="flex items-center gap-3 mb-12">
+                                <span className="font-mono text-[13px] text-white/60 tracking-[2px]">02</span>
+                                <div className="w-8 h-[1px] bg-white/20" />
+                                <span className="font-mono text-[13px] text-white/60 tracking-[3px]">PROGRAM TIMELINE</span>
+                            </div>
+                        </FadeUp>
 
-                        {[
-                            { year: "2026", sub: "Earth Mastered" },
-                            { year: "2028 Phase I", sub: "Stratosphere Tours" },
-                            { year: "2031 Phase II", sub: "Orbital Stays" },
-                            { year: "2035", sub: "The Moon" },
-                            { year: "2040+", sub: "Mars & Beyond" },
-                        ].map((item, index) => {
-                            const isEven = index % 2 === 0;
-                            return (
-                                <FadeUp key={index} delay={0.2} className={`relative flex items-center justify-start md:justify-between mb-16 ${isEven ? 'md:flex-row-reverse' : ''}`}>
-                                    <div className="hidden md:block w-5/12" />
+                        <FadeUp delay={0.1}>
+                            <h2 className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-white leading-[1.05] tracking-tight mb-20 max-w-5xl"
+                                style={{ fontSize: 'clamp(36px, 5vw, 64px)' }}>
+                                Earth, then orbit, then the Moon, then beyond.
+                            </h2>
+                        </FadeUp>
 
-                                    {/* Glowing Dot */}
-                                    <div className="absolute left-[26px] md:left-1/2 w-[9px] h-[9px] rounded-full bg-[#C8AAFF] shadow-[0_0_15px_#7B2FFF] border-2 border-black md:-translate-x-1/2 top-4 md:top-auto z-10" />
+                        {/* Scroll-driven timeline — rail fills as you scroll, rows reveal in sequence */}
+                        <TimelineSection items={TIMELINE} />
+                    </div>
+                </section>
 
-                                    <div className={`w-full md:w-5/12 pl-16 md:pl-0 ${isEven ? 'md:pl-0' : 'md:text-right'}`}>
-                                        <div className="bg-black/40 backdrop-blur-md border border-white/5 p-6 rounded-sm">
-                                            <div className="font-['Orbitron'] text-sm tracking-[3px] text-[#00FFFF] mb-1">{item.year}</div>
-                                            <div className="font-['Orbitron'] text-xl font-bold text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.2)] uppercase">{item.sub}</div>
+                <div className="px-6 md:px-16 lg:px-24 relative z-20">
+                    <div className="max-w-7xl mx-auto h-[1px] bg-white/10" />
+                </div>
+
+                {/* ══════════════════════════════════════════
+                    SECTION 3: RESERVE
+                ══════════════════════════════════════════ */}
+                <section id="reservation" style={{scrollMarginTop: "80px"}} className="relative px-6 md:px-16 lg:px-24 py-20 md:py-40 z-20">
+                    <div className="max-w-7xl mx-auto">
+                        <FadeUp>
+                            <div className="flex items-center gap-3 mb-12">
+                                <span className="font-mono text-[13px] text-white/60 tracking-[2px]">03</span>
+                                <div className="w-8 h-[1px] bg-white/20" />
+                                <span className="font-mono text-[13px] text-white/60 tracking-[3px]">RESERVATION</span>
+                            </div>
+                        </FadeUp>
+
+                        <div className="grid md:grid-cols-12 gap-12 items-end">
+                            <div className="md:col-span-7 min-w-0">
+                                <FadeUp delay={0.1}>
+                                    <h2 className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-white leading-[0.95] tracking-tight mb-8 max-w-full"
+                                        style={{ fontSize: 'clamp(28px, 5.5vw, 80px)' }}>
+                                        Reserve<br />Your Seat.
+                                    </h2>
+                                </FadeUp>
+                                <FadeUp delay={0.2}>
+                                    <p className="text-white/65 text-lg leading-relaxed font-light max-w-xl mb-8"
+                                        style={{ fontFamily: "'Inter', 'Helvetica Neue', sans-serif" }}>
+                                        Today across Earth, tomorrow beyond it. Join the waitlist to be among the first travelers in the next era of human exploration.
+                                    </p>
+                                </FadeUp>
+
+                                <FadeUp delay={0.3}>
+                                    <button
+                                        onClick={() => openWaitlist('reservation_section')}
+                                        data-print="hide"
+                                        className="group inline-flex items-center justify-between gap-8 px-8 py-5 border border-white/30 hover:bg-white hover:text-black hover:border-white transition-all duration-500 w-full sm:w-auto"
+                                    >
+                                        <span className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] text-sm tracking-[3px] font-medium">
+                                            JOIN THE WAITLIST
+                                        </span>
+                                        <span className="inline-flex items-center justify-center w-6 h-6 transition-transform duration-500 group-hover:translate-x-1">
+                                            →
+                                        </span>
+                                    </button>
+                                </FadeUp>
+                            </div>
+
+                            <div className="md:col-span-5 min-w-0">
+                                <FadeUp delay={0.4}>
+                                    <div className="border border-white/15 p-8">
+                                        <p className="font-mono text-[12px] tracking-[3px] text-white/60 mb-6">FLIGHT MANIFEST</p>
+                                        <div className="space-y-4">
+                                            {[
+                                                { k: 'PROGRAM', v: 'INFINITE YATRA' },
+                                                { k: 'OPERATOR', v: 'IY SPACE PROGRAM' },
+                                                { k: 'DEPARTURE', v: 'TBD' },
+                                                { k: 'CLASS', v: 'CIVILIAN' },
+                                                { k: 'STATUS', v: 'WAITLIST OPEN' },
+                                            ].map((row, i) => (
+                                                <div key={i} className="flex items-center justify-between border-b border-white/10 pb-3 last:border-0">
+                                                    <span className="font-mono text-[12px] tracking-[2px] text-white/60">{row.k}</span>
+                                                    <span className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] text-xs tracking-wider text-white">{row.v}</span>
+                                                </div>
+                                            ))}
                                         </div>
                                     </div>
                                 </FadeUp>
-                            )
-                        })}
+                            </div>
+                        </div>
                     </div>
                 </section>
 
-                {/* =========================================
-                    SECTION 4: CTA
-                ========================================= */}
-                <section className="relative w-full min-h-[50vh] flex flex-col justify-center items-center px-6 z-20 pb-32 pt-16 text-center">
-                    <FadeUp>
-                        <h2 className="font-['Orbitron'] font-black text-4xl md:text-5xl tracking-[8px] mb-4 text-transparent bg-clip-text bg-gradient-to-r from-white via-[#7B2FFF] to-[#00FFFF]">
-                            RESERVE YOUR SEAT
-                        </h2>
-                    </FadeUp>
-                    <FadeUp delay={0.2}>
-                        <p className="font-['Exo_2'] italic text-[#888] text-lg md:text-xl mb-12 tracking-wide font-light">
-                            "today across Earth... tomorrow beyond it. 🚀"
-                        </p>
-                    </FadeUp>
+                <div className="px-6 md:px-16 lg:px-24 relative z-20">
+                    <div className="max-w-7xl mx-auto h-[1px] bg-white/10" />
+                </div>
 
-                    <FadeUp delay={0.4} className="flex justify-center w-full px-4">
-                        <button 
-                            onClick={() => setIsWaitlistOpen(true)}
-                            className="relative px-8 py-4 font-['Orbitron'] font-bold text-sm tracking-[3px] text-white rounded bg-gradient-to-r from-[#7B2FFF] to-blue-600 hover:scale-[1.03] transition-transform shadow-[0_0_20px_rgba(123,47,255,0.4)] group overflow-hidden w-full sm:w-auto"
-                        >
-                            <span className="relative z-10">JOIN THE WAITLIST</span>
-                            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-gradient-to-r from-blue-600 to-[#00FFFF] transition-opacity duration-300 z-0" />
-                        </button>
-                    </FadeUp>
+                {/* ══════════════════════════════════════════
+                    SECTION 4: THE ASCENSION PROJECT
+                ══════════════════════════════════════════ */}
+                <section id="ascension" style={{scrollMarginTop: "80px"}} className="relative w-full py-32 px-6 md:px-16 z-20">
+                    <div className="max-w-7xl mx-auto">
+                        <FadeUp>
+                            <div className="flex items-center gap-3 mb-12">
+                                <span className="font-mono text-[13px] text-white/60 tracking-[2px]">04</span>
+                                <div className="w-8 h-[1px] bg-white/20" />
+                                <span className="font-mono text-[13px] text-white/60 tracking-[3px]">BEYOND THE JOURNEY</span>
+                            </div>
+                        </FadeUp>
+
+                        {/* Title row — full width, no overflow */}
+                        <FadeUp delay={0.1}>
+                            <h2 className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-white leading-[0.95] tracking-tight mb-4 max-w-full"
+                                style={{ fontSize: 'clamp(28px, 6vw, 84px)' }}>
+                                THE ASCENSION<br />PROJECT
+                            </h2>
+                        </FadeUp>
+                        <FadeUp delay={0.2}>
+                            <p className="font-mono text-[13px] tracking-[2.5px] text-white/50 mb-16">
+                                HUMANITY'S NEXT FRONTIER
+                            </p>
+                        </FadeUp>
+
+                        {/* Meta + description row */}
+                        <div className="grid md:grid-cols-12 gap-8 md:gap-16 items-start mb-16">
+                            <div className="md:col-span-7 md:pr-8">
+                                <FadeUp delay={0.25}>
+                                    <p className="text-white/65 text-base md:text-lg leading-relaxed font-light"
+                                        style={{ fontFamily: "'Inter', 'Helvetica Neue', sans-serif" }}>
+                                        A long-term initiative focused on exploration, knowledge, AI, research, civilization development, and humanity's future beyond a single world.
+                                    </p>
+                                </FadeUp>
+                            </div>
+
+                            <div className="md:col-span-5 min-w-0">
+                                <FadeUp delay={0.3}>
+                                    <div className="space-y-3 mb-8">
+                                        <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                                            <span className="font-mono text-[12px] tracking-[2px] text-white/60">FOUNDER</span>
+                                            <span className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] text-xs tracking-wider text-white">ARIUS RAYNOTT</span>
+                                        </div>
+                                        <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                                            <span className="font-mono text-[12px] tracking-[2px] text-white/60">HORIZON</span>
+                                            <span className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] text-xs tracking-wider text-white">MULTI-CENTURY</span>
+                                        </div>
+                                        <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                                            <span className="font-mono text-[12px] tracking-[2px] text-white/60">STATUS</span>
+                                            <span className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] text-xs tracking-wider text-white flex items-center gap-2">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                                                ACTIVE
+                                            </span>
+                                        </div>
+                                    </div>
+                                </FadeUp>
+                            </div>
+                        </div>
+
+                        <FadeUp delay={0.4}>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-white/10 mb-12">
+                                {[
+                                    { num: '01', label: 'EXPLORATION' },
+                                    { num: '02', label: 'KNOWLEDGE' },
+                                    { num: '03', label: 'AI RESEARCH' },
+                                    { num: '04', label: 'CIVILIZATION' },
+                                ].map((pillar) => (
+                                    <div key={pillar.num} className="bg-black p-6">
+                                        <p className="font-mono text-[12px] tracking-[2px] text-white/60 mb-2">{pillar.num}</p>
+                                        <p className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] text-sm tracking-wider text-white">{pillar.label}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </FadeUp>
+
+                        <FadeUp delay={0.5}>
+                            <Link
+                                to="/ascension-project"
+                                onClick={() => trackEvent('ascension_link_click', { source: 'future_footer_card' })}
+                                className="group inline-flex items-center justify-between gap-8 px-8 py-5 border border-white/30 hover:bg-white hover:text-black hover:border-white transition-all duration-500 w-full md:w-auto"
+                            >
+                                <span className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] text-sm tracking-[3px] font-medium">
+                                    EXPLORE THE ASCENSION PROJECT
+                                </span>
+                                <span className="inline-flex items-center justify-center w-6 h-6 transition-transform duration-500 group-hover:translate-x-1">
+                                    →
+                                </span>
+                            </Link>
+                        </FadeUp>
+
+                        <FadeUp delay={0.6}>
+                            <p className="font-mono text-[13px] italic text-white/60 tracking-[2px] mt-16 max-w-2xl">
+                                "THIS IS NOT THE BEGINNING. THIS IS THE DECISION." — ARIUS RAYNOTT
+                            </p>
+                        </FadeUp>
+                    </div>
                 </section>
+
+                {/* ══════════════════════════════════════════
+                    FOOTER
+                ══════════════════════════════════════════ */}
+                <footer className="border-t border-white/10 relative z-20">
+                    <div className="px-6 md:px-16 lg:px-24 py-16 md:py-20">
+                        <div className="max-w-7xl mx-auto">
+
+                            {/* ── Top row: centered brand ── */}
+                            <div className="flex flex-col items-center text-center mb-12 md:mb-16">
+                                <p className="font-['SpaceX',_'Helvetica_Neue',_sans-serif] font-bold text-white text-lg md:text-xl tracking-[3px] mb-2">
+                                    INFINITE YATRA
+                                </p>
+                                <p className="font-mono text-[11px] tracking-[3px] text-white/60">
+                                    EXPLORE INFINITE
+                                </p>
+                                <div className="w-12 h-[1px] bg-white/20 mt-6" />
+                            </div>
+
+                            {/* ── Link columns ── */}
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-8 md:gap-12 mb-12">
+                                <div className="text-center md:text-left">
+                                    <p className="font-mono text-[10px] tracking-[3px] text-white/60 mb-4">PROGRAM</p>
+                                    <div className="flex flex-col gap-2">
+                                        {[
+                                            { label: 'THE FLEET', id: 'fleet' },
+                                            { label: 'TIMELINE', id: 'timeline' },
+                                            { label: 'RESERVATION', id: 'reservation' },
+                                            { label: 'ASCENSION', id: 'ascension' },
+                                        ].map(item => (
+                                            <a key={item.id} href={`#${item.id}`}
+                                                className="text-[12px] text-white/55 tracking-[2px] hover:text-white transition-colors">
+                                                {item.label}
+                                            </a>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="text-center">
+                                    <p className="font-mono text-[10px] tracking-[3px] text-white/60 mb-4">CONTACT</p>
+                                    <div className="flex flex-col gap-2">
+                                        <Link to="/contact" className="text-[12px] text-white/55 tracking-[2px] hover:text-white transition-colors">SUPPORT</Link>
+                                        <Link to="/contact" className="text-[12px] text-white/55 tracking-[2px] hover:text-white transition-colors">PRESS</Link>
+                                        <Link to="/careers" className="text-[12px] text-white/55 tracking-[2px] hover:text-white transition-colors">CAREERS</Link>
+                                        <Link to="/contact" className="text-[12px] text-white/55 tracking-[2px] hover:text-white transition-colors">PARTNERS</Link>
+                                    </div>
+                                </div>
+
+                                <div className="col-span-2 md:col-span-1 text-center md:text-right">
+                                    <p className="font-mono text-[10px] tracking-[3px] text-white/60 mb-4">NAVIGATE</p>
+                                    <div className="flex flex-col gap-2 items-center md:items-end">
+                                        <Link to="/ascension-project"
+                                            onClick={() => trackEvent('ascension_link_click', { source: 'future_footer_nav' })}
+                                            className="text-[12px] text-white/55 tracking-[2px] hover:text-white transition-colors">
+                                            ASCENSION PROJECT
+                                        </Link>
+                                        <button
+                                            type="button"
+                                            onClick={() => { trackEvent('print_pdf', { page: 'future' }); if (typeof window !== 'undefined') window.print(); }}
+                                            className="text-[12px] text-white/55 tracking-[2px] hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 rounded"
+                                        >
+                                            DOWNLOAD BRIEF
+                                        </button>
+                                        <Link to="/" className="inline-flex items-center gap-2 text-white/70 hover:text-white transition-colors group text-[12px] tracking-[2px]">
+                                            <span className="transition-transform duration-300 group-hover:-translate-x-1">←</span>
+                                            RETURN TO EARTH
+                                        </Link>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="h-[1px] bg-white/10 mb-6" />
+
+                            {/* ── Bottom row: copyright + tagline ── */}
+                            <div className="flex flex-col md:flex-row justify-between items-center gap-3 text-center">
+                                <p className="font-mono text-[10px] tracking-[2px] text-white/55">
+                                    © {new Date().getFullYear()} INFINITE YATRA SPACE PROGRAM · CLASSIFIED
+                                </p>
+                                <p className="font-mono text-[10px] italic tracking-[2px] text-white/55">
+                                    TODAY ACROSS EARTH · TOMORROW BEYOND IT
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </footer>
 
                 <SpaceWaitlistModal isOpen={isWaitlistOpen} onClose={() => setIsWaitlistOpen(false)} />
             </div>

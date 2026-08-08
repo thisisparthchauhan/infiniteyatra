@@ -46,17 +46,92 @@ service cloud.firestore {
       allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
       allow update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
     }
+    // ───── Reusable validators ─────
+    function isValidEmail(s) {
+      // Length-bounded email — Firestore rules regex is limited; we use a loose
+      // RFC-5321-style check that catches obvious garbage. Client-side already
+      // validates more strictly. Reject anything longer than 254 chars.
+      return s is string
+          && s.size() > 3
+          && s.size() <= 254
+          && s.matches('^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$');
+    }
+    function isShortString(s, max) {
+      return s is string && s.size() <= max;
+    }
+    function isClientTimestamp(t) {
+      // Must be a server timestamp (serverTimestamp()) — rejects client-forged dates.
+      return t == request.time;
+    }
+
     match /enquiries/{enquiryId} {
-      allow create: if true; // Allow anyone to submit an enquiry
+      // Anyone can create an enquiry, but the document must be well-formed.
+      allow create: if request.resource.data.size() <= 12  // cap field count
+                    && isShortString(request.resource.data.get('name', ''), 200)
+                    && isShortString(request.resource.data.get('phone', ''), 40)
+                    && isShortString(request.resource.data.get('message', ''), 5000)
+                    && (!('email' in request.resource.data) || isValidEmail(request.resource.data.email));
       allow read, update, delete: if request.auth != null && request.auth.token.email == 'chauhanparth165@gmail.com';
     }
+    match /leads/{leadId} {
+      // Unified lead-capture collection written by every public inquiry form
+      // (enquiry popup, contact, hotel inquiry, private jets, partner onboarding,
+      // WhatsApp click). Anyone can create a bounded, well-formed lead; clients
+      // never list the collection — admin reads it via the dashboard.
+      allow create: if request.resource.data.size() <= 25
+                    && isShortString(request.resource.data.get('name', ''), 200)
+                    && isShortString(request.resource.data.get('phone', ''), 40)
+                    && isShortString(request.resource.data.get('message', ''), 5000)
+                    && (!('email' in request.resource.data)
+                        || request.resource.data.email == ''
+                        || isValidEmail(request.resource.data.email));
+      allow read, update, delete: if isAdmin();
+    }
     match /newsletter_subscribers/{subscriberId} {
-      allow create: if true; // Allow anyone to subscribe
+      // Anyone can subscribe; require a real email.
+      allow create: if request.resource.data.size() <= 6
+                    && 'email' in request.resource.data
+                    && isValidEmail(request.resource.data.email);
       allow read, update, delete: if request.auth != null && request.auth.token.email == 'chauhanparth165@gmail.com';
+    }
+
+    // ───── Ascension Project — Get Involved signup form ─────
+    // Unauthenticated visitors can create a signup, but the write has to pass
+    // shape + content validation. Reads/updates/deletes are admin-only via the
+    // Firebase Console — clients never list this collection.
+    match /ascension_signups/{signupId} {
+      allow create: if
+           // Document must have exactly the expected keys — no extra fields
+           // (no client trying to inject `verified: true` etc).
+           request.resource.data.keys().hasOnly(['email','intent','source','userAgent','msToSubmit','createdAt'])
+           && request.resource.data.keys().hasAll(['email','intent','source','createdAt'])
+           // Email
+           && isValidEmail(request.resource.data.email)
+           // Intent must be one of the three allowed verbs
+           && request.resource.data.intent in ['subscribe','contribute','apply']
+           // Source pinned — clients can't forge as if they came from another page
+           && request.resource.data.source == 'ascension-project'
+           // UserAgent optional, bounded length
+           && (!('userAgent' in request.resource.data) || isShortString(request.resource.data.userAgent, 1000))
+           // msToSubmit optional, must be a non-negative number capped at 10 min
+           && (!('msToSubmit' in request.resource.data) || (request.resource.data.msToSubmit is number && request.resource.data.msToSubmit >= 0 && request.resource.data.msToSubmit <= 600000))
+           // createdAt must be a server timestamp — rejects clients forging
+           // arbitrary dates
+           && isClientTimestamp(request.resource.data.createdAt);
+      // No client-side reads, updates, or deletes. Admin reads via Console.
+      allow read, update, delete: if false;
     }
     match /packages/{packageId} {
       allow read: if true;
       allow write: if request.auth != null;
+    }
+    match /reviews/{reviewId} {
+      // Anyone can read reviews (package pages show approved ones; admin reads all)
+      allow read: if true;
+      // Logged-in users can submit their own review
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      // Only admin can approve / reject / edit / delete
+      allow update, delete: if isAdmin();
     }
     match /hotels/{hotelId} {
       allow read: if true;

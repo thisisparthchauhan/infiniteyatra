@@ -68,6 +68,8 @@ import MigrateData from './pages/internal/MigrateData';
 import TermsConditions from './pages/static/TermsConditions';
 
 import Future from './pages/internal/Future';
+import AscensionProject from './pages/AscensionProject';
+import NotFound from './pages/NotFound';
 import Passport from './pages/user/Passport';
 import TeamGuide from './pages/internal/TeamGuide';
 import CityHotels from './pages/hotels/CityHotels';
@@ -83,11 +85,11 @@ const Layout = ({ children }) => {
   const isConnectPage = location.pathname === '/connect';
   const isAdminPage = location.pathname.startsWith('/admin');
   const isFuturePage = location.pathname === '/future';
-  const shouldHideLayout = isConnectPage || isAdminPage || isFuturePage;
+  const isAscensionPage = location.pathname === '/ascension-project';
+  const shouldHideLayout = isConnectPage || isAdminPage || isFuturePage || isAscensionPage;
 
   return (
     <>
-
       <ScrollToTop />
       {!shouldHideLayout && <Navbar />}
       <main>
@@ -196,6 +198,7 @@ function App() {
                         <Route path="/terms" element={<TermsConditions />} />
                         <Route path="/migrate-packages-fix" element={<MigrateData />} />
                         <Route path="/future" element={<Future />} />
+                        <Route path="/ascension-project" element={<AscensionProject />} />
                         <Route path="/team-guide" element={<TeamGuide />} />
                         <Route path="/passport" element={<ProtectedRoute><Passport /></ProtectedRoute>} />
 
@@ -226,6 +229,9 @@ function App() {
                         {/* IY Private Aviation */}
                         <Route path="/private-aviation" element={<PrivateJets />} />
                         <Route path="/private-aviation/:jetId" element={<PrivateJetDetail />} />
+
+                        {/* 404 — catch-all, must be last */}
+                        <Route path="*" element={<NotFound />} />
                       </Routes>
                     </Suspense>
                     </Layout>

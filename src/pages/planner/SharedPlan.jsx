@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { db } from '../../firebase';
+import { db } from '../firebase';
 import { collection, query, where, getDocs, updateDoc, increment } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     MapPin, Calendar, Clock, DollarSign, Users, Sparkles, Share2, ArrowLeft,
     Loader2, Bed, Car, Compass, CheckCircle2, ChevronDown, Check, Download
 } from 'lucide-react';
-import SEO from '../../components/SEO';
+import SEO from '../components/common/SEO';
 
 const SharedPlan = () => {
     const { shareId } = useParams();

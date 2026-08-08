@@ -554,6 +554,13 @@
     border-top: var(--glass-border);
 }
 
+/* Cancellation grid — 1 col on mobile */
+@media (max-width: 640px) {
+    .policy-content > div[style*="grid-template-columns"] {
+        grid-template-columns: 1fr !important;
+    }
+}
+
 .policy-content p {
     color: #d1d5db;
     line-height: 1.6;
@@ -608,8 +615,25 @@
 /* Booking Sidebar */
 .booking-sidebar {
     position: sticky;
-    top: 100px;
+    top: 90px;
     height: fit-content;
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.15) transparent;
+    border-radius: 20px;
+}
+
+.booking-sidebar::-webkit-scrollbar {
+    width: 4px;
+}
+.booking-sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+.booking-sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.15);
+    border-radius: 4px;
 }
 
 .booking-card {
@@ -618,7 +642,7 @@
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border-radius: 20px;
-    padding: 2rem;
+    padding: 1.5rem;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
 }
 
@@ -651,74 +675,147 @@
     color: #9ca3af;
 }
 
-/* Date Selection */
-.date-selection {
+/* Date Selection Calendar */
+.date-selection-calendar {
     margin-bottom: 1.5rem;
+    background: rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    padding: 1.5rem;
 }
 
-.date-option {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1rem;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    margin-bottom: 0.75rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    background-color: rgba(255, 255, 255, 0.03);
+.calendar-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 1rem;
 }
 
-.date-option:hover {
-    background-color: rgba(255, 255, 255, 0.08);
+/* React Datepicker Overrides */
+.react-datepicker {
+    font-family: inherit;
+    background-color: transparent;
+    border: none;
+    width: 100%;
 }
 
-.date-option.selected {
-    border-color: #3b82f6;
-    background-color: rgba(59, 130, 246, 0.1);
+.react-datepicker__month-container {
+    width: 100%;
 }
 
-.date-radio {
-    width: 20px;
-    height: 20px;
-    border: 2px solid #4b5563;
+.react-datepicker__header {
+    background-color: transparent;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding-top: 0;
+}
+
+.react-datepicker__current-month {
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.react-datepicker__day-name {
+    color: #9ca3af;
+    width: calc((100% / 7) - 0.2rem);
+    line-height: 2.6rem;
+    margin: 0.1rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+.react-datepicker__day {
+    color: #e5e7eb;
+    width: calc((100% / 7) - 0.2rem);
+    line-height: 2.6rem;
+    margin: 0.1rem;
     border-radius: 50%;
+    transition: all 0.2s;
+    position: relative;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-align: center;
+}
+
+.react-datepicker__week {
     display: flex;
+    justify-content: space-between;
+}
+
+.react-datepicker__day-names {
+    display: flex;
+    justify-content: space-between;
+}
+
+.react-datepicker__day:hover:not(.react-datepicker__day--disabled) {
+    background-color: rgba(255,255,255,0.1);
+}
+
+.react-datepicker__day--selected, .react-datepicker__day--keyboard-selected {
+    background-color: #3b82f6 !important;
+    color: white !important;
+}
+
+.react-datepicker__day--disabled {
+    color: #4b5563;
+}
+
+/* Custom Day Rendering */
+.custom-day {
+    display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0;
+    height: 100%;
+    width: 100%;
+    position: relative;
 }
 
-.date-option.selected .date-radio {
-    border-color: #3b82f6;
-}
-
-.radio-dot {
-    width: 10px;
-    height: 10px;
-    background-color: #3b82f6;
+.day-indicator {
+    width: 4px;
+    height: 4px;
     border-radius: 50%;
+    position: absolute;
+    bottom: 2px;
 }
 
-.date-info {
-    flex: 1;
+.custom-day.available .day-indicator { background-color: #10b981; }
+.custom-day.filling-fast .day-indicator { background-color: #f59e0b; }
+.custom-day.sold-out .day-indicator { background-color: #ef4444; }
+
+.custom-day.sold-out span {
+    text-decoration: line-through;
+    color: #ef4444;
+    opacity: 0.6;
 }
 
-.date-range {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: #ffffff;
-    margin-bottom: 0.25rem;
+/* Selected Date Info */
+.selected-date-info {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-.date-price {
-    font-size: 0.875rem;
-    color: #e5e7eb;
+.selected-date-info .date-range {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #3b82f6;
 }
 
-.date-price span {
+.selected-date-info .date-price {
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.selected-date-info .date-price span {
+    font-size: 0.8rem;
     color: #9ca3af;
-    font-size: 0.75rem;
+    font-weight: normal;
 }
 
 /* Guest Counter */
@@ -844,6 +941,8 @@
 @media (max-width: 1024px) {
     .content-container {
         grid-template-columns: 1fr;
+        /* Add bottom padding so content isn't hidden behind fixed bar */
+        padding-bottom: 90px;
     }
 
     .booking-sidebar {
@@ -852,33 +951,60 @@
         left: 0;
         right: 0;
         top: auto;
+        max-height: none;
+        overflow: visible;
         z-index: 50;
         background-color: #1a1a1a;
         border-top: 1px solid #2d2d2d;
         border-radius: 16px 16px 0 0;
-        padding: 1rem;
+        padding: 0.75rem 1rem;
     }
 
     .booking-card {
         padding: 0;
         background-color: transparent;
         border: none;
+        /* Single row: price left, book now right */
+        display: flex;
+        align-items: center;
+        gap: 1rem;
     }
 
+    /* Keep price visible on mobile bar */
     .pricing-section {
-        display: none;
+        display: block !important;
+        margin-bottom: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+        flex: 1;
     }
 
-    .date-selection {
-        display: none;
+    .price-display {
+        flex-direction: row;
+        align-items: baseline;
+        gap: 4px;
     }
 
-    .guest-counter {
-        margin-bottom: 1rem;
+    .from-text { font-size: 0.7rem; }
+    .price { font-size: 1.4rem; }
+    .per-person { font-size: 0.7rem; }
+
+    /* Hide everything except price + book button on mobile bar */
+    .date-selection,
+    .date-selection-calendar,
+    .guest-counter,
+    .questions-section,
+    .mobile-hide-in-bar {
+        display: none !important;
     }
 
-    .questions-section {
-        display: none;
+    /* Book Now button fills remaining space */
+    .book-now-btn {
+        flex: 0 0 auto;
+        width: auto;
+        padding: 0.75rem 1.5rem;
+        font-size: 0.95rem;
+        margin-top: 0;
     }
 }
 

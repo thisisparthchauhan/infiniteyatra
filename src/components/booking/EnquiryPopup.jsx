@@ -2,11 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
 import { X, Send, Loader2 } from 'lucide-react';
-import { db } from '../../firebase';
+import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { useAuth } from '../../context/AuthContext';
+import { api, USE_API } from '../lib/api';
+import { useAuth } from '../context/AuthContext';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
+
+/* Formspree enquiry endpoint */
+const FORMSPREE_ENDPOINT = 'https://formspree.io/f/xykrbbkg';
 
 const EnquiryPopup = () => {
     const { currentUser } = useAuth();
@@ -84,16 +88,7 @@ const EnquiryPopup = () => {
         setIsLoading(true);
 
         try {
-            // Save to original enquiries collection (backward compatible)
-            await addDoc(collection(db, 'enquiries'), {
-                ...formData,
-                fullMobile: `+${formData.mobile}`,
-                createdAt: serverTimestamp(),
-                source: window.location.pathname
-            });
-
-            // Also save to unified leads collection for Lead Management System
-            await addDoc(collection(db, 'leads'), {
+            const leadPayload = {
                 name: `${formData.firstName} ${formData.lastName}`.trim(),
                 firstName: formData.firstName,
                 lastName: formData.lastName,
@@ -102,8 +97,51 @@ const EnquiryPopup = () => {
                 source_type: 'enquiry_popup',
                 sourcePage: window.location.pathname,
                 status: 'new',
-                createdAt: serverTimestamp()
-            });
+            };
+
+            if (USE_API) {
+                // New MongoDB API.
+                await api.post('/api/enquiries', {
+                    firstName: formData.firstName,
+                    lastName: formData.lastName,
+                    mobile: formData.mobile,
+                    email: formData.email,
+                    fullMobile: `+${formData.mobile}`,
+                    source: window.location.pathname,
+                });
+                await api.post('/api/leads', leadPayload);
+            } else {
+                // Legacy Firebase path.
+                await addDoc(collection(db, 'enquiries'), {
+                    ...formData,
+                    fullMobile: `+${formData.mobile}`,
+                    createdAt: serverTimestamp(),
+                    source: window.location.pathname
+                });
+                await addDoc(collection(db, 'leads'), {
+                    ...leadPayload,
+                    createdAt: serverTimestamp()
+                });
+            }
+
+            // Notify via Formspree (non-blocking — lead is already saved).
+            try {
+                await fetch(FORMSPREE_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                    body: JSON.stringify({
+                        name: `${formData.firstName} ${formData.lastName}`.trim(),
+                        firstName: formData.firstName,
+                        lastName: formData.lastName,
+                        phone: `+${formData.mobile}`,
+                        email: formData.email,
+                        source: window.location.pathname,
+                        _subject: 'New enquiry — Infinite Yatra',
+                    }),
+                });
+            } catch (formspreeError) {
+                console.error('Formspree notification failed:', formspreeError);
+            }
 
             setIsSubmitted(true);
             setTimeout(() => {

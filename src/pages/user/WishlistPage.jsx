@@ -1,8 +1,8 @@
 import React from 'react';
-import { useWishlist } from '../../context/WishlistContext';
-import Destinations from '../../components/Destinations';
-import SEO from '../../components/SEO';
-import { packages } from '../../data/packages';
+import { useWishlist } from '../context/WishlistContext';
+import Destinations from '../components/Destinations';
+import SEO from '../components/common/SEO';
+import { packages } from '../data/packages';
 import { Link } from 'react-router-dom';
 import { Heart } from 'lucide-react';
 
