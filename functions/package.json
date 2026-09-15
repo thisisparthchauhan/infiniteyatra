@@ -12,7 +12,7 @@
     "engines": {
         "node": "22"
     },
-    "main": "index.js",
+    "main": "bookingApi.entry.js",
     "dependencies": {
         "cors": "^2.8.5",
         "dotenv": "^17.3.1",
