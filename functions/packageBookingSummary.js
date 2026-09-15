@@ -23,6 +23,7 @@
 
 const crypto = require('crypto');
 const PDFDocument = require('pdfkit');
+const { isLegacyBooking, LEGACY_ERROR_CODES } = require('./bookingSchema');
 
 const BOOKINGS = 'bookings';
 const BOOKING_DOCUMENTS = 'booking_documents';
@@ -340,6 +341,30 @@ async function loadOwnedBooking(bookingId, uid) {
     return { id: snap.id, data: snap.data() };
 }
 
+/**
+ * CUTOVER - a Booking Summary cannot be issued for a legacy booking.
+ *
+ * Legacy records have no canonical pricing, so every amount the PDF needs is
+ * absent. Rendering one anyway would produce a document showing a total of
+ * zero over the customer's real trip, which is worse than refusing: it looks
+ * like an authoritative financial statement. The block is therefore explicit
+ * rather than left to the renderer's nullish fallbacks.
+ *
+ * 409 rather than 404: the booking exists and the customer owns it. Distinct
+ * from the 404 above, which deliberately hides existence.
+ *
+ * Returns true when the request has been answered and the caller must stop.
+ */
+function rejectLegacyBooking(res, booking) {
+    if (!isLegacyBooking(booking.data)) return false;
+    res.status(409).json({
+        // Availability, not schema internals. The client maps this code to copy.
+        code: LEGACY_ERROR_CODES.SUMMARY_NOT_AVAILABLE,
+        error: 'This earlier booking does not have the new Booking Summary format.',
+    });
+    return true;
+}
+
 function storagePathFor({ ownerUid, bookingId, summaryId }) {
     return `private-bookings/${ownerUid}/${bookingId}/summaries/${summaryId}.pdf`;
 }
@@ -372,6 +397,7 @@ async function ensureSummary(req, res) {
 
     const booking = await loadOwnedBooking(bookingId, uid);
     if (!booking) return res.status(404).json({ error: 'Booking not found' });
+    if (rejectLegacyBooking(res, booking)) return;
 
     const fingerprint = bookingFingerprint(booking.data);
 
@@ -533,6 +559,7 @@ async function getSummary(req, res) {
 
     const booking = await loadOwnedBooking(bookingId, uid);
     if (!booking) return res.status(404).json({ error: 'Booking not found' });
+    if (rejectLegacyBooking(res, booking)) return;
 
     const q = await db().collection(BOOKING_DOCUMENTS)
         .where('bookingId', '==', bookingId)
@@ -555,6 +582,7 @@ async function downloadSummary(req, res) {
 
     const booking = await loadOwnedBooking(bookingId, uid);
     if (!booking) return res.status(404).json({ error: 'Booking not found' });
+    if (rejectLegacyBooking(res, booking)) return;
 
     const q = await db().collection(BOOKING_DOCUMENTS)
         .where('bookingId', '==', bookingId)
@@ -610,5 +638,6 @@ module.exports = {
     getSummary,
     downloadSummary,
     registerSummaryRoutes,
+    rejectLegacyBooking,
     __setDepsForTesting,
 };

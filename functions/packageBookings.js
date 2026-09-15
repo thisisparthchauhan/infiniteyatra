@@ -40,6 +40,12 @@ const { validateCreateBookingRequest } = require('./packageBookingValidation');
 const { registerDocumentRoutes } = require('./packageBookingDocuments');
 const { registerSummaryRoutes } = require('./packageBookingSummary');
 const { isStaffRole } = require('./staffRoles');
+const {
+    CANONICAL_SCHEMA_VERSION,
+    isCanonicalBooking,
+    toLegacyCustomerBooking,
+} = require('./bookingSchema');
+const { capabilities } = require('./bookingCapabilities');
 
 const BOOKINGS = 'bookings';
 const REFERENCES = 'booking_references';
@@ -404,6 +410,19 @@ async function createPackageBooking(req, res) {
                 const bookingRef = db().collection(BOOKINGS).doc();
 
                 const booking = {
+                    // CUTOVER - server-owned canonical marker, and the ONLY thing
+                    // that distinguishes a PB booking from the 15 historical ones.
+                    // Never accepted from the client: the body allowlist in
+                    // packageBookingValidation rejects unknown keys, and
+                    // firestore.rules omits it from the legacy create `hasOnly`.
+                    //
+                    // It lives HERE, not in the transition-compatibility block
+                    // below, because that block is retired in PB-5. Retiring this
+                    // field with it would reclassify every canonical booking as
+                    // legacy and silently withdraw Booking Summaries and document
+                    // uploads from customers who already had them.
+                    schemaVersion: CANONICAL_SCHEMA_VERSION,
+
                     // identity — userId is derived from the verified token, never the body
                     userId: uid,
                     bookingReference: candidateRef,
@@ -455,7 +474,10 @@ async function createPackageBooking(req, res) {
                     // written so PB-1 bookings remain visible in the current admin
                     // panel, and are retired in PB-5 once the admin UI reads the
                     // canonical fields above. They are derived, never authoritative.
-                    schemaVersion: 2,
+                    //
+                    // `schemaVersion` used to be written here too, with the same
+                    // value. It moved above: a later duplicate key silently wins in
+                    // an object literal, and it must outlive this block.
                     status: 'pending',
                     packageTitle: pkg.title || null,
                     bookingDate: input.departureDate,
@@ -538,11 +560,40 @@ async function getOwnBooking(req, res) {
 
     // Same response for "absent" and "not yours" so the endpoint cannot be used
     // to probe which booking ids exist.
+    //
+    // Ownership is the verified uid against the stored userId, for BOTH schemas.
+    // Email is never an ownership signal: legacy documents carry contactEmail,
+    // which the customer typed and could be anyone's.
     if (!snap.exists || snap.data().userId !== uid) {
         return res.status(404).json({ error: 'Booking not found' });
     }
 
-    return res.status(200).json({ booking: toCustomerSafeBooking(snap.id, snap.data()) });
+    // CUTOVER dual-read. A legacy record goes through its own allowlisted
+    // historical projection; it is never fed to the canonical projection, which
+    // would render its absent pricing fields as undefined/zero.
+    const data = snap.data();
+
+    if (!isCanonicalBooking(data)) {
+        // Legacy capabilities are already false/false and do not depend on
+        // storage: they are unavailable because the data cannot support them.
+        return res.status(200).json({ booking: toLegacyCustomerBooking(snap.id, data) });
+    }
+
+    // The server states what this booking can do so the client never has to
+    // infer it from a missing field or from its own build-time flag. A
+    // canonical booking's storage-backed features follow the runtime gate.
+    const cap = capabilities();
+    const booking = {
+        ...toCustomerSafeBooking(snap.id, data),
+        legacy: false,
+        schema: 'CANONICAL_PB',
+        capabilities: {
+            bookingSummary: cap.bookingSummary,
+            documentUpload: cap.documentUpload,
+        },
+    };
+
+    return res.status(200).json({ booking });
 }
 
 // ---------------------------------------------------------------------------
@@ -596,6 +647,7 @@ module.exports = {
     getOwnBooking,
     registerPackageBookingRoutes,
     toCustomerSafeBooking,
+    toLegacyCustomerBooking,
     buildPackageSnapshot,
     idempotencyDocId,
     newTravellerId,

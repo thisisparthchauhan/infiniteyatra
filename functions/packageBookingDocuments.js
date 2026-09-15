@@ -28,6 +28,7 @@
 'use strict';
 
 const crypto = require('crypto');
+const { isLegacyBooking, LEGACY_ERROR_CODES } = require('./bookingSchema');
 
 const BOOKINGS = 'bookings';
 const DOCUMENTS = 'documents'; // subcollection of a booking
@@ -180,6 +181,30 @@ async function loadOwnedBooking(bookingId, uid) {
     return { id: snap.id, data: snap.data() };
 }
 
+/**
+ * CUTOVER - the PB document workflow is unavailable for a legacy booking.
+ *
+ * Not a policy choice, a data one: every document is filed against a stable
+ * `travellerId`, and legacy bookings store travellers as a bare `travelersList`
+ * of names with no ids. The only way to address a legacy traveller would be
+ * array position, which is NOT an identity — deleting or reordering one entry
+ * would silently reassign another person's passport scan. So the flow is
+ * refused outright until an explicit, owner-approved enrichment process issues
+ * real ids.
+ *
+ * The historical booking itself stays readable; only upload/list/delete stop.
+ *
+ * Returns true when the request has been answered and the caller must stop.
+ */
+function rejectLegacyBooking(res, booking) {
+    if (!isLegacyBooking(booking.data)) return false;
+    res.status(409).json({
+        code: LEGACY_ERROR_CODES.DOCUMENTS_NOT_AVAILABLE,
+        error: 'This earlier booking does not support traveller document uploads.',
+    });
+    return true;
+}
+
 /** A traveller must belong to THIS booking; ids from another booking are refused. */
 function travellerBelongsToBooking(booking, travellerId) {
     const list = Array.isArray(booking.data.travellers) ? booking.data.travellers : [];
@@ -261,6 +286,7 @@ async function finalizeDocument(req, res) {
 
     const booking = await loadOwnedBooking(bookingId, uid);
     if (!booking) return res.status(404).json({ error: 'Booking not found' });
+    if (rejectLegacyBooking(res, booking)) return;
 
     if (!travellerBelongsToBooking(booking, input.travellerId)) {
         return res.status(400).json({ error: 'Validation failed', details: ['travellerId does not belong to this booking'] });
@@ -367,6 +393,7 @@ async function listDocuments(req, res) {
 
     const booking = await loadOwnedBooking(bookingId, uid);
     if (!booking) return res.status(404).json({ error: 'Booking not found' });
+    if (rejectLegacyBooking(res, booking)) return;
 
     const snap = await db().collection(BOOKINGS).doc(bookingId).collection(DOCUMENTS).get();
     const documents = snap.docs.map((d) => toCustomerSafeDocument(d.id, d.data()));
@@ -390,6 +417,7 @@ async function deleteDocument(req, res) {
 
     const booking = await loadOwnedBooking(bookingId, uid);
     if (!booking) return res.status(404).json({ error: 'Booking not found' });
+    if (rejectLegacyBooking(res, booking)) return;
 
     const docRef = db().collection(BOOKINGS).doc(bookingId).collection(DOCUMENTS).doc(documentId);
     const snap = await docRef.get();
@@ -475,5 +503,6 @@ module.exports = {
     listDocuments,
     deleteDocument,
     registerDocumentRoutes,
+    rejectLegacyBooking,
     __setDepsForTesting,
 };

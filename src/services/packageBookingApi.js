@@ -25,8 +25,11 @@
  */
 
 import { getAuth } from 'firebase/auth';
+import { buildBookingApiUrl, BOOKING_API_BASE_URL as SHARED_BASE_URL } from './bookingApiUrl.js';
 
-const BASE_URL = (import.meta.env?.VITE_BOOKING_API_BASE_URL || '').replace(/\/$/, '');
+// CUTOVER - URL construction is centralised so the '/api' prefix is applied
+// exactly once. See src/services/bookingApiUrl.js.
+const BASE_URL = SHARED_BASE_URL;
 
 /** Error carrying the server's HTTP status and machine-readable detail. */
 export class BookingApiError extends Error {
@@ -71,7 +74,7 @@ async function request(path, { method = 'GET', body } = {}) {
 
     let res;
     try {
-        res = await d.fetch(`${d.baseUrl}/api${path}`, {
+        res = await d.fetch(buildBookingApiUrl(path, d.baseUrl), {
             method,
             headers: {
                 'Content-Type': 'application/json',

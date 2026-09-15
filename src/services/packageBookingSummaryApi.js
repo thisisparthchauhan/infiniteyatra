@@ -12,8 +12,10 @@
 
 import { getAuth } from 'firebase/auth';
 import { BookingApiError } from './packageBookingApi';
+import { buildBookingApiUrl, BOOKING_API_BASE_URL } from './bookingApiUrl.js';
 
-const BASE_URL = (import.meta.env?.VITE_BOOKING_API_BASE_URL || '').replace(/\/$/, '');
+// CUTOVER - see src/services/bookingApiUrl.js.
+const BASE_URL = BOOKING_API_BASE_URL;
 
 let _deps = null;
 
@@ -42,7 +44,7 @@ async function request(path, { method = 'GET' } = {}) {
 
     let res;
     try {
-        res = await d.fetch(`${d.baseUrl}/api${path}`, { method, headers });
+        res = await d.fetch(buildBookingApiUrl(path, d.baseUrl), { method, headers });
     } catch (networkErr) {
         throw new BookingApiError('NETWORK', { status: 0, serverError: 'NETWORK', details: [networkErr.message] });
     }
@@ -83,7 +85,10 @@ export async function downloadBookingSummary(bookingId, summaryNumber) {
 
     let res;
     try {
-        res = await d.fetch(`${d.baseUrl}/api/bookings/${encodeURIComponent(bookingId)}/summary/download`, { headers });
+        res = await d.fetch(
+            buildBookingApiUrl(`/bookings/${encodeURIComponent(bookingId)}/summary/download`, d.baseUrl),
+            { headers },
+        );
     } catch (networkErr) {
         throw new BookingApiError('NETWORK', { status: 0, serverError: 'NETWORK', details: [networkErr.message] });
     }

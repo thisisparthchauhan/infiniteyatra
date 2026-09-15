@@ -20,6 +20,7 @@
 import { getAuth } from 'firebase/auth';
 import { getStorageAsync } from '../firebase';
 import { BookingApiError } from './packageBookingApi';
+import { buildBookingApiUrl, BOOKING_API_BASE_URL } from './bookingApiUrl.js';
 
 /** Kept in sync with storage.rules and functions/packageBookingDocuments.js. */
 export const ALLOWED_MIME_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
@@ -36,7 +37,8 @@ export const DOCUMENT_TYPES = [
     { value: 'OTHER', label: 'Other document' },
 ];
 
-const BASE_URL = (import.meta.env?.VITE_BOOKING_API_BASE_URL || '').replace(/\/$/, '');
+// CUTOVER - see src/services/bookingApiUrl.js.
+const BASE_URL = BOOKING_API_BASE_URL;
 
 let _deps = null;
 
@@ -64,7 +66,7 @@ async function request(path, { method = 'GET', body } = {}) {
 
     let res;
     try {
-        res = await d.fetch(`${d.baseUrl}/api${path}`, {
+        res = await d.fetch(buildBookingApiUrl(path, d.baseUrl), {
             method,
             headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
             body: body ? JSON.stringify(body) : undefined,

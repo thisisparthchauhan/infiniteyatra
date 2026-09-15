@@ -6,6 +6,7 @@ import { Loader, Calendar, MapPin, Clock, AlertCircle, ArrowRight, Star } from '
 import { Link } from 'react-router-dom';
 import SEO from '../components/common/SEO';
 import ReviewModal from '../components/ReviewModal';
+import { toDisplayBooking, LEGACY_BOOKING_NOTE } from '../config/bookingSchema';
 
 const MyBookings = () => {
     const { currentUser } = useAuth();
@@ -28,17 +29,15 @@ const MyBookings = () => {
             );
 
             const querySnapshot = await getDocs(q);
-            const bookingsData = querySnapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
+            // CUTOVER - history holds both the 2024-era legacy records and PB
+            // canonical bookings. Each document is normalised to one display
+            // shape so the template never reads a field that only one schema
+            // has; a legacy record has no pricing object, and reading it as if
+            // it did would render a real trip as a zero-rupee booking.
+            const bookingsData = querySnapshot.docs.map(doc => toDisplayBooking(doc.id, doc.data()));
 
-            // Sort client-side
-            bookingsData.sort((a, b) => {
-                const dateA = a.createdAt?.seconds || 0;
-                const dateB = b.createdAt?.seconds || 0;
-                return dateB - dateA;
-            });
+            // Sort client-side, newest first. createdAt is a Date or null here.
+            bookingsData.sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0));
 
             setBookings(bookingsData);
 
@@ -132,19 +131,21 @@ const MyBookings = () => {
                                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                                             <div>
                                                 <div className="flex items-center gap-2 mb-1">
-                                                    <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide border ${booking.status === 'confirmed' ? 'bg-green-500/20 text-green-400 border-green-500/20' :
-                                                        booking.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/20' :
+                                                    <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide border ${booking.statusLabel === 'confirmed' ? 'bg-green-500/20 text-green-400 border-green-500/20' :
+                                                        booking.statusLabel === 'pending' ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/20' :
                                                             'bg-white/10 text-slate-300 border-white/10'
                                                         }`}>
-                                                        {booking.status}
+                                                        {booking.statusLabel}
                                                     </span>
-                                                    <span className="text-slate-400 text-sm font-mono">#{booking.id.slice(0, 8)}</span>
+                                                    <span className="text-slate-400 text-sm font-mono">
+                                                        {booking.reference || `#${booking.id.slice(0, 8)}`}
+                                                    </span>
                                                 </div>
-                                                <h3 className="text-xl font-bold text-white">{booking.packageTitle}</h3>
+                                                <h3 className="text-xl font-bold text-white">{booking.title}</h3>
                                             </div>
                                             <div className="text-right">
-                                                <p className="text-2xl font-bold text-blue-400">₹{booking.totalPrice?.toLocaleString()}</p>
-                                                <p className="text-sm text-slate-400">{booking.travelers} Travelers</p>
+                                                <p className="text-2xl font-bold text-blue-400">{booking.totalDisplay != null ? `₹${booking.totalDisplay.toLocaleString()}` : '—'}</p>
+                                                <p className="text-sm text-slate-400">{booking.travellerCount ?? '—'} Travelers</p>
                                             </div>
                                         </div>
 
@@ -153,14 +154,14 @@ const MyBookings = () => {
                                                 <Calendar size={18} className="text-blue-400" />
                                                 <div>
                                                     <p className="text-xs text-slate-500">Travel Date</p>
-                                                    <p className="font-medium text-white">{new Date(booking.bookingDate).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                                                    <p className="font-medium text-white">{booking.travelDate ? new Date(booking.travelDate).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' }) : '—'}</p>
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-3 text-slate-300">
                                                 <Clock size={18} className="text-blue-400" />
                                                 <div>
                                                     <p className="text-xs text-slate-500">Booked On</p>
-                                                    <p className="font-medium text-white">{booking.createdAt?.toDate().toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                                                    <p className="font-medium text-white">{booking.createdAt ? booking.createdAt.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}</p>
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-3 text-slate-300">
@@ -174,7 +175,18 @@ const MyBookings = () => {
                                             </div>
                                         </div>
 
-                                        {booking.status === 'pending' && (
+                                        {/* CUTOVER - a legacy booking gets a short factual note in
+                                            place of the newer actions. No disabled Booking Summary or
+                                            upload button is rendered at all: a greyed-out control that
+                                            can never work reads as a fault. */}
+                                        {booking.legacy && (
+                                            <div className="mt-4 bg-white/5 border border-white/10 rounded-lg p-4 flex items-start gap-3">
+                                                <AlertCircle className="text-slate-400 flex-shrink-0 mt-0.5" size={18} />
+                                                <p className="text-sm text-slate-300">{LEGACY_BOOKING_NOTE}</p>
+                                            </div>
+                                        )}
+
+                                        {!booking.legacy && booking.statusLabel === 'pending' && (
                                             <div className="mt-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4 flex items-start gap-3">
                                                 <AlertCircle className="text-yellow-400 flex-shrink-0 mt-0.5" size={18} />
                                                 <p className="text-sm text-yellow-200">
@@ -184,7 +196,7 @@ const MyBookings = () => {
                                         )}
 
                                         {/* Write Review — shown after trip date has passed */}
-                                        {booking.bookingDate && new Date(booking.bookingDate) < new Date() && (
+                                        {booking.travelDate && new Date(booking.travelDate) < new Date() && (
                                             <div className="mt-4 flex justify-end">
                                                 {reviewedBookingIds.has(booking.id) ? (
                                                     <span className="flex items-center gap-2 text-sm text-green-400 bg-green-500/10 border border-green-500/20 px-4 py-2 rounded-lg">
