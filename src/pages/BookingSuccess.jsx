@@ -2,9 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { CheckCircle, Download, MessageCircle, Mail, ArrowRight, Home, Smartphone, Copy, Loader } from 'lucide-react';
 import { motion } from 'framer-motion';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import { getMyBooking } from '../services/packageBookingApi';
+import {
+    ensureBookingSummary,
+    downloadBookingSummary,
+    toSummaryMessage,
+} from '../services/packageBookingSummaryApi';
 import BookingDocumentsUpload from '../components/booking/BookingDocumentsUpload';
 
 const BookingSuccess = () => {
@@ -45,102 +48,36 @@ const BookingSuccess = () => {
     const date = booking?.departureDate ?? location.state?.date;
     const paymentStatus = booking?.payment?.paymentStatus || 'UNPAID';
     const [documentStatus, setDocumentStatus] = useState(booking?.documentStatus || 'PENDING');
-    const amountPaid = booking ? booking.payment.amountReceivedMinor / minor : 0;
 
-    const balanceDue = (totalAmount || 0) - (amountPaid || 0);
 
-    const handleDownloadInvoice = () => {
+    // PB-4: the Booking Summary is generated and stored server-side from the
+    // canonical booking record. The browser no longer composes a financial
+    // document from whatever happens to be in memory.
+    const [summary, setSummary] = useState(null);
+    const [summaryError, setSummaryError] = useState('');
+    const [downloading, setDownloading] = useState(false);
+
+    useEffect(() => {
+        if (!booking?.id) return;
+        let cancelled = false;
+        // Safe to call on every view: an unchanged booking reuses its existing
+        // summary and consumes no new number.
+        ensureBookingSummary(booking.id)
+            .then(({ summary: s }) => { if (!cancelled) { setSummary(s); setSummaryError(''); } })
+            .catch((err) => { if (!cancelled) setSummaryError(toSummaryMessage(err)); });
+        return () => { cancelled = true; };
+    }, [booking?.id]);
+
+    const handleDownloadSummary = async () => {
+        if (!booking?.id) return;
+        setDownloading(true);
+        setSummaryError('');
         try {
-            const doc = new jsPDF();
-
-            // Brand Colors
-            const primaryColor = [30, 41, 59]; // Slate 900
-            const accentColor = [22, 163, 74]; // Green 600
-
-            // Header Background
-            doc.setFillColor(...primaryColor);
-            doc.rect(0, 0, 210, 40, 'F');
-
-            // Header Text
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(22);
-            doc.setFont('helvetica', 'bold');
-            doc.text('INFINITE YATRA', 20, 25);
-
-            doc.setFontSize(10);
-            doc.setFont('helvetica', 'normal');
-            doc.text('Booking Summary - Not a payment receipt', 190, 25, { align: 'right' });
-
-            // Booking Details Section
-            let yPos = 60;
-            doc.setTextColor(30, 41, 59);
-
-            // Left Column
-            doc.setFontSize(10);
-            doc.text('Booking Reference:', 20, yPos);
-            doc.setFontSize(12);
-            doc.setFont('helvetica', 'bold');
-            doc.text(bookingReference || bookingId || 'N/A', 20, yPos + 7);
-
-            // Right Column
-            doc.setFontSize(10);
-            doc.setFont('helvetica', 'normal');
-            doc.text('Date Issued:', 190, yPos, { align: 'right' });
-            doc.setFontSize(12);
-            doc.setFont('helvetica', 'bold');
-            doc.text(new Date().toLocaleDateString(), 190, yPos + 7, { align: 'right' });
-
-            yPos += 25;
-
-            // Trip Details
-            doc.setFontSize(14);
-            doc.setTextColor(...primaryColor);
-            doc.text(`Trip: ${packageTitle}`, 20, yPos);
-
-            doc.setFontSize(10);
-            doc.setTextColor(100);
-            doc.setFont('helvetica', 'normal');
-            doc.text(`Travel Date: ${date ? new Date(date).toLocaleDateString() : 'TBD'}`, 20, yPos + 7);
-
-            // Financial Table
-            const tableData = [
-                ['Description', 'Amount (INR)'],
-                ['Total Package Cost', totalAmount?.toLocaleString('en-IN')],
-                ['Amount Received', amountPaid?.toLocaleString('en-IN')],
-                ['Balance Payable', balanceDue?.toLocaleString('en-IN')]
-            ];
-
-            autoTable(doc, {
-                startY: yPos + 20,
-                head: [tableData[0]],
-                body: tableData.slice(1),
-                theme: 'grid',
-                headStyles: {
-                    fillColor: primaryColor,
-                    textColor: 255,
-                    fontStyle: 'bold'
-                },
-                columnStyles: {
-                    0: { cellWidth: 'auto' },
-                    1: { halign: 'right', fontStyle: 'bold' }
-                },
-                styles: {
-                    fontSize: 10,
-                    cellPadding: 6
-                }
-            });
-
-            // Footer
-            const finalY = doc.lastAutoTable.finalY + 20;
-            doc.setFontSize(10);
-            doc.setTextColor(100);
-            doc.text('Thank you for choosing Infinite Yatra!', 105, finalY, { align: 'center' });
-            doc.text('Need help? Contact us at info@infiniteyatra.com', 105, finalY + 7, { align: 'center' });
-
-            doc.save(`Booking_Summary_${bookingReference || bookingId}.pdf`);
+            await downloadBookingSummary(booking.id, summary?.summaryNumber);
         } catch (err) {
-            console.error("Failed to generate PDF:", err);
-            // Optionally alert user, but since this is auto-triggered, maybe silent fail or specific UI feedback
+            setSummaryError(toSummaryMessage(err));
+        } finally {
+            setDownloading(false);
         }
     };
 
@@ -283,13 +220,28 @@ const BookingSuccess = () => {
                         </ol>
                     </div>
 
-                    <div className="mt-8 flex flex-col md:flex-row gap-4">
+                    {summaryError && (
+                        <div className="mt-6 bg-amber-50 border border-amber-200 rounded-xl p-4 text-left text-sm text-amber-800">
+                            {summaryError}
+                        </div>
+                    )}
+
+                    {summary?.summaryNumber && (
+                        <p className="mt-6 text-xs text-slate-500 text-left">
+                            Summary Number <span className="font-mono font-bold text-slate-700">{summary.summaryNumber}</span>
+                            {summary.version > 1 && <span> · version {summary.version}</span>}
+                        </p>
+                    )}
+
+                    <div className="mt-4 flex flex-col md:flex-row gap-4">
                         <button
-                            onClick={handleDownloadInvoice}
-                            className="flex-1 flex items-center justify-center gap-2 border-2 border-slate-200 hover:border-slate-300 text-slate-700 font-bold py-3 px-6 rounded-xl transition-colors"
+                            onClick={handleDownloadSummary}
+                            disabled={downloading || !summary}
+                            className="flex-1 flex items-center justify-center gap-2 border-2 border-slate-200 hover:border-slate-300 text-slate-700 font-bold py-3 px-6 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            <Download size={20} />
-                            Booking Summary
+                            {downloading
+                                ? <><Loader size={20} className="animate-spin" /> Preparing…</>
+                                : <><Download size={20} /> Download Booking Summary</>}
                         </button>
                         <Link
                             to="/"

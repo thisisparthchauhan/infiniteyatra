@@ -108,6 +108,27 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // PB-4 Booking Summary metadata.
+    //
+    // Named `booking_documents` rather than `invoices` deliberately: a Booking
+    // Summary is not an invoice, and the programme architecture reserves
+    // `invoices/{id}` for the real tax invoice issued once a booking is fully
+    // paid. `documentKind` discriminates BOOKING_SUMMARY from the
+    // PAYMENT_RECEIPT that PB-6 will add.
+    //
+    // Server-owned. Customers read their summary through the API, not directly,
+    // because these records carry `storagePath` and the issuing state.
+    match /booking_documents/{documentId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    // PB-4 sequential number counters. Closed to every client: the counter is
+    // the integrity of the numbering, and reading it would disclose volume.
+    match /booking_document_numbers/{counterId} {
+      allow read, write: if false;
+    }
+
     // PB-1 idempotency records, keyed by sha256(uid + ':' + idempotencyKey).
     // Server-owned. Client read would leak nothing useful but is denied anyway:
     // nothing outside the booking API has a legitimate reason to see them.

@@ -229,7 +229,18 @@ test('[8b] no paid/receipt/gateway language appears on the confirmation', () => 
     for (const forbidden of ['Razorpay', 'razorpay', 'Payment Successful', 'Transaction ID', 'PAID</']) {
         assert.ok(!SUCCESS_PAGE.includes(forbidden), `success page must not contain "${forbidden}"`);
     }
-    assert.ok(SUCCESS_PAGE.includes('Not a payment receipt'), 'the PDF must not read as a receipt');
+
+    // PB-4 moved document generation to the server, so the confirmation page no
+    // longer composes a financial document at all. The "not a payment receipt"
+    // wording now lives in the server renderer, where PB-4's own tests assert it
+    // against the actually-rendered PDF rather than against source text.
+    for (const clientPdf of ['jsPDF', 'jspdf', 'autoTable']) {
+        assert.ok(!SUCCESS_PAGE.includes(clientPdf),
+            `the confirmation page must not generate a document client-side (found "${clientPdf}")`);
+    }
+    const SUMMARY_RENDERER = src('../functions/packageBookingSummary.js');
+    assert.ok(SUMMARY_RENDERER.includes('Not a payment receipt'),
+        'the server-rendered summary must state that it is not a receipt');
 });
 
 test('[8c] the review step shows UNPAID before submission', () => {

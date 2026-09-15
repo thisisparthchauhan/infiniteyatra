@@ -38,6 +38,7 @@ const {
 const { generateCandidate } = require('./packageBookingReference');
 const { validateCreateBookingRequest } = require('./packageBookingValidation');
 const { registerDocumentRoutes } = require('./packageBookingDocuments');
+const { registerSummaryRoutes } = require('./packageBookingSummary');
 
 const BOOKINGS = 'bookings';
 const REFERENCES = 'booking_references';
@@ -511,6 +512,10 @@ function registerPackageBookingRoutes(app, { createLimiter, readLimiter } = {}) 
     // PB-3 document routes. Registered before the single-segment booking read
     // so the more specific paths are visibly matched first.
     registerDocumentRoutes(app, requireFirebaseUser, asyncRoute, { limiter: readLimiter });
+
+    // PB-4 Booking Summary. Also registered before the single-segment booking
+    // read so the more specific paths are visibly matched first.
+    registerSummaryRoutes(app, requireFirebaseUser, asyncRoute, { limiter: readLimiter });
 
     app.get(['/bookings/:bookingId', '/api/bookings/:bookingId'], ...readMw, asyncRoute(getOwnBooking));
 }

@@ -747,6 +747,186 @@ carrying no filename, document number or path.
 
 ---
 
+## 14b. PB-4 — Provisional Booking Summary (delivered)
+
+### What this document is
+
+A Booking Summary records what was booked and what is payable. **It is not a
+payment receipt and not a tax invoice.** Customer-facing wording is
+"Booking Summary" / "Provisional Booking Summary" throughout; the PDF carries an
+explicit notice saying so.
+
+This replaces the last surface capable of asserting an unrecorded payment. The
+legacy generator (audit P0-05) printed "IY INVOICE – BOOKING AMOUNT RECEIVED"
+with a hardcoded fallback amount; its admin entry point was removed in the
+P0-05 containment patch carried into this branch, and PB-4 removed the
+client-side PDF on the confirmation page that was the last remaining generator.
+
+### Business decisions implemented
+
+| | Decision | Implementation |
+|---|---|---|
+| **Q12** | Issue immediately after a booking is created | The confirmation page calls the endpoint on load |
+| **Q13** | A summary may be issued while UNPAID | Payment status is printed as-is from the booking; no payment is implied |
+| **Q14** | `IY-BS-YYYY-XXXXXX`, called **Summary Number** | `IY-BS-2026-000001`; the field and the UI label are both "Summary Number", never "Invoice Number" |
+
+**A note on Q14.** Sequential numbering is implemented as locked, but it is
+worth recording the tradeoff: a sequential public number discloses roughly how
+many summaries have been issued in a year. PB-1's booking *reference* is random
+for exactly that reason, and it remains the identifier the customer quotes.
+
+### Collection name: `booking_documents`, not `invoices`
+
+The scope analysis proposed `invoices/{id}`, taken from the audit's Phase 4
+task list. On inspection that would contradict the architecture it came from:
+
+- **No dependency exists** on a literal `invoices` collection — nothing in
+  `src/`, `functions/` or the rules references one.
+- The audit's own target architecture scopes `invoices/{id}` to
+  *"(real tax invoice)"*, issued *"once FULLY_PAID"* — a different document,
+  still blocked on GST/TCS decisions.
+- The same audit explicitly names Booking Summary as *"(not 'Invoice')"* and
+  already lists `booking_documents` as a candidate collection.
+
+So `invoices/{id}` is left free for the tax invoice it was specified for, and
+PB-4 uses **`booking_documents`** with a `documentKind` discriminator. PB-6 adds
+`PAYMENT_RECEIPT` to the same collection without a schema change.
+
+### Data model
+
+`booking_documents/{summaryId}` — all fields server-owned:
+
+```
+summaryId, bookingId, documentKind = BOOKING_SUMMARY, summaryNumber, version,
+isCurrent, supersededBy, bookingFingerprint, customerId (copied from the
+booking), storagePath, currency, amountMinor, minorUnitsPerMajor, fileSize,
+issuedBy, issuedAt, issuedAtIso
+```
+
+`booking_document_numbers/{id}` — the per-year counter
+(`BOOKING_SUMMARY-2026`) and one reservation document per issued number.
+Closed to every client: reading it would disclose volume, and writing it would
+compromise the numbering.
+
+**No booking schema change was needed.** Every figure comes from PB-1's
+canonical fields; no legacy shim value is read.
+
+### Numbering and idempotency
+
+A number is allocated inside a Firestore transaction on the counter document,
+which serialises concurrent allocation. A reservation document additionally
+catches reissue if the counter were ever restored from a backup; a collision
+retries with the next value.
+
+Idempotency is by **fingerprint** — a hash of the facts the summary actually
+states (reference, package, dates, travellers, customer, pricing):
+
+| Situation | Behaviour |
+|---|---|
+| Page refresh, unchanged booking | Existing summary returned, `reused: true`. **No number consumed, no PDF re-rendered** |
+| A stated fact changes | **New version under the same number**; the previous version is marked `isCurrent: false` and `supersededBy`, and its PDF is retained |
+| A payment is later recorded | Fingerprint **deliberately excludes** the received amount, so a summary is not invalidated. PB-6 issues a receipt instead |
+
+Historical documents are superseded, never overwritten — a financial-adjacent
+document that silently rewrites itself cannot be relied on.
+
+### Storage
+
+```
+private-bookings/{ownerUid}/{bookingId}/summaries/{summaryId}.pdf
+```
+
+Reuses PB-3's uid-pinned private namespace unchanged. Storage rules allow the
+owner to **read**; all client writes and deletes are denied, so a customer
+cannot substitute their own PDF for an issued summary. Staff have no ambient
+read access — that remains PB-5's server-authorized path.
+
+Downloads stream through the authenticated endpoint. **No signed URL and no
+Firebase download token is minted**, so there is nothing durable to leak or
+forward.
+
+### PDF
+
+Rendered server-side with `pdfkit` (already a dependency). Sections: identifiers,
+trip, customer, travellers, pricing, status, notice.
+
+Two deliberate choices:
+
+- **The "Amount Received" line is omitted entirely while nothing has been
+  received.** Printing `Rs.0.00` against that label still reads like a receipt
+  line. The document states **Total Amount Payable** and **Payment Status:
+  UNPAID** instead. The received and balance lines appear only once
+  `amountReceivedMinor > 0`, which only PB-6 can cause.
+- **The PDF is generated uncompressed.** These documents are a few kilobytes,
+  and keeping the text layer greppable lets the tests assert against the words
+  a customer actually sees rather than against source code.
+
+### API
+
+| Route | Purpose |
+|---|---|
+| `POST /api/bookings/:bookingId/summary` | Generate or reuse; returns metadata |
+| `GET /api/bookings/:bookingId/summary` | Current summary metadata |
+| `GET /api/bookings/:bookingId/summary/download` | Authenticated PDF stream |
+
+Registered on the existing Functions Express app with the established dual
+bare/`/api` path convention. Ownership comes from the verified ID token;
+absent and not-yours return an identical 404.
+
+### Customer UI
+
+The confirmation page requests the summary on load, shows the Summary Number
+(and version, when superseded), and offers **Download Booking Summary**. There
+is no auto-download.
+
+**Booking creation is never affected by summary failure.** The summary is
+requested after the booking exists, and a failure shows
+*"Your booking is recorded. The Booking Summary is temporarily unavailable.
+Please try again."* — which states neither a confirmation nor a payment.
+
+### Legacy false-invoice status
+
+| Occurrence | Classification |
+|---|---|
+| `InvoiceGenerator.js` — "BOOKING AMOUNT RECEIVED", "Token Paid", `generateInvoicePDF` | **Unreachable.** Zero callers repo-wide; retained on disk per the P0-05 decision |
+| `Bookings.jsx` — `'Amount Paid': … : 'N/A'` | Honest: shows N/A when unrecorded |
+| `Bookings.jsx` — `paymentStatus?.toUpperCase() \|\| 'PENDING'` | Honest default |
+| `CustomerCRM.jsx`, `Financials.jsx` — `\|\| 0` | Analytics reads; no fabrication |
+| `HotelBookingPage.jsx`, `TransportDetails.jsx` | Hotel/transport flows with real Razorpay payment — out of scope |
+| `BookingSuccess.jsx` client PDF | **Removed by PB-4** |
+
+No remaining path infers a payment.
+
+### Tests
+
+| Suite | Command | Result |
+|---|---|---|
+| PB-4 summary API | `npm run test:pb4` | **18 / 18** |
+| PB-4 rules (Storage + Firestore) | `npm run test:pb4-rules` | **16 / 16** |
+
+The financial-integrity assertions were **mutation-tested**: reintroducing
+receipt wording, fabricating a received amount, and trusting a caller-supplied
+amount each cause failures. The PDF assertions decode the real text layer, so
+they inspect what a customer sees rather than source text.
+
+### Deployment dependencies
+
+1. `storage.rules` gains the summaries path — still **not deployed**, and the
+   existing warning stands: deploying replaces the unreviewed live Console rules.
+2. `firestore.rules` gains `booking_documents` and `booking_document_numbers`.
+3. Production `/api` ingress (§3) remains open.
+
+### Phase boundaries
+
+- **PB-5** reads `booking_documents` for staff review and issues short-lived
+  signed URLs; the metadata already carries everything needed.
+- **PB-6** owns `PAYMENT_RECEIPT` and the ledger. PB-4 writes no payment data
+  and leaves `paymentStatus` untouched at `UNPAID`.
+- **Tax invoice** remains blocked on GST/TCS decisions; `invoices/{id}` is
+  deliberately unused and available for it.
+
+---
+
 ## 15. Files changed
 
 **New — `functions/`**

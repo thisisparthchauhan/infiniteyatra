@@ -100,6 +100,20 @@ service firebase.storage {
       allow delete: if isSignedIn() && request.auth.uid == ownerUid;
     }
 
+    // PB-4 Booking Summaries.
+    // private-bookings/{ownerUid}/{bookingId}/summaries/{summaryId}.pdf
+    //
+    // Written only by the Cloud Functions summary endpoint via the Admin SDK,
+    // which bypasses these rules. The customer is given read access so the
+    // object sits under the same uid-pinned boundary as their documents, but
+    // downloads are served through the authenticated endpoint rather than a
+    // signed URL, so nothing durable is ever minted. Client writes are denied:
+    // a customer must not be able to substitute their own summary PDF.
+    match /private-bookings/{ownerUid}/{bookingId}/summaries/{summaryId} {
+      allow read: if isSignedIn() && request.auth.uid == ownerUid;
+      allow write, delete: if false;
+    }
+
     // Nothing else may exist anywhere under private-bookings — no loose files
     // at the customer or booking level, no alternative nesting.
     match /private-bookings/{allOther=**} {
