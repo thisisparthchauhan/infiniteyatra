@@ -1,16 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Calendar, Users, User, Mail, Phone, CheckCircle, ArrowRight, ArrowLeft, Loader, Gift, MapPin, FileText, Star, Shield, Upload, X, Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { Calendar, Users, User, Mail, Phone, CheckCircle, ArrowRight, ArrowLeft, Loader, Gift, MapPin, FileText, Star, Shield, Upload, X, Plus, Trash2, ChevronDown, ChevronUp, AlertTriangle } from 'lucide-react';
 import { getPackageById } from '../data/packages';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { motion, AnimatePresence } from 'framer-motion';
-import { db, getStorageAsync } from '../firebase';
-import { collection, addDoc, serverTimestamp, query, getDocs, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db } from '../firebase';
+import { collection, query, getDocs, doc, getDoc } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
 import { addCredits } from '../services/passportService';
-import { payWithRazorpay } from '../services/paymentGateway';
+import {
+    createPackageBooking,
+    buildCreateBookingPayload,
+    newIdempotencyKey,
+    toCustomerMessage,
+    stepForError,
+} from '../services/packageBookingApi';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
 import { COUNTRIES } from '../data/countries';
@@ -375,6 +380,7 @@ const TravelerCard = ({ traveler, index, onChange, expandedTraveler, setExpanded
 const BookingPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
     const { currentUser } = useAuth();
     const locationState = window.history.state?.usr || {}; // from navigate(..., {state:{...}})
     const preselectedLocationName = locationState.selectedLocation || null;
@@ -387,6 +393,10 @@ const BookingPage = () => {
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
     const [expandedTraveler, setExpandedTraveler] = useState(0);
+    // Set when the server's authoritative total differs from what was displayed.
+    const [priceNotice, setPriceNotice] = useState(null);
+    // One idempotency key per booking attempt; survives retries and re-renders.
+    const idempotencyKeyRef = useRef(null);
 
     // Bundle State
     const [suggestedHotels, setSuggestedHotels] = useState([]);
@@ -484,6 +494,7 @@ const BookingPage = () => {
 
     // Handle traveler count change — if dropping below minimum, validate current date
     const handleTravelerCountChange = (delta) => {
+        resetBookingAttempt();
         setBookingData(prev => {
             const newCount = Math.max(1, Number(prev.travelers) + delta);
             const belowMin = pkg?.minimumPersons > 1 && newCount < pkg.minimumPersons;
@@ -503,6 +514,7 @@ const BookingPage = () => {
     };
 
     const handleDateChange = (date) => {
+        resetBookingAttempt();
         if (!date) { setBookingData(prev => ({ ...prev, date: '' })); return; }
         const offset = date.getTimezoneOffset();
         const localDate = new Date(date.getTime() - (offset * 60 * 1000));
@@ -524,6 +536,7 @@ const BookingPage = () => {
     };
 
     const toggleHotelSelection = (hotel) => {
+        resetBookingAttempt();
         if (selectedHotel?.id === hotel.id) {
             setSelectedHotel(null);
         } else {
@@ -560,6 +573,24 @@ const BookingPage = () => {
         return Object.keys(errors).length === 0;
     };
 
+    // Mint the idempotency key once, when the booking reaches the review step.
+    // It is then reused for every retry of that attempt.
+    useEffect(() => {
+        if (step === 3 && !idempotencyKeyRef.current) {
+            idempotencyKeyRef.current = newIdempotencyKey();
+        }
+    }, [step]);
+
+    // Changing a material commercial input (date, traveller count, pickup or
+    // bundled hotel) makes this a genuinely different booking, so the key and
+    // any stale price notice are discarded. Merely stepping back and forward
+    // without changing anything keeps the same key, so a re-submit still
+    // cannot produce a duplicate.
+    const resetBookingAttempt = () => {
+        idempotencyKeyRef.current = null;
+        setPriceNotice(null);
+    };
+
     const nextStep = () => {
         if (validateStep(step)) {
             setStep(prev => prev + 1);
@@ -582,118 +613,80 @@ const BookingPage = () => {
     }
     const finalTotal = tourTotal + (hotelTotal - bundleDiscount);
 
-    const uploadDocFiles = async (bookingId) => {
-        const uploadedDocs = [];
-        const storage = await getStorageAsync();
-        for (let tIdx = 0; tIdx < bookingData.travelersList.length; tIdx++) {
-            const traveler = bookingData.travelersList[tIdx];
-            if (!traveler.docFiles || Object.keys(traveler.docFiles).length === 0) continue;
-            for (const [fileKey, file] of Object.entries(traveler.docFiles)) {
-                try {
-                    const storageRef = ref(storage, `bookings/${bookingId}/traveler_${tIdx}/${fileKey}_${file.name}`);
-                    await uploadBytes(storageRef, file);
-                    const url = await getDownloadURL(storageRef);
-                    uploadedDocs.push({ travelerIndex: tIdx, docKey: fileKey, url, fileName: file.name });
-                } catch (err) {
-                    console.error(`Failed to upload ${fileKey}:`, err);
-                }
-            }
-        }
-        return uploadedDocs;
-    };
-
+    // PB-2: the authoritative booking is created by the server. The browser no
+    // longer writes to Firestore — it posts the customer's selection and the
+    // server derives owner, price, statuses and the booking reference.
     const handleConfirm = async () => {
-        if (!currentUser) return;
+        // Session can expire while the form is open. Previously this returned
+        // silently and the button appeared dead; now the customer is told and
+        // sent to sign in, returning here afterwards.
+        if (!currentUser) {
+            setError('Please sign in to complete your booking.');
+            navigate('/login', { state: { from: location } });
+            return;
+        }
+
         setSubmitting(true);
         setError('');
+        setPriceNotice(null);
+
+        // One key per booking attempt, reused on every retry — this is what
+        // makes a double-click or a lost response safe.
+        const key = idempotencyKeyRef.current || newIdempotencyKey();
+        idempotencyKeyRef.current = key;
 
         try {
-            const cleanTravelersList = bookingData.travelersList.map(t => ({
-                firstName: t.firstName, middleName: t.middleName, lastName: t.lastName,
-                dob: t.dob, gender: t.gender, nationality: t.nationality,
-                contactNumbers: t.contactNumbers.filter(n => n),
-                selectedDocType: t.selectedDocType,
-                emergencyContacts: t.emergencyContacts.filter(ec => ec.firstName || ec.contactNumber).map(ec => ({
-                    firstName: ec.firstName, middleName: ec.middleName, lastName: ec.lastName,
-                    relation: ec.relation, contactNumber: ec.contactNumber, email: ec.email
-                }))
-            }));
-
-            const newBookingRef = doc(collection(db, 'bookings'));
-
-            await setDoc(newBookingRef, {
-                userId: currentUser.uid,
-                packageId: pkg.id,
-                packageTitle: pkg.title,
-                bookingDate: bookingData.date,
-                travelers: Number(bookingData.travelers),
-                contactName: bookingData.name,
-                contactEmail: bookingData.email,
-                contactPhone: bookingData.phone,
-                specialRequests: bookingData.specialRequests || '',
-                travelersList: cleanTravelersList,
-                totalPrice: finalTotal,
-                tourAmount: tourTotal,
-                hotelAmount: hotelTotal - bundleDiscount,
-                pickupLocation: hasLocations ? (pkg.pickupLocations[selectedLocIdx]?.location || null) : null,
-                status: 'pending',
-                bookingStatus: 'pending',
-                paymentStatus: 'pending',
-                createdAt: serverTimestamp(),
-                bundledHotelId: selectedHotel?.id || null,
-                bundledHotelName: selectedHotel?.name || null
+            const payload = buildCreateBookingPayload({
+                pkg,
+                bookingData,
+                selectedLocIdx,
+                selectedHotel,
+                idempotencyKey: key,
             });
 
-            // Upload document files (best-effort)
+            const { booking } = await createPackageBooking(payload);
+
+            // The server total is authoritative. If it differs from what the
+            // customer was shown, surface it rather than continuing silently.
+            const serverTotalMajor = booking.pricing.grossAmountMinor / booking.pricing.minorUnitsPerMajor;
+            if (Math.round(serverTotalMajor) !== Math.round(finalTotal)) {
+                setPriceNotice({ shown: finalTotal, actual: serverTotalMajor, booking });
+                setSubmitting(false);
+                return;
+            }
+
+            // Award IY Passport credits (best-effort, unchanged behaviour)
             try {
-                const uploadedDocs = await uploadDocFiles(newBookingRef.id);
-                if (uploadedDocs.length > 0) {
-                    await addDoc(collection(db, 'bookings', newBookingRef.id, 'documents'), {
-                        docs: uploadedDocs,
-                        createdAt: serverTimestamp()
-                    });
-                }
-            } catch (docErr) {
-                console.warn('Document upload skipped:', docErr);
-            }
+                await addCredits(currentUser.uid, 'booking', `Booked ${pkg.title} trip`, 100, booking.id);
+            } catch (e) { console.log('Passport credit skip:', e); }
 
-            // Bundled hotel request (pending — confirmed by team)
-            if (selectedHotel) {
-                try {
-                    await addDoc(collection(db, 'hotel_bookings'), {
-                        hotelId: selectedHotel.id, hotelName: selectedHotel.name,
-                        roomId: selectedHotel.roomId, roomName: selectedHotel.roomName,
-                        userId: currentUser.uid, customerName: bookingData.name,
-                        customerEmail: bookingData.email, customerPhone: bookingData.phone,
-                        checkIn: bookingData.date, checkOut: bookingData.date,
-                        pricePerNight: selectedHotel.originalPrice,
-                        totalAmount: hotelTotal - bundleDiscount,
-                        paymentStatus: 'Pending', bookingStatus: 'Pending',
-                        bundledWithTour: newBookingRef.id, createdAt: serverTimestamp()
-                    });
-                } catch (hErr) { console.warn('Hotel bundle skipped:', hErr); }
-            }
-
-            // Award IY Passport credits (best-effort)
-            if (currentUser?.uid) {
-                try {
-                    await addCredits(currentUser.uid, 'booking', `Booked ${pkg.title} trip`, 100, newBookingRef.id);
-                } catch (e) { console.log('Passport credit skip:', e); }
-            }
-
-            navigate('/booking-success', {
-                state: {
-                    bookingId: newBookingRef.id, packageTitle: pkg.title,
-                    totalAmount: finalTotal, amountPaid: 0, date: bookingData.date,
-                    isRequest: true
-                }
-            });
-
-        } catch (error) {
-            console.error(error);
-            setError(error.message || 'Could not submit your booking. Please try again.');
+            goToSuccess(booking);
+        } catch (err) {
+            const step = stepForError(err);
+            setError(toCustomerMessage(err));
+            if (step) setStep(step);
             setSubmitting(false);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
+    };
+
+    // Navigate to the confirmation using SERVER-returned data only. The booking
+    // id is also placed in the URL so the page survives a refresh (PB-2 §11).
+    const goToSuccess = (booking) => {
+        navigate(`/booking-success?id=${encodeURIComponent(booking.id)}`, {
+            state: { booking },
+        });
+    };
+
+    // Customer accepted the revised server amount — continue with the booking
+    // that was already created (idempotent, so nothing is duplicated).
+    const acceptRevisedAmount = async () => {
+        const booking = priceNotice?.booking;
+        if (!booking) return;
+        try {
+            await addCredits(currentUser.uid, 'booking', `Booked ${pkg.title} trip`, 100, booking.id);
+        } catch (e) { console.log('Passport credit skip:', e); }
+        goToSuccess(booking);
     };
 
     if (loading) {
@@ -811,7 +804,7 @@ const BookingPage = () => {
                                         {pkg.pickupLocations.map((loc, idx) => (
                                             <button
                                                 key={idx} type="button"
-                                                onClick={() => setSelectedLocIdx(idx)}
+                                                onClick={() => { resetBookingAttempt(); setSelectedLocIdx(idx); }}
                                                 className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-all ${selectedLocIdx === idx ? 'bg-blue-600/20 border-blue-500 text-blue-300' : 'bg-white/5 border-white/10 text-slate-400 hover:border-white/30 hover:text-white'}`}
                                             >
                                                 <MapPin size={13} />
@@ -1089,6 +1082,55 @@ const BookingPage = () => {
                                 </div>
                             </div>
 
+                            {/* Payment state — a booking request is not a payment */}
+                            <div className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-5 flex items-center justify-between">
+                                <div>
+                                    <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider">Payment Status</h3>
+                                    <p className="text-xs text-slate-500 mt-1">No payment is collected now. Our team will confirm and share payment options.</p>
+                                </div>
+                                <span className="px-3 py-1.5 rounded-full text-xs font-bold border bg-yellow-500/10 text-yellow-400 border-yellow-500/20">
+                                    UNPAID
+                                </span>
+                            </div>
+
+                            {/* Documents are collected separately — see PB-3 */}
+                            {bookingData.travelersList.some(t => t.docFiles && Object.keys(t.docFiles).length > 0) && (
+                                <div className="bg-blue-500/5 border border-blue-500/20 rounded-2xl p-4 text-sm text-blue-200">
+                                    Your ID documents are <strong>not</strong> submitted with this request. Our team will
+                                    ask for them over a secure channel once your booking is confirmed.
+                                </div>
+                            )}
+
+                            {/* Server total differed from the displayed estimate */}
+                            {priceNotice && (
+                                <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-5">
+                                    <div className="flex items-start gap-3">
+                                        <AlertTriangle size={20} className="text-amber-400 shrink-0 mt-0.5" />
+                                        <div className="flex-1">
+                                            <p className="font-bold text-amber-200 text-sm">Your booking amount has been updated</p>
+                                            <p className="text-sm text-amber-100/80 mt-1">
+                                                Your booking amount has been updated based on the latest package details.
+                                                Please review the revised amount before confirming.
+                                            </p>
+                                            <div className="mt-3 flex items-center gap-6 text-sm">
+                                                <span className="text-slate-400">
+                                                    Shown earlier: <span className="line-through">₹{priceNotice.shown.toLocaleString('en-IN')}</span>
+                                                </span>
+                                                <span className="font-bold text-amber-200">
+                                                    Revised total: ₹{priceNotice.actual.toLocaleString('en-IN')}
+                                                </span>
+                                            </div>
+                                            <button
+                                                onClick={acceptRevisedAmount}
+                                                className="mt-4 bg-amber-500 hover:bg-amber-400 text-black px-5 py-2.5 rounded-xl font-bold text-sm transition-colors"
+                                            >
+                                                Accept revised amount &amp; continue
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Trust */}
                             <div className="flex flex-wrap items-center justify-center gap-6 py-2 text-xs text-slate-500">
                                 <span className="flex items-center gap-1"><Shield size={14} className="text-green-500" /> Secure Booking</span>
@@ -1097,10 +1139,15 @@ const BookingPage = () => {
                             </div>
 
                             <div className="flex justify-between pt-4">
-                                <button onClick={prevStep} className="text-slate-400 hover:text-white px-6 py-3 rounded-xl font-medium flex items-center gap-2 transition-colors hover:bg-white/5">
+                                <button onClick={prevStep} disabled={submitting} className="text-slate-400 hover:text-white px-6 py-3 rounded-xl font-medium flex items-center gap-2 transition-colors hover:bg-white/5 disabled:opacity-40 disabled:cursor-not-allowed">
                                     <ArrowLeft size={18} /> Back
                                 </button>
-                                <button onClick={handleConfirm} disabled={submitting} className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-10 py-4 rounded-xl font-bold flex items-center gap-2 transition-all hover:scale-[1.02] shadow-xl shadow-blue-600/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100">
+                                <button
+                                    onClick={handleConfirm}
+                                    disabled={submitting || !!priceNotice}
+                                    aria-busy={submitting}
+                                    className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-10 py-4 rounded-xl font-bold flex items-center gap-2 transition-all hover:scale-[1.02] shadow-xl shadow-blue-600/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                                >
                                     {submitting ? <><Loader size={20} className="animate-spin" /> Submitting...</> : <>Confirm Booking Request</>}
                                 </button>
                             </div>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import SEO from '../components/common/SEO';
 import { useAuth } from '../context/AuthContext';
@@ -16,6 +16,18 @@ const Login = () => {
     const [showPassword, setShowPassword] = useState(false);
     const { login, loginWithPhone } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
+
+    // ProtectedRoute records the page the customer was trying to reach as
+    // `state.from`. Returning them there after sign-in is what lets a customer
+    // whose session expired mid-booking come back to their booking instead of
+    // being dropped on the homepage. Only in-app paths are honoured, so a
+    // crafted `from` cannot redirect off-site.
+    const from = location.state?.from;
+    const redirectTo =
+        typeof from?.pathname === 'string' && from.pathname.startsWith('/')
+            ? `${from.pathname}${from.search || ''}`
+            : '/';
 
     // Validate email format
     const validateEmail = (email) => {
@@ -41,7 +53,7 @@ const Login = () => {
                 // Login with phone number
                 await loginWithPhone(phone, password);
             }
-            navigate('/');
+            navigate(redirectTo, { replace: true });
         } catch (err) {
             console.error(err);
             let errorMessage = 'Failed to log in.';

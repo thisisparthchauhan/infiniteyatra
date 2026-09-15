@@ -26,4 +26,15 @@ export default defineConfig([
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
     },
   },
+  // Cloud Functions are CommonJS running on Node, not browser ESM. Without this
+  // the block above lints them with browser globals and every `require` and
+  // `module.exports` reports as an undefined variable.
+  {
+    files: ['functions/**/*.js'],
+    languageOptions: {
+      globals: { ...globals.node },
+      sourceType: 'commonjs',
+      parserOptions: { ecmaVersion: 'latest' },
+    },
+  },
 ])

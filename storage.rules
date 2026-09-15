@@ -1,0 +1,142 @@
+rules_version = '2';
+
+// Infinite Yatra — Firebase Storage Security Rules
+//
+// Introduced by PB-3. Before this file existed there were NO version-controlled
+// Storage rules at all (audit finding P0-06): whatever protects customer
+// passports lived only in the Firebase Console and could not be reviewed from
+// source. This file makes that boundary explicit, reviewable and testable.
+//
+// ───────────────────────────────────────────────────────────────────────────
+// A PLATFORM LIMITATION THAT SHAPES THE WHOLE DESIGN
+//
+// Firebase Storage rules CANNOT read Firestore. Unlike Firestore rules, there
+// is no get()/exists() across services. So these rules cannot answer
+// "does booking X belong to user Y?".
+//
+// Rather than weaken access to work around that, ownership is encoded in the
+// PATH itself: every private document lives under the owner's own uid, and the
+// rules below pin `request.auth.uid` to that path segment. That makes the
+// boundary that actually matters — customer A must never reach customer B's
+// documents — fully enforceable here.
+//
+// The residual gap is narrow: a customer could write to a *made-up bookingId
+// inside their own namespace*. That is closed one layer up, by the server
+// finalization endpoint (functions/packageBookingDocuments.js), which verifies
+// the booking exists, is owned by the caller, and that the traveller belongs to
+// that booking before any metadata is created. An object with no metadata is
+// invisible to the admin panel and is treated as an orphan.
+//
+// ───────────────────────────────────────────────────────────────────────────
+// DEPLOYMENT WARNING
+//
+// Deploying this file REPLACES the rules currently live in the Firebase
+// Console, which nobody has reviewed. Before `firebase deploy --only storage`,
+// read the live rules and confirm that the only production Storage consumers
+// are still the two transport paths allowed below. See
+// IY_PACKAGE_BOOKING_IMPLEMENTATION.md §PB-3 "Deployment dependencies".
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // ─── helpers ────────────────────────────────────────────────────────────
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.get('admin', false) == true ||
+        request.auth.token.get('role', '') == 'admin'
+      );
+    }
+
+    function isStaff() {
+      return isSignedIn() && request.auth.token.get('role', '') in
+        ['admin', 'hotel_manager', 'booking_manager', 'tour_manager',
+         'finance_manager', 'content_manager'];
+    }
+
+    // Identity documents and travel photos only. Deliberately excludes SVG
+    // (scriptable), HTML, and every executable or arbitrary binary type.
+    function isAllowedDocumentType() {
+      return request.resource.contentType in [
+        'application/pdf',
+        'image/jpeg',
+        'image/png',
+        'image/webp'
+      ];
+    }
+
+    // 10 MB. Comfortably fits a phone photo of a passport page or a multi-page
+    // PDF scan, while refusing uploads large enough to be abusive. Enforced
+    // here rather than only in the browser, because the browser is not trusted.
+    function isWithinSizeLimit() {
+      return request.resource.size > 0 && request.resource.size <= 10 * 1024 * 1024;
+    }
+
+    // ─── PRIVATE BOOKING DOCUMENTS ──────────────────────────────────────────
+    // private-bookings/{ownerUid}/{bookingId}/travellers/{travellerId}/{documentId}
+    //
+    // `ownerUid` is the security boundary. Pinning it to request.auth.uid is
+    // what makes cross-customer access impossible, and it is checked on read,
+    // write and delete alike.
+    match /private-bookings/{ownerUid}/{bookingId}/travellers/{travellerId}/{documentId} {
+
+      // The owner may read their own document. Staff never read through these
+      // rules — admin review in PB-5 goes through a server-authorized,
+      // short-lived signed URL instead, so that every staff access is
+      // attributable rather than ambient.
+      allow read: if isSignedIn() && request.auth.uid == ownerUid;
+
+      // Create and replace, constrained by owner, type and size.
+      allow write: if isSignedIn()
+                   && request.auth.uid == ownerUid
+                   && isAllowedDocumentType()
+                   && isWithinSizeLimit();
+
+      // The customer may remove their own upload (PB-3 replace/delete
+      // lifecycle). The server clears the metadata alongside it.
+      allow delete: if isSignedIn() && request.auth.uid == ownerUid;
+    }
+
+    // Nothing else may exist anywhere under private-bookings — no loose files
+    // at the customer or booking level, no alternative nesting.
+    match /private-bookings/{allOther=**} {
+      allow read, write: if false;
+    }
+
+    // ─── EXISTING PRODUCTION PATHS ──────────────────────────────────────────
+    // The only two Firebase Storage consumers left in the application: car
+    // images and transport content. Everything else (blog, stories, packages,
+    // admin media) migrated to Cloudinary. Public read because these images
+    // are shown on public pages; writes are staff-only.
+    match /iy_cars/{carId}/{fileName} {
+      allow read: if true;
+      allow write: if isStaff() && isAllowedDocumentType() && isWithinSizeLimit();
+      allow delete: if isAdmin();
+    }
+
+    match /transport/content/{fileName} {
+      allow read: if true;
+      allow write: if isStaff() && isAllowedDocumentType() && isWithinSizeLimit();
+      allow delete: if isAdmin();
+    }
+
+    // ─── LEGACY PRE-PB-2 BOOKING UPLOADS ────────────────────────────────────
+    // The removed flow wrote identity documents to bookings/{bookingId}/
+    // traveler_{n}/ while its metadata write silently failed, leaving orphaned
+    // passports and Aadhaar scans with no database record (audit P0-08).
+    // Writing here is closed permanently. Reads are closed too: these objects
+    // are unreferenced and pending a documented cleanup, not a migration.
+    match /bookings/{allPaths=**} {
+      allow read, write: if false;
+    }
+
+    // ─── DENY BY DEFAULT ────────────────────────────────────────────────────
+    // Any path not named above is closed to everyone, including staff.
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

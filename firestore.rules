@@ -1,13 +1,22 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Helper function for Admin access
+    // Authorization is based only on server-issued Firebase Auth custom claims.
+    // Client profile fields, local UI roles, and email addresses are not security
+    // boundaries. Phase 0C will formalize the wider RBAC claim model.
     function isAdmin() {
       return request.auth != null && (
-        request.auth.token.role == 'admin' ||
-        request.auth.token.email == 'chauhanparth165@gmail.com' ||
-        request.auth.token.admin == true
+        request.auth.token.get('admin', false) == true ||
+        request.auth.token.get('role', '') == 'admin'
       );
+    }
+
+    function ownsExistingDocument() {
+      return request.auth != null && resource.data.userId == request.auth.uid;
+    }
+
+    function ownsNewDocument() {
+      return request.auth != null && request.resource.data.userId == request.auth.uid;
     }
 
     match /vehicles/{vehicleId} {
@@ -34,12 +43,111 @@ service cloud.firestore {
     }
 
     match /bookings/{bookingId} {
-      allow read: if request.auth != null;
-      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-      allow update, delete: if request.auth != null && request.auth.token.email == 'chauhanparth165@gmail.com';
+      // A customer can fetch only their own booking. Collection queries must
+      // include a userId == request.auth.uid constraint; rules are not filters.
+      allow get, list: if isAdmin() || ownsExistingDocument();
+
+      // Preserve the current booking contract while preventing ownership and
+      // lifecycle-field injection. Server-authoritative pricing/payment work is
+      // intentionally deferred to Phases 0D/0E.
+      allow create: if isAdmin() || (
+                    ownsNewDocument()
+                    && request.resource.data.keys().hasAll([
+                      'userId', 'packageId', 'status', 'bookingStatus',
+                      'paymentStatus', 'createdAt'
+                    ])
+                    && request.resource.data.keys().hasOnly([
+                      'userId', 'packageId', 'packageTitle', 'bookingDate',
+                      'travelers', 'contactName', 'contactEmail', 'contactPhone',
+                      'specialRequests', 'travelersList', 'totalPrice',
+                      'tourAmount', 'hotelAmount', 'pickupLocation', 'status',
+                      'bookingStatus', 'paymentStatus', 'createdAt',
+                      'bundledHotelId', 'bundledHotelName'
+                    ])
+                    && request.resource.data.status == 'pending'
+                    && request.resource.data.bookingStatus == 'pending'
+                    && request.resource.data.paymentStatus == 'pending'
+                    );
+
+      // There is no legitimate direct customer update contract today. Existing
+      // client-side cancellation/refund mutations must move behind a trusted
+      // server endpoint before they can be enabled safely.
+      allow update, delete: if isAdmin();
+
+      // PB-1 booking audit trail. Written exclusively by the Cloud Functions
+      // booking API via the Admin SDK, which bypasses these rules entirely;
+      // the deny below governs the browser SDK only. It is stated explicitly
+      // rather than left to the default-deny so that the intent is reviewable
+      // and a future write from the client fails loudly at review time rather
+      // than silently at runtime.
+      match /activity/{activityId} {
+        allow read: if isAdmin();
+        allow write: if false;
+      }
+
+      // PB-3 traveller document metadata. Written exclusively by the Cloud
+      // Functions document API via the Admin SDK, which bypasses these rules;
+      // the deny below governs the browser SDK only.
+      //
+      // Customers read their documents through GET /api/bookings/:id/documents,
+      // not directly, because these records carry `storagePath` and the
+      // server-owned review fields. Keeping the client out means a customer can
+      // never see a storage path, and can never set reviewStatus, reviewedBy or
+      // reviewedAt by writing the document themselves.
+      match /documents/{documentId} {
+        allow read: if isAdmin();
+        allow write: if false;
+      }
+    }
+
+    // PB-1 booking reference reservations. The uniqueness guarantee behind
+    // IY-BKG-YYYY-XXXXXX: one document per issued reference, created inside the
+    // same transaction as the booking. Server-owned; no client access at all.
+    match /booking_references/{reference} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    // PB-1 idempotency records, keyed by sha256(uid + ':' + idempotencyKey).
+    // Server-owned. Client read would leak nothing useful but is denied anyway:
+    // nothing outside the booking API has a legitimate reason to see them.
+    match /booking_idempotency/{idempotencyId} {
+      allow read, write: if false;
     }
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      // Customer profiles are private and keyed by the Firebase Auth uid.
+      allow get: if isAdmin() || (request.auth != null && request.auth.uid == userId);
+      allow list: if isAdmin();
+
+      // Customers may create only their own non-privileged profile. Email must
+      // match the Firebase Auth token identity and is immutable thereafter.
+      allow create: if isAdmin() || (
+        request.auth != null
+        && request.auth.uid == userId
+        && request.auth.token.get('email', '') != ''
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.keys().hasAll(['email', 'createdAt'])
+        && request.resource.data.keys().hasOnly([
+          'name', 'email', 'phone', 'createdAt', 'firstName', 'middleName',
+          'lastName', 'nickname', 'dateOfBirth', 'gender', 'placeOfBirth',
+          'photoURL', 'interests', 'emergencyContacts'
+        ])
+      );
+
+      // An affected-key allowlist blocks role, isAdmin, uid, credits,
+      // travelPoints, passport/referral state, and every other privileged or
+      // server-owned field, including fields added in the future.
+      allow update: if isAdmin() || (
+        request.auth != null
+        && request.auth.uid == userId
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'name', 'phone', 'firstName', 'middleName', 'lastName', 'nickname',
+          'dateOfBirth', 'gender', 'placeOfBirth', 'photoURL', 'interests',
+          'emergencyContacts'
+        ])
+      );
+
+      allow delete: if isAdmin();
     }
     match /savedTrips/{tripId} {
       allow read: if resource.data.isPublic == true || (request.auth != null && resource.data.userId == request.auth.uid);
@@ -123,7 +231,7 @@ service cloud.firestore {
     }
     match /packages/{packageId} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow create, update, delete: if isAdmin();
     }
     match /reviews/{reviewId} {
       // Anyone can read reviews (package pages show approved ones; admin reads all)
@@ -135,7 +243,7 @@ service cloud.firestore {
     }
     match /hotels/{hotelId} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow create, update, delete: if isAdmin();
     }
     match /travelStories/{storyId} {
       allow read: if true;

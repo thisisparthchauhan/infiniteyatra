@@ -42,6 +42,8 @@ const {
     validateFileUpload,
 } = require('./waf');
 
+const { registerPackageBookingRoutes } = require('./packageBookings');
+
 admin.initializeApp();
 const db = admin.firestore();
 const storage = admin.storage();
@@ -246,6 +248,24 @@ const transporter = nodemailer.createTransport({
     }
 });
 const RAZORPAY_WEBHOOK_SECRET = functions.config().razorpay?.webhook_secret || process.env.RAZORPAY_WEBHOOK_SECRET;
+
+// --- PACKAGE BOOKING (PB-1) ---
+// Server-authoritative package booking creation and customer-safe own-booking
+// read. Identity is a verified Firebase ID token; price is derived from the
+// canonical package document. No payment is taken here — PB-1 bookings are
+// always UNPAID. See IY_PACKAGE_BOOKING_IMPLEMENTATION.md.
+const bookingCreateLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 20,
+    message: 'Too many booking attempts, please try again later',
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+registerPackageBookingRoutes(app, {
+    createLimiter: bookingCreateLimiter,
+    readLimiter: apiLimiter,
+});
 
 // --- RAZORPAY ENDPOINTS ---
 

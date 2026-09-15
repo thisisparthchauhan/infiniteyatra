@@ -1,16 +1,51 @@
-import React, { useEffect, useRef } from 'react';
-import { useLocation, Link, useNavigate } from 'react-router-dom';
-import { CheckCircle, Download, MessageCircle, Mail, ArrowRight, Home, Smartphone, Copy } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { useLocation, Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { CheckCircle, Download, MessageCircle, Mail, ArrowRight, Home, Smartphone, Copy, Loader } from 'lucide-react';
 import { motion } from 'framer-motion';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { getMyBooking } from '../services/packageBookingApi';
+import BookingDocumentsUpload from '../components/booking/BookingDocumentsUpload';
 
 const BookingSuccess = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const { bookingId, packageTitle, totalAmount, date, isRequest } = location.state || {};
-    const amountPaid = location.state?.amountPaid || 0;
-    const hasDownloaded = useRef(false);
+    const [searchParams] = useSearchParams();
+
+    // PB-2: the booking arrives in router state on the happy path, but that is
+    // lost on refresh or a revisit. The id is also carried in the URL so the
+    // page can re-fetch the booking through the authenticated own-booking API.
+    const idFromUrl = searchParams.get('id');
+
+    const [booking, setBooking] = useState(location.state?.booking || null);
+    // Derived at mount rather than set inside the effect, so the first render
+    // already shows the loading state instead of flashing "no booking found".
+    const [loadingBooking, setLoadingBooking] = useState(
+        () => !location.state?.booking && !!idFromUrl,
+    );
+    const [loadError, setLoadError] = useState('');
+
+    const bookingIdToLoad = booking?.id || idFromUrl || location.state?.bookingId || null;
+
+    useEffect(() => {
+        if (booking || !idFromUrl) return;
+        let cancelled = false;
+        getMyBooking(idFromUrl)
+            .then(({ booking: fetched }) => { if (!cancelled) setBooking(fetched); })
+            .catch(() => { if (!cancelled) setLoadError('We could not load this booking. Please sign in and try again.'); })
+            .finally(() => { if (!cancelled) setLoadingBooking(false); });
+        return () => { cancelled = true; };
+    }, [idFromUrl, booking]);
+
+    const minor = booking?.pricing?.minorUnitsPerMajor || 100;
+    const bookingId = booking?.id || bookingIdToLoad;
+    const bookingReference = booking?.bookingReference || null;
+    const packageTitle = booking?.package?.title ?? location.state?.packageTitle;
+    const totalAmount = booking ? booking.pricing.grossAmountMinor / minor : location.state?.totalAmount;
+    const date = booking?.departureDate ?? location.state?.date;
+    const paymentStatus = booking?.payment?.paymentStatus || 'UNPAID';
+    const [documentStatus, setDocumentStatus] = useState(booking?.documentStatus || 'PENDING');
+    const amountPaid = booking ? booking.payment.amountReceivedMinor / minor : 0;
 
     const balanceDue = (totalAmount || 0) - (amountPaid || 0);
 
@@ -34,7 +69,7 @@ const BookingSuccess = () => {
 
             doc.setFontSize(10);
             doc.setFont('helvetica', 'normal');
-            doc.text('Invoice & Booking Receipt', 190, 25, { align: 'right' });
+            doc.text('Booking Summary - Not a payment receipt', 190, 25, { align: 'right' });
 
             // Booking Details Section
             let yPos = 60;
@@ -45,7 +80,7 @@ const BookingSuccess = () => {
             doc.text('Booking Reference:', 20, yPos);
             doc.setFontSize(12);
             doc.setFont('helvetica', 'bold');
-            doc.text(bookingId || 'N/A', 20, yPos + 7);
+            doc.text(bookingReference || bookingId || 'N/A', 20, yPos + 7);
 
             // Right Column
             doc.setFontSize(10);
@@ -70,9 +105,9 @@ const BookingSuccess = () => {
             // Financial Table
             const tableData = [
                 ['Description', 'Amount (INR)'],
-                ['Total Package Cost', totalAmount?.toLocaleString()],
-                ['Amount Paid', amountPaid?.toLocaleString()],
-                ['Balance Due', balanceDue?.toLocaleString()]
+                ['Total Package Cost', totalAmount?.toLocaleString('en-IN')],
+                ['Amount Received', amountPaid?.toLocaleString('en-IN')],
+                ['Balance Payable', balanceDue?.toLocaleString('en-IN')]
             ];
 
             autoTable(doc, {
@@ -102,26 +137,36 @@ const BookingSuccess = () => {
             doc.text('Thank you for choosing Infinite Yatra!', 105, finalY, { align: 'center' });
             doc.text('Need help? Contact us at info@infiniteyatra.com', 105, finalY + 7, { align: 'center' });
 
-            doc.save(`Invoice_${bookingId}.pdf`);
+            doc.save(`Booking_Summary_${bookingReference || bookingId}.pdf`);
         } catch (err) {
             console.error("Failed to generate PDF:", err);
             // Optionally alert user, but since this is auto-triggered, maybe silent fail or specific UI feedback
         }
     };
 
-    // Auto-generate invoice on mount
-    useEffect(() => {
-        if (bookingId && !hasDownloaded.current) {
-            handleDownloadInvoice();
-            hasDownloaded.current = true;
-        }
-    }, [bookingId]);
+    // The summary is downloaded on request, not forced on the customer.
+    // PB-4 replaces this with the formal Booking Summary / Provisional Invoice.
 
-    if (!bookingId) {
+    if (loadingBooking) {
         return (
             <div className="min-h-screen pt-32 pb-20 px-6 flex flex-col items-center justify-center text-center">
-                <h2 className="text-2xl font-bold text-slate-800 mb-4">No booking found</h2>
-                <Link to="/" className="text-blue-600 hover:underline">Go Home</Link>
+                <Loader className="animate-spin text-blue-600 mb-4" size={40} />
+                <p className="text-slate-600">Loading your booking…</p>
+            </div>
+        );
+    }
+
+    if (!bookingId || loadError) {
+        return (
+            <div className="min-h-screen pt-32 pb-20 px-6 flex flex-col items-center justify-center text-center">
+                <h2 className="text-2xl font-bold text-slate-800 mb-4">
+                    {loadError ? 'Booking unavailable' : 'No booking found'}
+                </h2>
+                {loadError && <p className="text-slate-600 mb-4 max-w-md">{loadError}</p>}
+                <div className="flex gap-4">
+                    <Link to="/my-bookings" className="text-blue-600 hover:underline">My Bookings</Link>
+                    <Link to="/" className="text-blue-600 hover:underline">Go Home</Link>
+                </div>
             </div>
         );
     }
@@ -156,19 +201,47 @@ const BookingSuccess = () => {
                     </div>
 
                     <div className="bg-slate-50 rounded-2xl p-6 mb-8 text-left border border-slate-200">
+                        {bookingReference && (
+                            <div className="flex justify-between items-center mb-4 pb-4 border-b border-slate-200">
+                                <span className="text-slate-500 text-sm">Booking Reference</span>
+                                <span className="font-mono font-bold text-slate-900 text-lg">{bookingReference}</span>
+                            </div>
+                        )}
                         <div className="flex justify-between items-center mb-4 pb-4 border-b border-slate-200">
                             <span className="text-slate-500 text-sm">Booking ID</span>
-                            <span className="font-mono font-bold text-slate-900">{bookingId}</span>
+                            <span className="font-mono text-xs text-slate-600">{bookingId}</span>
                         </div>
                         <div className="flex justify-between items-center mb-4 pb-4 border-b border-slate-200">
-                            <span className="text-slate-500 text-sm">Estimated Total</span>
-                            <span className="font-bold text-slate-900">₹{totalAmount?.toLocaleString()}</span>
+                            <span className="text-slate-500 text-sm">Total Amount</span>
+                            <span className="font-bold text-slate-900">₹{totalAmount?.toLocaleString('en-IN')}</span>
+                        </div>
+                        <div className="flex justify-between items-center mb-4 pb-4 border-b border-slate-200">
+                            <span className="text-slate-500 text-sm">Documents</span>
+                            <span className="px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                                {documentStatus}
+                            </span>
+                        </div>
+                        <div className="flex justify-between items-center mb-4 pb-4 border-b border-slate-200">
+                            <span className="text-slate-500 text-sm">Payment Status</span>
+                            <span className="px-3 py-1 rounded-full text-xs font-bold bg-yellow-100 text-yellow-800 border border-yellow-200">
+                                {paymentStatus}
+                            </span>
                         </div>
                         <div className="flex justify-between items-center">
                             <span className="text-slate-500 text-sm">Trip Date</span>
                             <span className="font-bold text-slate-900">{date ? new Date(date).toLocaleDateString() : 'TBD'}</span>
                         </div>
                     </div>
+
+                    {booking?.id && (
+                        <div className="bg-white border border-slate-200 rounded-2xl p-6 mb-8 text-left">
+                            <BookingDocumentsUpload
+                                bookingId={booking.id}
+                                travellers={booking.travellers || []}
+                                onStatusChange={setDocumentStatus}
+                            />
+                        </div>
+                    )}
 
                     <div className="space-y-4">
                         <a
@@ -216,7 +289,7 @@ const BookingSuccess = () => {
                             className="flex-1 flex items-center justify-center gap-2 border-2 border-slate-200 hover:border-slate-300 text-slate-700 font-bold py-3 px-6 rounded-xl transition-colors"
                         >
                             <Download size={20} />
-                            Invoice
+                            Booking Summary
                         </button>
                         <Link
                             to="/"
