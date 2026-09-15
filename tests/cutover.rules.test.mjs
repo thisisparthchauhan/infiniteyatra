@@ -115,6 +115,55 @@ describe('the create path is the only difference between the two rulesets', () =
         await assertSucceeds(setDoc(doc(db, 'bookings', 'new-legacy-1'), legacyCreate));
     });
 
+    test('transitional: the EXACT payload the deployed frontend writes is accepted', async () => {
+        // Taken verbatim from the pre-PB-2 BookingPage.jsx that the live
+        // Hostinger bundle is built from (commit 9432754). This is the payload
+        // production actually receives, not a reconstruction - if the
+        // transitional rules rejected it, deploying them would stop the live
+        // site taking bookings.
+        const deployedFrontendPayload = {
+            userId: OWNER,
+            packageId: 'pkg-kashmir-7d',
+            packageTitle: 'Kashmir Valley',
+            bookingDate: '2026-10-01',
+            travelers: 2,
+            contactName: 'Synthetic Person',
+            contactEmail: 'synthetic@example.invalid',
+            contactPhone: '+910000000099',
+            specialRequests: '',
+            travelersList: [{ firstName: 'Synthetic', lastName: 'Person' }],
+            totalPrice: 48000,
+            tourAmount: 48000,
+            hotelAmount: 0,
+            status: 'pending',
+            bookingStatus: 'pending',
+            paymentStatus: 'pending',
+            createdAt: new Date(),
+            bundledHotelId: null,
+            bundledHotelName: null,
+        };
+        const db = dbAs(envs.live, OWNER, { email: 'owner@example.invalid' });
+        await assertSucceeds(setDoc(doc(db, 'bookings', 'live-shape-create'), deployedFrontendPayload));
+    });
+
+    test('transitional: the post-payment client update is denied - a path already dead in production', async () => {
+        // The old flow wrote razorpayOrderId/PaymentId and flipped the statuses
+        // via updateDoc after Razorpay succeeded. That callback cannot fire
+        // today: order creation needs the Functions /create-order endpoint, no
+        // Functions are deployed, and Hostinger has no /api rewrite. Denying it
+        // therefore removes nothing that currently works, and it is the reason
+        // 15 of 16 production bookings never gained payment fields.
+        const db = dbAs(envs.live, OWNER, { email: 'owner@example.invalid' });
+        await assertFails(updateDoc(doc(db, 'bookings', 'legacy-A'), {
+            razorpayPaymentId: 'pay_x', status: 'confirmed', paymentStatus: 'paid',
+        }));
+    });
+
+    test('transitional: an admin claim can still update a booking, so the dashboard works', async () => {
+        const db = dbAs(envs.live, 'uid-admin', { role: 'admin' });
+        await assertSucceeds(updateDoc(doc(db, 'bookings', 'legacy-A'), { bookingStatus: 'confirmed' }));
+    });
+
     test('final: the browser can no longer create a booking at all', async () => {
         const db = dbAs(envs.cutover, OWNER, { email: 'owner@example.invalid' });
         await assertFails(setDoc(doc(db, 'bookings', 'new-legacy-2'), legacyCreate));
