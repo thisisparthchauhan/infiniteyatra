@@ -26,13 +26,21 @@
  *   Application Default Credentials, e.g.
  *     gcloud auth application-default login
  *   No service-account JSON is read from, or written to, this repository.
+ *
+ *   SA-1B: this talks to the Identity Toolkit REST API rather than through
+ *   firebase-admin. The Admin SDK does not forward an `x-goog-user-project`
+ *   header, and identitytoolkit.googleapis.com rejects USER credentials that
+ *   arrive without one (HTTP 403, surfaced as auth/internal-error). Sending the
+ *   header ourselves is what lets `gcloud auth application-default login` work,
+ *   so provisioning needs no long-lived service-account key. Behaviour is
+ *   otherwise unchanged: named accounts only, dry run by default.
  */
 
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
-const { ALL_STAFF_ROLES, LEGACY_ROLE_VALUES, isStaffRole } = require('../functions/staffRoles.js');
+const { ALL_STAFF_ROLES, LEGACY_ROLE_VALUES, isStaffRole, isLegacyRole } = require('../functions/staffRoles.js');
 
 const PROJECT_ID = process.env.GCLOUD_PROJECT || 'infiniteyatra-iy';
 
@@ -40,6 +48,10 @@ const PROJECT_ID = process.env.GCLOUD_PROJECT || 'infiniteyatra-iy';
 
 const argv = process.argv.slice(2);
 const APPLY = argv.includes('--apply');
+// Read-only audit: report what each named account currently holds and write
+// nothing. Answers "does anyone still carry a legacy claim?" without having to
+// propose a role for accounts that should end up with no staff access at all.
+const CHECK = argv.includes('--check');
 const mappingIdx = argv.indexOf('--mapping');
 const mappingPath = mappingIdx !== -1 ? argv[mappingIdx + 1] : null;
 
@@ -54,9 +66,13 @@ const mask = (email) => {
 
 function usage(msg) {
     if (msg) console.error(`\n  ${msg}\n`);
-    console.error('  node scripts/staff-claims.mjs --mapping <file.json> [--apply]\n');
+    console.error('  node scripts/staff-claims.mjs --mapping <file.json> [--apply|--check]\n');
     console.error(`  Allowed roles: ${ALL_STAFF_ROLES.join(', ')}\n`);
     process.exit(1);
+}
+
+if (CHECK && APPLY) {
+    usage('--check is read-only and cannot be combined with --apply.');
 }
 
 if (!mappingPath) {
@@ -69,6 +85,10 @@ try {
 } catch (err) {
     usage(`Could not read the mapping file: ${err.message}`);
 }
+if (CHECK && Array.isArray(mapping)) {
+    // In check mode the proposed role is meaningless, so a plain list is allowed.
+    mapping = Object.fromEntries(mapping.map((email) => [email, null]));
+}
 if (typeof mapping !== 'object' || mapping === null || Array.isArray(mapping)) {
     usage('The mapping file must be a JSON object of { "email": "role" }.');
 }
@@ -78,7 +98,7 @@ if (entries.length === 0) usage('The mapping file is empty.');
 
 // Validate every requested role before touching anything, so a typo cannot
 // half-apply a batch.
-const invalid = entries.filter(([, role]) => !isStaffRole(role));
+const invalid = CHECK ? [] : entries.filter(([, role]) => !isStaffRole(role));
 if (invalid.length > 0) {
     console.error('\n  Refusing to run - unsupported role(s) requested:\n');
     for (const [email, role] of invalid) {
@@ -93,19 +113,72 @@ if (invalid.length > 0) {
 
 // --- run --------------------------------------------------------------------
 
-const admin = require('firebase-admin');
+const { GoogleAuth } = require('google-auth-library');
+
+const IDENTITY_TOOLKIT = `https://identitytoolkit.googleapis.com/v1/projects/${PROJECT_ID}`;
+
+/**
+ * One authenticated POST. The quota-project header is the whole reason this
+ * path exists; without it user ADC is refused by the API.
+ */
+async function idToolkit(client, path, body) {
+    const res = await client.request({
+        url: `${IDENTITY_TOOLKIT}${path}`,
+        method: 'POST',
+        data: body,
+        headers: { 'x-goog-user-project': PROJECT_ID },
+    });
+    return res.data || {};
+}
+
+/**
+ * Look up exactly ONE named address. There is no listing call anywhere in this
+ * file: an account you did not name is never read.
+ */
+async function getUserByEmail(client, email) {
+    const data = await idToolkit(client, '/accounts:lookup', { email: [email] });
+    const account = (data.users || [])[0];
+    if (!account) {
+        const err = new Error('no such account');
+        err.code = 'auth/user-not-found';
+        throw err;
+    }
+    // Only these two fields are ever read. The response also carries password
+    // hash material and provider records; none of it is touched or printed.
+    return { uid: account.localId, customClaims: parseClaims(account.customAttributes) };
+}
+
+function parseClaims(raw) {
+    if (typeof raw !== 'string' || raw === '') return {};
+    try { return JSON.parse(raw); } catch { return {}; }
+}
+
+/** Replaces the claim blob wholesale, so a stale `admin: true` cannot survive. */
+async function setCustomUserClaims(client, uid, claims) {
+    await idToolkit(client, '/accounts:update', {
+        localId: uid,
+        customAttributes: JSON.stringify(claims),
+    });
+}
+
+/** Reads the account back so an applied claim is verified, not assumed. */
+async function readBackRole(client, email) {
+    const user = await getUserByEmail(client, email);
+    return typeof user.customClaims.role === 'string' ? user.customClaims.role : '(none)';
+}
 
 async function main() {
-    try {
-        admin.initializeApp({ projectId: PROJECT_ID });
-    } catch { /* already initialised */ }
-
-    const auth = admin.auth();
+    const auth = new GoogleAuth({
+        scopes: ['https://www.googleapis.com/auth/cloud-platform'],
+        clientOptions: { quotaProjectId: PROJECT_ID },
+    });
+    const client = await auth.getClient();
 
     console.log(`\n  SA-1 staff claim alignment  -  project ${PROJECT_ID}`);
-    console.log(`  Mode: ${APPLY ? 'APPLY (writes custom claims)' : 'DRY RUN (no changes)'}`);
+    console.log(`  Mode: ${CHECK ? 'CHECK (read-only audit)' : APPLY ? 'APPLY (writes custom claims)' : 'DRY RUN (no changes)'}`);
     console.log(`  Accounts in mapping: ${entries.length}\n`);
-    console.log('  ' + 'Account'.padEnd(34) + 'Current'.padEnd(18) + 'Proposed'.padEnd(18) + 'Action');
+    console.log('  ' + 'Account'.padEnd(34) + 'Current'.padEnd(18)
+        + (CHECK ? 'Staff access?' : 'Proposed'.padEnd(18) + 'Action'));
     console.log('  ' + '-'.repeat(84));
 
     let changes = 0;
@@ -117,7 +190,7 @@ async function main() {
         let user = null;
 
         try {
-            user = await auth.getUserByEmail(email);
+            user = await getUserByEmail(client, email);
             const claims = user.customClaims || {};
             // Only the role is ever read or printed. No other claim, no token.
             current = typeof claims.role === 'string' ? claims.role
@@ -125,8 +198,18 @@ async function main() {
                     : '(none)';
             action = current === proposed ? 'none - already correct' : (APPLY ? 'UPDATED' : 'would update');
         } catch (err) {
-            action = err.code === 'auth/user-not-found' ? 'SKIP - not found' : `ERROR ${err.code || ''}`;
+            action = err.code === 'auth/user-not-found' ? 'SKIP - not found' : `ERROR ${err.code || errText(err)}`;
             failures += 1;
+        }
+
+        if (CHECK) {
+            const role = user ? (user.customClaims || {}).role : null;
+            const verdict = !user ? '-'
+                : (user.customClaims || {}).admin === true || isStaffRole(role)
+                    ? 'YES - staff'
+                    : isLegacyRole(role) ? 'NO - legacy claim, recognised by nothing' : 'no';
+            console.log('  ' + mask(email).padEnd(34) + String(current).padEnd(18) + verdict);
+            continue;
         }
 
         if (user && current !== proposed) {
@@ -134,9 +217,15 @@ async function main() {
             if (APPLY) {
                 try {
                     // Replace claims wholesale so a stale `admin: true` cannot survive.
-                    await auth.setCustomUserClaims(user.uid, { role: proposed });
+                    await setCustomUserClaims(client, user.uid, { role: proposed });
+                    // Verify against the server rather than trusting the write.
+                    const confirmed = await readBackRole(client, email);
+                    action = confirmed === proposed
+                        ? `UPDATED - verified ${confirmed}`
+                        : `MISMATCH - server says ${confirmed}`;
+                    if (confirmed !== proposed) failures += 1;
                 } catch (err) {
-                    action = `ERROR ${err.code || err.message}`;
+                    action = `ERROR ${err.code || errText(err)}`;
                     failures += 1;
                 }
             }
@@ -146,6 +235,12 @@ async function main() {
     }
 
     console.log('  ' + '-'.repeat(84));
+
+    if (CHECK) {
+        console.log(`\n  Read-only audit of ${entries.length} named account(s); nothing was written.\n`);
+        return;
+    }
+
     console.log(`\n  ${changes} account(s) need a change; ${failures} problem(s).`);
 
     if (!APPLY) {
@@ -158,8 +253,14 @@ async function main() {
     }
 }
 
+/** Short, flat error text. Never a stack, never a response body. */
+function errText(err) {
+    const status = err?.response?.status;
+    return status ? `HTTP ${status}` : String(err?.message || 'unknown').split('\n')[0].slice(0, 120);
+}
+
 main().catch((err) => {
     // Never print a stack: it can carry credential paths and internals.
-    console.error(`\n  Failed: ${err.code || err.message}\n`);
+    console.error(`\n  Failed: ${err.code || errText(err)}\n`);
     process.exit(1);
 });

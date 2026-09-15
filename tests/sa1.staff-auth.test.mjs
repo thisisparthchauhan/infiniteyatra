@@ -300,16 +300,35 @@ test('[17] the provisioning tool is dry-run unless --apply is given', () => {
 
 test('[18] it refuses to run without an explicit mapping, and never infers a role', () => {
     assert.match(TOOL, /A mapping file is required\. This tool never infers a role/);
-    assert.match(TOOL, /const invalid = entries\.filter\(\(\[, role\]\) => !isStaffRole\(role\)\)/);
+    assert.match(TOOL, /entries\.filter\(\(\[, role\]\) => !isStaffRole\(role\)\)/);
     assert.match(TOOL, /legacy value - choose a canonical role deliberately/);
 });
 
+test('[18b] the read-only check mode cannot become a way to write an unvalidated role', () => {
+    // SA-1B added --check, which reports current claims and proposes nothing.
+    // Role validation is skipped there only because nothing is written, so the
+    // two flags must be mutually exclusive.
+    assert.match(TOOL, /--check is read-only and cannot be combined with --apply/);
+    assert.match(TOOL, /const invalid = CHECK \? \[\] : entries\.filter/,
+        'validation may be skipped only in check mode');
+    assert.match(TOOL, /if \(CHECK && APPLY\)/);
+    // Check mode must return before reaching the write branch.
+    const checkBlock = TOOL.match(/if \(CHECK\) \{[\s\S]*?continue;\s*\}/);
+    assert.ok(checkBlock, 'check mode must short-circuit each account before any write');
+});
+
 test('[19] it never exports or enumerates the auth database', () => {
-    for (const forbidden of ['listUsers', 'auth:export', 'exportUsers', 'downloadUsers']) {
+    // Admin SDK enumeration, and - since SA-1B moved the tool onto the Identity
+    // Toolkit REST API - the REST endpoints that can return more than one named
+    // account.
+    for (const forbidden of ['listUsers', 'auth:export', 'exportUsers', 'downloadUsers',
+        'accounts:batchGet', 'accounts:query', 'accounts:batchDelete']) {
         assert.ok(!TOOL.includes(forbidden), `the tool must not use ${forbidden}`);
     }
-    // it looks up only named accounts
-    assert.match(TOOL, /getUserByEmail\(email\)/);
+    // It looks up only named accounts, one address per request.
+    assert.match(TOOL, /getUserByEmail\(client, email\)/);
+    assert.match(TOOL, /'\/accounts:lookup', \{ email: \[email\] \}/,
+        'the lookup must carry exactly the one address it was asked for');
 });
 
 test('[20] it emits no secrets, tokens, hashes or full addresses', () => {
