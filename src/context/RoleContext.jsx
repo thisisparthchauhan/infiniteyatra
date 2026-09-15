@@ -1,75 +1,101 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { USER_ROLES, ROLE_PERMISSIONS, WORKSPACES, ROLE_WORKSPACE_MAP } from '../config/roles';
+import React, { createContext, useContext, useMemo, useState, useEffect } from 'react';
+import { USER_ROLES, WORKSPACES } from '../config/roles';
+import {
+    canSeeModule,
+    firstAllowedModule,
+    isKnownWorkspace,
+    resolveWorkspace,
+    uiRoleForClaim,
+} from '../config/adminWorkspace';
+import { useAuth } from './AuthContext';
+
+/**
+ * SA-1B — ADMIN DASHBOARD WORKSPACE STATE. NOT AN AUTHORIZATION BOUNDARY.
+ *
+ * What this context decides: which dashboard modules are RENDERED.
+ * What it must never decide: what a user is PERMITTED to do.
+ *
+ * Before SA-1B this seeded `currentRole` from localStorage and defaulted to
+ * SUPER_ADMIN, so the UI's notion of "who am I" was attacker-writable and
+ * defaulted to the most privileged value. It sat behind the admin-claim gate on
+ * /admin, so it granted nothing extra in practice — but it was one reused import
+ * away from becoming a real bypass, and PB-5 is about to add a non-admin staff
+ * surface.
+ *
+ * Now `currentRole` is DERIVED from the verified ID token custom claim (surfaced
+ * by AuthContext as `claimRole`) and there is no setter. localStorage persists
+ * only a workspace *preference*; it is validated on read and honoured only for
+ * an admin, who can reach every workspace anyway. No claim means no role, and
+ * `hasPermission()` is then false for every module.
+ *
+ * The decision logic lives in src/config/adminWorkspace.js so it can be tested
+ * directly — see tests/sa1b.rolecontext.test.mjs.
+ */
 
 const RoleContext = createContext();
 
+const WORKSPACE_PREFERENCE_KEY = 'iy_admin_workspace';
+
+const readWorkspacePreference = () => {
+    try {
+        const saved = localStorage.getItem(WORKSPACE_PREFERENCE_KEY);
+        return isKnownWorkspace(saved) ? saved : null;
+    } catch {
+        // Private mode or blocked storage: a missing preference is not an error.
+        return null;
+    }
+};
+
 export const RoleProvider = ({ children }) => {
-    // Default to Super Admin for dev, or load from localStorage
-    const [currentRole, setCurrentRole] = useState(() => {
-        return localStorage.getItem('iy_admin_role') || USER_ROLES.SUPER_ADMIN;
-    });
+    const { currentUser } = useAuth();
 
-    const [currentWorkspace, setCurrentWorkspace] = useState(() => {
-        const savedWorkspace = localStorage.getItem('iy_admin_workspace');
-        // Initial load: prefer saved workspace if allowed for current role, otherwise default
-        return savedWorkspace || ROLE_WORKSPACE_MAP[currentRole] || WORKSPACES.ADMIN_DASHBOARD.id;
-    });
+    // The verified claim is the only input.
+    const claimRole = currentUser?.claimRole || null;
+    const isAdmin = currentUser?.isAdmin === true;
 
-    useEffect(() => {
-        localStorage.setItem('iy_admin_role', currentRole);
+    // Fails closed: unauthenticated, customer, or a stale legacy claim such as
+    // `operations` all resolve to null.
+    const currentRole = useMemo(
+        () => uiRoleForClaim({ isAdmin, claimRole }),
+        [isAdmin, claimRole],
+    );
 
-        // Strict Rule: Non-Super Admins are locked to their assigned workspace
-        if (currentRole !== USER_ROLES.SUPER_ADMIN) {
-            const assignedWorkspace = ROLE_WORKSPACE_MAP[currentRole];
-            // Only force switch if NOT in Admin Dashboard (allow previewing Admin Dashboard to auto-upgrade logic below to catch it)
-            // Actually, if we are Hotel Manager, we shoudn't be in Admin Dashboard unless we switched.
-            // If we are in Admin Dashboard, we must be Super Admin.
-            if (currentWorkspace !== assignedWorkspace && currentWorkspace !== WORKSPACES.ADMIN_DASHBOARD.id) {
-                setCurrentWorkspace(assignedWorkspace);
-            }
-        }
-    }, [currentRole]);
+    const [preference, setPreference] = useState(readWorkspacePreference);
 
-    // Safety Net: If in Admin Workspace, MUST be Super Admin
-    useEffect(() => {
-        if (currentWorkspace === WORKSPACES.ADMIN_DASHBOARD.id && currentRole !== USER_ROLES.SUPER_ADMIN) {
-            setCurrentRole(USER_ROLES.SUPER_ADMIN);
-        }
-    }, [currentWorkspace, currentRole]);
+    const currentWorkspace = useMemo(
+        () => resolveWorkspace({ role: currentRole, isAdmin, preference }),
+        [currentRole, isAdmin, preference],
+    );
 
     useEffect(() => {
-        localStorage.setItem('iy_admin_workspace', currentWorkspace);
-    }, [currentWorkspace]);
+        if (!isAdmin || !currentWorkspace) return;
+        try {
+            localStorage.setItem(WORKSPACE_PREFERENCE_KEY, currentWorkspace);
+        } catch { /* storage unavailable; the preference simply is not remembered */ }
+    }, [isAdmin, currentWorkspace]);
 
-    const hasPermission = (featureId) => {
-        // Core Access Check:
-        // 1. Is the feature part of the CURRENT WORKSPACE?
-        // 2. Does the user's role have permission? (Legacy check, usually redundant if workspaces are strict)
-
-        const workspaceConfig = Object.values(WORKSPACES).find(w => w.id === currentWorkspace);
-        if (!workspaceConfig) return false;
-
-        const isModuleInWorkspace = workspaceConfig.modules.includes(featureId);
-        const hasRolePermission = ROLE_PERMISSIONS[currentRole]?.includes(featureId);
-
-        return isModuleInWorkspace && hasRolePermission;
+    /** Ignored for non-admins, who have exactly one workspace. */
+    const setCurrentWorkspace = (workspaceId) => {
+        if (!isAdmin || !isKnownWorkspace(workspaceId)) return;
+        setPreference(workspaceId);
     };
 
-    const getFirstAllowedTab = () => {
-        const workspaceConfig = Object.values(WORKSPACES).find(w => w.id === currentWorkspace);
-        return workspaceConfig?.modules[0] || 'overview';
-    };
+    const hasPermission = (featureId) =>
+        canSeeModule({ role: currentRole, workspace: currentWorkspace, featureId });
+
+    const getFirstAllowedTab = () =>
+        firstAllowedModule({ role: currentRole, workspace: currentWorkspace });
 
     return (
         <RoleContext.Provider value={{
             currentRole,
-            setCurrentRole,
             currentWorkspace,
             setCurrentWorkspace,
             hasPermission,
             getFirstAllowedTab,
+            isAdmin,
             roles: USER_ROLES,
-            workspaces: WORKSPACES
+            workspaces: WORKSPACES,
         }}>
             {children}
         </RoleContext.Provider>

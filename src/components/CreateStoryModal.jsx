@@ -12,7 +12,9 @@ const CreateStoryModal = ({ onClose, onStoryCreated, storyToEdit = null }) => {
     const { currentUser } = useAuth();
     const { showToast } = useToast();
     const [authorIdentity, setAuthorIdentity] = useState('Parth Chauhan (Founder)');
-    const isAdmin = currentUser?.email === 'chauhanparth165@gmail.com';
+    // SA-1B - was a hardcoded email compare. `isAdmin` comes from the verified
+    // ID token claim (AuthContext). Firestore rules re-check it on every write.
+    const isAdmin = currentUser?.isAdmin === true;
 
     // Form State
     const [formData, setFormData] = useState({

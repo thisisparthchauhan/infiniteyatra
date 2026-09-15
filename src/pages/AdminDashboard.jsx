@@ -48,7 +48,7 @@ const AdminCycleBookings = lazy(() => import('../components/admin/cruise/AdminCy
 
 
 const AdminDashboard = () => {
-    const { hasPermission, getFirstAllowedTab, currentRole, setCurrentRole, currentWorkspace } = useRole();
+    const { hasPermission, getFirstAllowedTab, currentRole, currentWorkspace } = useRole();
     const { currentUser } = useAuth();
     const [activeTab, setActiveTab] = useState(getFirstAllowedTab());
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -111,7 +111,7 @@ const AdminDashboard = () => {
                     <ShieldAlert size={64} className="text-red-500 mb-6" />
                     <h2 className="text-3xl font-bold text-white mb-2">Access Denied</h2>
                     <p className="text-slate-400 max-w-md">
-                        Your role as <strong>{currentRole}</strong> does not have permission to view this section.
+                        Your role as <strong>{currentRole || 'an unassigned account'}</strong> does not have permission to view this section.
                     </p>
                 </div>
             );

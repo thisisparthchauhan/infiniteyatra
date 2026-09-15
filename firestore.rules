@@ -200,7 +200,10 @@ service cloud.firestore {
                     && isShortString(request.resource.data.get('phone', ''), 40)
                     && isShortString(request.resource.data.get('message', ''), 5000)
                     && (!('email' in request.resource.data) || isValidEmail(request.resource.data.email));
-      allow read, update, delete: if request.auth != null && request.auth.token.email == 'chauhanparth165@gmail.com';
+      // SA-1B - was a hardcoded token.email grant. Enquiry records are CRM
+      // data; this matches the `leads` collection below, which was already
+      // admin-only. Deliberately NOT widened to booking_manager.
+      allow read, update, delete: if isAdmin();
     }
     match /leads/{leadId} {
       // Unified lead-capture collection written by every public inquiry form
@@ -221,7 +224,9 @@ service cloud.firestore {
       allow create: if request.resource.data.size() <= 6
                     && 'email' in request.resource.data
                     && isValidEmail(request.resource.data.email);
-      allow read, update, delete: if request.auth != null && request.auth.token.email == 'chauhanparth165@gmail.com';
+      // SA-1B - was a hardcoded token.email grant. Subscriber addresses are
+      // personal data with no scoped-role owner; admin only.
+      allow read, update, delete: if isAdmin();
     }
 
     // ───── Ascension Project — Get Involved signup form ─────
@@ -269,7 +274,12 @@ service cloud.firestore {
     match /travelStories/{storyId} {
       allow read: if true;
       allow create: if request.auth != null && request.resource.data.authorId == request.auth.uid;
-      allow update, delete: if request.auth != null && (resource.data.authorId == request.auth.uid || request.auth.token.email == 'chauhanparth165@gmail.com');
+      // SA-1B - authors still manage their own story. Moderation of anyone
+      // else's was a hardcoded token.email grant and is now the admin claim.
+      // `content_manager` owns "stories" in the role catalogue but is wired to
+      // no rule, route or guard and is held by no account, so granting it here
+      // would widen access rather than preserve it. Left to a scoped-content task.
+      allow update, delete: if isAdmin() || (request.auth != null && resource.data.authorId == request.auth.uid);
     }
   }
 }

@@ -6,7 +6,7 @@ import { useRole } from '../../context/RoleContext';
 import { MENU_ITEMS } from '../../config/roles';
 
 const AdminSidebar = ({ activeTab, setActiveTab, isOpen, setIsOpen }) => {
-    const { currentRole, currentWorkspace, setCurrentWorkspace, hasPermission, roles, workspaces } = useRole();
+    const { currentRole, currentWorkspace, setCurrentWorkspace, hasPermission, isAdmin, roles, workspaces } = useRole();
 
     const [isTransportExpanded, setIsTransportExpanded] = useState(false);
 
@@ -69,20 +69,15 @@ const AdminSidebar = ({ activeTab, setActiveTab, isOpen, setIsOpen }) => {
                             <ChevronDown size={14} className="text-slate-400" />
                         </button>
 
-                        {/* Dropdown for All (Dev/Demo Mode) */}
+                        {/* SA-1B - only an admin can browse workspaces. setCurrentWorkspace
+                            ignores everyone else, so this is presentation, not the gate. */}
+                        {isAdmin && (
                         <div className="absolute top-full left-0 w-full pt-2 hidden group-hover:block z-50">
                             <div className="bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl overflow-hidden ring-1 ring-black">
                                 {Object.values(workspaces).map(workspace => (
                                     <button
                                         key={workspace.id}
-                                        onClick={() => {
-                                            setCurrentWorkspace(workspace.id);
-                                            // Auto-restore Super Admin role if switching to Admin Dashboard
-                                            // This ensures we don't get stuck in a restricted role
-                                            if (workspace.id === workspaces.ADMIN_DASHBOARD.id) {
-                                                setCurrentRole(roles.SUPER_ADMIN);
-                                            }
-                                        }}
+                                        onClick={() => setCurrentWorkspace(workspace.id)}
                                         className={`w-full text-left px-4 py-3 text-xs transition-colors border-l-2 ${currentWorkspace === workspace.id ? 'bg-blue-900/20 border-blue-500 text-white' : 'border-transparent text-slate-400 hover:bg-white/5 hover:text-white'}`}
                                     >
                                         {workspace.label}
@@ -90,6 +85,7 @@ const AdminSidebar = ({ activeTab, setActiveTab, isOpen, setIsOpen }) => {
                                 ))}
                             </div>
                         </div>
+                        )}
                     </div>
                 </div>
 

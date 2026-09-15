@@ -114,8 +114,10 @@ function App() {
       <SplashScreen />
       <HelmetProvider>
       <ToastProvider>
-        <RoleProvider>
-          <AuthProvider>
+        {/* SA-1B - AuthProvider must sit OUTSIDE RoleProvider: the dashboard
+            workspace role is derived from the verified ID token claim. */}
+        <AuthProvider>
+          <RoleProvider>
             <WishlistProvider>
               <CurrencyProvider>
                 <PackageProvider>
@@ -253,8 +255,8 @@ function App() {
                 </PackageProvider>
               </CurrencyProvider>
             </WishlistProvider>
-          </AuthProvider>
-        </RoleProvider>
+          </RoleProvider>
+        </AuthProvider>
       </ToastProvider>
     </HelmetProvider>
     </>

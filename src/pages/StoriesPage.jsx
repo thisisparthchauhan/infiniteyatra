@@ -379,7 +379,7 @@ const StoriesPage = () => {
                                         <StoryCard
                                             story={story}
                                             onLike={handleLike}
-                                            onEdit={(currentUser?.uid === story.authorId || currentUser?.email === 'chauhanparth165@gmail.com') ? () => handleEditStory(story) : undefined}
+                                            onEdit={(currentUser?.uid === story.authorId || currentUser?.isAdmin === true) ? () => handleEditStory(story) : undefined}
                                         />
                                     </motion.div>
                                 ))}

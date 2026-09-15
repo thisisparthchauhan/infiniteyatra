@@ -22,7 +22,9 @@
     "test:p0-05": "node --test tests/p0-05.false-invoice.test.mjs",
     "test": "playwright test",
     "test:ui": "playwright test --ui",
-    "deploy": "vite build && firebase deploy"
+    "deploy": "vite build && firebase deploy",
+    "test:sa1b": "node --test tests/sa1b.rolecontext.test.mjs",
+    "test:sa1b-rules": "firebase emulators:exec --project demo-infinite-yatra-sa1b --only firestore \"node --test tests/sa1b.rules.test.mjs\""
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
