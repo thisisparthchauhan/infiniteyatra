@@ -43,6 +43,7 @@ const {
 } = require('./waf');
 
 const { registerPackageBookingRoutes } = require('./packageBookings');
+const { isStaffRole, ALL_STAFF_ROLES } = require('./staffRoles');
 
 admin.initializeApp();
 const db = admin.firestore();
@@ -764,6 +765,20 @@ exports.createStaffAccount = functions.firestore
     .onCreate(async (snap, context) => {
         const inviteData = snap.data();
         const { email, password, role, name, phone } = inviteData;
+
+        // SA-1: the invite document is client-written, so the role it carries is
+        // untrusted input. Only a canonical staff role may ever become a custom
+        // claim — before this check, any string in the invite (including a
+        // typo, or a value no rule recognises such as 'operations') was issued
+        // verbatim and left the account with an admin UI and no data access.
+        if (!isStaffRole(role)) {
+            console.error('[sa1] staff invite rejected: unsupported role', role);
+            await snap.ref.update({
+                status: 'rejected',
+                error: `Unsupported role. Allowed: ${ALL_STAFF_ROLES.join(', ')}`,
+            });
+            return { error: 'Unsupported role' };
+        }
 
         // generated password if not provided
         const tempPassword = password || Math.random().toString(36).slice(-8) + "Aa1!";

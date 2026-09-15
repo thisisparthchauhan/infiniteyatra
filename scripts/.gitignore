@@ -1,0 +1,5 @@
+# SA-1 — staff claim mapping files.
+#
+# These contain real staff email addresses and are operator input, not source.
+# Kept here rather than in the root .gitignore so this rule stays isolated.
+staff-roles*.json

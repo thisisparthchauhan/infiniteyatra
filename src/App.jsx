@@ -186,10 +186,23 @@ function App() {
                         />
                         <Route path="/trip/:tripId" element={<TripDetails />} />
                         <Route path="/plan/:shareId" element={<SharedPlan />} />
+                        {/*
+                          SA-1: 'ops' and 'finance' were never issuable claims and
+                          matched no Firestore or Storage rule, so they granted a
+                          dashboard the data layer then refused.
+
+                          Narrowed to 'admin' rather than opened to all six staff
+                          roles: /admin mounts the ENTIRE dashboard - hotels,
+                          transport, finance, content, packages and staff
+                          management - so admitting booking_manager here would hand
+                          booking staff every unrelated module. PB-5 adds a
+                          booking-scoped surface for admin + booking_manager
+                          instead. See IY_STAFF_AUTHORIZATION.md.
+                        */}
                         <Route
                           path="/admin"
                           element={
-                            <RoleRoute allowedRoles={['admin', 'ops', 'finance']}>
+                            <RoleRoute allowedRoles={['admin']}>
                               <AdminDashboard />
                             </RoleRoute>
                           }

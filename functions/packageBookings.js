@@ -39,6 +39,7 @@ const { generateCandidate } = require('./packageBookingReference');
 const { validateCreateBookingRequest } = require('./packageBookingValidation');
 const { registerDocumentRoutes } = require('./packageBookingDocuments');
 const { registerSummaryRoutes } = require('./packageBookingSummary');
+const { isStaffRole } = require('./staffRoles');
 
 const BOOKINGS = 'bookings';
 const REFERENCES = 'booking_references';
@@ -127,12 +128,67 @@ async function requireFirebaseUser(req, res, next) {
 
     try {
         const decoded = await deps().auth().verifyIdToken(idToken);
-        req.authUser = { uid: decoded.uid, email: decoded.email || null };
+        // SA-1: the role comes from the verified token claim and nothing else.
+        // No email fallback, no users.role lookup — those are profile data, not
+        // authorization. `admin: true` is accepted alongside `role: 'admin'`
+        // because firestore.rules and storage.rules both honour either form.
+        req.authUser = {
+            uid: decoded.uid,
+            email: decoded.email || null,
+            role: typeof decoded.role === 'string' ? decoded.role : null,
+            isAdminClaim: decoded.admin === true || decoded.role === 'admin',
+        };
         return next();
     } catch (err) {
         console.warn('[pb1] ID token verification failed:', err.code || err.message);
         return res.status(401).json({ error: 'Invalid or expired authentication token' });
     }
+}
+
+/**
+ * SA-1 — Staff authorization guard. The primitive PB-5 builds on.
+ *
+ * Compose AFTER requireFirebaseUser, which has already verified the ID token:
+ *
+ *   app.get(path, requireFirebaseUser, requireStaff(['admin','booking_manager']), handler)
+ *
+ * Authorization comes only from the verified custom claim. There is deliberately
+ * no fallback to an email address or to `users.role`: both are reachable by
+ * paths that are not security boundaries, and SA-1 exists because the codebase
+ * had drifted into trusting them.
+ *
+ * The 403 body is intentionally uninformative — it does not name the required
+ * role or the caller's role, so a probing client learns nothing about the
+ * permission model.
+ */
+function requireStaff(allowedRoles) {
+    const allowed = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
+
+    // Fail loudly at startup rather than silently allowing nothing at runtime.
+    for (const r of allowed) {
+        if (!isStaffRole(r)) {
+            throw new Error(`requireStaff: "${r}" is not a canonical staff role`);
+        }
+    }
+
+    return function staffGuard(req, res, next) {
+        const actor = req.authUser;
+        if (!actor) {
+            // requireStaff was mounted without requireFirebaseUser in front.
+            console.error('[sa1] requireStaff used without requireFirebaseUser');
+            return res.status(401).json({ error: 'Authentication required' });
+        }
+
+        // An `admin` claim satisfies every staff guard, matching isAdmin() in
+        // both rules files.
+        const permitted = actor.isAdminClaim || (isStaffRole(actor.role) && allowed.includes(actor.role));
+
+        if (!permitted) {
+            console.warn('[sa1] staff authorization denied for uid', actor.uid, 'role', actor.role || '(none)');
+            return res.status(403).json({ error: 'You do not have access to this resource' });
+        }
+        return next();
+    };
 }
 
 // ---------------------------------------------------------------------------
@@ -535,6 +591,7 @@ module.exports = {
     PAYMENT_STATUS,
     DOCUMENT_STATUS,
     requireFirebaseUser,
+    requireStaff,
     createPackageBooking,
     getOwnBooking,
     registerPackageBookingRoutes,

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ALL_STAFF_ROLES, STAFF_ROLE_LABELS, STAFF_ROLE_DESCRIPTIONS } from '../../config/staffRoles';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, UserPlus, Shield, Mail, Phone, Loader } from 'lucide-react';
 import { db } from '../../firebase';
@@ -12,7 +13,7 @@ const AddStaffModal = ({ onClose, onSuccess }) => {
         lastName: '',
         email: '',
         phone: '',
-        role: 'operations' // internal default
+        role: 'booking_manager' // canonical machine role (SA-1)
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -180,26 +181,32 @@ const AddStaffModal = ({ onClose, onSuccess }) => {
                     <div className="space-y-1">
                         <label className="text-xs font-semibold text-slate-400 uppercase">Assign Role</label>
                         <div className="grid grid-cols-2 gap-3">
-                            {['admin', 'operations', 'finance', 'guide'].map((role) => (
+                            {/*
+                                SA-1: these values become the Firebase custom claim,
+                                which is the authorization boundary. They must be the
+                                canonical machine roles the security rules recognise -
+                                the previous list issued 'operations', 'finance' and
+                                'guide', none of which any rule accepts, so invited
+                                staff received an admin UI with no data access.
+                                The label shown is separate from the value sent.
+                            */}
+                            {ALL_STAFF_ROLES.map((role) => (
                                 <button
                                     key={role}
                                     type="button"
                                     onClick={() => setFormData({ ...formData, role })}
-                                    className={`py-2 px-3 rounded-lg border text-sm font-medium capitalize transition-all ${formData.role === role
+                                    className={`py-2 px-3 rounded-lg border text-sm font-medium transition-all ${formData.role === role
                                         ? 'bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-500/25'
                                         : 'bg-white/5 border-white/10 text-slate-400 hover:bg-white/10'
                                         }`}
                                 >
-                                    {role}
+                                    {STAFF_ROLE_LABELS[role]}
                                 </button>
                             ))}
                         </div>
                         <p className="text-[10px] text-slate-500 mt-1 flex items-center gap-1">
                             <Shield size={10} />
-                            {formData.role === 'admin' ? 'Full Access to all modules.' :
-                                formData.role === 'operations' ? 'Can manage trips, drivers, and bookings.' :
-                                    formData.role === 'finance' ? 'Access to payments and invoices only.' :
-                                        'Limited access for trip guides.'}
+                            {STAFF_ROLE_DESCRIPTIONS[formData.role] || 'Select a role to see what it grants.'}
                         </p>
                     </div>
 

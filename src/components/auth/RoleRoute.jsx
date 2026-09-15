@@ -18,14 +18,19 @@ const RoleRoute = ({ children, allowedRoles = [] }) => {
         return <Navigate to="/login" />;
     }
 
-    // Check if user has one of the allowed roles
-    // If allowedRoles is empty, it means ANY logged-in user can access (if that was the intent, but usually we list roles)
-    // If currentUser.role is undefined, default to 'customer'
-    const userRole = currentUser.role || 'customer';
+    // SA-1 — the role here is the verified ID token custom claim, surfaced by
+    // AuthContext as `claimRole`. The previous direct email grant and the
+    // Firestore `users.role` fallback are gone: neither is a security boundary,
+    // and both granted UI access that the data layer then refused.
+    //
+    // This gate is UX ONLY. It decides what to render, never what is permitted.
+    // Every protected action is authorised again on the server against the same
+    // claim (see requireStaff in functions/packageBookings.js).
+    const claimRole = currentUser.claimRole || null;
 
-    // Admin Override: Admins can usually access everything, but let's be explicit
-    // If 'admin' is in the allowed list, or if the user IS an admin (super user)
-    const hasPermission = allowedRoles.includes(userRole) || currentUser.isAdmin === true || userRole === 'admin' || currentUser.email === 'chauhanparth165@gmail.com';
+    // An admin claim satisfies any staff route, matching isAdmin() in both
+    // rules files.
+    const hasPermission = currentUser.isAdmin === true || (claimRole !== null && allowedRoles.includes(claimRole));
 
     if (!hasPermission) {
         return (
@@ -41,7 +46,7 @@ const RoleRoute = ({ children, allowedRoles = [] }) => {
                     <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Your Account</p>
                     <p className="font-medium text-white">{currentUser.email}</p>
                     <div className="mt-2 text-xs">
-                        Role: <span className="text-blue-400 font-mono bg-blue-500/10 px-2 py-0.5 rounded">{userRole}</span>
+                        Role: <span className="text-blue-400 font-mono bg-blue-500/10 px-2 py-0.5 rounded">{claimRole || 'none'}</span>
                     </div>
                 </div>
                 <Navigate to="/" />

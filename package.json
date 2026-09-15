@@ -11,6 +11,7 @@
     "preview": "vite preview",
     "security:secrets": "bash scripts/scan-secrets.sh",
     "test:firestore-rules": "firebase emulators:exec --project demo-infinite-yatra-rules --only firestore \"node --test tests/firestore.rules.test.mjs\"",
+    "test:sa1": "node --test tests/sa1.staff-auth.test.mjs",
     "test:pb4-rules": "firebase emulators:exec --project demo-infinite-yatra-pb4 --only firestore,storage \"node --test tests/pb4.rules.test.mjs\"",
     "test:pb4": "firebase emulators:exec --project demo-infinite-yatra-pb4 --only firestore,auth,storage \"node --test functions/test/emulator/packageBookingSummary.test.js\"",
     "test:pb3": "firebase emulators:exec --project demo-infinite-yatra-pb3 --only firestore,auth,storage \"node --test functions/test/emulator/packageBookingDocuments.test.js\"",
