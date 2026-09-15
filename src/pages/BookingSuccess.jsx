@@ -57,8 +57,18 @@ const BookingSuccess = () => {
     const [summaryError, setSummaryError] = useState('');
     const [downloading, setDownloading] = useState(false);
 
+    // CUTOVER - the server states what this booking can do. Storage-backed
+    // features are off until the production bucket exists, and a legacy booking
+    // can never have them. Defaulting to `true` here would mean asking for a
+    // summary that cannot be produced and offering an upload that cannot work.
+    // Absent capabilities are treated as OFF, so an older API response degrades
+    // to "unavailable" rather than to a broken control.
+    const canBookingSummary = booking?.capabilities?.bookingSummary === true;
+    const canDocumentUpload = booking?.capabilities?.documentUpload === true;
+    const isLegacyBooking = booking?.legacy === true;
+
     useEffect(() => {
-        if (!booking?.id) return;
+        if (!booking?.id || !canBookingSummary) return;
         let cancelled = false;
         // Safe to call on every view: an unchanged booking reuses its existing
         // summary and consumes no new number.
@@ -66,7 +76,7 @@ const BookingSuccess = () => {
             .then(({ summary: s }) => { if (!cancelled) { setSummary(s); setSummaryError(''); } })
             .catch((err) => { if (!cancelled) setSummaryError(toSummaryMessage(err)); });
         return () => { cancelled = true; };
-    }, [booking?.id]);
+    }, [booking?.id, canBookingSummary]);
 
     const handleDownloadSummary = async () => {
         if (!booking?.id) return;
@@ -170,13 +180,25 @@ const BookingSuccess = () => {
                         </div>
                     </div>
 
-                    {booking?.id && (
+                    {booking?.id && canDocumentUpload && (
                         <div className="bg-white border border-slate-200 rounded-2xl p-6 mb-8 text-left">
                             <BookingDocumentsUpload
                                 bookingId={booking.id}
                                 travellers={booking.travellers || []}
                                 onStatusChange={setDocumentStatus}
                             />
+                        </div>
+                    )}
+
+                    {/* CUTOVER - no upload control is rendered at all when the
+                        capability is off. A disabled passport/Aadhaar field would
+                        read as a fault, and worse, would invite someone to try. */}
+                    {booking?.id && !canDocumentUpload && !isLegacyBooking && (
+                        <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 mb-8 text-left">
+                            <p className="text-sm text-slate-600">
+                                Traveller document upload isn&apos;t available yet. Our team will collect
+                                any documents you need to provide when they confirm your trip.
+                            </p>
                         </div>
                     )}
 

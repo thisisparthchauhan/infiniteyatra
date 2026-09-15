@@ -268,6 +268,18 @@ describe('[21] storage-disabled mode is graceful', () => {
         assert.equal(cap.bookingRead, true);
     });
 
+    test('reported capabilities and route behaviour come from one source', () => {
+        // Regression: the route guard read the app's env while the booking read
+        // reported capabilities from process.env. With storage off, the API
+        // could answer `bookingSummary: true` and then 503 the same feature.
+        const api = read('../functions/bookingApi.js');
+        assert.match(api, /const resolved = capabilities\(env\);/);
+        assert.match(api, /req\.bookingCapabilities = resolved/);
+        const pb = read('../functions/packageBookings.js');
+        assert.match(pb, /req\.bookingCapabilities \|\| capabilities\(\)/,
+            'the booking read must prefer the request-scoped capability set');
+    });
+
     test('with storage on, the routes are reachable again', async () => {
         const on = await serve(createBookingApiApp({ env: { PB_STORAGE_ENABLED: 'true' } }));
         try {

@@ -15,7 +15,7 @@ import { readFileSync } from 'node:fs';
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { LEGACY_FIXTURES, canonicalBooking } from './fixtures/legacyBookings.mjs';
+import { LEGACY_FIXTURES, canonicalBooking, PRODUCTION_FIELD_UNION } from './fixtures/legacyBookings.mjs';
 import * as client from '../src/config/bookingSchema.js';
 import { buildBookingApiUrl, normaliseBase } from '../src/services/bookingApiUrl.js';
 
@@ -179,6 +179,63 @@ describe('[4] legacy projection is allowlisted', () => {
 });
 
 // ---------------------------------------------------------------------------
+// Production shape coverage (added during the cutover rehearsal)
+// ---------------------------------------------------------------------------
+
+describe('the real production booking shapes are covered', () => {
+    test('every field name seen in production appears in at least one fixture', () => {
+        const covered = new Set();
+        for (const b of Object.values(LEGACY_FIXTURES)) Object.keys(b).forEach((k) => covered.add(k));
+        const missing = PRODUCTION_FIELD_UNION.filter((f) => !covered.has(f));
+        assert.deepEqual(missing, [], `fixtures do not cover production fields: ${missing.join(', ')}`);
+    });
+
+    test('Razorpay payment identifiers never reach the customer projection', () => {
+        // One production record carries these. The projection is an allowlist,
+        // so they are excluded by construction rather than by a denylist that
+        // someone has to remember to update.
+        const p = server.toLegacyCustomerBooking('x', LEGACY_FIXTURES.E);
+        const flat = JSON.stringify(p);
+        for (const leak of ['razorpay', 'order_', 'pay_', 'SYNTHETIC']) {
+            assert.ok(!flat.toLowerCase().includes(leak.toLowerCase()),
+                `payment identifier leaked: ${leak}`);
+        }
+        assert.ok(!('razorpayOrderId' in p) && !('razorpayPaymentId' in p));
+    });
+
+    test('a razorpayPaymentId is not treated as proof of payment', () => {
+        // The record has a payment id AND paymentStatus 'paid'. Neither may
+        // become a received amount or a balance.
+        const p = server.toLegacyCustomerBooking('x', LEGACY_FIXTURES.E);
+        const flat = JSON.stringify(p);
+        assert.ok(!/amountReceived/i.test(flat));
+        assert.ok(!/balance/i.test(flat));
+        assert.equal(p.historical.paymentStatusLabel, 'paid', 'it stays a label, nothing more');
+    });
+
+    test('snake_case status duplicates are ignored in favour of the camelCase field', () => {
+        // booking_status is 'CONFIRMED' while bookingStatus is 'confirmed'.
+        // A stale duplicate must not change what the customer is shown.
+        const p = server.toLegacyCustomerBooking('x', LEGACY_FIXTURES.E);
+        assert.equal(p.historical.bookingStatusLabel, 'confirmed');
+        assert.equal(p.historical.paymentStatusLabel, 'paid');
+        const flat = JSON.stringify(p);
+        assert.ok(!flat.includes('CONFIRMED') && !flat.includes('PAID'),
+            'the snake_case duplicate must not be surfaced');
+    });
+
+    test('the production shape still classifies as LEGACY', () => {
+        assert.equal(server.classifyBooking(LEGACY_FIXTURES.E), server.BOOKING_SCHEMA.LEGACY);
+        assert.equal(client.classifyBooking(LEGACY_FIXTURES.E), client.BOOKING_SCHEMA.LEGACY);
+    });
+
+    test('updatedAt does not become a canonical field', () => {
+        const p = server.toLegacyCustomerBooking('x', LEGACY_FIXTURES.E);
+        assert.ok(!('updatedAt' in p), 'not in the allowlist, so not returned');
+    });
+});
+
+// ---------------------------------------------------------------------------
 // [5][6][7] financial safety
 // ---------------------------------------------------------------------------
 
@@ -265,6 +322,75 @@ describe('the canonical path is unchanged', () => {
         assert.equal(client.CANONICAL_SCHEMA_VERSION, server.CANONICAL_SCHEMA_VERSION);
         assert.equal(client.MIN_CANONICAL_SCHEMA_VERSION, server.MIN_CANONICAL_SCHEMA_VERSION);
         assert.deepEqual(client.BOOKING_SCHEMA, server.BOOKING_SCHEMA);
+    });
+});
+
+// ---------------------------------------------------------------------------
+// Storage-disabled UX (found during the cutover rehearsal)
+// ---------------------------------------------------------------------------
+
+describe('no unusable document or summary control is offered', () => {
+    const SUCCESS = read('../src/pages/BookingSuccess.jsx');
+
+    test('the upload component renders only when the server says it can', () => {
+        assert.match(SUCCESS, /canDocumentUpload = booking\?\.capabilities\?\.documentUpload === true/);
+        assert.match(SUCCESS, /booking\?\.id && canDocumentUpload && \(/,
+            'BookingDocumentsUpload must be gated, not merely disabled');
+    });
+
+    test('a summary is not even requested when the capability is off', () => {
+        // Requesting it anyway would surface an error banner on a successful
+        // booking, which reads as "your booking failed".
+        assert.match(SUCCESS, /if \(!booking\?\.id \|\| !canBookingSummary\) return;/);
+    });
+
+    test('an absent capability is treated as off, not as permission', () => {
+        // `=== true`, so undefined from an older API response degrades to
+        // unavailable rather than to a broken control.
+        for (const m of SUCCESS.matchAll(/can(?:DocumentUpload|BookingSummary) = ([^;]+);/g)) {
+            assert.match(m[1], /=== true/, 'capability checks must be strict');
+        }
+    });
+
+    test('the history list fails closed, because it cannot know the server state', () => {
+        // MyBookings reads raw Firestore documents, so it has no capability
+        // information at all. Defaulting to true would offer actions that break.
+        const d = client.toDisplayBooking('c1', canonicalBooking);
+        assert.equal(d.capabilities.documentUpload, false);
+        assert.equal(d.capabilities.bookingSummary, false);
+    });
+
+    test('a legacy booking never offers either, in any view', () => {
+        for (const fixture of Object.values(LEGACY_FIXTURES)) {
+            const list = client.toDisplayBooking('x', fixture);
+            const api = server.toLegacyCustomerBooking('x', fixture);
+            for (const cap of [list.capabilities, api.capabilities]) {
+                assert.equal(cap.documentUpload, false);
+                assert.equal(cap.bookingSummary, false);
+            }
+        }
+    });
+
+    test('the deploy workflow refuses to build without a booking API base', () => {
+        // Hostinger has no rewrite to Functions, so an empty base silently
+        // resolves to same-origin /api and every call 404s.
+        const wf = read('../.github/workflows/deploy-hostinger.yml');
+        assert.match(wf, /VITE_BOOKING_API_BASE_URL=\$\{\{ vars\.VITE_BOOKING_API_BASE_URL \}\}/);
+        assert.match(wf, /if \[ -z "\$BASE" \]; then/);
+        assert.match(wf, /exit 1/);
+        assert.match(wf, /localhost/, 'a development URL must be rejected too');
+    });
+
+    test('the workflow embeds no secret in the client bundle beyond Firebase web config', () => {
+        const wf = read('../.github/workflows/deploy-hostinger.yml');
+        const envBlock = wf.slice(wf.indexOf('cat > .env'), wf.indexOf('EOF'));
+        for (const line of envBlock.split('\n').filter((l) => l.includes('VITE_'))) {
+            assert.match(line, /VITE_(FIREBASE_|BOOKING_API_BASE_URL)/,
+                `unexpected build-time variable: ${line.trim()}`);
+        }
+        for (const f of ['JWT_SECRET', 'RAZORPAY_KEY_SECRET', 'SMTP_PASS', 'GOOGLE_OAUTH_CLIENT_SECRET']) {
+            assert.ok(!wf.includes(f), `${f} must never reach a client build`);
+        }
     });
 });
 

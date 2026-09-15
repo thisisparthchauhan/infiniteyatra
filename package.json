@@ -28,7 +28,8 @@
     "test:cutover": "node --test tests/cutover.schema.test.mjs",
     "test:cutover-api": "node --test tests/cutover.booking-api.test.mjs",
     "test:cutover-gates": "node --test tests/cutover.legacy-gates.test.mjs",
-    "test:cutover-rules": "firebase emulators:exec --project demo-iy-cutover --only firestore \"node --test tests/cutover.rules.test.mjs\""
+    "test:cutover-rules": "firebase emulators:exec --project demo-iy-cutover --only firestore \"node --test tests/cutover.rules.test.mjs\"",
+    "test:cutover-rehearsal": "firebase emulators:exec --project demo-iy-rehearsal --only firestore,auth \"node --test functions/test/emulator/cutoverRehearsal.test.js\""
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",

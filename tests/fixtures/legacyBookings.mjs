@@ -102,7 +102,62 @@ export const legacyD = {
     createdAt: new Date('2025-02-02T13:05:00Z'),
 };
 
-export const LEGACY_FIXTURES = Object.freeze({ A: legacyA, B: legacyB, C: legacyC, D: legacyD });
+/**
+ * E — the real production shape, confirmed by a read-only field-name survey of
+ * the live `bookings` collection during the cutover rehearsal (names only; no
+ * customer values were read or copied).
+ *
+ * It is the one production record that carries BOTH a snake_case duplicate of
+ * each status field AND Razorpay payment identifiers. Neither appears in the
+ * firestore.rules legacy create allowlist, so these predate it. They matter for
+ * two reasons:
+ *
+ *   - razorpayOrderId / razorpayPaymentId are payment identifiers and must never
+ *     reach a customer projection. The projection is an allowlist, so they are
+ *     excluded by construction — this fixture is what proves it.
+ *   - booking_status / payment_status duplicate bookingStatus / paymentStatus and
+ *     could disagree with them. The projection reads the camelCase field and
+ *     never the snake_case one, so a stale duplicate cannot change what is shown.
+ */
+export const legacyE = {
+    userId: 'uid-legacy-owner',
+    packageId: 'pkg-shimla-3d',
+    packageTitle: 'Shimla Short Break — 3 Days',
+    bookingDate: '2025-06-08',
+    travelers: 2,
+    contactName: 'Test Person E',
+    contactEmail: 'e@example.invalid',
+    contactPhone: '+910000000006',
+    specialRequests: '',
+    travelersList: [{ name: 'Test Person E', age: 30 }, { name: 'Companion Eight', age: 28 }],
+    tourAmount: 21000,
+    hotelAmount: 9000,
+    totalPrice: 28500,
+    bundledHotelId: 'hotel-ridge-view',
+    bundledHotelName: 'Ridge View Hotel',
+    status: 'confirmed',
+    bookingStatus: 'confirmed',
+    booking_status: 'CONFIRMED',
+    paymentStatus: 'paid',
+    payment_status: 'PAID',
+    razorpayOrderId: 'order_SYNTHETIC0000',
+    razorpayPaymentId: 'pay_SYNTHETIC0000',
+    createdAt: new Date('2025-05-20T08:00:00Z'),
+    updatedAt: new Date('2025-05-21T08:00:00Z'),
+};
+
+export const LEGACY_FIXTURES = Object.freeze({
+    A: legacyA, B: legacyB, C: legacyC, D: legacyD, E: legacyE,
+});
+
+/** Field names observed in production, for the coverage assertion. */
+export const PRODUCTION_FIELD_UNION = Object.freeze([
+    'bookingDate', 'bookingStatus', 'booking_status', 'bundledHotelId', 'bundledHotelName',
+    'contactEmail', 'contactName', 'contactPhone', 'createdAt', 'hotelAmount', 'packageId',
+    'packageTitle', 'paymentStatus', 'payment_status', 'pickupLocation', 'razorpayOrderId',
+    'razorpayPaymentId', 'specialRequests', 'status', 'totalPrice', 'tourAmount', 'travelers',
+    'travelersList', 'updatedAt', 'userId',
+]);
 
 /** A canonical PB booking, as the PB API writes it. The control case. */
 export const canonicalBooking = {
@@ -125,8 +180,8 @@ export const canonicalBooking = {
     travellerCount: 2,
     customer: { name: 'Test Canonical', email: 'canon@example.invalid', phone: '+910000000005' },
     travellers: [
-        { travellerId: 'trv_aaaaaaaaaaaa', fullName: 'Test Canonical' },
-        { travellerId: 'trv_bbbbbbbbbbbb', fullName: 'Companion Seven' },
+        { travellerId: 'tr_aaaaaaaaaaaa', fullName: 'Test Canonical' },
+        { travellerId: 'tr_bbbbbbbbbbbb', fullName: 'Companion Seven' },
     ],
     specialRequests: '',
     hotelBundle: null,

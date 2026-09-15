@@ -78,3 +78,49 @@ Set it to `true` only once the bucket genuinely exists.
 `functions/package.json` declares Node 22. Verified on Node 22.23.2:
 firebase-admin 11.11.1, firebase-functions 4.9.0, pdfkit PDF rendering, the
 booking API, and the PB-3/PB-4 emulator suites.
+
+---
+
+# Rehearsal findings (read-only production survey)
+
+Surveyed read-only against `infiniteyatra-iy`. No production data was modified.
+
+## Production is not what the brief assumed
+
+- **16 bookings, not 15** — and the count is still moving, because the deployed
+  frontend writes bookings directly. Take the backup at cutover time, not before.
+- **3 distinct field shapes, not 4.** One record carries `razorpayOrderId`,
+  `razorpayPaymentId`, snake_case `booking_status` / `payment_status`, and
+  `updatedAt`. The customer projection is an allowlist, so none of it is exposed;
+  fixture E in `tests/fixtures/legacyBookings.mjs` is the proof.
+- **0 canonical bookings, 0 booking_references, 0 booking_documents**, 6 payments.
+- All 16 carry a `userId`, so owner-based reads work for every historical record.
+
+## The live rules are weaker than the repo's
+
+The deployed ruleset (last changed 2026-07-25) contains:
+
+```
+match /bookings/{bookingId} {
+  allow read: if request.auth != null;
+```
+
+**Any signed-in user can currently read every booking**, including all 16
+customers' contact details. This predates the cutover work and is unrelated to
+it. The repo's `firestore.rules` already fixes it with an owner check.
+
+Shapes A and B — the two the live frontend actually creates — satisfy the repo's
+transitional create allowlist, and no client code writes the Razorpay fields
+(those came from the deployed `/verify-payment`, which is dead: no Functions are
+deployed). So the transitional ruleset can be deployed without breaking the live
+create path, and doing so early closes the read exposure sooner.
+
+## Backup
+
+`node scripts/cutover-backup.mjs` — `--verify` for counts and hashes only.
+Managed `gcloud firestore export` is unavailable (it needs a bucket and Blaze).
+At tens of documents a JSON snapshot restores just as well. Output lands in
+`backups/`, which is gitignored and contains customer PII.
+
+It captures: the four collections, the deployed ruleset (id + source, so a
+rollback re-releases the exact bytes), and the owner claim state.

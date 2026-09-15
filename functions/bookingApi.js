@@ -108,6 +108,14 @@ function createBookingApiApp({ env = process.env } = {}) {
         legacyHeaders: false,
     });
 
+    // One resolution of the capability set per request, attached to the request
+    // itself. The route guard below and the capabilities the booking read
+    // REPORTS must come from the same place: resolving them separately let the
+    // API advertise `bookingSummary: true` while the route returned 503, which
+    // is precisely the broken-button state the gate exists to prevent.
+    const resolved = capabilities(env);
+    app.use((req, res, next) => { req.bookingCapabilities = resolved; next(); });
+
     // Storage-backed features are refused before any handler runs, so a
     // disabled bucket produces one clean 503 rather than a failure deep inside
     // an upload or a PDF render.

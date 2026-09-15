@@ -94,9 +94,12 @@ export function toDisplayBooking(id, data = {}) {
         statusLabel: data.bookingStatus ?? 'unknown',
         paymentStatusLabel: data.paymentStatus ?? null,
         createdAt: toDate(data.createdAt),
-        // Overridden by the server's `capabilities` when the booking is fetched
-        // through the API; this is the list-view default.
-        capabilities: { bookingSummary: true, documentUpload: true },
+        // The list view reads raw Firestore documents, so it cannot know whether
+        // the server currently has storage. It therefore fails CLOSED: the true
+        // values arrive with the API response on the booking detail view. A
+        // default of `true` here would render actions that cannot work whenever
+        // storage is off.
+        capabilities: { bookingSummary: false, documentUpload: false },
     };
 }
 

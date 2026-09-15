@@ -582,7 +582,9 @@ async function getOwnBooking(req, res) {
     // The server states what this booking can do so the client never has to
     // infer it from a missing field or from its own build-time flag. A
     // canonical booking's storage-backed features follow the runtime gate.
-    const cap = capabilities();
+    // Prefer what the app resolved for THIS request; fall back to the ambient
+    // environment for a handler mounted outside createBookingApiApp.
+    const cap = req.bookingCapabilities || capabilities();
     const booking = {
         ...toCustomerSafeBooking(snap.id, data),
         legacy: false,
