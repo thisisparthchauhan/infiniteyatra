@@ -7,7 +7,6 @@ import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
-import { generateInvoicePDF } from '../../../services/InvoiceGenerator';
 
 const Bookings = () => {
     const [bookings, setBookings] = useState([]);
@@ -104,43 +103,17 @@ const Bookings = () => {
     const [showExportMenu, setShowExportMenu] = useState(false);
     const exportRef = useRef(null);
 
-    // Invoice Generation
-    const handleDownloadInvoice = () => {
-        if (!selectedBooking) return;
-
-        const booking = {
-            id: selectedBooking.id,
-            packageTitle: selectedBooking.packageTitle,
-            travelDate: selectedBooking.travelDate || selectedBooking.bookingDate,
-            category: selectedBooking.category || 'Trek/Tour',
-            totalPrice: selectedBooking.totalPrice,
-            travelers: selectedBooking.travelers || 1,
-            tripName: selectedBooking.packageTitle,
-            pickup: selectedBooking.pickupLocation,
-            drop: selectedBooking.dropLocation,
-            status: selectedBooking.status
-        };
-
-        const payment = {
-            amount: selectedBooking.amountPaid || 1000,
-            method: 'Online',
-            id: selectedBooking.razorpayOrderId || 'N/A',
-            status: selectedBooking.paymentStatus || 'success'
-        };
-
-        const customer = {
-            name: selectedBooking.contactName,
-            email: selectedBooking.contactEmail,
-            phone: selectedBooking.phone,
-            age: selectedBooking.age,
-            gender: selectedBooking.gender,
-            address: selectedBooking.address,
-            emergencyContact: selectedBooking.emergencyContact
-        };
-
-        const doc = generateInvoicePDF(booking, payment, customer);
-        doc.save(`IY_Invoice_${selectedBooking.id}.pdf`);
-    };
+    // P0-05 containment — the legacy invoice generator has been removed.
+    //
+    // It fabricated a payment: a hardcoded fallback amount and a default
+    // "success" payment state were fed into a PDF headed as an amount received.
+    // Because the paid-amount field is never written by any code path, every
+    // generated document declared a payment that had not happened.
+    //
+    // No replacement is provided here on purpose. A truthful Booking Summary is
+    // PB-4, and payment receipts depend on the payment ledger in PB-6. Printing
+    // a 0 receipt instead would still be a receipt for a payment that does not
+    // exist, so the action is withdrawn rather than reworded.
 
     // Close export menu when clicking outside
     useEffect(() => {
@@ -679,9 +652,13 @@ const Bookings = () => {
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-3">
-                                        <button onClick={handleDownloadInvoice} className="flex items-center justify-center gap-2 py-2.5 bg-white/5 hover:bg-white/10 rounded-lg text-sm font-medium transition-colors border border-white/10">
-                                            <FileText size={14} className="text-slate-400" /> Generate Invoice
-                                        </button>
+                                        <div
+                                            className="flex items-center justify-center gap-2 py-2.5 bg-white/[0.02] rounded-lg text-xs text-slate-500 border border-white/5 text-center px-2"
+                                            title="Withdrawn: the previous document reported a payment that was never recorded."
+                                        >
+                                            <FileText size={14} className="text-slate-600 shrink-0" />
+                                            Booking Summary will be available after the booking-document upgrade.
+                                        </div>
                                         <button className="flex items-center justify-center gap-2 py-2.5 bg-green-600/10 hover:bg-green-600/20 text-green-400 rounded-lg text-sm font-medium transition-colors border border-green-600/20">
                                             <MessageCircle size={14} /> WhatsApp
                                         </button>

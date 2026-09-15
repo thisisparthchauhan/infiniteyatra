@@ -16,6 +16,7 @@
     "test:pb2": "node --test tests/pb2.booking-cutover.test.mjs",
     "test:pb1-rules": "firebase emulators:exec --project demo-infinite-yatra-pb1 --only firestore \"node --test tests/pb1.rules.test.mjs\"",
     "test:emulator": "firebase emulators:exec --project demo-infinite-yatra-pb1 --only firestore,auth \"node --test functions/test/emulator/packageBookingEmulator.test.js\"",
+    "test:p0-05": "node --test tests/p0-05.false-invoice.test.mjs",
     "test": "playwright test",
     "test:ui": "playwright test --ui",
     "deploy": "vite build && firebase deploy"
