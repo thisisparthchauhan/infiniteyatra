@@ -1,0 +1,28 @@
+{
+  "name": "infiniteyatra-api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Infinite Yatra production API \u2014 Express + MariaDB on Hostinger.",
+  "main": "src/server.js",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "migrate": "node scripts/migrate.mjs",
+    "seed:admin": "node scripts/bootstrap-admin.mjs",
+    "import:catalogue": "node scripts/import-catalogue.mjs",
+    "test": "node --test --test-concurrency=1 test/*.test.mjs"
+  },
+  "dependencies": {
+    "argon2": "^0.41.1",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.4.1",
+    "helmet": "^8.0.0",
+    "mysql2": "^3.11.5"
+  }
+}

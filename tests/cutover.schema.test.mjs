@@ -371,14 +371,21 @@ describe('no unusable document or summary control is offered', () => {
         }
     });
 
-    test('the deploy workflow refuses to build without a booking API base', () => {
-        // Hostinger has no rewrite to Functions, so an empty base silently
-        // resolves to same-origin /api and every call 404s.
+    test('the deploy workflow guards the built bundle', () => {
+        // FRESH LAUNCH: the API is same-origin, so an EMPTY base is now correct
+        // and the old "base must be set" guard no longer applies. What still
+        // matters is that the build cannot ship a doubled prefix or a secret.
         const wf = read('../.github/workflows/deploy-hostinger.yml');
-        assert.match(wf, /VITE_BOOKING_API_BASE_URL=\$\{\{ vars\.VITE_BOOKING_API_BASE_URL \}\}/);
-        assert.match(wf, /if \[ -z "\$BASE" \]; then/);
-        assert.match(wf, /exit 1/);
-        assert.match(wf, /localhost/, 'a development URL must be rejected too');
+        assert.match(wf, /VITE_API_BASE_URL: \$\{\{ vars\.VITE_API_BASE_URL \}\}/);
+        assert.match(wf, /grep -rq "\/api\/api\/" dist/, 'a doubled prefix must fail the build');
+        assert.match(wf, /SESSION_SECRET/, 'a leaked server secret must fail the build');
+        assert.match(wf, /node-version: '22'/);
+        // The API must never be published where it can be fetched as a file.
+        // Check the API publish step itself rather than scanning a window.
+        const apiStep = wf.slice(wf.indexOf('Publish API'));
+        assert.match(apiStep, /local-dir: \.\/api\//);
+        assert.match(apiStep, /server-dir: \.\/iy-api\//, 'the API must live outside public_html');
+        assert.ok(!/server-dir: \.\/public_html/.test(apiStep), 'the API must not be published under the web root');
     });
 
     test('the workflow embeds no secret in the client bundle beyond Firebase web config', () => {
@@ -440,12 +447,19 @@ describe('[14] booking API URLs contain exactly one /api', () => {
         assert.throws(() => buildBookingApiUrl('bookings/x', ''), /must start with/);
     });
 
-    test('all three API clients build URLs through the shared helper', () => {
-        for (const f of ['packageBookingApi', 'packageBookingDocumentsApi', 'packageBookingSummaryApi']) {
-            const src = read(`../src/services/${f}.js`);
-            assert.match(src, /buildBookingApiUrl/, `${f} must use the shared builder`);
-            assert.ok(!/\$\{d\.baseUrl\}\/api/.test(src),
-                `${f} must not concatenate the /api prefix itself`);
-        }
+    test('the booking client builds URLs through the one shared client', () => {
+        // FRESH LAUNCH: all transport moved into src/services/apiClient.js, so
+        // there is exactly one place a URL is built.
+        const client = read('../src/services/apiClient.js');
+        assert.match(client, /export function buildApiUrl/);
+        assert.match(client, /\.replace\(\/\\\/api\$\/i, ''\)/, 'a base ending in /api must be normalised');
+
+        const booking = read('../src/services/packageBookingApi.js');
+        assert.match(booking, /from '\.\/apiClient\.js'/, 'the booking client must delegate transport');
+        assert.ok(!/\$\{d\.baseUrl\}\/api/.test(booking), 'no client may concatenate the prefix itself');
+        // Strip comments: the file's header explains the migration away from
+        // Firebase, and matching that prose would be matching documentation.
+        const code = booking.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+        assert.ok(!/firebase/i.test(code), 'no Firebase import or call may remain in the booking client');
     });
 });

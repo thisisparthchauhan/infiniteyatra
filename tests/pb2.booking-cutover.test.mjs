@@ -41,26 +41,25 @@ const LOGIN_PAGE = src('../src/pages/Login.jsx');
 // Harness
 // ---------------------------------------------------------------------------
 
-function harness({ token = 'id-token-abc', responses = [] } = {}) {
+/**
+ * FRESH LAUNCH — the transport seam moved into src/services/apiClient.js, and
+ * authentication moved from a Firebase ID token to an httpOnly session cookie.
+ * The harness now injects only a fetch double: there is no token for a test to
+ * supply, because there is no token in JavaScript at all.
+ */
+function harness({ responses = [] } = {}) {
     const calls = [];
     let i = 0;
-    __setDepsForTesting({
-        getIdToken: async () => {
-            if (token instanceof Error) throw token;
-            return token;
-        },
-        fetch: async (url, init) => {
-            calls.push({ url, init, body: init.body ? JSON.parse(init.body) : null });
-            const next = responses[Math.min(i, responses.length - 1)];
-            i += 1;
-            if (next instanceof Error) throw next;
-            return {
-                ok: next.ok ?? true,
-                status: next.status ?? 200,
-                json: async () => next.json,
-            };
-        },
-        baseUrl: '',
+    __setDepsForTesting(async (url, init) => {
+        calls.push({ url, init, body: init.body ? JSON.parse(init.body) : null });
+        const next = responses[Math.min(i, responses.length - 1)];
+        i += 1;
+        if (next instanceof Error) throw next;
+        return {
+            ok: next.ok ?? true,
+            status: next.status ?? 200,
+            json: async () => next.json,
+        };
     });
     return calls;
 }
@@ -104,7 +103,9 @@ const payload = (key = 'bk-test-key-0000000000000000') =>
 // ---------------------------------------------------------------------------
 
 test('[1] an unauthenticated submit surfaces a sign-in message, not a crash', async () => {
-    harness({ token: new BookingApiError('AUTH_REQUIRED', { status: 401, serverError: 'AUTH_REQUIRED' }) });
+    // The session is a cookie the browser holds, so "not signed in" is now a
+    // 401 FROM THE SERVER rather than a local token lookup that failed.
+    harness({ responses: [{ ok: false, status: 401, json: { error: 'Authentication required' } }] });
     await assert.rejects(() => createPackageBooking(payload()), (err) => {
         assert.equal(toCustomerMessage(err), 'Please sign in to complete your booking.');
         return true;
@@ -129,14 +130,18 @@ test('[1c] the login redirect only accepts in-app paths', () => {
 // [2] Firebase ID token
 // ---------------------------------------------------------------------------
 
-test('[2] the request carries the Firebase ID token as a bearer header', async () => {
-    const calls = harness({ token: 'id-token-abc', responses: [okCreate()] });
+test('[2] the request authenticates by session cookie, carrying no token in script', async () => {
+    const calls = harness({ responses: [okCreate()] });
     await createPackageBooking(payload());
 
     assert.equal(calls.length, 1);
-    assert.equal(calls[0].init.headers.Authorization, 'Bearer id-token-abc');
     assert.equal(calls[0].init.method, 'POST');
-    assert.match(calls[0].url, /\/api\/bookings\/package$/);
+    // credentials:'include' is what sends the httpOnly cookie.
+    assert.equal(calls[0].init.credentials, 'include');
+    // No bearer token: there is none for script to read, so none to steal.
+    assert.equal(calls[0].init.headers.Authorization, undefined);
+    assert.match(calls[0].url, /\/api\/bookings$/);
+    assert.ok(!calls[0].url.includes('/api/api'), 'exactly one /api prefix');
 });
 
 // ---------------------------------------------------------------------------
@@ -168,10 +173,11 @@ test('[3][4][5] the payload contains no owner, price, status or reference field'
 test('[3b] the payload sends only the keys the server contract accepts', async () => {
     const calls = harness({ responses: [okCreate()] });
     await createPackageBooking(payload());
+    // The API rejects unknown keys outright, so this mirrors its allowlist.
     const allowed = new Set([
-        'packageId', 'departureDate', 'travellerCount', 'pickupLocationIndex',
-        'customer', 'travellers', 'specialRequests', 'hotelBundle',
-        'paymentPlan', 'idempotencyKey', 'source', 'channel',
+        'packageId', 'departureDate', 'travellerCount', 'pickupOptionId',
+        'contact', 'travellers', 'specialRequests', 'hotelId',
+        'idempotencyKey', 'source',
     ]);
     for (const key of Object.keys(calls[0].body)) {
         assert.ok(allowed.has(key), `unexpected payload key "${key}"`);
@@ -181,7 +187,10 @@ test('[3b] the payload sends only the keys the server contract accepts', async (
 test('[3c] customer contact is a snapshot only — ownership is not derived from it', async () => {
     const calls = harness({ responses: [okCreate()] });
     await createPackageBooking(payload());
-    assert.deepEqual(Object.keys(calls[0].body.customer).sort(), ['email', 'name', 'phone']);
+    // `contact`, matching booking_contacts: the person booking is not
+    // necessarily the account holder, and ownership comes from the session.
+    assert.deepEqual(Object.keys(calls[0].body.contact).sort(), ['email', 'fullName', 'phone']);
+    assert.ok(!('userId' in calls[0].body), 'ownership is never sent by the client');
 });
 
 test('[3d] traveller entries carry no document content', async () => {
@@ -426,7 +435,8 @@ test('[15] the own-booking read is authenticated and targets a single booking', 
     const calls = harness({ responses: [{ ok: true, status: 200, json: { booking: serverBooking() } }] });
     const { booking } = await getMyBooking('bk-server-1');
 
-    assert.equal(calls[0].init.headers.Authorization, 'Bearer id-token-abc');
+    assert.equal(calls[0].init.credentials, 'include', 'the session cookie authenticates the read');
+    assert.equal(calls[0].init.headers.Authorization, undefined, 'no token lives in script');
     assert.match(calls[0].url, /\/api\/bookings\/bk-server-1$/);
     assert.equal(calls[0].init.method, 'GET');
     assert.equal(booking.bookingReference, 'IY-BKG-2026-7K4MQP');
@@ -470,11 +480,13 @@ test('[17b] the submit path goes through the booking API', () => {
     assert.match(BOOKING_PAGE, /await createPackageBooking\(payload\)/);
 });
 
-test('[17c] Firestore reads the page legitimately needs are preserved', () => {
-    // The page still reads the package and suggested hotels — only the
-    // authoritative CREATE was removed, not Firestore usage generally.
-    assert.match(BOOKING_PAGE, /getDoc\(docRef\)/, 'package lookup must still work');
-    assert.match(BOOKING_PAGE, /getDocs\(q\)/, 'hotel suggestions must still work');
+test('[17c] the catalogue reads the page needs now come from the API', () => {
+    // FRESH LAUNCH: the page still loads the package and suggested hotels, but
+    // from the Infinite Yatra API rather than Firestore. The browser has no
+    // database access at all now.
+    assert.match(BOOKING_PAGE, /catalogueApi\.getPackage\(id\)/, 'package lookup must still work');
+    assert.match(BOOKING_PAGE, /catalogueApi\.listHotels\(\)/, 'hotel suggestions must still work');
+    assert.ok(!/from 'firebase/.test(BOOKING_PAGE), 'the booking page must not import Firebase');
 });
 
 test('[17d] no document upload is attempted during booking submission (PB-3 dependency)', () => {

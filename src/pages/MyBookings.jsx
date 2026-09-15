@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { db } from '../firebase';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { bookingApi, toUserMessage } from '../services/apiClient';
 import { useAuth } from '../context/AuthContext';
 import { Loader, Calendar, MapPin, Clock, AlertCircle, ArrowRight, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import SEO from '../components/common/SEO';
 import ReviewModal from '../components/ReviewModal';
-import { toDisplayBooking, LEGACY_BOOKING_NOTE } from '../config/bookingSchema';
 
 const MyBookings = () => {
     const { currentUser } = useAuth();
@@ -22,35 +20,31 @@ const MyBookings = () => {
         setError('');
 
         try {
-            // Removing orderBy to avoid index issues for now
-            const q = query(
-                collection(db, 'bookings'),
-                where('userId', '==', currentUser.uid)
-            );
-
-            const querySnapshot = await getDocs(q);
-            // CUTOVER - history holds both the 2024-era legacy records and PB
-            // canonical bookings. Each document is normalised to one display
-            // shape so the template never reads a field that only one schema
-            // has; a legacy record has no pricing object, and reading it as if
-            // it did would render a real trip as a zero-rupee booking.
-            const bookingsData = querySnapshot.docs.map(doc => toDisplayBooking(doc.id, doc.data()));
-
-            // Sort client-side, newest first. createdAt is a Date or null here.
+            // FRESH LAUNCH - booking history comes from the API, which scopes
+            // every row to the signed-in customer server-side. The browser has
+            // no database access at all, so there is no query for a mistake in
+            // a filter to expose.
+            const { bookings: rows } = await bookingApi.list();
+            const bookingsData = rows.map((b) => ({
+                id: b.id,
+                reference: b.reference,
+                title: b.title,
+                travelDate: b.departureDate,
+                travellerCount: b.travellerCount,
+                totalDisplay: b.pricing.grossAmountMinor / (b.pricing.minorUnitsPerMajor || 100),
+                statusLabel: b.bookingStatus,
+                paymentStatusLabel: b.payment.paymentStatus,
+                createdAt: b.createdAt ? new Date(b.createdAt) : null,
+                capabilities: b.capabilities,
+            }));
             bookingsData.sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0));
-
             setBookings(bookingsData);
-
-            // Check which bookings already have a review
-            if (bookingsData.length > 0) {
-                const reviewSnap = await getDocs(query(collection(db, 'reviews'), where('userId', '==', currentUser.uid)));
-                const ids = new Set(reviewSnap.docs.map(d => d.data().bookingId));
-                setReviewedBookingIds(ids);
-            }
+            // Review state will move to the API with the reviews feature;
+            // until then no review badge is claimed rather than guessed.
+            setReviewedBookingIds(new Set());
         } catch (error) {
-            console.error("Error fetching bookings:", error);
-            // Show the actual error message for debugging
-            setError(`Failed to load bookings: ${error.message}`);
+            console.error('Error fetching bookings');
+            setError(toUserMessage(error));
         } finally {
             setLoading(false);
         }
@@ -175,18 +169,7 @@ const MyBookings = () => {
                                             </div>
                                         </div>
 
-                                        {/* CUTOVER - a legacy booking gets a short factual note in
-                                            place of the newer actions. No disabled Booking Summary or
-                                            upload button is rendered at all: a greyed-out control that
-                                            can never work reads as a fault. */}
-                                        {booking.legacy && (
-                                            <div className="mt-4 bg-white/5 border border-white/10 rounded-lg p-4 flex items-start gap-3">
-                                                <AlertCircle className="text-slate-400 flex-shrink-0 mt-0.5" size={18} />
-                                                <p className="text-sm text-slate-300">{LEGACY_BOOKING_NOTE}</p>
-                                            </div>
-                                        )}
-
-                                        {!booking.legacy && booking.statusLabel === 'pending' && (
+                                        {booking.statusLabel === 'pending' && (
                                             <div className="mt-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4 flex items-start gap-3">
                                                 <AlertCircle className="text-yellow-400 flex-shrink-0 mt-0.5" size={18} />
                                                 <p className="text-sm text-yellow-200">

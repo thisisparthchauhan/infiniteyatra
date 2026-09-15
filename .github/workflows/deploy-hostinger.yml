@@ -1,74 +1,93 @@
-name: Deploy to Hostinger FTP
+name: Deploy to Hostinger
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
+
+# The frontend and the API ship together: the React build calls /api on the same
+# origin, so a frontend ahead of its API is a broken site. Deploy is manual
+# (workflow_dispatch) and takes the ref you choose, so shipping does not require
+# merging to main.
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
-      - name: 🚚 Get latest code
+      - name: Get the code
         uses: actions/checkout@v4
-      
-      - name: ⚙️ Use Node.js
+
+      - name: Use Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
-          
-      - name: 📦 Install dependencies
-        run: npm ci
-        
-      - name: 🔐 Create env file
-        run: |
-          cat > .env <<EOF
-          VITE_FIREBASE_API_KEY=${{ secrets.VITE_FIREBASE_API_KEY }}
-          VITE_FIREBASE_AUTH_DOMAIN=${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
-          VITE_FIREBASE_PROJECT_ID=${{ secrets.VITE_FIREBASE_PROJECT_ID }}
-          VITE_FIREBASE_STORAGE_BUCKET=${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
-          VITE_FIREBASE_MESSAGING_SENDER_ID=${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
-          VITE_FIREBASE_APP_ID=${{ secrets.VITE_FIREBASE_APP_ID }}
-          VITE_FIREBASE_MEASUREMENT_ID=${{ secrets.VITE_FIREBASE_MEASUREMENT_ID }}
-          VITE_BOOKING_API_BASE_URL=${{ vars.VITE_BOOKING_API_BASE_URL }}
-          EOF
 
-      # CUTOVER - the frontend is served from Hostinger, which has no rewrite to
-      # Cloud Functions. An empty base would silently resolve to same-origin
-      # /api/... on infiniteyatra.com and every booking call would 404 in a way
-      # that looks like an auth failure. Fail the build instead of shipping that.
-      - name: 🔎 Verify booking API base is configured
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build frontend
+        env:
+          # Same-origin in production: empty base means the app calls /api on
+          # www.infiniteyatra.com. Set the repository variable only for a
+          # split-origin setup; it is normalised so it cannot produce /api/api.
+          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
         run: |
-          BASE="${{ vars.VITE_BOOKING_API_BASE_URL }}"
-          if [ -z "$BASE" ]; then
-            echo "::error::VITE_BOOKING_API_BASE_URL is not set. Set the repository variable to the deployed Functions origin before deploying the PB frontend."
+          npx vite build
+          if grep -rq "/api/api/" dist/assets/*.js; then
+            echo "::error::The build produced a doubled /api/api path."
             exit 1
           fi
-          case "$BASE" in
-            https://*) ;;
-            *) echo "::error::VITE_BOOKING_API_BASE_URL must be an https origin."; exit 1 ;;
-          esac
-          case "$BASE" in
-            *localhost*|*127.0.0.1*|*://*:*[0-9]/*|*-emulator*)
-              echo "::error::VITE_BOOKING_API_BASE_URL looks like a development or emulator URL."; exit 1 ;;
-          esac
-          echo "Booking API base configured (origin only, no secret): $BASE"
+          for leaked in DB_PASSWORD SESSION_SECRET IY_ADMIN_PASSWORD; do
+            if grep -rq "$leaked" dist/ 2>/dev/null; then
+              echo "::error::$leaked appears in the client bundle."
+              exit 1
+            fi
+          done
+          echo "Frontend build clean: single /api prefix, no server secrets."
 
-      - name: 🔨 Build Project
-        run: npx vite build
-        
-      - name: 📂 Sync files via FTP
+      - name: Install API dependencies
+        working-directory: api
+        run: npm ci --omit=dev
+
+      - name: API smoke check
+        working-directory: api
+        run: node -e "import('./src/app.js').then(()=>console.log('API module graph loads'))"
+        env:
+          NODE_ENV: development
+
+      - name: Publish frontend
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./dist/
-          server-dir: ./
+          server-dir: ./public_html/
           exclude: |
             **/.git*
             **/.git*/**
             **/node_modules/**
+
+      - name: Publish API
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./api/
+          # OUTSIDE public_html: the API must never be served as static files,
+          # and its .env must never be fetchable over HTTP.
+          server-dir: ./iy-api/
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/test/**
+            **/.env
+
+      # Remaining steps are owner actions on Hostinger and are deliberately not
+      # automated here:
+      #   1. Point the Node.js app at iy-api/, entry src/server.js, Node 22
+      #   2. Set the environment from api/.env.example (no values are committed)
+      #   3. npm run migrate        (once per schema change)
+      #   4. npm run seed:admin     (once, ever)
+      #   5. Route /api/* to the Node app in the domain's proxy configuration

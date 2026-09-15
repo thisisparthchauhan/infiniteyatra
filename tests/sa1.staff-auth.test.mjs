@@ -227,19 +227,31 @@ test('[16] the invite UI offers only canonical machine roles', () => {
 // Client authorization sources
 // ---------------------------------------------------------------------------
 
-test('AuthContext derives authorization from the verified token claim only', () => {
-    assert.match(AUTH_CONTEXT, /getIdTokenResult\(user\)/);
-    assert.match(AUTH_CONTEXT, /claims\.admin === true \|\| claimRole === 'admin'/);
-    // the email list and the profile-role grant are gone
+test('AuthContext derives authorization from a server-verified session only', () => {
+    // FRESH LAUNCH: identity moved from a Firebase ID token claim to a
+    // server-side session on the Infinite Yatra API. The property SA-1 was
+    // protecting is unchanged and is asserted here against the new mechanism:
+    // the client never decides who is staff.
+    assert.match(AUTH_CONTEXT, /staffApi\.me\(\)/, 'staff identity must be asked of the server');
+    assert.match(AUTH_CONTEXT, /isAdmin: staff\?\.role === 'admin'/,
+        'admin must come from the server-returned staff role');
+
+    // The failures SA-1 existed to remove must still be absent.
     assert.ok(!/ADMIN_EMAILS\s*=/.test(AUTH_CONTEXT), 'no hardcoded admin email list may remain');
     assert.ok(!AUTH_CONTEXT.includes('isHardcodedAdmin'), 'no email-derived admin flag may remain');
-    assert.ok(!/role = userData\.role/.test(AUTH_CONTEXT), 'profile role must not become the auth role');
-    // profile role is retained but under a name that cannot be confused
-    assert.match(AUTH_CONTEXT, /profileRole: userData\.role/);
+    assert.ok(!/@gmail\.com/.test(AUTH_CONTEXT), 'no email address may appear in the auth path');
+    assert.ok(!/localStorage/.test(AUTH_CONTEXT), 'no identity may be read from local storage');
 });
 
-test('AuthContext fails closed when claims cannot be resolved', () => {
-    assert.match(AUTH_CONTEXT, /isAdmin: false, isStaff: false/);
+test('AuthContext fails closed when the session cannot be resolved', () => {
+    // A failed /me is the normal signed-out answer and must resolve to "nobody",
+    // never to a partially-trusted user.
+    assert.match(AUTH_CONTEXT, /\.catch\(\(\) => null\)/, 'an unresolved identity must become null');
+    assert.match(AUTH_CONTEXT, /if \(!user && !staff\) return null;/,
+        'no user and no staff must produce no current user at all');
+    // Sign-out clears locally even if the network call fails, so the UI never
+    // claims someone is still signed in after they asked to leave.
+    assert.match(AUTH_CONTEXT, /finally \{ setUser\(null\); \}/);
 });
 
 test('RoleRoute grants on the claim, never on an email address', () => {

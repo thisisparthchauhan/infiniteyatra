@@ -18,18 +18,13 @@
  * Empty means same-origin `/api`.
  *
  * AUTHENTICATION
- * Every call carries a fresh Firebase ID token. This deliberately does NOT use
- * src/lib/api.js: that client targets the separate Node/Express + MongoDB
- * service and authenticates with its own localStorage JWT, which has no
- * authority over Firestore bookings.
+ * The session is an httpOnly cookie issued by the Infinite Yatra API and sent
+ * automatically on the same origin. No token is held in JavaScript, so nothing
+ * on the page can read or replay it.
  */
 
-import { getAuth } from 'firebase/auth';
-import { buildBookingApiUrl, BOOKING_API_BASE_URL as SHARED_BASE_URL } from './bookingApiUrl.js';
+import { bookingApi, API_BASE } from './apiClient.js';
 
-// CUTOVER - URL construction is centralised so the '/api' prefix is applied
-// exactly once. See src/services/bookingApiUrl.js.
-const BASE_URL = SHARED_BASE_URL;
 
 /** Error carrying the server's HTTP status and machine-readable detail. */
 export class BookingApiError extends Error {
@@ -43,73 +38,12 @@ export class BookingApiError extends Error {
 }
 
 /**
- * Seam for tests. Production resolves the real Firebase user; tests inject a
- * token provider and a fetch double so request shaping can be asserted without
- * a browser or a live Firebase project.
+ * Test seam. The network layer now lives in apiClient, so tests inject a fetch
+ * double there; this re-export keeps existing callers working.
  */
-let _deps = null;
+export { __setFetchForTesting as __setDepsForTesting } from './apiClient.js';
 
-function deps() {
-    if (_deps) return _deps;
-    _deps = {
-        getIdToken: async () => {
-            const user = getAuth().currentUser;
-            if (!user) throw new BookingApiError('AUTH_REQUIRED', { status: 401, serverError: 'AUTH_REQUIRED' });
-            return user.getIdToken();
-        },
-        fetch: (...args) => globalThis.fetch(...args),
-        baseUrl: BASE_URL,
-    };
-    return _deps;
-}
 
-/** Test-only. Never called from application code. */
-export function __setDepsForTesting(injected) {
-    _deps = injected;
-}
-
-async function request(path, { method = 'GET', body } = {}) {
-    const d = deps();
-    const token = await d.getIdToken();
-
-    let res;
-    try {
-        res = await d.fetch(buildBookingApiUrl(path, d.baseUrl), {
-            method,
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-            },
-            body: body ? JSON.stringify(body) : undefined,
-        });
-    } catch (networkErr) {
-        throw new BookingApiError('NETWORK', { status: 0, serverError: 'NETWORK', details: [networkErr.message] });
-    }
-
-    let data = {};
-    try {
-        data = await res.json();
-    } catch {
-        /* non-JSON response — leave data empty */
-    }
-
-    if (!res.ok) {
-        throw new BookingApiError(data.error || `Request failed (${res.status})`, {
-            status: res.status,
-            serverError: data.error || '',
-            details: data.details,
-        });
-    }
-    return data;
-}
-
-/**
- * Generate an idempotency key for ONE booking attempt.
- *
- * Create this once when the customer reaches the review step and reuse it for
- * every retry of that attempt — that is what makes a double-click or a network
- * retry safe. A fresh key per click would defeat the protection entirely.
- */
 export function newIdempotencyKey() {
     if (globalThis.crypto?.randomUUID) return `bk-${globalThis.crypto.randomUUID()}`;
     // Random, not timestamp-derived: two clicks in the same millisecond must not collide.
@@ -160,7 +94,9 @@ export function buildCreateBookingPayload({
         packageId: pkg.id,
         departureDate: bookingData.date,
         travellerCount: Number(bookingData.travelers),
-        pickupLocationIndex: selectedLocIdx,
+        // The selected pickup option's real id, resolved from the package the
+        // API returned. An index would break the moment options are reordered.
+        pickupOptionId: pkg?.pickupOptions?.[selectedLocIdx]?.id ?? null,
         customer: {
             name: (bookingData.name || '').trim(),
             email: (bookingData.email || '').trim(),
@@ -205,6 +141,10 @@ export function toCustomerMessage(err) {
     if (err.status === 409) {
         return 'This package is currently unavailable for booking.';
     }
+    if (err.status === 400 && /hotel/i.test(err.serverError)) {
+        // The new API reports an unusable hotel as a 400 INVALID_HOTEL.
+        return 'The selected hotel is no longer available. Please remove it and try again.';
+    }
     if (err.status === 400) {
         const joined = err.details.join(' ').toLowerCase();
         if (joined.includes('departure')) return 'Please select an available departure date.';
@@ -233,13 +173,79 @@ export function stepForError(err) {
  * Create a package booking. The server derives price, booking reference and
  * owner; none of those may be supplied here.
  */
+/**
+ * FRESH LAUNCH — these now call the Infinite Yatra API on the same origin
+ * instead of Firebase Functions. The exported shape is unchanged so BookingPage
+ * and BookingSuccess did not need rewriting, but two things are translated here
+ * because the new backend models them properly:
+ *
+ *   pickupLocationIndex -> pickupOptionId   an array index is not an identity;
+ *                                           pickup options are real rows now
+ *   hotelBundle.hotelId -> hotelId          the bundle is priced server-side
+ *
+ * `customer` becomes `contact`, matching the booking_contacts table: the person
+ * booking is not necessarily the account holder, so their details are stored
+ * with the booking rather than overwriting the profile.
+ */
+function toApiBookingPayload(payload) {
+    const travellers = (payload.travellers || []).map((t) => {
+        const out = {
+            firstName: t.firstName,
+            lastName: t.lastName,
+        };
+        if (t.middleName) out.middleName = t.middleName;
+        if (t.dateOfBirth) out.dateOfBirth = t.dateOfBirth;
+        if (t.gender) out.gender = t.gender;
+        if (t.nationality) out.nationality = t.nationality;
+        return out;
+    });
+
+    const out = {
+        packageId: Number(payload.packageId),
+        departureDate: payload.departureDate,
+        travellerCount: payload.travellerCount,
+        contact: {
+            fullName: payload.customer?.name,
+            email: payload.customer?.email,
+            phone: payload.customer?.phone,
+        },
+        travellers,
+        idempotencyKey: payload.idempotencyKey,
+        source: payload.source || 'web',
+    };
+    if (payload.specialRequests) out.specialRequests = payload.specialRequests;
+    if (payload.pickupOptionId != null) out.pickupOptionId = Number(payload.pickupOptionId);
+    if (payload.hotelBundle?.hotelId != null) out.hotelId = Number(payload.hotelBundle.hotelId);
+    return out;
+}
+
+/** Re-wrap an ApiError so existing callers keep seeing BookingApiError. */
+function asBookingApiError(err) {
+    if (err instanceof BookingApiError) return err;
+    return new BookingApiError(err?.message || 'Request failed', {
+        status: err?.status ?? 0,
+        // Prefer the machine code; fall back to the server's message so the
+        // customer-message mapping below can still tell a missing hotel from a
+        // missing package.
+        serverError: err?.code || (err?.status === 0 ? 'NETWORK' : (err?.message || '')),
+        details: err?.details || [],
+    });
+}
+
 export async function createPackageBooking(payload) {
-    return request('/bookings/package', { method: 'POST', body: payload });
+    try {
+        return await bookingApi.create(toApiBookingPayload(payload));
+    } catch (err) {
+        throw asBookingApiError(err);
+    }
 }
 
-/** Read one of the signed-in customer's own bookings. */
 export async function getMyBooking(bookingId) {
-    return request(`/bookings/${encodeURIComponent(bookingId)}`);
+    try {
+        return await bookingApi.get(bookingId);
+    } catch (err) {
+        throw asBookingApiError(err);
+    }
 }
 
-export const BOOKING_API_BASE_URL = BASE_URL;
+export { API_BASE as BOOKING_API_BASE_URL };

@@ -5,8 +5,7 @@ import { getPackageById } from '../data/packages';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { motion, AnimatePresence } from 'framer-motion';
-import { db } from '../firebase';
-import { collection, query, getDocs, doc, getDoc } from 'firebase/firestore';
+import { catalogueApi } from '../services/apiClient';
 import { useAuth } from '../context/AuthContext';
 import { addCredits } from '../services/passportService';
 import {
@@ -431,12 +430,25 @@ const BookingPage = () => {
     useEffect(() => {
         const fetchPackageAndHotels = async () => {
             try {
+                // FRESH LAUNCH - the catalogue comes from the API. `id` is the
+                // package slug in the new system; the static fallback keeps the
+                // page useful if the catalogue call fails.
                 let packageData = null;
-                const docRef = doc(db, 'packages', id);
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                    packageData = { id: docSnap.id, ...docSnap.data() };
-                } else {
+                try {
+                    const { package: p } = await catalogueApi.getPackage(id);
+                    packageData = {
+                        ...p,
+                        // Field names the existing template reads.
+                        price: p.price.baseMinor / (p.price.minorUnitsPerMajor || 100),
+                        pickupLocations: (p.pickupOptions || []).map((o) => ({
+                            id: o.id,
+                            location: o.label,
+                            price: o.priceMinor / (p.price.minorUnitsPerMajor || 100),
+                        })),
+                        pickupOptions: p.pickupOptions || [],
+                        minimumPersons: p.minTravellers,
+                    };
+                } catch {
                     packageData = getPackageById(id);
                 }
                 if (!packageData) { navigate('/'); return; }
@@ -450,9 +462,11 @@ const BookingPage = () => {
                 setLoading(false);
 
                 if (packageData.location) {
-                    const q = query(collection(db, 'hotels'));
-                    const hotelSnaps = await getDocs(q);
-                    const hotels = hotelSnaps.docs.map(h => ({ id: h.id, ...h.data() }));
+                    const { hotels: apiHotels } = await catalogueApi.listHotels().catch(() => ({ hotels: [] }));
+                    const hotels = apiHotels.map((h) => ({
+                        ...h,
+                        originalPrice: h.price ? h.price.baseMinor / (h.price.minorUnitsPerMajor || 100) : 0,
+                    }));
                     const relevant = hotels.filter(h =>
                         h.location?.toLowerCase().includes(packageData.location?.split(' ')[0].toLowerCase()) ||
                         packageData.title.toLowerCase().includes(h.location?.split(' ')[0].toLowerCase())

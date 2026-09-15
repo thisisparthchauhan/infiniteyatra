@@ -1,155 +1,127 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import {
-    createUserWithEmailAndPassword,
-    signInWithEmailAndPassword,
-    signOut,
-    onAuthStateChanged,
-    updateProfile,
-    getIdTokenResult,
-} from 'firebase/auth';
-import { auth, db } from '../firebase';
-import { isStaffRole } from '../config/staffRoles';
-import { doc, setDoc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { authApi, staffApi, ApiError } from '../services/apiClient';
 
-const AuthContext = createContext();
+/**
+ * FRESH LAUNCH — customer identity now comes from the Infinite Yatra API, not
+ * Firebase Auth.
+ *
+ * The session is an httpOnly cookie the browser holds and this code cannot
+ * read: there is no token in localStorage, nothing in an Authorization header,
+ * and nothing for injected script to steal or replay. "Am I signed in?" is
+ * answered by asking the server, never by inspecting a local value.
+ *
+ * `currentUser.uid` is kept as a field name because ~30 components read it. It
+ * now carries the API's opaque public id rather than a Firebase uid. It is a
+ * display/ownership hint only — every protected action is authorised again on
+ * the server against the session cookie.
+ *
+ * Staff identity is deliberately a SEPARATE session and a separate cookie.
+ * `isAdmin` here reflects a verified staff session, never an email address.
+ */
+
+const AuthContext = createContext(null);
 
 export const useAuth = () => {
-    return useContext(AuthContext);
+    const ctx = useContext(AuthContext);
+    if (!ctx) throw new Error('useAuth must be used inside an AuthProvider');
+    return ctx;
 };
 
+/** Map the API's user shape onto the field names the existing components read. */
+function toCurrentUser(user, staff) {
+    if (!user && !staff) return null;
+    const source = user || {};
+    const parts = String(source.fullName || '').trim().split(/\s+/).filter(Boolean);
+    return {
+        uid: source.id ?? staff?.id ?? null,
+        email: source.email ?? staff?.email ?? null,
+        displayName: source.fullName ?? staff?.fullName ?? null,
+        name: source.fullName ?? staff?.fullName ?? null,
+        firstName: parts[0] ?? null,
+        lastName: parts.length > 1 ? parts[parts.length - 1] : null,
+        phone: source.phone ?? null,
+        emailVerified: Boolean(source.emailVerified),
+        // Staff facts. Null for a plain customer; never derived from an email.
+        staffRole: staff?.role ?? null,
+        claimRole: staff?.role ?? null,      // kept for components written against SA-1
+        isStaff: Boolean(staff),
+        isAdmin: staff?.role === 'admin',
+    };
+}
+
 export const AuthProvider = ({ children }) => {
-    const [currentUser, setCurrentUser] = useState(null);
+    const [user, setUser] = useState(null);
+    const [staff, setStaff] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // Sign Up Function
-    const signup = async (email, password, name, phone) => {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-
-        // Update Profile with Name
-        await updateProfile(user, {
-            displayName: name
-        });
-
-        // Save extra user details to Firestore
-        await setDoc(doc(db, "users", user.uid), {
-            name: name,
-            email: email,
-            phone: phone,
-            createdAt: new Date().toISOString()
-        });
-
-        return user;
-    };
-
-    // Login Function
-    const login = (email, password) => {
-        return signInWithEmailAndPassword(auth, email, password);
-    };
-
-    // Login with Phone Number (looks up email first)
-    const loginWithPhone = async (phone, password) => {
-        try {
-            // Query Firestore to find user with this phone number
-            const usersRef = collection(db, 'users');
-            const q = query(usersRef, where('phone', '==', phone));
-            const querySnapshot = await getDocs(q);
-
-            if (querySnapshot.empty) {
-                throw new Error('Phone number not registered. Please sign up first.');
-            }
-
-            // Get the user's email from Firestore
-            const userDoc = querySnapshot.docs[0];
-            const userData = userDoc.data();
-            const email = userData.email;
-
-            // Login using email and password
-            return signInWithEmailAndPassword(auth, email, password);
-        } catch (error) {
-            // Re-throw with more specific error message
-            if (error.message.includes('Phone number not registered')) {
-                throw error;
-            }
-            throw error;
-        }
-    };
-
-    // Logout Function
-    const logout = () => {
-        return signOut(auth);
-    };
+    /** Ask the server who we are. A 401 is the normal signed-out answer. */
+    const refresh = useCallback(async () => {
+        const [u, s] = await Promise.all([
+            authApi.me().then((r) => r?.user ?? null).catch(() => null),
+            staffApi.me().then((r) => r?.staff ?? null).catch(() => null),
+        ]);
+        setUser(u);
+        setStaff(s);
+        return { user: u, staff: s };
+    }, []);
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                // User is signed in, fetch their profile from Firestore
-                try {
-                    // SA-1 — authorization comes from the verified ID token custom
-                    // claim, and from nothing else.
-                    //
-                    // This previously read a hardcoded list of admin email addresses and the
-                    // Firestore `users.role` field. Neither is a security
-                    // boundary: an email is not a permission, and the profile
-                    // document is separate from the token the server actually
-                    // verifies. Firestore and Storage rules have always required
-                    // a custom claim, so the UI was granting access the data layer
-                    // then refused.
-                    //
-                    // `claimRole` / `isStaff` / `isAdmin` below are for UI
-                    // affordances only. Route protection is UX; every protected
-                    // action is authorised again on the server.
-                    const tokenResult = await getIdTokenResult(user);
-                    const claims = tokenResult?.claims || {};
-                    const claimRole = typeof claims.role === 'string' ? claims.role : null;
-                    const isAdmin = claims.admin === true || claimRole === 'admin';
+        let cancelled = false;
+        (async () => {
+            try { await refresh(); }
+            finally { if (!cancelled) setLoading(false); }
+        })();
+        return () => { cancelled = true; };
+    }, [refresh]);
 
-                    // The profile is still loaded, but only for display data
-                    // (name, phone, photo). Its `role` is deliberately not used
-                    // for any access decision.
-                    const userDocRef = doc(db, "users", user.uid);
-                    const userDocSnap = await getDoc(userDocRef);
-                    const userData = userDocSnap.exists() ? userDocSnap.data() : {};
+    const login = useCallback(async (email, password) => {
+        const res = await authApi.login(email, password);
+        setUser(res.user);
+        return res.user;
+    }, []);
 
-                    setCurrentUser({
-                        ...user,
-                        ...userData,
-                        // Profile role kept under a distinct name so it can never
-                        // be mistaken for the authorization role.
-                        profileRole: userData.role || null,
-                        claimRole,
-                        isAdmin,
-                        isStaff: isAdmin || isStaffRole(claimRole),
-                        role: claimRole,
-                    });
-                } catch (error) {
-                    console.error("Error resolving user claims/profile:", error);
-                    // Fail closed: no claim resolved means no staff affordances.
-                    setCurrentUser({ ...user, profileRole: null, claimRole: null, isAdmin: false, isStaff: false, role: null });
-                }
-            } else {
-                setCurrentUser(null);
-            }
-            setLoading(false);
-        });
+    const register = useCallback(async (data) => {
+        const res = await authApi.register(data);
+        setUser(res.user);
+        return res.user;
+    }, []);
 
-        return () => {
-            unsubscribe();
-        };
+    const logout = useCallback(async () => {
+        // Clear locally even if the network call fails, so the UI never claims
+        // the user is still signed in after they asked to leave.
+        try { await authApi.logout(); } finally { setUser(null); }
+    }, []);
+
+    const staffLogin = useCallback(async (email, password) => {
+        const res = await staffApi.login(email, password);
+        setStaff(res.staff);
+        return res.staff;
+    }, []);
+
+    const staffLogout = useCallback(async () => {
+        try { await staffApi.logout(); } finally { setStaff(null); }
     }, []);
 
     const value = {
-        currentUser,
+        currentUser: toCurrentUser(user, staff),
         loading,
-        signup,
         login,
-        loginWithPhone,
-        logout
+        register,
+        logout,
+        staffLogin,
+        staffLogout,
+        refresh,
+        /**
+         * Phone sign-in is not part of the fresh launch: the new system
+         * identifies customers by email. Kept so a caller fails loudly rather
+         * than silently doing nothing.
+         */
+        loginWithPhone: async () => {
+            throw new ApiError('Phone sign-in is not available. Please sign in with your email address.', { status: 400 });
+        },
     };
 
-    return (
-        <AuthContext.Provider value={value}>
-            {!loading && children}
-        </AuthContext.Provider>
-    );
+    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
+
+export default AuthContext;
